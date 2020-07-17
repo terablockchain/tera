@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TERA WALLET</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="./tera.ico" type="image/vnd.microsoft.icon">
+
+    <link rel="stylesheet" type="text/css" href="./CSS/mobile-wallet.css">
+
+    <script type="text/javascript" src="./JS/coinlib.js"></script>
+    <script type="text/javascript" src="./JS/client.js"></script>
+    <script type="text/javascript" src="./JS/sha3.js"></script>
+    <script type="text/javascript" src="./JS/terabuf.js"></script>
+    <script type="text/javascript" src="./JS/crypto-client.js"></script>
+    <script type="text/javascript" src="./JS/terahashlib.js"></script>
+    <script type="text/javascript" src="./JS/wallet-web.js"></script>
+    <script type="text/javascript" src="./JS/wallet-lib.js"></script>
+    <script type="text/javascript" src="./JS/diagram.js"></script>
+    <script type="text/javascript" src="./JS/mobile-wallet.js"></script>
+
+</head>
+<body>
+
+<header id="idMainHeader" class="header">
+    <div class="header__wrapper">
+        <div class="header__logo">
+            <a onclick="SelectTab('TabWelcome')" class="header__logo-link" id="MTabWelcome">
+                <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+            </a>
+        </div>
+        <div class="header__right">
+            <select size="1" id="idLang" onchange="ChangeLang()" class="bigs" >
+                <option value="ENG">ENG</option>
+            </select>
+            <div class="header__wallet-set">
+                <a class="header__wallet-link tab-link" id="MTabKeySet" onclick="SelectTab('TabKeySet')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M21.333 21.0024C22.8059 21.0024 24 19.8084 24 18.3354V5.66724C24 4.1943 22.8059 3.00024 21.333 3.00024H19.9995C19.9995 1.89554 19.104 1 17.9993 1H3.99756C2.52462 1 1.33057 2.19405 1.33057 3.66699V11H2.66406V3.66699C2.66406 2.93052 3.26109 2.3335 3.99756 2.3335H17.9993C18.3675 2.3335 18.666 2.63201 18.666 3.00024H5.33105C4.96282 3.00024 4.66431 3.29876 4.66431 3.66699C4.66431 4.03523 4.96282 4.33374 5.33105 4.33374H21.333C22.0695 4.33374 22.6665 4.93077 22.6665 5.66724V8.33423H17.3325C15.4913 8.33423 13.9988 9.8268 13.9988 11.668C13.9988 13.5091 15.4913 15.0017 17.3325 15.0017H22.6665V18.3354C22.6665 19.0719 22.0695 19.6689 21.333 19.6689H13V21.0024H21.333ZM15.3323 11.668C15.3323 10.5633 16.2278 9.66772 17.3325 9.66772H22.6665V13.6682H17.3325C16.2278 13.6682 15.3323 12.7727 15.3323 11.668Z"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5414 16.4582C12.7257 16.4582 12.9388 16.5955 12.9593 16.7783C13.0144 17.2706 13.0137 17.7677 12.9564 18.2565C12.9338 18.4467 12.7624 18.5903 12.576 18.5751L12.4956 18.573C11.921 18.573 11.3868 18.927 11.1658 19.4542C10.9308 20.0142 11.0776 20.666 11.53 21.0757C11.6719 21.2041 11.6888 21.4208 11.5689 21.5697C11.2597 21.9547 10.9061 22.3045 10.5173 22.6094C10.3676 22.725 10.1552 22.7081 10.0267 22.5684C9.63998 22.1435 8.95181 21.9836 8.41688 22.2021C7.86352 22.4287 7.50573 22.9858 7.52754 23.5882C7.53388 23.7774 7.39423 23.9397 7.20573 23.9605C6.96789 23.9869 6.73001 24 6.49217 24C6.24161 24 5.99173 23.9855 5.74334 23.9566C5.55349 23.9347 5.41307 23.7682 5.42434 23.5769C5.45888 22.9678 5.10596 22.4008 4.54491 22.1661C4.00926 21.9413 3.31335 22.1004 2.92445 22.5306C2.79535 22.6728 2.57865 22.6898 2.42971 22.5698C2.05001 22.2642 1.70343 21.9141 1.4014 21.5294C1.2842 21.3809 1.30186 21.1674 1.44092 21.0396C1.88555 20.6321 2.03162 19.9864 1.80438 19.4323C1.57641 18.8776 1.03296 18.5271 0.466932 18.5416C0.280656 18.5416 0.0611022 18.4055 0.0406898 18.222C-0.0143559 17.7297 -0.0136788 17.2321 0.0434953 16.7438C0.066036 16.5564 0.212841 16.418 0.418948 16.4247C1.0541 16.4247 1.60891 16.0803 1.8333 15.546C2.06834 14.9856 1.92226 14.3339 1.46985 13.9242C1.3287 13.7958 1.31105 13.5794 1.43105 13.4302C1.73874 13.0462 2.09305 12.6962 2.48263 12.3906C2.63152 12.2745 2.84536 12.2917 2.97316 12.4318C3.35983 12.8571 4.0509 13.0152 4.58226 12.7982C5.13634 12.5712 5.49351 12.0141 5.47232 11.4113C5.46599 11.2225 5.60573 11.0602 5.79418 11.0394C6.28118 10.9854 6.77098 10.9871 7.25652 11.0433C7.44715 11.0655 7.58689 11.2317 7.57553 11.4229C7.54099 12.0317 7.8939 12.5987 8.45355 12.8342C8.99133 13.0585 9.68729 12.8991 10.0747 12.47C10.2032 12.3277 10.4206 12.3112 10.5687 12.4301C10.9471 12.7332 11.2936 13.0829 11.5985 13.47C11.7157 13.6186 11.6987 13.8324 11.559 13.9602C11.115 14.3674 10.969 15.0135 11.1955 15.5675C11.4172 16.1084 11.9458 16.4582 12.5414 16.4582ZM6.50013 21.4011C8.6546 21.4011 10.4011 19.6546 10.4011 17.5001C10.4011 15.3457 8.6546 13.5991 6.50013 13.5991C4.34566 13.5991 2.59912 15.3457 2.59912 17.5001C2.59912 19.6546 4.34566 21.4011 6.50013 21.4011Z"/>
+                    </svg>
+                    <span>KEY SETTINGS</span>
+                </a>
+            </div>
+        </div>
+        <nav class="header__nav nav-tabs">
+            <ul class="nav-tabs__list">
+                <li class="nav-tabs__tab active"><a id="MTabAccounts" class="tab-link nav-tabs__link" onclick="SelectTab('TabAccounts')">ACCOUNTS</a></li>
+                <li class="nav-tabs__tab"><a id="MTabSend" class="tab-link nav-tabs__link" onclick="SelectTab('TabSend')">SEND</a></li>
+                <li class="nav-tabs__tab"><a id="MTabDapps" class="tab-link nav-tabs__link" onclick="SelectTab('TabDapps')">DAPPS</a></li>
+                <li class="nav-tabs__tab"><a id="MTabExplorer" class="tab-link nav-tabs__link" onclick="SelectTab('TabExplorer')">EXPLORER</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main id="idMain">
+    <section id="TabWelcome" class="welcome" >
+        <div class="welcome__img">
+            <svg class="" xmlns="http://www.w3.org/2000/svg" fill="#445368" viewBox="0 0 992.13 992.13" width="150" height="150">
+                <path d="M894.31,812.41a0.18,0.18,0,0,0,0-.08,1.11,1.11,0,0,0-.09-0.23,2.58,2.58,0,0,0-.21-0.41,1.51,1.51,0,0,0-.11-0.25c-0.11-.21-0.22-0.4-0.34-0.59l-388.62-640-0.08-.14L504.4,170a10.15,10.15,0,0,0-16.92-.11,9.33,9.33,0,0,0-.54.86q-39.18,64.66-78.83,129.08a22.21,22.21,0,0,0,0,25.57q52.29,85.36,104.39,170.85a24.15,24.15,0,0,1,0,27.69C455.24,618,394.48,717,336.93,811.63a10.18,10.18,0,0,0,8.94,15H514a10.12,10.12,0,0,0,5.29-1.49,10.25,10.25,0,0,0,3.66-3.87h0l5.79-9.66,77.5-127.91s0,0,0,0a10.18,10.18,0,0,1,17.37-.84l0.21,0.33,0.07,0.11,77.16,126L708.15,821a10.17,10.17,0,0,0,8.95,5.3h4.71a21.71,21.71,0,0,0,2.34,0H884.87A10.16,10.16,0,0,0,895,816.15,9.73,9.73,0,0,0,894.31,812.41Z" />
+                <path d="M446.68,530.15l5.59-9.23a19.86,19.86,0,0,0,0-22.68L417.74,442.3l-39.5-64a10.2,10.2,0,0,0-17.63.46L98.31,811.68a10.17,10.17,0,0,0,8.95,15H250.82l-0.05,0h4.28l6.23,0h0a10.12,10.12,0,0,0,8.9-5.3,0,0,0,0,0,0,0l5.89-9.77a9.82,9.82,0,0,0,.74-1.15s0,0,0,0l6.4-10.57c55.06-90.94,107.53-177.76,162.52-268.28C446.12,531.11,446.41,530.63,446.68,530.15Z" />
+            </svg>
+        </div>
+        <h1 class="welcome__title title">Welcome to TERA Wallet</h1>
+        <p><a onclick="OpenHelp()" class="pointer">Tera Wallet Guide...</a></p>
+        <p><a onclick="SelectTab('TabKeySet')" class="pointer">ATTENTION: Before using the wallet, save the private key.</a></p>
+
+        <ul id="idStableScroll" align='center' class="social-list">
+            <li class="social-list__item"><a href="https://terafoundation.org/">Web-site</a></li>
+            <li class="social-list__item"><a href="https://bitcointalk.org/index.php?topic=4573801.0">Bitcointalk</a></li>
+            <li class="social-list__item"><a href="https://twitter.com/terafoundation">Twitter</a></li>
+            <li class="social-list__item"><a href="https://t.me/terafoundation">Telegram</a></li>
+            <li class="social-list__item"><a href="https://discord.gg/CvwrbeG">Discord</a></li>
+            <li class="social-list__item"><a href="https://jq.qq.com/?_wv=1027&k=5KpN5fw">QQchat</a></li>
+        </ul>
+
+    </section>
+
+
+    <section id="TabWalletSet" class="wallet-settings" style="display: none;">
+        <div class="wallet-settings__title-wrap">
+            <a class="back-link" onclick="SelectTab('TabKeySet')"><span>Back</span></a>
+            <h2 class="wallet-settings__title title">Edit your wallet</h2>
+        </div>
+        <div class="wallet-settings__field key-field">
+            <p class="key-field__title">Private key (secret)</p>
+
+            <textarea name="private-key" id="idPrivKeyEdit" placeholder="Insert your private key or generate a new key below..." class="key-field__textarea" oninput="OnEditPrivKey()">
+            </textarea>
+        </div>
+
+         <div class="wallet-wrapper">
+            <button class="btn btn--full-width4 wallet-settings__generate4" onclick="OnGenerateKeyNew()">New</button>
+
+
+        </div>
+        <div class="wallet-settings__ok-btns">
+            <button class="btn wallet-settings__btn-270" id="okEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyOK()">OK</button>
+            <button class="btn btn--white wallet-settings__btn-270" id="cancelEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyCancel()">Cancel</button>
+        </div>
+
+    </section>
+
+
+    <section id="TabKeySet" class="wallet-settings wallet-settings--info" style="display: none;">
+        <div class="wallet-settings__title-wrap2">
+
+            <div class="wallet-settings__ok-btns">
+                <button onclick="openModal('password-modal-set')" class="pointer btn" style="margin-bottom: 15px;height: 55px;">
+                    <svg width="20" height="20" viewBox="0 -3 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.5 5V10H10.5H12H13C13.5523 10 14 10.4477 14 11V17C14 17.5523 13.5523 18 13 18H1C0.447716 18 0 17.5523 0 17V11C0 10.4477 0.447715 10 1 10H2V5C2 2.23858 4.23858 0 7 0C9.76142 0 12 2.23858 12 5V7H10.5V5C10.5 3.067 8.933 1.5 7 1.5C5.067 1.5 3.5 3.067 3.5 5Z" fill="var(--fill--password)" fill-opacity="0.5"/>
+                    </svg>
+                    set password
+                </button>
+                <button onclick="DoExitWallet();" id="idWalletExit" class="pointer btn" style="margin-bottom: 15px;height: 55px;">
+                        <svg width="20" height="20" viewBox="0 -3 20 17" fill="white" xmlns="http://www.w3.org/2000/svg">
+                            <path transform="scale(0.035)" d="M0,121.05v248.2c0,34.2,27.9,62.1,62.1,62.1h200.6c34.2,0,62.1-27.9,62.1-62.1v-40.2c0-6.8-5.5-12.3-12.3-12.3 s-12.3,5.5-12.3,12.3v40.2c0,20.7-16.9,37.6-37.6,37.6H62.1c-20.7,0-37.6-16.9-37.6-37.6v-248.2c0-20.7,16.9-37.6,37.6-37.6h200.6 c20.7,0,37.6,16.9,37.6,37.6v40.2c0,6.8,5.5,12.3,12.3,12.3s12.3-5.5,12.3-12.3v-40.2c0-34.2-27.9-62.1-62.1-62.1H62.1 C27.9,58.95,0,86.75,0,121.05z" fill2="blue" fill-opacity="0.5"/>
+                            <path transform="scale(0.035)" d="M385.4,337.65c2.4,2.4,5.5,3.6,8.7,3.6s6.3-1.2,8.7-3.6l83.9-83.9c4.8-4.8,4.8-12.5,0-17.3l-83.9-83.9 c-4.8-4.8-12.5-4.8-17.3,0s-4.8,12.5,0,17.3l63,63H218.6c-6.8,0-12.3,5.5-12.3,12.3c0,6.8,5.5,12.3,12.3,12.3h229.8l-63,63 C380.6,325.15,380.6,332.95,385.4,337.65z" fill2="blue" fill-opacity="0.5"/>
+                        </svg>
+                    logout
+                </button>
+            </div>
+            <BR>
+            <h2 class="wallet-settings__title title">Key settings</h2>
+        </div>
+        <div class="wallet-settings__field key-field">
+            <p class="key-field__title">Private key (secret)</p>
+            <button class="key-field__btn btn-no-bg wallet-settings__hiding" onclick="OnVisiblePrivKey()">Show</button>
+            <p style="width: 100%;" class="key-field__key-place" id="idPrivKeyStatic">
+                ••••••••••••••••••••••••••••••••••••••••••••••••••••
+            </p>
+        </div>
+
+        <div class="wallet-settings__info">
+
+            <div class="wallet-settings__field key-field">
+                <p class="key-field__title">Public key</p>
+                <p style="width: 100%;" class="key-field__key-place" id="idPubKeyStatic"></p>
+            </div>
+            
+        </div>
+        <div class="wallet-wrapper" style="padding-top: 10px;">
+            <button class="btn btn--full-width4 wallet-settings__generate4" id="idKeyEdit" onclick="SelectTab('TabWalletSet')">Edit</button>
+
+            <div class="wallet-settings__btns-wrapper nomobile">
+                <button class="btn btn--white" onclick="downloadKey('idPrivKeyEdit')" id="idSave2">Save key</button>
+                <label for="load-key2" class="btn btn--white" onchange="UploadKey('load-key2')" id="idLoad2">
+                    <input class="hidden" id="load-key2" type="file">
+                    <span>Load key</span>
+                </label>
+            </div>
+        </div>
+        <!--<button class="btn wallet-settings__go-btn" onclick="SelectTab('TabAccounts')">Go to accounts</button>-->
+
+    </section>
+
+    <section id="TabAccounts" class="accounts-info" style="display: none;">
+        <div class="accounts-info__empty hidden" >
+            <p class="accounts-info__counter title"><span class="accounts-info__number">0 Accounts</span></p>
+            <p class="title text-center">You have no accounts yet</p>
+            <p class="text-center">Create your first account and start using TERA</p>
+            
+            <button class="btn btn--full-width btn--270 accounts-info__btn" onclick="OnViewAddAccount()">+ CREATE A NEW ACCOUNT</button>
+        </div>
+
+        <div class="accounts-info__add hidden">
+            <div class="wallet-settings__title-wrap">
+                <a class="back-link" onclick="CancelAddAccount()"><span>Back</span></a>
+                <h2 class="accounts-info__title title">Create an account</h2>
+            </div>
+            
+            <div class="key-field">
+                <span class="key-field__title">Public name</span>
+                <input type="text" 
+                       id="idAccountName" 
+                       class="key-field__input" 
+                       placeholder="Input public text name of your account"
+                       oninput="OnChangeAccName()">
+            </div>
+
+            <div class="key-field">
+                <span class="key-field__title">Currency</span>
+
+                <input list="idCurrencyList" id="idCurrency" class="bigs key-field__input key-field__input" onchange="ValidateCurrency(this)"/>
+                <datalist id="idCurrencyList">
+                    <option value="Loading"></option>
+                </datalist>
+            </div>
+
+            <button onclick="OnAddAccount()"
+                    class="btn btn--full-width accounts-info__add-btn btn--270 btn--center" 
+                    id="idBtAddAccount">Create account</button>
+        </div>
+
+        <div class="accounts-info__add2 hidden" >
+            <p class="title text-center">Wait 30 sec</p>
+            <p class="text-center">Creating your account</p>
+        </div>
+
+        <div class="accounts-info__acc-list hidden">
+
+            <div class="accounts-info__counter-wrapper">
+                <a href="https://terafoundation.org/tera-coin.html" target="_blank" class="accounts-info__to-send-link">Buy/sell/mine TERA</a>
+                <p class="title" style="font-size: 16px;"><span class="accounts-info__number" id="idListCount">4</span> <span>Account(s)</span></p>
+                <a class="btn" onclick="OnViewAddAccount()">+ CREATE NEW</a>
+            </div>
+
+            <ul class="accounts-info__accounts prod-list" id="idAccountsList">
+
+                <li class="prod-list__item prod-card prod-card--line prod-card--switch find--switch" id="AccCardTemplate">
+                    <div class="prod-card__first-line">
+                        <span class="hidden id-sign">ID:&nbsp;</span>
+                        <a target='_blank' class="prod-card__id prod-card__id--mobile">$Item.Num</a>
+                        <a onclick="OpenHistoryPage($Item.Num)" class="prod-card__id prod-card__id--mobile-active pointer">$Item.Num</a>
+                        <a onclick="OpenHistoryPage($Item.Num)" target='_blank' class="prod-card__id prod-card__id--desktop pointer">$Item.Num</a>
+                        <div class="prod-card__heading">
+                            <span class="prod-card__coins-count">$Value.SumCOIN<sup>$Value.SumCENT</sup><br>
+                                <span class="light-grey-text small-text mob-hidden">$Value.CurrencyName</span>
+                            </span>
+                            <span class="prod-card__currency prod-card__currency--with-dot">
+                                <img $value.currencyiconpath width="18" height="18" alt="">
+                            </span>
+
+                        </div>
+                        <span class="prod-card__descr light-grey-text">$Item.Name</span>
+                    </div>
+
+                    <div class="prod-card__footer">
+                        <div class="prod-card__footer-wrap" >
+                            <a onclick="OpenDapps($SmartObj.Num,$Item.Num,$SmartObj.HTMLLength)" class="prod-card__link prod-card__link--dapp">
+                                <img $smartobj.iconpath alt="." width="32" height="32">
+                                <span  class="prod-card__dapp-name mob-hidden">$SmartObj.Name</span>
+                            </a>
+
+                            <a class="prod-card__link prod-card__link--connect" onclick="ConnectSmart($Item.Num)">
+                                <svg class="prod-card__dapp-icon" width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="15" cy="15" r="14.5" fill="white" fill-opacity="0.01" stroke="#F2F2F2"/>
+                                    <path d="M15.5 10H14.5V14.5H10V15.5H14.5V20H15.5V15.5H20V14.5H15.5V10Z" fill="#445368"/>
+                                </svg>
+                                <span class="prod-card__dapp-text mob-hidden">Connect DApp...</span>
+                            </a>
+
+                            <button type="button" class="prod-card__drop-btn btn-no-bg mob-hidden" onclick="showMenu($Item.Num)" onblur="closeMenu($Item.Num)">
+                                <svg width="4" height="16" viewBox="0 0 4 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M3.5 2C3.5 2.82843 2.82843 3.5 2 3.5C1.17157 3.5 0.5 2.82843 0.5 2C0.5 1.17157 1.17157 0.5 2 0.5C2.82843 0.5 3.5 1.17157 3.5 2ZM3.5 8C3.5 8.82843 2.82843 9.5 2 9.5C1.17157 9.5 0.5 8.82843 0.5 8C0.5 7.17157 1.17157 6.5 2 6.5C2.82843 6.5 3.5 7.17157 3.5 8ZM2 15.5C2.82843 15.5 3.5 14.8284 3.5 14C3.5 13.1716 2.82843 12.5 2 12.5C1.17157 12.5 0.5 13.1716 0.5 14C0.5 14.8284 1.17157 15.5 2 15.5Z" fill="#445368"/>
+                                </svg>
+                            </button>
+                            <div class="prod-card__dropdown" style="display: none;" id="idBt$Item.Num">
+                                <a class="editdapp" onclick="SetSmart($Item.Num,$SmartObj.Num)">Change dApp</a>
+                                <a class="editdapp" onclick="DelSmart($Item.Num,-1)">Disconnect dApp</a>
+                                <a onclick="DelAccount($Item.Num)">Hide account</a>
+                                <a onclick="RestoreAllAccounts()">Show All accounts</a>
+                            </div>
+                        </div>
+                        <a class="prod-card__footer-empty" style="display: none;" onclick="ConnectSmart($Item.Num,$SmartObj.Num)"><span class="mob-hidden">Connect dapp...</span></a>
+                    </div>
+                </li>
+
+            </ul>
+
+            
+            
+
+            <div class="accounts-info__total">
+                <h3>Total</h3>
+                <dl class="total-info" id="idTotalList">
+                </dl>
+            </div>
+
+
+
+        </div>
+    </section>
+
+    <section id="TabSend" class="send-page" style="display: none;">
+        <div class="send-page__setting">
+            <h2 class="title">Sending coins</h2>
+
+            <div class="send-page__field key-field">
+                <p class="key-field__title">From:</p>
+                <button onclick="SetAllSum()" title="Paste total amount" class="key-field__btn btn-no-bg no-mr" style="padding: 0; margin-left: 10px;">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M15 1H3C1.89543 1 1 1.89543 1 3V15C1 16.1046 1.89543 17 3 17H15C16.1046 17 17 16.1046 17 15V3C17 1.89543 16.1046 1 15 1ZM3 0C1.34315 0 0 1.34315 0 3V15C0 16.6569 1.34315 18 3 18H15C16.6569 18 18 16.6569 18 15V3C18 1.34315 16.6569 0 15 0H3ZM6.64645 10.6464C6.84171 10.4512 7.15829 10.4512 7.35355 10.6464L9.5 12.7929V6C9.5 5.17157 8.82843 4.5 8 4.5H6C5.72386 4.5 5.5 4.27614 5.5 4C5.5 3.72386 5.72386 3.5 6 3.5H8C9.38071 3.5 10.5 4.61929 10.5 6V12.7929L12.6464 10.6464C12.8417 10.4512 13.1583 10.4512 13.3536 10.6464C13.5488 10.8417 13.5488 11.1583 13.3536 11.3536L10.3536 14.3536L10 14.7071L9.64645 14.3536L6.64645 11.3536C6.45118 11.1583 6.45118 10.8417 6.64645 10.6464Z"/>
+                    </svg>
+                </button>
+                <select size="1" id="idAccount" class="key-field__select" oninput="OnEditTransactionFields(); CheckSending();">
+                </select>
+            </div>
+
+            <div class="send-page__field key-field">
+                <label for="idTo" class="key-field__title key-field__title--pay"><span>Pay to:</span></label>
+                <span id="idNameTo2" style="margin: 0 10px 0 15px"></span>
+                <!--<button class="key-field__btn btn-no-bg">Paste</button>-->
+                <!--<a onclick="openModal('addresses-modal')" class="key-field__btn btn-no-bg key-field__btn&#45;&#45;with-icon no-mr">-->
+                    <!--Address book-->
+                    <!--<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">-->
+                        <!--<path fill-rule="evenodd" clip-rule="evenodd" d="M4.5585 1H16C16.5523 1 17 1.44771 17 2V16C17 16.5523 16.5523 17 16 17H4.5585C4.00622 17 3.5585 16.5523 3.5585 16V15.5H5.14688V15.7922C5.14688 16.0683 5.37074 16.2922 5.64688 16.2922C5.92303 16.2922 6.14688 16.0683 6.14688 15.7922V14.2078C6.14688 13.9317 5.92303 13.7078 5.64688 13.7078C5.37074 13.7078 5.14688 13.9317 5.14688 14.2078V14.5H3.5585V11.5H5.14688V11.7978C5.14688 12.074 5.37074 12.2978 5.64688 12.2978C5.92303 12.2978 6.14688 12.074 6.14688 11.7978V10.2134C6.14688 9.93728 5.92303 9.71342 5.64688 9.71342C5.37074 9.71342 5.14688 9.93728 5.14688 10.2134V10.5H3.5585V7.5H5.14688V7.80348C5.14688 8.07962 5.37074 8.30348 5.64688 8.30348C5.92303 8.30348 6.14688 8.07962 6.14688 7.80348V6.21907C6.14688 5.94293 5.92303 5.71907 5.64688 5.71907C5.37074 5.71907 5.14688 5.94293 5.14688 6.21907V6.5H3.5585V3.5H5.14688V3.80911C5.14688 4.08525 5.37074 4.30911 5.64688 4.30911C5.92303 4.30911 6.14688 4.08525 6.14688 3.80911V2.2247C6.14688 1.94856 5.92303 1.7247 5.64688 1.7247C5.37074 1.7247 5.14688 1.94856 5.14688 2.2247V2.5H3.5585V2C3.5585 1.44772 4.00622 1 4.5585 1ZM2.5585 16V15.5H1.5C0.671575 15.5 0 14.8284 0 14V12C0 11.1716 0.671573 10.5 1.5 10.5H2.5585V7.5H1.5C0.671575 7.5 0 6.82843 0 6V4C0 3.17157 0.671573 2.5 1.5 2.5H2.5585V2C2.5585 0.89543 3.45393 0 4.5585 0H16C17.1046 0 18 0.895431 18 2V16C18 17.1046 17.1046 18 16 18H4.5585C3.45393 18 2.5585 17.1046 2.5585 16ZM2.5585 11.5V14.5H1.5C1.22386 14.5 1 14.2761 1 14V12C1 11.7239 1.22386 11.5 1.5 11.5H2.5585ZM2.5585 3.5H1.5C1.22386 3.5 1 3.72386 1 4V6C1 6.27614 1.22386 6.5 1.5 6.5H2.5585V3.5ZM7.70564 3.5H14.9117V2.5H7.70564V3.5ZM7.70564 5.5H14.9117V4.5H7.70564V5.5ZM7.70564 7.5H14.9117V6.5H7.70564V7.5Z"/>-->
+                    <!--</svg>-->
+                <!--</a>-->
+                <input list="idToList" type="text"
+                       id="idTo" 
+                       value="" 
+                       class="key-field__input key-field__input--enter" 
+                       oninput="OnEditIdTo()" 
+                       placeholder="Enter ID..." >
+                <datalist id="idToList">
+                    <option value="Loading"></option>
+                </datalist>
+            </div>
+
+            <div class="send-page__field key-field">
+                <label for="idSumSend" class="key-field__title"><span>Amount:</span></label>
+                <!--<b>2 000 000 000,00000000</b>-->
+                <input type="number" id="idSumSend" class="key-field__input" style="color:#1e21cb" value="" step=0 min=0 max=1000000000 oninput="OnEditTransactionFields()" placeholder="Input amount...">
+            </div>
+
+            <div class="send-page__field key-field">
+                <label for="idDescription" class="key-field__title"><span>Description:</span></label>
+                <textarea name="description" id="idDescription" rows="2" placeholder="Optional..." class="key-field__textarea key-field__textarea--mobile" oninput="CheckLengthAccDesription('idDescription',200); OnEditTransactionFields()">
+                </textarea>
+            </div>
+
+            <div class="send-page__btns-wrap">
+                <button class="btn" onclick="SendMobileBefore()" id="idSendButton">Send</button>
+                <button class="btn btn--white" onclick="ClearSend()" id="idClearButton">Clear</button>
+            </div>
+        </div>
+
+
+        <div class="send-page__confirm hidden">
+            <a href="#back" class="wallet-settings__title title">Confirm Transaction</a>
+            
+            <dl class="confirm-info">
+                <div class="confirm-info__line">
+                    <dt class="confirm-info__title">From ID:</dt>
+                    <dd class="confirm-info__descr">
+                        <span id="idConfirmFromID">192333</span>
+                        <p class="light-grey-text" id="idConfirmFromName">
+
+                        </p>
+                    </dd>
+                </div>
+                <div class="confirm-info__line">
+                    <dt class="confirm-info__title">Pay to ID:</dt>
+                    <dd class="confirm-info__descr confirm-info__descr--sm">
+                        <span id="idConfirmToID">177555</span>
+                        <p class="light-grey-text" id="idConfirmToName">
+
+                        </p>
+                    </dd>
+                    <!--<a href="#address-book" class="key-field__btn btn-no-bg key-field__btn&#45;&#45;with-icon">-->
+                        <!--Save-->
+                        <!--<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">-->
+                            <!--<path fill-rule="evenodd" clip-rule="evenodd" d="M4.5585 1H16C16.5523 1 17 1.44771 17 2V16C17 16.5523 16.5523 17 16 17H4.5585C4.00622 17 3.5585 16.5523 3.5585 16V15.5H5.14688V15.7922C5.14688 16.0683 5.37074 16.2922 5.64688 16.2922C5.92303 16.2922 6.14688 16.0683 6.14688 15.7922V14.2078C6.14688 13.9317 5.92303 13.7078 5.64688 13.7078C5.37074 13.7078 5.14688 13.9317 5.14688 14.2078V14.5H3.5585V11.5H5.14688V11.7978C5.14688 12.074 5.37074 12.2978 5.64688 12.2978C5.92303 12.2978 6.14688 12.074 6.14688 11.7978V10.2134C6.14688 9.93728 5.92303 9.71342 5.64688 9.71342C5.37074 9.71342 5.14688 9.93728 5.14688 10.2134V10.5H3.5585V7.5H5.14688V7.80348C5.14688 8.07962 5.37074 8.30348 5.64688 8.30348C5.92303 8.30348 6.14688 8.07962 6.14688 7.80348V6.21907C6.14688 5.94293 5.92303 5.71907 5.64688 5.71907C5.37074 5.71907 5.14688 5.94293 5.14688 6.21907V6.5H3.5585V3.5H5.14688V3.80911C5.14688 4.08525 5.37074 4.30911 5.64688 4.30911C5.92303 4.30911 6.14688 4.08525 6.14688 3.80911V2.2247C6.14688 1.94856 5.92303 1.7247 5.64688 1.7247C5.37074 1.7247 5.14688 1.94856 5.14688 2.2247V2.5H3.5585V2C3.5585 1.44772 4.00622 1 4.5585 1ZM2.5585 16V15.5H1.5C0.671575 15.5 0 14.8284 0 14V12C0 11.1716 0.671573 10.5 1.5 10.5H2.5585V7.5H1.5C0.671575 7.5 0 6.82843 0 6V4C0 3.17157 0.671573 2.5 1.5 2.5H2.5585V2C2.5585 0.89543 3.45393 0 4.5585 0H16C17.1046 0 18 0.895431 18 2V16C18 17.1046 17.1046 18 16 18H4.5585C3.45393 18 2.5585 17.1046 2.5585 16ZM2.5585 11.5V14.5H1.5C1.22386 14.5 1 14.2761 1 14V12C1 11.7239 1.22386 11.5 1.5 11.5H2.5585ZM2.5585 3.5H1.5C1.22386 3.5 1 3.72386 1 4V6C1 6.27614 1.22386 6.5 1.5 6.5H2.5585V3.5ZM7.70564 3.5H14.9117V2.5H7.70564V3.5ZM7.70564 5.5H14.9117V4.5H7.70564V5.5ZM7.70564 7.5H14.9117V6.5H7.70564V7.5Z"/>-->
+                        <!--</svg>-->
+                    <!--</a>-->
+                </div>
+                <div class="confirm-info__line">
+                    <dt class="confirm-info__title">Amount:</dt>
+                    <dd class="confirm-info__descr">
+                        <span id="idConfirmAmount" style="color: #ff791a">100000</span>
+                        <span id="idConfirmCurrency">TERA</span>
+                    </dd>
+                </div>
+                <div class="confirm-info__line">
+                    <dt class="confirm-info__title">Description:</dt>
+                    <dd class="confirm-info__descr light-grey-text" id="idConfirmDescription">
+                        Test Description
+                    </dd>
+                </div>
+            </dl>
+
+
+            <div class="send-page__btns-wrap">
+                <button class="btn" onclick="OKSend()" id="idBtOnSend">CONFIRM</button>
+                <button class="btn btn--white" onclick="CancelSend()" id="editKeyBtn">Cancel</button>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="TabDapps" class="dapps-page" style="display: none;">
+        <h2 class="title">Decentralized applications (dApps)</h2>
+        <div align="center">
+            <a class="btn nomobile" style="width: 200px;" onclick="window.Open('./dapp-edit.html','smart',1240)">DApp IDE</a>
+        </div>
+        <div class="dapps-page__field key-field">
+            <select class="key-field__select" id="idCategory" onchange="$('idViewDappNum').value=0; ViewCurrent(DefDapps)">
+                <option value="0">Choose the category</option>
+            </select>
+        </div>
+
+        <div id="idPaginationDapps" class="">
+            <div class="dapps-page__pagination page-pagination">
+                <button onclick="ViewBegin(DefDapps)" class="btn dapps-page__page-btns">| &lt;</button>
+                <button onclick="ViewPrev(DefDapps)" class="btn dapps-page__page-btns">&lt;</button>
+                <input type="number" id="idViewDappNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefDapps)">
+                <button onclick="ViewNext(DefDapps,CONFIG_DATA.MaxDappsID)" class="btn dapps-page__page-btns">&gt;</button>
+                <button onclick="ViewEnd(DefDapps,CONFIG_DATA.MaxDappsID)" class="btn dapps-page__page-btns">&gt; |</button>
+            </div>
+
+            <div class="explorer-page__table-wrap">
+                <table id="dapps_list" class="grid dapps__table">
+                    <tr>
+                        <th id="(RetDappCard(Item))" class="dapp_card">DApps</th>
+                    </tr>
+                </table>
+            </div>
+
+            <ul id="DappRowCardTemplate" class="grid prod-list">
+                <li class="prod-card dapps-page__card">
+                    <div class="prod-card__first-line">
+                        <span class="prod-card__id light-grey-text">ID: $Item.Num</span>
+                        <span class="prod-card__id light-grey-text">OWNER: $Item.Owner</span>
+                        <a onclick="OpenDappCard($Item.Num)" class="prod-card__link prod-card__link--info">More info</a>
+                    </div>
+                    <div class="prod-card__second-line">
+                        <div class="prod-card__second-line-left">
+                            <div class="prod-card__heading">
+                                <a class="prod-card__link" onclick="OpenOnlyDapp($Item.Num,$Item.HTMLLength)">$Item.Name</a>
+                            </div>
+                            <p>$Item.Description</p>
+                        </div>
+                        <div class="prod-card__second-line-img">
+                            <a class="prod-card__link" onclick="OpenOnlyDapp($Item.Num,$Item.HTMLLength)"><img $item.iconpath width="32"></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="TabExplorer" class="explorer-page" style="display: none;">
+        <div id="idCurrentBlockNum" class="currentBlockNum">
+            <p><span>Blockchain height:</span> <b id="idBHeight">00000000</b></p>
+            <!--<p><span>Current create:</span> <b id="idBCurrent">00000000</b></p>-->
+            <p><span>Protocol ver:</span> <b id="idBVersion">00000</b></p>
+            <p><span>Wallet ver:</span> <b id="idWVersion">000</b></p>
+        </div>
+
+        <button onclick="ViewCurrent(DefAccounts,1,this);" class="btview explorer-page__explore btn btn--white btn--full-width">Accounts</button>
+
+        <div class="explorer-page__table">
+            <div id="idPaginationAccount" style="display: none">
+                <div class="page-pagination">
+                    <button onclick="ViewBegin(DefAccounts)" class="btnav btn">|&lt;</button>
+                    <button onclick="ViewPrev(DefAccounts)" class="btnav btn">&lt;</button>
+                    <input type="number" class="pag_num" id="idViewAccountNum" style="text-align: center" value="0" min=0 onchange="ViewCurrent(DefAccounts)">
+                    <button onclick="ViewNext(DefAccounts,CONFIG_DATA.MaxAccID)" class="btnav btn">&gt;</button>
+                    <button onclick="ViewEnd(DefAccounts,CONFIG_DATA.MaxAccID)" class="btnav btn">&gt;|</button>
+                </div>
+                <div class="explorer-page__table-wrap">
+                    <table id="explorer_accounts" class="grid">
+                        <tr>
+                            <th id="(RetHistoryAccount(Item))" class="num">ID</th>
+                            <th id="SUM_TO_STRING(Item.Value)" class="sum">Amount</th>
+                            <th id="CurrencyNameItem(Item)" class="cur">Cur</th>
+                            <th id="Item.Name" class="accname">Name</th>
+                            <th id="Item.PubKeyStr" class="hash">PubKey</th>
+                            <th id="Item.Value.OperationID" class="minwidth">Operation</th>
+                            <th id="Item.Value.Smart" class="minwidth">Smart</th>
+                            <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="minwidth">Block Num</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <button onclick="ViewCurrent(DefBlock,1,this)" class="btview explorer-page__explore btn btn--white btn--full-width">Blocks and Tx</button>
+        <div class="explorer-page__table">
+            <div id="idPaginationBlock" style="display: none">
+                <div class="page-pagination">
+                    <button onclick="ViewBegin(DefBlock)" class="btnav btn">|&lt;</button>
+                    <button onclick="ViewPrev(DefBlock)" class="btnav btn">&lt;</button>
+                    <input type="number" class="pag_num" id="idViewBlockNum" style="text-align: center" value="0" min=0 onchange="ViewCurrent(DefBlock)">
+                    <button onclick="ViewNext(DefBlock,CONFIG_DATA.MaxNumBlockDB)" class="btnav btn">&gt;</button>
+                    <button onclick="ViewEnd(DefBlock,CONFIG_DATA.MaxNumBlockDB)" class="btnav btn">&gt;|</button>
+                </div>
+
+                <div class="explorer-page__table-wrap">
+                    <table id="explorer_blocks" class="grid">
+                        <tr>
+                            <th id="(RetOpenBlock(Item.BlockNum,Item.TrDataLen))" class="num">Num</th>
+                            <th id="(DateFromBlock(Item.BlockNum,1))" class="date">Date</th>
+                            <th id="GetHexFromArr(Item.TreeHash)" class="hash">Data Hash</th>
+                            <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
+                            <th id="GetHexFromArr(Item.Hash)" class="hash">Block Hash</th>
+                            <th id="Item.TrDataLen" class="minwidth">Bytes</th>
+                            <th id="Item.Power" class="minwidth">Pow</th>
+                            <th id="Item.Miner" class="minwidth">Miner</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <button onclick="ViewCounters(this)" class="btview explorer-page__explore btn btn--white btn--full-width">Counters</button>
+
+        <div class="explorer-page__diagramms">
+
+            <div id="idStatBlock" style="display: none">
+                <div id="diagr_content">
+                    <div id="diargams">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+
+
+<section class="dapp-modal modal" id="DappCardTemplate" style="display: none;">
+    <div class="modal__header">
+        <div class="modal__title-wrap">
+            <span class="light-grey-text">ID: $Item.Num</span>
+            <h3>$Item.Name</h3>
+            <ul class="modal__ol">
+                <li class="modal__category dappcategory1">$Item.Category1</li>
+                <li class="modal__category dappcategory2">$Item.Category2</li>
+                <li class="modal__category dappcategory3">$Item.Category3</li>
+            </ul>
+            <p class="dapp-modal__token-status dapp-modal__token-status--ok">
+                <!--<span class="light-grey-text">Without token generate</span>-->
+                <span class="dapp-modal__ok-token">Token generate</span>
+            </p>
+        </div>
+        <div class="modal__img-wrap">
+            <img $item.iconpath alt="dApp logo" width="32">
+        </div>
+    </div>
+    <p class="dapp_desc">$Item.Description</p>
+    <dl class="modal__def-list def-list">
+        <div class="def-list__item">
+            <dt>Account</dt>
+            <dd>$Item.Account</dd>
+        </div>
+        <div class="def-list__item">
+            <dt>Owner</dt>
+            <dd>$Item.Owner</dd>
+        </div>
+        <div class="def-list__item">
+            <dt>Block num</dt>
+            <dd>$Item.BlockNum</dd>
+        </div>
+    </dl>
+
+    <div class="modal__btns-wrap">
+        <button class="btn" onclick="OpenOnlyDapp($Item.Num,$Item.HTMLLength)">Open DApp</button>
+        <button class="btn btn--white" onclick="closeModal()">Back</button>
+    </div>
+
+    <button class="modal__close btn btn--white" title="Close modal" onclick="closeModal()"></button>
+</section>
+
+<!--TODO: адресная книга-->
+
+<section class="addresses-modal modal" id="addresses-modal" style="display: none;">
+    <!--<h2 class="title">Address book</h2>-->
+    <!--<input type="search" class="addresses-modal__input" placeholder="Global search by ID or name">-->
+    <!--<ul class="addresses-modal__list">-->
+        <!--<li class="addresses-modal__item">-->
+            <!--<div class="addresses-modal__text-wrap">-->
+                <!--<div class="addresses-modal__item-name">-->
+                    <!--<span class="grey-blue-text">Test  name1 </span>-->
+                    <!--<div class="light-grey-text">10 TERA</div>-->
+                <!--</div>-->
+                <!--<span class="addresses-modal__id">192834</span>-->
+            <!--</div>-->
+            <!--<button class="addresses-modal__delete-item"></button>-->
+            <!--<div class="addresses-modal__btns-wrapper">-->
+                <!--<button class="btn btn&#45;&#45;white">Cancel</button>-->
+                <!--<button class="btn">Delete</button>-->
+            <!--</div>-->
+        <!--</li>-->
+        <!--<li class="addresses-modal__item">-->
+            <!--<div class="addresses-modal__text-wrap">-->
+                <!--<div class="addresses-modal__item-name">-->
+                    <!--<span class="grey-blue-text">Minecraft is life</span>-->
+                    <!--<div class="light-grey-text">2 000,000000 TERA</div>-->
+                <!--</div>-->
+                <!--<span class="addresses-modal__id">192834</span>-->
+            <!--</div>-->
+            <!--<button class="addresses-modal__delete-item"></button>-->
+            <!--<div class="addresses-modal__btns-wrapper" style="display: none;">-->
+                <!--<button class="btn btn&#45;&#45;white">Cancel</button>-->
+                <!--<button class="btn">Delete</button>-->
+            <!--</div>-->
+        <!--</li>-->
+    <!--</ul>-->
+    <!--<button class="modal__close btn btn&#45;&#45;white" title="Close modal" onclick="closeModal()"></button>-->
+
+    <!--<div class="addresses-modal__choosing">-->
+        <!--<button class="btn btn&#45;&#45;white">Save to book</button>-->
+        <!--<button class="btn">Choose</button>-->
+    <!--</div>-->
+</section>
+
+
+
+<div id="overlay" onclick="closeModal()"></div>
+
+
+<section class="modal password-modal password-modal--set" id="password-modal-set">
+    <h2 class="password-modal__title">Secure your wallet</h2>
+    <p class="password-modal__subtitle">Set a password for protect entry</p>
+    <div class="password-modal__form">
+        <input type="password" class="password-modal__input" placeholder="Enter password" autocomplete2="WalletPassword" id="Password1">
+        <input type="password" class="password-modal__input" placeholder="Repeat password" autocomplete2="WalletPassword" id="Password2">
+        <div class="password-modal__buttons">
+            <button class="btn" onclick="SetNewPassword()">Set pass</button>
+            <button class="btn btn--white" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</section>
+
+
+<section class="modal password-modal" id="password-modal-enter">
+    <h2 class="password-modal__title">Wallet is secured</h2>
+    <p class="password-modal__subtitle">Enter password to unlock wallet</p>
+    <div class="password-modal__form">
+        <input type="password" class="password-modal__input" placeholder="Enter password" autocomplete2="WalletPassword" id="Password">
+        <div class="password-modal__buttons password-modal__buttons--one">
+            <button class="btn" onclick="MyOpenWallet()">Unlock</button>
+        </div>
+        <a class="password-modal__link pointer" id="idEntrance" onclick="MyOpenWallet(1)">Entrance to sub-wallet</a>
+    </div>
+</section>
+
+<section class="modal dapp-modal" id="idSending" onclick="closeModal()" style="display: none; margin-top: 100px">
+    <h2 class="password-modal__title">Sending Tx</h2><BR>
+    <p class="password-modal__subtitle">Wait 5-8 sec, pls</p>
+ </section>
+
+
+<section class="modal dapp-modal" id="idSmartEnter" style="display: none; margin-top: -10px; padding: 20px">
+    <h2 class="password-modal__title"><span>Enter number of dapp</span></h2>
+    <p class="password-modal__subtitle">Enter the dapps number that will be added to your account. Attention make sure that you trust this dapp, otherwise you may lose all funds in this account.</p>
+    <DIV align='center'>
+        <input type="number" class="password-modal__input" placeholder="" id="idSmartNum">
+        <a class="btn btn--270 btn--setdapp"  onclick="DoSetSmartLocal()">OK</a>
+        <a class="btn btn--270 btn--setdapp btn--white"  onclick="closeModal()">Cancel</a>
+    </DIV>
+</section>
+
+
+<div class="fixed-status">
+    <div class="fixed-status__wrap">
+        <div id="idStatus" class="fixed-status__status">&nbsp;</div>
+        <select  class="grey-btn" id="idCurNetwork" onchange="ChangeNetwork(1)">
+            <option value="MAIN-JINN">MAIN-JINN</option>
+            <option value="TEST-JINN">TEST-JINN</option>
+        </select>
+        <button class="grey-btn reconnect" onclick="ChangeNetwork()" title="Reconnect"><span>RECONNECT</span></button>
+        <!--рудименты-->
+        <span id="idNetwork" style="display: none"></span>
+        <span id="idSignJSON"></span>
+    </div>
+</div>
+
+
+
+
+
+<DIV align='center'>
+    <DIV align='left' style="display: none;">
+       <INPUT id="idCurTabName" value="TabInfo" style="display: none">
+    </DIV>
+</DIV>
+
+<!--<iframe id="idHistoryPage" name="HistoryPage" style="display: none" src="./history.html"></iframe>-->
+<!--<iframe id="idBlockViewerPage" name="BlockViewerPage" style="display: none" src="./blockviewer.html"></iframe>-->
+
+</body>
+</html>
+
+
+<script type="text/javascript" src="./JS/sign-lib-min.js"></script>
+
+

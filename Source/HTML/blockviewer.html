@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Block</title>
+    <link rel="shortcut icon" href="./PIC/viewer.png" type="image/png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--<link rel="stylesheet" href="./CSS/blockviewer.css">-->
+    <link rel="stylesheet" href="./CSS/mobile-wallet.css">
+
+    <script>
+        window.RUN_CLIENT=1;
+        window.RUN_SERVER=0;
+        if(typeof global === 'object')
+        {
+            global.RUN_CLIENT=1;
+            global.RUN_SERVER=0;
+        }
+    </script>
+    <script type="text/javascript" src="./JS/coinlib.js"></script>
+    <script type="text/javascript" src="./JS/client.js"></script>
+
+
+
+    <script>
+        var DefTr={NumName:"idViewTrNum", TabName:"grid_transaction_all",APIName:"GetTransactionAll",Param3:undefined};
+        var CountViewRows=10;//global
+        window.onload=function()
+        {
+            InitMainServer();
+
+            document.body.className="univers "+Storage.getItem("idSelStyle");
+            var i=document.URL.indexOf("#");
+            if(i>0)
+            {
+                var BlockNum=ParseNum(document.URL.substr(i+1));
+                ViewBlock(BlockNum);
+            }
+
+            window.onkeydown = function (e)
+            {
+                if(e.keyCode===27)
+                {
+                    ClosePage();
+                }
+            };
+
+            window.addEventListener("popstate", function(event)
+            {
+                var BlockNum=ParseNum(window.location.hash.substr(1));
+                ViewBlock(BlockNum);
+
+            }, false);
+
+            if (window.addEventListener)
+            {
+                window.addEventListener("message", OnMessage);
+            } else
+            {
+                // IE8
+                window.attachEvent("onmessage", OnMessage);
+            }
+
+        }
+        function ViewBlock(BlockNum)
+        {
+            if(BlockNum!==undefined)
+                document.getElementById("idViewBlockNum").value=BlockNum;
+            else
+            {
+                BlockNum=ParseNum(document.getElementById("idViewBlockNum").value);
+                history.pushState(null,null,"#"+BlockNum);
+            }
+
+            document.title="Block: "+BlockNum;
+            DefTr.Param3=BlockNum;
+            ViewCurrent(DefTr);
+        }
+
+
+        function SaveValues()
+        {
+        }
+
+
+        var FrameData;
+        function ClosePage()
+        {
+            if(FrameData && window.parent)
+            {
+                FrameData.cmd="Close";
+                window.parent.postMessage(FrameData, "*");
+            }
+            else
+                window.close();
+        }
+
+        function OnMessage(event)
+        {
+            var Data=event.data;
+            if(!Data || typeof Data!=="object")
+                return;
+
+            FrameData=Data;
+            if(Data.BlockNum)
+            {
+                document.getElementById("idViewBlockNum").value=Data.BlockNum;
+                ViewBlock();
+
+                $("MTabWelcome").className+=" back-link";
+            }
+        }
+        function DoBackPage()
+        {
+            if(FrameData)
+                ClosePage()
+
+        }
+
+    </script>
+</head>
+<body>
+    <header class="header">
+        <div class="header__wrapper">
+            <div class="header__logo header__logo--history">
+                <a onclick="DoBackPage()" class="header__logo-link" id="MTabWelcome">
+                    <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+                    <p class="header__logo-name">Blockviewer</p>
+                </a>
+            </div>
+            <div class="header__right">
+                <select size="1" id="idLang" onchange="ChangeLang()" class="bigs" >
+                    <option value="ENG">ENG</option>
+                </select>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="history-page" id="idTransactionBlock" style="display: block">
+            <div class="history__text-block">
+                <div class="history-page__id" >
+                    Transactions on block: <INPUT class="history-page__id-count" type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewBlock()">
+                </div>
+                <BR>
+            </div>
+            <div class="history-page__table">
+                <div class="page-pagination">
+                    <button onclick="ViewPrev(DefTr)" class="btnav btn"><</button>
+                    <INPUT type="number" class="page-pagination__num" id="idViewTrNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefTr)">
+                    <button onclick="ViewNext(DefTr,5000)" class="btnav btn">></button>
+                </div>
+                <div class="history-page__table-wrap">
+                    <table id="grid_transaction_all" class="grid">
+                        <tr>
+                            <th id="Item.Num" class="num">TrNum</th>
+                            <th id="Item.Type" class="num">Type</th>
+                            <th id="GetHexFromArr(Item.Body)" class="code">Body</th>
+                            <th id="(escapeHtml(Item.Script))" class="code">JSON</th>
+                            <th id="Item.TxID" class="hash">TxID</th>
+                            <th id="Item.Length" class="num">Bytes</th>
+                            <th id="Item.TimePow" class="num">Power</th>
+                            <th id="(Item.VerifyHTML)" class="verify">Verify</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+</body>
+</html>
+

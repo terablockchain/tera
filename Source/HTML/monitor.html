@@ -1,0 +1,910 @@
+<!doctype html>
+<html>
+<head>
+    <title>Monitor</title>
+    <meta charset='utf-8' />
+
+    <link rel="shortcut icon" href="/HTML/PIC/monitor.png" type="image/png">
+    <link rel="stylesheet" type="text/css" href="../HTML/CSS/style.css">
+</head>
+
+<script>
+    window.RUN_CLIENT=1;
+    window.RUN_SERVER=0;
+    if(typeof global === 'object')
+    {
+        global.RUN_CLIENT=1;
+        global.RUN_SERVER=0;
+    }
+</script>
+
+<script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
+<script type="text/javascript" src="../HTML/JS/client.js"></script>
+<script type="text/javascript" src="../HTML/JS/diagram.js"></script>
+
+
+<script>
+
+    var bPause;
+    var sessionid;
+    var StatMode;
+
+    function SetNewSession(cursessionid)
+    {
+        sessionid=cursessionid;
+    }
+
+
+
+    //DIALOG
+    //DIALOG
+    //DIALOG
+
+
+    function SetPause(SetMode)
+    {
+        if(SetMode===undefined)
+        {
+            bPause=!bPause;
+        }
+        else
+        {
+            bPause=SetMode;
+        }
+        var item = $("idRun");
+        if(bPause)
+            item.value="Continue view";
+        else
+            item.value="Pause view";
+    }
+    function SetStatMode()
+    {
+        if(!StatMode)
+            StatMode=0;
+        StatMode=(StatMode+1)%2;
+        GetData("SetStatMode",StatMode,function (Data)
+        {
+        });
+    }
+    function ClearStat()
+    {
+        GetData("ClearStat",{},function (Data)
+        {
+        });
+    }
+    function SetStatInfo(Data)
+    {
+        var item = $("idStatInfo");
+        var button = $("idStatButton");
+        StatMode=Data.STAT_MODE;
+        if(StatMode)
+        {
+            item.innerText=" =Stat ON=";
+            button.value="Stop stat"
+        }
+        else
+        {
+            item.innerText=" =Stat OFF=";
+            button.value="Start stat"
+        }
+
+    }
+
+
+
+
+
+
+    //CHARTS
+    //CHARTS
+    //CHARTS
+
+    var DiagramArr=[];
+    var DiagramArrR=
+        [
+            {isLine:true,text:"SYSTEM"},
+            {name:"TIME_IDLE",text:"HEALTH TIME, %",value:0,red:"#24aa47"},
+            {name:"MAX:CPU_SYS_MODE",text:"CPU USER SYS, мс",value:0,red:"#06A"},
+            {name:"MAX:CPU",text:"CPU ALL WORK, ms",value:0,red:"#06A"},
+//            {name:"MAX:CPU_USER_MODE",text:"USER MODE, мс",value:0,red:"#06A"},
+//            {name:"MAX:CPU_IDLE_MODE",text:"USER IDLE, мс",value:0,red:"#0A6"},
+
+            {name:"MAX:MEMORY_USAGE",text:"Mem usage, Mbyte",value:500},
+            {name:"MAX:MEMORY_FREE",text:"Mem free, Mbyte",value:0,red:"#a1c3b9"},
+
+            //{name:"MAX:POWER-HASH**",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
+            // {name:"HASHRATE",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
+            // {name:"MAX:POWER",text:"MAX:POWER",value:0,red:"#95d6b9"},
+            // {name:"POWER_MY_WIN",text:"POWER MY WIN",value:0,red:"#088a4a"},
+            // {name:"POWER_BLOCKCHAIN",text:"POWER Blockchain",value:0,red:"#2b6311"},
+
+            {isLine:true,text:"NETWORK"},
+
+            {name:"GETDATA(KB)",text:"Packets receive, Kbyte",value:0,red:"#3b8a7f"},
+            {name:"SENDDATA(KB)",text:"Packets send, Kbyte",value:0,red:"#2b1e8a"},
+            //{name:"WRITECHAIN_TO_DB_COUNT",text:"Loaded blocks, count",value:0},
+            {name:"MAX:TRANSACTION_COUNT",text:"Count transactions in block",value:0,red:"#4598d7"},
+
+            // {isLine:true,text:"HEALTH"},
+
+            // {name:"ERRORS",text:"ERRORS",value:0,red:"#A00"},
+            // {name:"MAX:LOADEDCHAINLIST",text:"Loaded chains, count",value:0,red:"#95d6b9"},
+
+            // {isLine:true,text:"NODES"},
+            // {name:"MAX:BUSY_LEVEL",text:"BUSY_LEVEL",value:0,red:"#ff353b"},
+            // {name:"STOP_METHOD",text:"STOP_METHOD",value:0,red:"#8a3d74"},
+            // {name:"AddToBan",text:"AddToBan",value:0,red:"#8a3d74"},
+            // {name:"TRANSFER_TIME_OUT",text:"TRANSFER TIME OUT, count",value:0,red:"#ff353b"},
+            // {name:"NETCONFIGURATION",text:"NETCONFIGURATION",value:0,red:"#8a5663"},
+
+
+            {name:"MAX:ALL_NODES",text:"All nodes count",value:0,red:"#83a3d6"},
+            {name:"MAX:CONNECTED_NODES",text:"Connected nodes count",value:0,red:"#516e80"},
+            // {name:"MAX:HASH_OK",text:"Block chain Hash = OK",value:0,red:"#2b6311"},
+            // {name:"MAX:HOT_NODES",text:"TRANSFER nodes, count",value:0,red:"#063c8a"},
+
+//            {name:"MAX:MEDIAN_GLOB_TIME",text:"MEDIAN_GLOB_TIME",value:0,red:"#5e729b",zero:100},
+//            {name:"MAX:DISP_MEDIAN_GLOB_TIME",text:"DISP_MEDIAN_GLOB_TIME 90%",value:0,red:"#4a809b"},
+
+
+//            {name:"MAX:HOT_OK",text:"TRANSFER Accounts Hash - OK",value:0,red:"#2b6311"},
+//            {name:"MAX:HOT_COUNT_LEVELS",text:"TRANSFER Avg Levels count",value:0,red:"#39638a"},
+
+
+
+//            {name:"MAX:DELTA_TIME_ACTUAL",text:"Avg delta time (to all)",value:0,red:"#51448a"},
+//            {name:"MAX:DELTA_TIME_HOT",text:"Avg delta time (TRANSFER)",value:0,red:"#313f8a"},
+
+
+    ];
+
+    var DiagramArrD=
+        [
+            {isLine:true,text:"Блоки"},
+//            {name:"ROWS_WRITE-TX",text:"ROWS_WRITE-TX",value:0,red:"#06A"},
+//            {name:"ROWS_WRITE_MS-TX",text:"ROWS_WRITE_MS-TX",value:0,red:"#ffb417"},
+            {name:"MAX:DELTA_TX",text:"MAX:DELTA_TX",value:0,red:"#ff4534"},
+
+//            {name:"COUNT_BLOCK_TX-TX",text:"COUNT_BLOCK_TX-TX",value:0,red:"#69c2ff"},
+//            {name:"ONWRITEBLOCKFINISH_MS-TX",text:"ONWRITEBLOCKFINISH_MS-TX",value:0,red:"#7081ff"},
+
+
+//            {name:"BLOCKPROCESS_1-TX",text:"BLOCKPROCESS_1-TX, ms",value:0,red:"#cd72ff"},
+//            {name:"BLOCKPROCESS_2-TX",text:"BLOCKPROCESS_2-TX, ms",value:0,red:"#cd72ff"},
+//            {name:"BLOCKPROCESS_3-TX",text:"BLOCKPROCESS_3-TX, ms",value:0,red:"#cd72ff"},
+//            {name:"BLOCKPROCESS_4-TX",text:"BLOCKPROCESS_4-TX, ms",value:0,red:"#cd72ff"},
+
+
+            {name:"MAX:TRANSACTION_COUNT",text:"Число транзакций в блоке (макс)",value:0,red:"#02A"},
+
+            {name:"MAX:LOADEDCHAINLIST",text:"Load chains, count",value:0,red:"#95d6b9"},
+
+            {name:"TRANSFER_TIME_OUT",text:"TRANSFER TIME OUT, count",value:0,red:"#ff353b"},
+
+        {isLine:true,text:"SYSTEM"},
+
+            {name:"TIME_IDLE",text:"HEALTH TIME, %",value:0,red:"#24aa47"},
+            {name:"MAX:CPU_SYS_MODE",text:"CPU USER SYS, мс",value:0,red:"#06A"},
+            {name:"MAX:CPU",text:"CPU WORK, мс",value:0,red:"#06A"},
+
+            {name:"MAX:MEMORY_USAGE",text:"Используемая память, Mb",value:500},
+            {name:"MAX:MEMORY_FREE",text:"Mem free, Mbyte",value:0,red:"#a1c3b9"},
+            //            {name:"MAX:CPU_USER_MODE",text:"USER MODE, мс",value:0,red:"#06A"},
+            //            {name:"MAX:CPU_SYS_MODE",text:"USER SYS, мс",value:0,red:"#06A"},
+            //            {name:"MAX:CPU_IDLE_MODE",text:"USER IDLE, мс",value:0,red:"#0A6"},
+
+
+            //{name:"MAX:POWER-HASH**",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
+            {name:"HASHRATE",text:"Hash Rate,Mh/s",value:0,red:"#95d6b9"},
+            //            {name:"MINING-COUNT",text:"MINING-COUNT",value:0,red:"#95d6b9"},
+            {name:"MAX:POWER",text:"MAX:POWER",value:0,red:"#597e6e"},
+
+            //{name:"POWER_MY_WIN",text:"POWER MY WIN",value:0,red:"#088a4a"},
+            {name:"POWER_BLOCKCHAIN",text:"POWER Blockchain",value:0,red:"#2b6311"},
+
+//            {name:"TIME_USE_PACKET",text:"Время выполнения пакета, мс",value:100},
+
+//            {name:"MAX:MEDIAN_GLOB_TIME",text:"MEDIAN_GLOB_TIME",value:0,red:"#5e729b",zero:100},
+//            {name:"MAX:DISP_MEDIAN_GLOB_TIME",text:"DISP_MEDIAN_GLOB_TIME 90%",value:0,red:"#4a809b"},
+
+//            {name:"MAX:DELTA_GLOB_TIME",text:"DELTA_GLOB_TIME",value:0,red:"#8b7a9b",zero:100},
+//            {name:"MAX:DISP_DELTA_GLOB_TIME",text:"DISP_DELTA_GLOB_TIME",value:0,red:"#9b747f"},
+
+
+//            {name:"CORRECT_TIME_UP",text:"CORRECT_TIME_UP",value:0,red:"#449b7e"},
+//            {name:"CORRECT_TIME_DOWN",text:"CORRECT_TIME_DOWN",value:0,red:"#9b8a3a"},
+
+
+//            {name:"MAX:TIME_DELTA",text:"TIME_DELTA",value:0,red:"#4d989b",line:1},
+
+//            {name:"MAX:BUSY_LEVEL",text:"BUSY_LEVEL",value:0,red:"#ff353b"},
+//            {name:"STOP_METHOD",text:"STOP_METHOD",value:0,red:"#8a3c40"},
+
+            {name:"AddToBan",text:"AddToBan",value:0,red:"#8a3d74"},
+//            {name:"TRANSFER_TIME_OUT",text:"TRANSFER TIME OUT, count",value:0,red:"#ff353b"},
+            {name:"NETCONFIGURATION",text:"NETCONFIGURATION",value:0,red:"#8a5663"},
+
+
+//            {name:"SEND:ADDLEVELCONNECT",text:"SEND:ADDLEVELCONNECT",value:0,red:"#8a5663"},
+//            {name:"GET:ADDLEVELCONNECT",text:"GET:ADDLEVELCONNECT",value:0,red:"#8a5663"},
+////            {name:"NETCONFIGURATION",text:"NETCONFIGURATION",value:0,red:"#8a5663"},
+////            {name:"NETCONFIGURATION",text:"NETCONFIGURATION",value:0,red:"#8a5663"},
+//
+//            {name:"AddLevelConnect",text:"AddLevelConnect",value:0,red:"#755d8a"},
+//            {name:"DisconnectChild",text:"DisconnectChild",value:0,red:"#755d8a"},
+//            {name:"DeleteLevelConnect",text:"DeleteLevelConnect",value:0,red:"#755d8a"},
+////            {name:"PONG-NotHot",text:"PONG-NotHot",value:0,red:"#755d8a"},
+//
+////            {name:"DISCONNECTHOT",text:"DISCONNECTHOT",value:0,red:"#755d8a"},
+//            {name:"StartCheckConnect",text:"StartCheckConnect",value:0,red:"#755d8a"},
+//
+//        {name:"ClientConnected",text:"ClientConnected",value:0,red:"#755d8a"},
+//        {name:"ClientEnd",text:"ClientEnd",value:0,red:"#755d8a"},
+//        {name:"ClientClose",text:"ClientClose",value:0,red:"#755d8a"},
+//
+
+
+            {isLine:true,text:"Ноды"},
+            {name:"MAX:CLUSTER_NODE",text:"=RUNNING=",value:0,red:"#83a3d6"},
+            {name:"MAX:CLUSTER_NODE_HASH",text:"=RUNNING OK HASH=",value:0,red:"#658a61"},
+//            {name:"MAX:CLUSTER_NODE_ACC_HASH",text:"=RUNNING ACCOUNT HASH=",value:0,red:"#658a61"},
+
+
+
+
+            //{name:"MAX:COUNT_EQ_ADDR",text:"COUNT_EQ_ADDR",value:0,red:"#8a5663"},
+
+
+
+            {name:"MAX:ALL_NODES",text:"All nodes count",value:0,red:"#83a3d6"},
+            {name:"MAX:CONNECTED_NODES",text:"Connected nodes count",value:0,red:"#516e80"},
+//            {name:"MAX:AUTOCORRECT",text:"MAX:AUTOCORRECT",value:0,red:"#06A"},
+
+            {name:"MAX:MIN_VERSION",text:"MAX:MIN_VERSION",value:0,red:"#99eeff"},
+            {name:"MAX:HASH_OK",text:"Block chain Hash = OK",value:0,red:"#2b6311"},
+            {name:"MAX:CHECK_POINT_OK",text:"Check point = OK",value:0,red:"#356361"},
+
+            {name:"MAX:ACTUAL_OK",text:"Accounts Hash - OK",value:0,red:"#658a61"},
+            {name:"MAX:COUNTLH",text:"Nodes in Load History mode",value:0,red:"#83a3d6"},
+
+
+            {name:"MAX:HOT_NODES",text:"TRANSFER nodes, count",value:0,red:"#063c8a"},
+
+
+            //{name:"MAX:HOT_OK",text:"TRANSFER Accounts Hash - OK",value:0,red:"#2b6311"},
+
+
+            //{name:"MAX:HOT_COUNT_LEVELS",text:"TRANSFER Avg Levels count",value:0,red:"#39638a"},
+
+
+
+            //{name:"MAX:DELTA_TIME_ACTUAL",text:"Avg delta time (to all)",value:0,red:"#51448a"},
+            //{name:"MAX:DELTA_TIME_HOT",text:"Avg delta time (TRANSFER)",value:0,red:"#313f8a"},
+
+
+            //{name:"GET:TRANSFER",text:"GET:TRANSFER",value:0,red:"#3b5d8a"},
+
+
+
+
+
+
+
+        {isLine:true,text:"NETWORK"},
+
+        {name:"GETDATA(KB)",text:"Packets receive, Kbyte",value:0,red:"#3b8a7f"},
+        {name:"SENDDATA(KB)",text:"Packets send, Kbyte",value:0,red:"#2b1e8a"},
+
+
+            {isLine:true,text:"Пакеты полученные"},
+            //{name:"TEST_PACKET",text:"TEST_PACKET",value:0,red:"#2b1e8a"},
+            //{name:"GETDATA(KB)",text:"Получено, кбайт",value:0,red:"#2b1e8a"},
+
+//            {name:"LOADFRAGMENT",text:"Получено фрагментов",value:0,red:"#20728a"},
+//            {name:"LOADPACKET",text:"Получено пакетов",value:0,red:"#7f448a"},
+            {name:"USEPACKET",text:"Исполнено пакетов",value:0,red:"#7f448a"},
+            //{name:"MAX:BUFFE_LOAD_SIZE",text:"Буфер загрузки, кб",value:0,red:"#7f448a"},
+
+//            {name:"SKIPFRAGMENTUSE",text:"SKIPFRAGMENTUSE",value:0},
+
+
+//            {name:"TIME_USE_PACKET",text:"Время выполнения пакетов, мс",value:100},
+            {name:"MAX:TIMEDOGETDATA",text:"MAX:Время получения пакета, мс",value:100},
+            {name:"MAX:TIME_USE_PACKET",text:"MAX:Время выполнения пакета, мс",value:100},
+
+            //{name:"TRANSFER",text:"Обработка пакета TRANSFER, мс",value:90},
+            //{name:"MAX:TimeDoGetData",text:"Макс время обработки полученного пакета, мс",value:25},
+
+
+            {name:"ERRORS",text:"ERRORS",value:0,red:"#A00"},
+           // {name:"SEND_ERROR",text:"Ожидание статуса сокета",value:0,red:"#500"},
+
+//        {isLine:true,text:"Пакеты отправленные"},
+//        {name:"SENDDATA(KB)",text:"Отправлено, кбайт",value:0,red:"#2b1e8a"},
+        //          {name:"SEND_TRAFFIC_FREE",text:"SEND_TRAFFIC_FREE",value:0,red:"#2b1e8a"},
+//            {name:"SEND_DATA_HARD",text:"Отправлено Hard, кбайт",value:0,red:"#2b1e8a"},
+//            {name:"SEND_DATA_LIGHT",text:"Отправлено Light, кбайт",value:0,red:"#2b1e8a"},
+
+
+        //{name:"RECALCSENDSTATICTIC",text:"RECALCSENDSTATICTIC",value:0,red:"#2b1e8a"},
+
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30000",text:"NODE_TRAFFIC_LIMIT:30000, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30001",text:"NODE_TRAFFIC_LIMIT:30001, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_BUF_WRITE:30000",text:"MAX:NODE_BUF_WRITE:30000, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_SEND_BUF_PACKET_COUNT:30000",text:"MAX:NODE_SEND_BUF_PACKET_COUNT:30000",value:0,red:"#2b1e8a"},
+
+
+
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30000",text:"LIMIT:30000, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30001",text:"LIMIT:30001, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30006",text:"LIMIT:30006, кбайт",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_TRAFFIC_LIMIT:30007",text:"LIMIT:30007, кбайт",value:0,red:"#2b1e8a"},
+
+
+
+
+//        {name:"MAX:NODE_SEND_BUF_PACKET_COUNT:30006",text:"MAX:NODE_SEND_BUF_PACKET_COUNT:30006",value:0,red:"#2b1e8a"},
+//        {name:"MAX:NODE_BUF_WRITE:30006",text:"MAX:NODE_BUF_WRITE:30006, кбайт",value:0,red:"#2b1e8a"},
+
+
+
+//            {name:"SENDFRAGMENT_H",text:"Отправлено H-фрагментов, кбайт",value:0,red:"#20728a"},
+//            {name:"SENDFRAGMENT_L",text:"Отправлено L-фрагментов, кбайт",value:0,red:"#20728a"},
+//            {name:"FRAGMENT_LOST",text:"Потерянные фрагменты",value:0},
+//            {name:"FRAGMENT_OVERFLOW",text:"Переполнение массива отправленных фрагментов",value:0},
+//            {name:"SKIPFRAGMENTSEND",text:"SKIPFRAGMENTSEND",value:0},
+
+
+//
+//        {isLine:true,text:"Headers"},
+//        {name:"SEND:GETBLOCKHEADER:30001",text:"SEND:GETBLOCKHEADER:30001",value:0,red:"#2b1e8a"},
+//        {name:"GET:RETBLOCKHEADER:30001",text:"GET:RETBLOCKHEADER:30001",value:0,red:"#658a61"},
+//        {name:"SEND:GETBLOCKHEADER:30002",text:"SEND:GETBLOCKHEADER:30002",value:0,red:"#2b1e8a"},
+//        {name:"GET:RETBLOCKHEADER:30002",text:"GET:RETBLOCKHEADER:30002",value:0,red:"#658a61"},
+//
+//
+//        {isLine:true,text:"Blocks"},
+//        {name:"SEND:GETBLOCK:30001",text:"SEND:GETBLOCK:30001",value:0,red:"#2b1e8a"},
+//        {name:"GET:RETGETBLOCK:30001",text:"GET:RETGETBLOCK:30001",value:0,red:"#658a61"},
+//        {name:"SEND:GETBLOCK:30002",text:"SEND:GETBLOCK:30002",value:0,red:"#2b1e8a"},
+//        {name:"GET:RETGETBLOCK:30002",text:"GET:RETGETBLOCK:30002",value:0,red:"#658a61"},
+//        {name:"SEND:GETBLOCK:30003",text:"SEND:GETBLOCK:30003",value:0,red:"#2b1e8a"},
+//        {name:"GET:RETGETBLOCK:30003",text:"GET:RETGETBLOCK:30003",value:0,red:"#658a61"},
+
+
+//        {name:"MAX:HIGHT",text:"MAX:HIGHT",value:0,red:"#83a3d6"},
+
+//        {name:"NODE_CAN_GET:30000",text:"NODE_CAN_GET: 30000",value:0,red:"#2b1e8a"},
+//        {name:"NODE_CAN_GET:30001",text:"NODE_CAN_GET: 30001",value:0,red:"#2b1e8a"},
+//        {name:"NODE_CAN_GET:30006",text:"NODE_CAN_GET: 30006",value:0,red:"#2b1e8a"},
+
+            //{name:"BLOCK_SEND",text:"Отдано блоков (план)",value:0,red:"#bea96d"},
+//            {name:"SEND:RETGETBLOCK",text:"Отдано блоков (факт)",value:0,red:"#bea96d"},
+            //{name:"DELETE_OLD_PACKET",text:"Удалено устаревших пакетов",value:0,red:"#bea96d"},
+
+
+//            {name:"BLOCK_SEND_MEM",text:"Отдано блоков из памяти",value:0,red:"#e6e349"},
+
+//            {name:"DO_GETNEXTNODE-1",text:"DO_GETNEXTNODE-1",value:0,red:"#bea96d"},
+//            {name:"DO_GETNEXTNODE-2",text:"DO_GETNEXTNODE-2",value:0,red:"#bea96d"},
+//            {name:"SEND:GETBLOCK",text:"Запрошено блоков",value:0,red:"#bea96d"},
+//
+//            {name:"BLOCK_LOADED",text:"Получено блоков",value:0,red:"#95d6b9"},
+//            {name:"DOUBLE_RETGETBLOCK",text:"Получено блоков повторно",value:0,red:"#e6e349"},
+
+ //           {name:"WRITECHAIN_TO_DB_COUNT",text:"Загруженные цепочки блоков",value:0},
+//            {name:"WRITECHAIN_TO_DB_TIME",text:"Время записи цепочек, ms",value:0},
+//
+//
+////            {name:"WRITECHAIN_TO_DB_TIME",text:"Время обработки цепочки блоков, мс",value:90},
+//            {name:"WriteBlockDB",text:"Время записи блоков на диск, мс",value:50},
+//            {name:"MAX:WriteBlockDB",text:"Макс время записи блока на диск, мс",value:50},
+//            {name:"BlockToMemBuf",text:"Время BlockToMemBuf, мс",value:25},
+//            {name:"IsValidTransaction",text:"Время IsValidTransaction, мс",value:25},
+
+
+
+
+ //           {name:"MAX:TimeDoGetData:RETBLOCKHEADER",text:"MAX:TimeDoGetData:RETBLOCKHEADER, мс",value:25},
+ //           {name:"MAX:TimeDoGetData:RETGETBLOCK",text:"MAX:TimeDoGetData:RETGETBLOCK, мс",value:25},
+//            {name:"MAX:TimeDoGetData:TRANSFER",text:"MAX:TimeDoGetData:TRANSFER, мс",value:25},
+            //{name:"MAX:TimeDoGetData:GETBLOCK",text:"MAX:TimeDoGetData:GETBLOCK, мс",value:25},
+
+//            {isLine:true,text:"Ключи (индексы)"},
+//            {name:"MAX:CountForFlush",text:"Незаписанные на диск ключи, шт",value:1000},
+//            {name:"MAX:TimeFlush",text:"Макс время записи ключа на диск, мс",value:11},
+//            {name:"MAX:DOUBLE_FIND_KEY",text:"Коллизии хеш функции",value:32},
+//            {name:"SCAN_ROW_KEY",text:"Перебор строк ключей",value:30000},
+//            {name:"SCAN_BODY",text:"Чтение строк содержимого хешей",value:10},
+//            {name:"TimeKeyMove",text:"Время переноса ключей на следующий уровень, мс",value:50},
+//            {name:"MAX:TimeKeyMove",text:"Макс время переноса ключей на следующий уровень, мс",value:10},
+//            {isLine:true,text:"Операции над ключами"},
+//            {name:"OPERATION_KEY_DB_FIND",text:"FIND",value:0,red:"#06A"},
+//            {name:"OPERATION_KEY_DB_MOVEKEY",text:"MOVEKEY",value:0,red:"#06A"},
+//            {name:"OPERATION_KEY_DB_WRITE",text:"WRITE",value:0,red:"#06A"},
+//            {name:"OPERATION_KEY_DB_DELETE",text:"DELETE",value:0,red:"#06A"},
+
+
+
+
+
+
+        ];
+    var IsDevelopAccount=0;
+    function InitDiagram()
+    {
+        var ArrSystem;
+        if(IsDevelopAccount)
+        {
+            ArrSystem=DiagramArrD;
+        }
+        else
+        {
+            ArrSystem=DiagramArrR;
+        }
+        ArrSystem=DiagramArrR;
+
+        var StrArr=Storage.getItem("DiagramArr");
+        if(StrArr && StrArr!=="undefined")
+        {
+            DiagramArr=JSON.parse(StrArr);
+        }
+        else
+        {
+            DiagramArr=[].concat(JSON.parse(JSON.stringify(ArrSystem)));
+        }
+
+
+        DiagramArr.unshift(ExternDiagramItem);
+        DiagramMap[ExternDiagramItem.name]=ExternDiagramItem;
+        DiagramMapId[ExternDiagramItem.id]=ExternDiagramItem;
+        InitDiagramByArr(DiagramArr,1100,1);
+
+        localStorage["ExternSetDiagramArr"]="";
+    }
+
+
+
+    function FindDiagramInArray(id)
+    {
+        for(var i=0;i<DiagramArr.length;i++)
+        {
+            var Item = DiagramArr[i];
+            if (Item.id === id)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function GetDiagramById(id)
+    {
+        var Index=FindDiagramInArray(id);
+        if(Index>=0)
+            return DiagramArr[Index];
+        else
+            return undefined;
+    }
+
+    function DeleteDiagram(id)
+    {
+        var Index=FindDiagramInArray(id);
+        if(Index==-1)
+            return;
+        var element2=$("B"+id);
+        element2.outerHTML="";
+
+        var Item=DiagramArr[Index];
+        DiagramArr.splice(Index,1);
+        delete DiagramMapId[Item.id];
+        delete DiagramMap[Item.name];
+
+        localStorage["DiagramArr"]=GetStrFromDiagrArr(DiagramArr);
+    }
+
+    function MoveDiagram(id,direct)
+    {
+        var Index=FindDiagramInArray(id);
+        if(Index==-1)
+            return;
+        var Index2=Index+direct;
+
+        //ok - found
+        var Item=DiagramArr[Index];
+        var Item2=DiagramArr[Index2];
+        if(Item2)
+        {
+            if(Item2.Extern || Item2.Delete)
+                return;
+
+            var Element=$("B"+Item.id);
+            var Element2=$("B"+Item2.id);
+            if(!Element2)
+                return;
+
+            Element.externHM
+            var ElementHTML=Element.outerHTML;
+            var ElementHTML2=Element2.outerHTML;
+
+            DiagramArr[Index2]=Item;
+            DiagramArr[Index]=Item2;
+            Element.outerHTML=ElementHTML2;
+            Element2.outerHTML=ElementHTML;
+
+            localStorage["DiagramArr"]=GetStrFromDiagrArr(DiagramArr);
+        }
+
+    }
+
+    function AddDiagram()
+    {
+        var Name = $("idNameDiagram").value.trim();
+        if(Name)
+            AddDiagramInner(Name);
+        else
+            window.Open('./HTML/stat.html','counters',920);
+    }
+
+    function AddDiagramInner(Name)
+    {
+        var Item={name:Name,text:Name,value:0,red:"#5681b6"};
+        if(Name.substr(0,1)==="-")
+        {
+            Item.text=Name.substr(1);
+            Item.isLine=1;
+        }
+
+        AddDiagramToArr(DiagramArr,Item);
+        SetHTMLDiagramItem(Item,1100,1);
+
+        localStorage["DiagramArr"]=GetStrFromDiagrArr(DiagramArr);
+    }
+
+
+
+    function ResetDiagrams()
+    {
+        var diargams = $("diargams");
+        diargams.innerHTML="";
+
+        localStorage["DiagramArr"]="";
+        InitDiagram();
+    }
+    function ClearDiagrams()
+    {
+        var diargams = $("diargams");
+        diargams.innerHTML="";
+
+        localStorage["DiagramArr"]="[]";
+        InitDiagram();
+    }
+
+
+
+
+    function GetDiagram()
+    {
+        var arrNames=[];
+        for(var i=0;i<DiagramArr.length;i++)
+        {
+            var Str;
+            var Item=DiagramArr[i];
+            if(!Item.isLine)
+            {
+                arrNames.push(Item.name);
+            }
+        }
+        GetData("GetArrStats",arrNames,function (Data)
+        {
+            if(!Data || !Data.result)
+                return;
+
+            SetStatInfo(Data);
+
+            var arr=Data.arr;
+            for(var i=0;i<arr.length;i++)
+            {
+                var ItemServer=arr[i];
+                var ItemClient=DiagramMap[ItemServer.name];
+                if(!ItemClient || ItemClient.Extern)
+                    continue;
+
+
+                ItemClient.arr=ItemServer.arr;
+                ItemClient.AvgValue=ItemServer.AvgValue;
+                ItemClient.steptime=ItemServer.steptime;
+                //ItemClient.starttime=ItemServer.starttime;
+
+
+
+                DrawDiagram(ItemClient);
+            }
+        });
+    }
+    function ResizeArr222(arr)
+    {
+        var arr2=[];
+        for(var i=0;i<arr.length/2;i++)
+        {
+            arr2[i]=Math.max(arr[i*2],arr[i*2+1]);
+        }
+        return arr2;
+    }
+
+
+
+
+
+    //INIT
+    function UpdateData()
+    {
+        if(bPause)
+            return;
+        GetDiagram();
+    }
+
+    function LoadValues()
+    {
+        if(localStorage["MonitorVersion"]!=="1")
+            return;
+        $("idBlockNum").value=localStorage["MonitoridBlockNum"];
+        $("idBlockCount").value=localStorage["MonitoridBlockCount"];
+        $("idMiner").value=localStorage["MonitoridMiner"];
+        $("idMode").value=localStorage["MonitoridMode"];
+
+    }
+    function SaveValues()
+    {
+        localStorage["MonitorVersion"]="1";
+        localStorage["MonitoridBlockNum"]=$("idBlockNum").value;
+        localStorage["MonitoridBlockCount"]=$("idBlockCount").value;
+        localStorage["MonitoridMiner"]=$("idMiner").value;
+        localStorage["MonitoridMode"]=$("idMode").value;
+
+    }
+
+
+
+    window.onload=function()
+    {
+
+        SetPause(0);
+
+        window.addEventListener('storage',function (event)
+        {
+            if(!window.sessionStorage)
+                return;
+
+            if(event.key!=="ExternAddDiagram")
+                return;
+
+            //ToLog("ONSTORAGE:"+event.key + ':' + event.newValue + " at " + event.url);
+
+            var Item=JSON.parse(event.newValue);
+            AddDiagramInner(Item.Name);
+
+        });
+
+        GetData("GetWalletInfo",{}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                IsDevelopAccount=Data.IsDevelopAccount;
+                InitDiagram();
+            }
+        });
+
+        setInterval(function ()
+        {
+            if(localStorage["ExternSetDiagramArr"])
+            {
+                InitDiagram();
+            }
+
+        },300);
+
+        setInterval(UpdateData,900);
+
+        //COMMON MOUSE MOVING
+        window.onmousemove = function(event)
+        {
+            SetDiagramMouseX(event);
+        }
+
+        window.onkeydown = function (e)
+        {
+            if(e.keyCode===27)
+            {
+                window.close();
+            }
+            else
+            if(e.keyCode===13)
+            {
+                GetBlockchainStat();
+            }
+        };
+
+        LoadValues();
+
+        //document.body.className="univers "+localStorage["idSelStyle"];
+    }
+
+
+    var ExternDiagramItem={name:"Blockchain Hash Rate MH/s",text:"-----",value:0,red:"#078a63",KPrecision:10,Extern:1,id:"idBlockchainStat"}
+
+
+    function GetBlockchainPrev()
+    {
+        var BlockNum=ParseNum($("idBlockNum").value);
+        var Count=ParseNum($("idBlockCount").value);
+        BlockNum-=Count;
+        if(BlockNum<0)
+            BlockNum=0;
+        $("idBlockNum").value=BlockNum;
+
+        GetBlockchainStat();
+    }
+    function GetBlockchainEnd()
+    {
+        GetData("GetWalletInfo",{}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                $("idBlockNum").value=Data.BlockNumDB;
+                GetBlockchainPrev();
+            }
+        });
+    }
+    function GetBlockchainNext()
+    {
+        var BlockNum=ParseNum($("idBlockNum").value);
+        var Count=ParseNum($("idBlockCount").value);
+        BlockNum+=Count;
+        $("idBlockNum").value=BlockNum;
+
+        GetBlockchainStat();
+    }
+    function GetBlockchainStat()
+    {
+        SaveValues();
+
+        var Mode=$("idMode").value;
+        var BlockNum=ParseNum($("idBlockNum").value);
+        var Count=ParseNum($("idBlockCount").value);
+        var Miner=ParseNum($("idMiner").value);
+
+
+        if($("idMiner").value==="")
+            Miner=-1;
+
+
+        GetData("GetBlockchainStat",{BlockNum:BlockNum,Count:Count,Miner:Miner,Mode:Mode}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                var BlockNum=ParseNum($("idBlockNum").value);
+                var ItemClient=ExternDiagramItem;
+                ItemClient.arr=Data.ArrList;
+                ItemClient.arrX=Data.ArrX;
+                if(ItemClient.arrX)
+                    ItemClient.CountNameX=ItemClient.arrX.length;
+                ItemClient.AvgValue=Data.AvgValue;
+                ItemClient.steptime=Data.steptime;
+                ItemClient.startnumber=BlockNum;
+
+
+                DrawDiagram(ItemClient);
+            }
+        });
+
+    }
+
+</script>
+
+<style type="text/css">
+    #idBtEnd
+    {
+        font-family: monospace;
+    }
+    .move
+    {
+        margin: 2px;
+        border: 0px;
+        background: #FFF;
+        color: #cffffa;
+    }
+    .move:hover
+    {
+        margin: 2px;
+        border: 1px solid #000;
+        color:#000;
+    }
+
+</style>
+
+
+<style type="text/css">
+    #topframe
+    {
+        z-index:1000;
+        position:fixed;
+        top:0px;
+        left:0px;
+        text-align: center;
+        width:600px;
+    }
+
+    #idRun, #idStatButton
+    {
+        width:100px;
+    }
+
+
+</style>
+
+<body>
+<DIV align='center'>
+
+    <DIV id="topframe">
+        <INPUT type="button" style="float:left" onclick="ClearStat()" id="idClearStat" value="Clear stat">
+        <INPUT type="button" style="float:left" onclick="SetPause()" id="idRun">
+        <INPUT type="button" style="float:left" onclick="SetStatMode()" id="idStatButton">
+        <INPUT type="button" style="float:left" onclick="window.Open('./HTML/stat.html','counters',920)" value="=LIST=">
+
+        <DIV align='left'><B id="idStatInfo"></B></DIV>
+    </DIV>
+
+
+    <BR>
+    <BR>
+    <BR>
+    <DIV style="text-align: center;">Blockchain Power</DIV>
+    Miner:
+    <INPUT type="search" id="idMiner" style="width:50px" value="">
+
+    Block start:<INPUT type="number" id="idBlockNum" style="width:80px" value="0"> length:<INPUT type="number" id="idBlockCount" style="width:80px" value="3600">
+    <INPUT type="button" onclick="GetBlockchainPrev()" value="Prev">
+    <INPUT type="button" onclick="GetBlockchainNext()" value="Next">
+    <INPUT type="button" onclick="GetBlockchainEnd()" id="idBtEnd" value="-&gt;|">
+
+    Mode:
+    <select size="1" id="idMode">
+        <option value="POW">POW</option>
+        <option value="SenderGistogram">Sender</option>
+    </select>
+
+    <INPUT type="button" onclick="GetBlockchainStat()" value="Update">
+    <!--<DIV style="text-align: center;">Blockchain Hashrate, MH/s</DIV>-->
+    <BR>
+    <canvas  class="DIAGRAM" width='1100' height='200' id='idBlockchainStat'></canvas>
+
+
+
+
+    <DIV id="diagr_content" align='center'>
+        <DIV id="diargams" align='center'>
+        </DIV>
+    </DIV>
+
+    <BR>
+    <BR>
+    New diagram<INPUT type="string" id="idNameDiagram" style="width:250px" value="">
+    <INPUT type="button" onclick="AddDiagram()" value="Add">
+    <INPUT type="button" onclick="ResetDiagrams()" value="Reset">
+    <INPUT type="button" onclick="ClearDiagrams()" value="Clear">
+
+
+
+    <BR>
+    <BR>
+    <BR>
+
+
+</DIV>
+
+
+</body>
+</html>
+
+

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History account</title>
+    <link rel="shortcut icon" href="./PIC/viewer.png" type="image/png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--<link rel="stylesheet" type="text/css" href="./CSS/history.css">-->
+    <link rel="stylesheet" href="./CSS/mobile-wallet.css">
+
+    <script>
+        window.RUN_CLIENT=1;
+        window.RUN_SERVER=0;
+        if(typeof global === 'object')
+        {
+            global.RUN_CLIENT=1;
+            global.RUN_SERVER=0;
+        }
+    </script>
+    <script type="text/javascript" src="./JS/coinlib.js"></script>
+    <script type="text/javascript" src="./JS/client.js"></script>
+
+    <script>
+        var AccountID;
+        var CountViewRows=20;
+
+        function SetStatus(Str)
+        {
+            console.log(Str);
+//            var id = $("idStatus");
+//            id.innerHTML=Str;
+        }
+
+        window.onload=function()
+        {
+            try
+            {
+                OnLoad();
+            }
+            catch (e)
+            {
+                SetStatus("Error: "+e);
+            }
+
+        }
+        function OnLoad()
+        {
+            InitMainServer();
+
+            document.body.className="univers "+Storage.getItem("idSelStyle");
+            var i=document.URL.indexOf("#");
+            if(i>0)
+            {
+                AccountID=ParseNum(document.URL.substr(i+1));
+                document.getElementById("idViewAccountID").value=AccountID;
+                ViewHistory(1);
+            }
+
+            window.onkeydown = function (e)
+            {
+                if(e.keyCode===27)
+                {
+                    ClosePage();
+                }
+            };
+
+            window.addEventListener("popstate", function(event)
+            {
+                document.getElementById("idViewAccountID").value=ParseNum(window.location.hash.substr(1));
+                ViewHistory(1);
+
+            }, false);
+
+            if (window.addEventListener)
+            {
+                window.addEventListener("message", OnMessage);
+            } else
+            {
+                // IE8
+                window.attachEvent("onmessage", OnMessage);
+            }
+
+        }
+        function OnChangeAccount()
+        {
+            AccountID=ParseNum(document.getElementById("idViewAccountID").value);
+            history.pushState(null,null,"#"+AccountID);
+            ViewHistory(1)
+        }
+
+        var CurPage=0;
+        var ArrPos=[];
+        function ViewHistory(bReset,NextPos)
+        {
+            var Params={AccountID:AccountID,Count:CountViewRows,GetDescription:1}
+            if(bReset)
+            {
+                CurPage=0;
+                ArrPos=[];
+                AccountID=ParseNum(document.getElementById("idViewAccountID").value);
+                Params.AccountID=AccountID;
+            }
+            else
+            {
+                Params.NextPos=NextPos;
+            }
+
+            document.title="Account: "+AccountID;
+            GetData("GetHistoryTransactions", Params, function (Data)
+            {
+                if(!Data || !Data.History)
+                    return;
+                $("idName").innerText=Data.Name;
+                $("idBalanceSum").innerText="Balance: "+STRING_FROM_COIN(Data.Value)+" "+CurrencyName(Data.Currency);
+                MaxBlockNum=Data.MaxBlockNum;
+                window.FIRST_TIME_BLOCK=Data.FIRST_TIME_BLOCK;
+                window.UPDATE_CODE_JINN=Data.UPDATE_CODE_JINN;
+                window.CONSENSUS_PERIOD_TIME=Data.CONSENSUS_PERIOD_TIME;
+                var Item;
+                var arr=Data.History;
+                for(var i=0;i<arr.length;i++)
+                {
+                    Item=arr[i];
+                    Item.Num=Item.Pos;
+                    Item.Currency=Data.Currency;
+                    Item.Value={SumCOIN:Item.SumCOIN,SumCENT:Item.SumCENT};
+
+                }
+                if(Item)
+                {
+                    ArrPos[CurPage]={First:arr[0].Pos,NextPos:Item.NextPos};
+                }
+                SetGridData(Data.History,"grid_history","idTotalSumH",1);
+            });
+
+        }
+
+        function ViewBegin()
+        {
+            ViewHistory(1);
+        }
+        function ViewPrev()
+        {
+            if(CurPage<=0)
+                return;
+            CurPage--;
+            var Item=ArrPos[CurPage];
+            if(Item)
+            {
+                ViewHistory(0,Item.First);
+            }
+        }
+        function ViewNext()
+        {
+            var Item=ArrPos[CurPage];
+            if(Item && Item.NextPos)
+            {
+                CurPage++;
+                ViewHistory(0,Item.NextPos);
+            }
+        }
+
+        function SaveValues()
+        {
+        }
+
+        var MaxBlockNum=0;
+        function ConfirmationFromBlock(BlockNum)
+        {
+            var Length=MaxBlockNum-BlockNum;
+            if(Length>0)
+            {
+                if(Length<=100)
+                    return Length;
+                else
+                {
+                    return ">"+Math.floor(Length/100)*100;
+                }
+            }
+            else
+                return "";
+        }
+        function GetCorrID(Item,Direct)
+        {
+            var Str;
+            if(Item.Direct===Direct)
+                Str=RetHistoryAccount(Item,"CorrID");
+            else
+                Str=AccountID;
+
+            return Str;
+        }
+        function GetStr(Str)
+        {
+            if(Str===undefined)
+                return "";
+            return Str;
+        }
+
+
+        var FrameData;
+        function ClosePage()
+        {
+            if(FrameData && window.parent)
+            {
+                FrameData.cmd="Close";
+                window.parent.postMessage(FrameData, "*");
+            }
+            else
+                window.close();
+        }
+
+        function OnMessage(event)
+        {
+            var Data=event.data;
+            if(!Data || typeof Data!=="object")
+                return;
+
+            FrameData=Data;
+            if(Data.Account)
+            {
+                AccountID=Data.Account;
+                document.getElementById("idViewAccountID").value=AccountID;
+                ViewHistory(1)
+
+                $("MTabWelcome").className+=" back-link";
+            }
+        }
+        function DoBackPage()
+        {
+            if(FrameData)
+                ClosePage()
+
+        }
+
+        function OpenBlockViewerPage(Num)
+        {
+            if(FrameData && window.parent)
+            {
+                FrameData.cmd="OpenBlockViewerPage";
+                FrameData.BlockNum=Num;
+                window.parent.postMessage(FrameData, "*");
+            }
+            else
+            {
+                OpenWindow("./blockviewer.html#"+Num);
+                return;
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <header class="header">
+        <div class="header__wrapper">
+            <div class="header__logo header__logo--history">
+                <a onclick="DoBackPage()" class="header__logo-link" id="MTabWelcome">
+                    <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+                    <p class="header__logo-name">History</p>
+                </a>
+            </div>
+            <div class="header__right">
+                <select size="1" id="idLang" onchange="ChangeLang()" class="bigs" >
+                    <option value="ENG">ENG</option>
+                </select>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="history-page" id="idTransactionBlock" style="display: block">
+            <div class="history__text-block">
+                <div class="history-page__id" >
+                    <!--<a class="back-link back-link&#45;&#45;history" onclick="SelectTab('TabKeySet')"><span>Accounts</span></a>-->
+                    History of <input class="history-page__id-count" type="number" id="idViewAccountID" style="text-align: center" value="0" min=0 max=1000000000 onchange="OnChangeAccount()">
+                </div>
+                <div id="idName" class="history-page__description"></div>
+                <div class="history-page__balance" id="idBalanceSum">Balance: 000<img class="history-page__tera-icon" src="./PIC/T.svg" width="10" height="14" alt=""></div>
+            </div>
+            <div class="history-page__table">
+                <div class="page-pagination">
+                    <button onclick="ViewBegin()" class="btnav btn">|&lt;</button>
+                    <button onclick="ViewPrev()" class="btnav btn">&lt;</button>
+                    <input type="string" class="page-pagination__num" readonly>
+                    <button onclick="ViewNext()" class="btnav btn">&gt;</button>
+                </div>
+
+                <div class="history-page__table-wrap">
+                    <table id="grid_history" class="grid">
+                        <tr>
+                            <th id="(RetDirect(Item.Direct))" class="direct">...</th>
+                            <th id="(GetCorrID(Item,'+'))" class="num">From</th>
+                            <th id="(GetCorrID(Item,'-'))" class="num">To</th>
+                            <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
+                            <th id="SUM_TO_STRING(Item)" class="sum smallbold">Amount</th>
+                            <th id="CurrencyName(Item.Currency)" class="cur">Cur</th>
+                            <th id="GetStr(Item.Description)" class="desc">Description</th>
+                            <th id="ConfirmationFromBlock(Item.BlockNum)" class="num">Confirm</th>
+                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                            <th id="Item.TrNum" class="num">Tx</th>
+                        </tr>
+                    </table>
+                </div>
+                <br><DIV id="idTotalSumH"></DIV>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

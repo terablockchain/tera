@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Console</title>
+    <link rel="shortcut icon" href="/HTML/PIC/console.png" type="image/png">
+
+    <link rel="stylesheet" type="text/css" href="/HTML/CSS/buttons.css">
+    <link rel="stylesheet" type="text/css" href="/HTML/CSS/style.css">
+</head>
+
+<script>
+    window.RUN_CLIENT=1;
+    window.RUN_SERVER=0;
+    if(typeof global === 'object')
+    {
+        global.RUN_CLIENT=1;
+        global.RUN_SERVER=0;
+    }
+</script>
+
+<script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
+<script type="text/javascript" src="/HTML/JS/client.js"></script>
+<script type="text/javascript" src="/HTML/JS/sha3.js"></script>
+<script type="text/javascript" src="/HTML/JS/crypto-client.js"></script>
+<script type="text/javascript" src="/HTML/JS/terahashlib.js"></script>
+
+<script>
+    function SetStatus(Str)
+    {
+        var id = $("status");
+        id.innerHTML=Str;
+    }
+    function SetStatus2(Str)
+    {
+        var id = $("status2");
+        id.innerHTML=Str;
+    }
+
+    function UpdateData()
+    {
+
+        GetData("GetWalletInfo",{}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                SetBlockChainConstant(Data);
+            }
+        });
+    }
+
+
+    ///////////////////
+    var CodeList={};
+    var CurRowName;
+
+    function SetConsoleText(bRun)
+    {
+        //SaveToList();
+
+
+        var Name = $("idConsoleIndex").value;
+        $("idName").value=Name;
+        CurRowName=Name;
+        var Data=CodeList[Name];
+        if(Data && Data.Code)
+        {
+            $("idConsoleText").value=Data.Code;
+            $("idConsoleSend").value=Data.Type;
+            $("idProcessTX").checked=Data.ProcessTX;
+            $("idProcessWEB").checked=Data.ProcessWEB;
+        }
+        else
+        {
+            $("idConsoleText").value=Data;
+            $("idProcessTX").checked=0;
+            $("idProcessWEB").checked=0;
+            $("idConsoleSend").value="ServerCode";
+        }
+        if(bRun)
+            SendToServer();
+    }
+    function SetAndRun()
+    {
+        SetConsoleText(1);
+    }
+    function NewRow()
+    {
+        CurRowName=undefined;
+        $("idName").value="";
+    }
+    function SaveToList(bUpdate)
+    {
+        var Name = $("idName").value;
+
+        if(CurRowName)
+        {
+            SetNameInSelect(Name);
+            delete CodeList[CurRowName];
+        }
+
+        if(Name)
+        {
+            var Data={Code:$("idConsoleText").value,Type:$("idConsoleSend").value,ProcessTX:$("idProcessTX").checked,ProcessWEB:$("idProcessWEB").checked};
+            CodeList[Name]=Data;
+        }
+
+        if(bUpdate)
+        {
+            SaveArrToSelect(Name);
+        }
+
+        CurRowName=Name;
+        SaveValues();
+    }
+
+    function SetNameInSelect(Name)
+    {
+        var Select=document.getElementById("idConsoleIndex");
+        for(var i=0;i<Select.options.length;i++)
+            if(Select.options[i]===CurRowName)
+            {
+                if(Name)
+                {
+                    Select.options[i].value=Name;
+                    Select.options[i].text=Name;
+                }
+                else
+                {
+                    Select.options[i] = null;
+                }
+            }
+    }
+
+
+    function SaveArrToSelect(CurrName)
+    {
+        var Select=document.getElementById("idConsoleIndex");
+        Select.options.length=0;
+        for(var Name in CodeList)
+        {
+            Select.options[Select.options.length]=new Option(Name,Name,false,(Name===CurrName));
+        }
+
+    }
+    ///////////////////
+
+    function OnSelectTypeCode()
+    {
+        var Type = $("idConsoleSend").value;
+        if(Type==="ECode")
+        {
+            $("idBtRun").value="Send eval";
+        }
+        else
+        if(Type==="HEX")
+        {
+            $("idBtRun").value="Send transaction";
+        }
+        else
+        {
+            $("idBtRun").value="Run";
+        }
+
+    }
+
+    function SendToServer()
+    {
+        SaveValues();
+
+        var Value = $("idConsoleText").value;
+        var Type = $("idConsoleSend").value;
+        if(Type==="ECode")
+        {
+            SendECode(Value);
+        }
+        else
+        if(Type==="HEX")
+        {
+            SendHEXTransaction(Value);
+        }
+        else
+        if(Type==="ServerCode")
+        {
+            SendServerCode(Value);
+        }
+        else
+        {
+            RunClientCode(Value);
+        }
+    }
+
+    function RunClientCode(Value)
+    {
+        SetStatus("");
+        var Result;
+        try
+        {
+            Result=eval(Value);
+        }
+        catch (e)
+        {
+            Result=e;
+        }
+        ToResult(Result);
+    }
+
+    function SendServerCode(Value)
+    {
+        var bProcessTX = $("idProcessTX").checked;
+        var bProcessWEB = $("idProcessWEB").checked;
+
+
+        SetStatus("");
+        GetData("SendDirectCode",{Code:Value,TX:bProcessTX,WEB:bProcessWEB }, function (Data)
+        {
+            if(Data)
+            {
+                ToResult(Data.text);
+            }
+        });
+    }
+    function SendHEXTransaction(Value)
+    {
+        var Body=GetArrFromHex(Value);
+        if(Body.length<32)
+        {
+            SetStatus("Error length HEX transaction");
+            return;
+        }
+        Body.length+=12;
+        SendTransaction(Body);
+    }
+
+    var AllSend=0;
+    var AllNoSend=0;
+    var MustSend=0;
+    var LastErr="";
+    var LastOK="";
+    function SendECode(Code)
+    {
+        var DeltaBlockNum = parseInt($("idConsoleDeltaBlockNum").value);
+
+
+//        if($("idSendAll").checked)
+//        {
+//            var Data={DeltaBlockNum:DeltaBlockNum,Code:Code,All:1};
+//            GetData("SendECode",Data, function (Data)
+//            {
+//                if(Data)
+//                {
+//                    ToResult(Data.text);
+//                }
+//            });
+//            return;
+//        }
+
+
+        var Addr = $("idNode").value;
+
+        AllSend=0;
+        AllNoSend=0;
+        MustSend=0;
+        LastErr="";
+        LastOK="";
+        var arr=Addr.split("\n");
+        for(var i=0;i<arr.length;i++)
+        {
+            var CurAddr=arr[i].trim();
+            if(CurAddr.length!==64)
+                continue;
+
+            MustSend++;
+            var Data={DeltaBlockNum:DeltaBlockNum,Code:Code,Addr:CurAddr};
+            GetData("SendECode",Data, function (Data)
+            {
+                if(Data && Data.result===1)
+                {
+                    AllSend++;
+                    LastOK=Data.text;
+                }
+                else
+                {
+                    AllNoSend++;
+                    LastErr=Data.text;
+                }
+                ToResult("OK:"+AllSend+" ("+LastOK+")   NO:"+AllNoSend+" ("+LastErr+")  OF:"+MustSend);
+            });
+        }
+
+        SetStatus("Must send="+MustSend);
+        ToResult("Must send="+MustSend);
+
+    }
+
+    function ToResult(Str)
+    {
+        $("result").value=Str;
+    }
+    //***********************************************
+    var idSendServer=undefined;
+    function StartSendServerPeriod(Period)
+    {
+        var Period=1000*ParseNum($("idPeriodRun").value);
+        if(idSendServer)
+            clearInterval(idSendServer);
+        idSendServer=0;
+        if(Period)
+        {
+            idSendServer=setInterval(function ()
+            {
+                var Value = $("idConsoleText").value;
+                SendServerCode(Value);
+            },Period);
+            return "Set period="+Period;
+        }
+        return "Clear";
+    }
+
+    //***********************************************
+    var idSendRandom=undefined;
+    function StartSendRandom(Period)
+    {
+        if(idSendRandom)
+            clearInterval(idSendRandom);
+        idSendRandom=0;
+        if(Period)
+        {
+            idSendRandom=setInterval(SendRandom,Period);
+            return "Set period="+Period;
+        }
+        return "Clear";
+    }
+    var glNumSend=0;
+    function SendRandom()
+    {
+        glNumSend++;
+        var Body=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        Body[6]=glNumSend&0xFF;
+        Body[7]=(glNumSend>>>8) & 0xFF;
+        Body[8]=(glNumSend>>>16) & 0xFF;
+        Body[9]=(glNumSend>>>24) & 0xFF;
+
+        var rnd=Math.floor(Math.random()*1000000000);
+        Body[10]=rnd&0xFF;
+        Body[11]=(rnd>>>8) & 0xFF;
+        Body[12]=(rnd>>>16) & 0xFF;
+        Body[13]=(rnd>>>24) & 0xFF;
+
+        SendHEXTransaction(GetHexFromArr(Body));
+    }
+
+
+
+    function CheckCtrlEnter(e,F)
+    {
+        SaveValues();
+
+        if(e.ctrlKey && e.keyCode===13)
+        {
+            SendToServer();
+        }
+
+        if(e.keyCode===27)
+        {
+            window.close();
+        }
+
+        //SetStatus("keyCode="+e.keyCode)
+    }
+
+
+    function CheckDevelop()
+    {
+        GetData("GetWalletInfo",{}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                if(!Data.IsDevelopAccount)
+                {
+                    var Select = $("idConsoleSend");
+                    for(var i=0;i<Select.options.length;i++)
+                    {
+                        var item=Select.options[i];
+                        if(item.value==="ECode")
+                        {
+                            item.disabled=1;
+                            Select.options[i] = null;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    window.onload=function()
+    {
+        setInterval(UpdateData,100);
+        setTimeout(CheckDevelop,500);
+
+        window.onkeydown = CheckCtrlEnter;
+
+        LoadValues();
+        SaveArrToSelect();
+
+        document.body.className="univers "+Storage.getItem("idSelStyle");
+
+
+        SetStatus("");
+        OnSelectTypeCode();
+
+    }
+
+    function LoadValues()
+    {
+        if(!localStorage["WasSaveConsole"])
+            return;
+
+        $("idConsoleSend").value=localStorage["idConsoleSend"];
+        $("idConsoleDeltaBlockNum").value=localStorage["idConsoleDeltaBlockNum"];
+        $("idNode").value=localStorage["idConsoleNode"];
+        if(localStorage["ConsoleCodeList2"])
+            CodeList=JSON.parse(localStorage["ConsoleCodeList2"]);
+        if(localStorage["idConsolePow"])
+            $("idPow").value=localStorage["idConsolePow"];
+
+
+        $("idProcessTX").checked=(localStorage["idConsoleProcessTX"]==="true");
+        $("idProcessWEB").checked=(localStorage["idConsoleProcessWEB"]==="true");
+        if(localStorage["idConsolePeriodRun"])
+            $("idPeriodRun").value=localStorage["idConsolePeriodRun"];
+    }
+    function SaveValues()
+    {
+        localStorage["WasSaveConsole"]=1;
+
+        localStorage["idConsoleSend"]=$("idConsoleSend").value;
+        localStorage["idConsoleDeltaBlockNum"]=$("idConsoleDeltaBlockNum").value;
+        localStorage["idConsoleNode"]=$("idNode").value;
+        localStorage["ConsoleCodeList2"]=JSON.stringify(CodeList);
+        localStorage["idConsolePow"]=$("idPow").value;
+        //localStorage["idConsoleSendAll"]=$("idSendAll").checked;
+
+        localStorage["idConsoleProcessTX"]=$("idProcessTX").checked;
+        localStorage["idConsoleProcessWEB"]=$("idProcessWEB").checked;
+
+
+        localStorage["idConsolePeriodRun"]=$("idPeriodRun").value;
+    }
+
+
+
+
+
+</script>
+
+
+
+<style type="text/css">
+
+</style>
+
+
+<body>
+<DIV align='center'>
+    <B>CONSOLE</B>
+
+    <DIV id="status2"></DIV><BR>
+    <DIV id="status"> ... </DIV><BR>
+
+
+    Mode:
+    <select size="1" id="idConsoleSend" onkeyup="OnSelectTypeCode();SaveValues()" onchange="OnSelectTypeCode();SaveValues()">
+        <option value="ServerCode">Server code</option>
+        <option value="ClientCode">Client code</option>
+        <option value="ECode" style="color:red;">Eval code !!</option>
+        <option value="HEX">HEX Transaction</option>
+    </select>
+
+    POW:<INPUT type="number" id="idPow" style="width: 50px;" onchange="SaveValues();" value="14"> Delta BlockNum:<INPUT type="number" id="idConsoleDeltaBlockNum" style="width: 50px;" value="10">
+
+    <BR>
+
+    <DIV align='left' style="border: 1px solid #39519b;width:1198px;height:800px;">
+        <DIV style="width: 200px;height:100%; float:left;">
+            <select size="45" id="idConsoleIndex" style="width:100%;height:100%;" onchange="SetConsoleText()" ondblclick="SetAndRun()">
+            </select>
+        </DIV>
+
+        <DIV style="width: 998px;height:100%; float: left;">
+            <DIV>
+                <DIV>
+                    <INPUT type="button" onclick="NewRow()" class="bt" value="*New">
+                    Name:<INPUT type="string" id="idName" style="width: 72%;" value="">
+                    <INPUT type="button" onclick="SaveToList(1)" class="bt" value="Save">
+                </DIV>
+                <textarea id="idConsoleText"  style="width: 99%;height: 95%;" rows="22" cols="98" autofocus>
+                </textarea>
+            </DIV>
+
+            <textarea rows="5" cols="98"  name="result" id="idNode" style="width: 99%;">
+            </textarea>
+
+            <INPUT type="button" onclick="SendToServer()" class="bt btdoit" id="idBtRun" value="Send">
+            <!--All<input type="checkbox" id="idSendAll" onchange = "SaveValues()"/>-->
+            <INPUT type="button" onclick="StartSendServerPeriod()" class="bt btdoit" id="idBtRun2" value="Run every">
+            <INPUT type="number" id="idPeriodRun" style="width: 50px;" onchange="SaveValues();" value="1">sec
+            <INPUT type="checkbox" id="idProcessTX">TX-process
+            <INPUT type="checkbox" id="idProcessWEB">Web-process
+
+
+            <BR>
+
+            <BR>
+
+            <textarea rows="18" cols="98"  name="result" id="result" style="width: 99%;">
+            </textarea>
+        </DIV>
+    </DIV>
+
+
+</DIV>
+</body>
+</html>

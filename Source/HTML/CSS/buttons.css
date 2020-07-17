@@ -1,0 +1,203 @@
+﻿
+
+/*TabHeader*/
+.tabheader th
+{
+    width:205px;
+
+    color: white;
+    background-color: #22547f;
+    margin: 0;
+    padding: 0;
+    height: 34px;
+    vertical-align: middle;
+}
+.bttab
+{
+    background-color: black;
+    cursor: pointer;
+    color: white;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    padding-top: 7px;
+    font-weight: 400;
+}
+
+
+
+
+
+
+/*User action*/
+.btdoit
+{
+    width: 130px;
+    height: 32px;
+    line-height: 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+
+.btdoitm
+{
+    width: 40px;
+    height: 32px;
+    line-height: 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+
+/*All buttons*/
+.bt
+{
+    border: 1px solid black;
+    background: transparent;
+    font-weight: 400;
+    cursor: pointer;
+}
+.bt:hover,button:hover
+{
+    filter: brightness(120%);
+    cursor: pointer;
+}
+
+
+.bt:active
+{
+    cursor: progress;
+}
+
+
+
+
+.btlong
+{
+    width: 160px;
+}
+
+.btopen
+{
+    width: 136px;
+}
+
+.btsmall
+{
+    width: 10px;
+}
+
+#idSendList
+{
+    width: 800px;
+    border: 0 solid black;
+    font-weight: 700;
+}
+
+#PaiListInfo
+{
+    width: 800px;
+    height:20px;
+    text-align: center;
+}
+
+.btinvoice
+{
+    width: 133px;
+    min-width: 133px;
+    max-width: 133px;
+    height:40px;
+    white-space: pre-line;
+    background-image: url('/HTML/PIC/invoice.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+}
+.btinvoice_use
+{
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    height:62px;
+}
+
+
+
+#idCounters
+{
+    background-image: url('/HTML/PIC/counters.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+}
+
+#idChains
+{
+    background-image: url('/HTML/PIC/chains.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+}
+
+
+
+
+#idMonitor
+{
+    background-image: url('/HTML/PIC/monitor.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+}
+
+#idConsole
+{
+    background-image: url('/HTML/PIC/console.png');
+    background-repeat: no-repeat;
+    background-size:16px;
+}
+#idOpenSmart
+{
+    background-image: url('/HTML/PIC/smart.png');
+    background-repeat: no-repeat;
+    background-size:16px;
+}
+
+#idNetwork
+{
+    background-image: url('/HTML/PIC/network.png');
+    background-repeat: no-repeat;
+    background-size:16px;
+}
+
+#idDown
+{
+    background-image: url('/HTML/PIC/down.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: right;
+}
+
+#idUp
+{
+    background-image: url('/HTML/PIC/up.png');
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: right;
+
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 1);
+}
+
+
+
+
+.btexlporer
+{
+    width: 136px;
+}
+
+
+input[type="checkbox"]
+{
+    vertical-align: middle;
+}

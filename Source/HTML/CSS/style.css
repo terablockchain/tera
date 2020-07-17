@@ -1,0 +1,244 @@
+﻿/*STYLE STYLE STYLE*/
+/*STYLE STYLE STYLE*/
+/*STYLE STYLE STYLE*/
+/*STYLE STYLE STYLE*/
+
+
+root
+{
+    --colorText:#000;
+}
+
+
+body
+{
+
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+}
+
+body.styleBrown
+{
+    --color0:#503F13;
+    --color1:#86754A;
+    --color2:#F5E5BB;
+    --color22: #afa282;
+    --color3:#F5F0E3;
+}
+
+
+body.styleGreen
+{
+    --color0:#204410;
+    --color1:#4F7340;
+    --color2:#CBF4BA;
+    --color22: #94af87;
+    --color3:#E7F4E1;
+}
+
+body.styleBlue
+{
+    --color0:#0D1B35;
+    --color1:#354259;
+    --color2:#BED0F2;
+    --color22: #8492ad;
+    --color3:#E1E7F2;
+}
+
+body.styleGray
+{
+    --color0:#424a5D;
+    --color1:#5b6775;
+    --color2:#FFFFFF;
+    --color22: #afafaf;
+    --color3:#f3f3f4;
+}
+
+body.styleContrast1
+{
+    --color0:#101010;
+    --color1:#303030;
+    --color2: #b3cee8;
+    --color22: #7f96af;
+    --color3:#FFFFFF;
+}
+
+body.styleContrast2
+{
+    --color0:#101010;
+    --color1:#303030;
+    --color2: #cee8df;
+    --color22: #97afa6;
+    --color3:#FFFFFF;
+}
+
+body.styleContrast3
+{
+    --color0:#101010;
+    --color1:#303030;
+    --color2: #e8e0d4;
+    --color22: #aea69b;
+    --color3:#FFFFFF;
+}
+
+
+
+
+
+body.styleDark0
+{
+    --color0:#424a5D;
+    --color1:#5b6775;
+    --color2:#FFFFFF;
+    --color22: #afafaf;
+    --color3:#f3f3f4;
+}
+body.styleMobile0
+{
+
+    --color0:#1E375B;
+    --color1: #4F5969;
+    --color2: #a9bfd7;
+    --color22: #6f7f93;
+    --color3:#FFFFFF;
+}
+body.styleDark
+{
+    --color0:#424a5D;/*3*/
+    --color1:#445368;/*1*/
+    --color2:#202731;/*2*/
+    --color21: #384355;
+    --color22: #252d37;
+    --color3:#f3f3f4;
+}
+
+
+body.styleLight
+{
+    --color0:#202731;/*3*/
+    --color1: #2d3747;/*1*/
+    --color2: #8295b4;/*2*/
+    --color22: #667491;
+    --color3:#f3f3f4;
+}
+
+/*all*/
+body.univers .bt
+{
+    background: var(--color1);
+    color: var(--color2);
+}
+
+body.univers
+{
+    background: var(--color2);
+}
+
+body.univers table.grid
+{
+    background:var(--color3);
+}
+
+body.univers .bttab
+{
+    background: var(--color1);
+    color:white;
+}
+body.univers .bttab:hover
+{
+    color: #ecb84e;
+}
+
+
+body.univers .current
+{
+    background: var(--color0);
+    color:white;
+}
+
+body.univers input,body.univers textarea,body.univers select
+{
+    background:white;
+    color: black;
+}
+
+
+
+
+/*dark*/
+body.styleDark
+{
+    --colorText:white;
+    color: white;
+}
+
+body.styleDark .bt
+{
+    background: #445368;
+    color: white;
+    border: 1px solid #5a5a5a;
+}
+
+body.styleDark .header_tr
+{
+    color:white;
+}
+
+
+body.styleDark table.grid
+{
+    background: #565656;
+}
+
+body.styleDark .bttab
+{
+    background: #202225;
+    color:white;
+}
+
+body.styleDark .current
+{
+    background: #565b61;
+    color:white;
+}
+
+
+body.styleDark input,body.styleDark textarea,body.styleDark select
+{
+    background: #1a1f27;
+    color: #d2d4d6;
+    border: 1px solid #5a5a5a;
+}
+
+/*Light*/
+
+body.styleLight input,body.styleLight textarea,body.styleLight select
+{
+    border: 1px solid #5a5a5a;
+}
+
+
+/*bt*/
+body.styleDark button
+{
+    background: #939393;
+    border: 1px solid #282828;
+    color: white;
+}
+
+body.styleDark .bold
+{
+    font-weight: 300;
+}
+
+body.styleDark #idStatus
+{
+    color: #fffabd;
+}
+
+body.styleDark #idOpenWallet
+{
+    border: 1px solid darkgrey;
+}
+
