@@ -74,13 +74,13 @@
 }
 ````
 
-##Note:
- * Constants are stored in JSON format
- * In logical constants, such as enabling or disabling something, we recommend using the number 0 or 1
- * Any constant can be changed from the command line as follows (run inside the wallet/Source directory):
+## Note:
+* Constants are stored in JSON format
+* In logical constants, such as enabling or disabling something, we recommend using the number 0 or 1
+* Any constant can be changed from the command line as follows (run inside the wallet/Source directory):
 ``
 node set NAME=Value
 ```
- * After changing the constants restart the node
+* After changing the constants restart the node
 
 
