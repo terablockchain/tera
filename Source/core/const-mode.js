@@ -57,8 +57,6 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_7 = 0;
         global.EXPERIMENTAL_CODE = 0;
         
-        global.REST_START_COUNT = 0;
-        global.LOAD_TO_BEGIN = 0;
         break;
         
     case "TEST_JINN":
@@ -113,8 +111,6 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_NEW_ACCHASH = 1;
         global.EXPERIMENTAL_CODE = 0;
         
-        global.REST_START_COUNT = 0;
-        global.LOAD_TO_BEGIN = 0;
         global.STAT_MODE = 1;
         
         break;
@@ -168,9 +164,6 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_6 = 0;
         global.UPDATE_CODE_7 = 0;
         global.EXPERIMENTAL_CODE = 0;
-        
-        global.REST_START_COUNT = 0;
-        global.LOAD_TO_BEGIN = 0;
         
         global.UPDATE_CODE_JINN = 0;
         global.UPDATE_CODE_JINN_KTERA = global.UPDATE_CODE_JINN;

@@ -1019,7 +1019,7 @@ function RunSetCheckPoint()
     if(Delta > 16)
         return;
     
-    var BlockNum = SERVER.BlockNumDB - global.CheckPointDelta;
+    var BlockNum = SERVER.BlockNumDB - 20;
     var Block = SERVER.ReadBlockHeaderDB(BlockNum);
     if(Block)
     {

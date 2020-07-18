@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2261;
+global.UPDATE_CODE_VERSION_NUM = 2263;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -35,13 +35,13 @@ catch(e)
 
 global.InitParamsArg = InitParamsArg;
 
-global.CONST_NAME_ARR = ["DELTA_CURRENT_TIME", "WALLET_NAME", "WALLET_DESCRIPTION", "COMMON_KEY", "NODES_NAME", "LOG_LEVEL",
-"STAT_MODE", "MAX_STAT_PERIOD", "LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET",
-"USE_API_V1", "USE_HARD_API_V2", "MAX_TX_FROM_WEB_IP", "COUNT_VIEW_ROWS", "ALL_VIEW_ROWS", "ALL_LOG_TO_CLIENT", "START_HISTORY",
-"USE_MINING", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU", "SIZE_MINING_MEMORY", "POW_RUN_COUNT",
-"USE_AUTO_UPDATE", "RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN",
-"HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "JINN_MAX_MEMORY_USE",
-"JINN_IP", "JINN_PORT", "IP_VERSION", "CLIENT_MODE", "CLUSTER_HOT_ONLY", ];
+global.CONST_NAME_ARR = ["IP_VERSION", "JINN_IP", "JINN_PORT", "CLIENT_MODE", "WALLET_NAME", "WALLET_DESCRIPTION", "COMMON_KEY",
+"NODES_NAME", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS", "ALL_VIEW_ROWS", "START_HISTORY",
+"LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET", "USE_API_V1", "MAX_TX_FROM_WEB_IP",
+"USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE",
+"HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU",
+"SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE", "RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET",
+"NOT_RUN", "DELTA_CURRENT_TIME", ];
 
 global.CLUSTER_HOT_ONLY = 0;
 global.NOT_RUN = 0;
@@ -100,15 +100,12 @@ global.TX_TICKET_HASH_LENGTH = 10;
 global.BLOCKNUM_TICKET_ALGO = 16070000;
 
 global.START_BAD_ACCOUNT_CONTROL = 200000;
-global.WATCHDOG_BADACCOUNT = 0;
 global.WATCHDOG_DEV = 0;
 
 global.RESYNC_CONDITION = {"OWN_BLOCKS":20, "K_POW":5};
 
 
 global.REST_BLOCK_SCALE = 1000;
-global.REST_START_COUNT = 0;
-global.LOAD_TO_BEGIN = 0;
 
 global.DEBUG_WALLET = 0;
 
@@ -133,8 +130,8 @@ global.POW_MAX_PERCENT = 50;
 
 global.POW_RUN_COUNT = 5000;
 global.POWRunPeriod = 1;
-global.CheckPointDelta = 20;
-global.ALL_LOG_TO_CLIENT = 1;
+
+
 global.LOG_LEVEL = 1;
 
 global.LIMIT_SEND_TRAFIC = 0;
@@ -187,12 +184,9 @@ global.MIN_CONNECT_CHILD = 2;
 global.MAX_CONNECT_CHILD = 7;
 
 
-global.MAX_CONNECTIONS_COUNT = 1000;
-global.TRUST_PROCESS_COUNT = 80000;
 
 global.MAX_NODES_RETURN = 100;
 global.MAX_WAIT_PERIOD_FOR_STATUS = 10 * 1000;
-global.MAX_GRAY_CONNECTIONS_TO_SERVER = 10;
 
 global.MAX_PACKET_LENGTH = 680 * 1024;
 global.COUNT_BLOCKS_FOR_LOAD = 600;
@@ -334,108 +328,119 @@ function InitParamsArg()
 {
     for(var i = 1; i < process.argv.length; i++)
     {
-        var str0 = process.argv[i];
-        var str = str0.toUpperCase();
-        if(str.substr(0, 9) == "HTTPPORT:")
+        var str = process.argv[i];
+        var STR = str.toUpperCase();
+        var indexConst = str.indexOf("=");
+        if(indexConst > 0)
         {
-            global.HTTP_PORT_NUMBER = parseInt(str.substr(9));
+            var name = str.substr(0, indexConst).toUpperCase();
+            var value = str.substr(indexConst + 1);
+            if(typeof global[name] === "number")
+                value = Number(value);
+            
+            global[name] = value;
         }
         else
-            if(str.substr(0, 9) == "PASSWORD:")
+            if(STR.substr(0, 9) == "HTTPPORT:")
             {
-                global.HTTP_PORT_PASSWORD = str0.substr(9);
+                global.HTTP_PORT_NUMBER = parseInt(STR.substr(9));
             }
             else
-                if(str.substr(0, 5) == "PATH:")
-                    global.DATA_PATH = str0.substr(5);
+                if(STR.substr(0, 9) == "PASSWORD:")
+                {
+                    global.HTTP_PORT_PASSWORD = str.substr(9);
+                }
                 else
-                    if(str.substr(0, 5) == "PORT:")
-                    {
-                        global.START_PORT_NUMBER = parseInt(str.substr(5));
-                        global.JINN_PORT = global.START_PORT_NUMBER;
-                    }
+                    if(STR.substr(0, 5) == "PATH:")
+                        global.DATA_PATH = str.substr(5);
                     else
-                        if(str.substr(0, 3) == "IP:")
+                        if(STR.substr(0, 5) == "PORT:")
                         {
-                            global.START_IP = str.substr(3);
-                            global.JINN_IP = global.START_IP;
+                            global.START_PORT_NUMBER = parseInt(str.substr(5));
+                            global.JINN_PORT = global.START_PORT_NUMBER;
                         }
                         else
-                            if(str.substr(0, 7) == "LISTEN:")
+                            if(STR.substr(0, 3) == "IP:")
                             {
-                                global.LISTEN_IP = str.substr(7);
+                                global.START_IP = str.substr(3);
+                                global.JINN_IP = global.START_IP;
                             }
                             else
-                                if(str.substr(0, 8) == "HOSTING:")
+                                if(STR.substr(0, 7) == "LISTEN:")
                                 {
-                                    global.HTTP_HOSTING_PORT = parseInt(str.substr(8));
+                                    global.LISTEN_IP = str.substr(7);
                                 }
                                 else
-                                    if(str.substr(0, 13) == "STARTNETWORK:")
+                                    if(STR.substr(0, 8) == "HOSTING:")
                                     {
-                                        global.START_NETWORK_DATE = parseInt(str.substr(13));
-                                        ToLog("START_NETWORK_DATE: " + START_NETWORK_DATE);
+                                        global.HTTP_HOSTING_PORT = parseInt(str.substr(8));
                                     }
                                     else
-                                        if(str.substr(0, 5) == "MODE:")
+                                        if(STR.substr(0, 13) == "STARTNETWORK:")
                                         {
-                                            global.MODE_RUN = str.substr(5);
+                                            global.START_NETWORK_DATE = parseInt(str.substr(13));
+                                            ToLog("START_NETWORK_DATE: " + START_NETWORK_DATE);
                                         }
                                         else
-                                        {
-                                            switch(str)
+                                            if(STR.substr(0, 5) == "MODE:")
                                             {
-                                                case "CHILDPOW":
-                                                    global.CHILD_POW = true;
-                                                    break;
-                                                case "ADDRLIST":
-                                                    global.ADDRLIST_MODE = true;
-                                                    break;
-                                                case "CREATEONSTART":
-                                                    global.CREATE_ON_START = true;
-                                                    break;
-                                                case "LOCALRUN":
-                                                    global.LOCAL_RUN = 1;
-                                                    break;
-                                                case "TESTRUN":
-                                                    global.TEST_NETWORK = 1;
-                                                    break;
-                                                case "NOLOCALRUN":
-                                                    global.LOCAL_RUN = 0;
-                                                    break;
-                                                case "NOAUTOUPDATE":
-                                                    global.USE_AUTO_UPDATE = 0;
-                                                    break;
-                                                case "NOPARAMJS":
-                                                    global.USE_PARAM_JS = 0;
-                                                    break;
-                                                case "READONLYDB":
-                                                    global.READ_ONLY_DB = 1;
-                                                    break;
-                                                case "NWMODE":
-                                                    global.NWMODE = 1;
-                                                    break;
-                                                case "NOALIVE":
-                                                    global.NOALIVE = 1;
-                                                    break;
-                                                case "DEV_MODE":
-                                                    global.DEV_MODE = 1;
-                                                    break;
-                                                case "API_V2":
-                                                    global.USE_HARD_API_V2 = 1;
-                                                    break;
-                                                    
-                                                case "TESTJINN":
-                                                    global.TEST_JINN = 1;
-                                                    break;
-                                                case "JINNMODE":
-                                                    global.JINN_MODE = 1;
-                                                    break;
-                                                    
-                                                case "NOPSWD":
-                                                    global.NOHTMLPASSWORD = 1;
-                                                    break;
+                                                global.MODE_RUN = str.substr(5);
                                             }
-                                        }
+                                            else
+                                            {
+                                                switch(STR)
+                                                {
+                                                    case "CHILDPOW":
+                                                        global.CHILD_POW = true;
+                                                        break;
+                                                    case "ADDRLIST":
+                                                        global.ADDRLIST_MODE = true;
+                                                        break;
+                                                    case "CREATEONSTART":
+                                                        global.CREATE_ON_START = true;
+                                                        break;
+                                                    case "LOCALRUN":
+                                                        global.LOCAL_RUN = 1;
+                                                        break;
+                                                    case "TESTRUN":
+                                                        global.TEST_NETWORK = 1;
+                                                        break;
+                                                    case "NOLOCALRUN":
+                                                        global.LOCAL_RUN = 0;
+                                                        break;
+                                                    case "NOAUTOUPDATE":
+                                                        global.USE_AUTO_UPDATE = 0;
+                                                        break;
+                                                    case "NOPARAMJS":
+                                                        global.USE_PARAM_JS = 0;
+                                                        break;
+                                                    case "READONLYDB":
+                                                        global.READ_ONLY_DB = 1;
+                                                        break;
+                                                    case "NWMODE":
+                                                        global.NWMODE = 1;
+                                                        break;
+                                                    case "NOALIVE":
+                                                        global.NOALIVE = 1;
+                                                        break;
+                                                    case "DEV_MODE":
+                                                        global.DEV_MODE = 1;
+                                                        break;
+                                                    case "API_V2":
+                                                        global.USE_HARD_API_V2 = 1;
+                                                        break;
+                                                        
+                                                    case "TESTJINN":
+                                                        global.TEST_JINN = 1;
+                                                        break;
+                                                    case "JINNMODE":
+                                                        global.JINN_MODE = 1;
+                                                        break;
+                                                        
+                                                    case "NOPSWD":
+                                                        global.NOHTMLPASSWORD = 1;
+                                                        break;
+                                                }
+                                            }
     }
 }

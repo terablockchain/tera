@@ -24,8 +24,6 @@ if(!global.HTTP_PORT_NUMBER)//try 2
 require('./process/main-process');
 
 
-// global.NO_HISTORY_MODE=1;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-// global.NO_CHECK_BLOCKNUM_ONSTART=1;
 
 setTimeout(function ()
 {

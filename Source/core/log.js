@@ -48,11 +48,7 @@ global.ToLog = function (Str,Level)
     
     if(Level && Level > global.LOG_LEVEL)
         return;
-    
-    if(global.ALL_LOG_TO_CLIENT)
-        ToLogClient(Str, undefined, undefined);
-    else
-        ToLogFile(file_name_log, Str);
+    ToLogClient(Str, undefined, undefined);
 }
 
 global.ToLogWeb = function (Str)

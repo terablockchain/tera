@@ -1,40 +1,38 @@
-﻿Description of constants:
+﻿Description of constants (from version 2263):
+
 ````javascript
 {
-  //IDENTIFICATION OF GLOBAL NETWORK TIME OF TERA
-  "AUTO_COORECT_TIME": 1,               //a sign the auto correction time according to network time Tera - must be activated
-  "DELTA_CURRENT_TIME": 12345,          //time deviation relative to Tera network (set automatically if auto-correction is enabled)
+  //IP-PROTOCOL
+  "IP_VERSION": 4,                      //version of ip Protocol, valid values are 4 or 6
+  "JINN_IP": "10.20.30.40",             //the public IP address of the node, if not specified, is determined automatically
+  "JINN_PORT": 30000,                   //port
+  "CLIENT_MODE": 0                      //mode works only in client mode without a possibility to accept incoming connections
 
 
-  //IDENTIFICATION OF NODES
-  "COMMON_KEY": "TRUST-CLUSTER",        //the total key for the trusted nodes (the nodes not to ban each other)
+  //CLUSTERS
+  "COMMON_KEY": "Secret1",              //the total key for the trusted nodes (the nodes not to ban each other)
   "NODES_NAME": "Node001",              //the name of the trusted node that appears on the NETWORK page
-  "SERVER_PRIVATE_KEY_HEX": "222222222222222222222222222222222222222222222",//private key of the node, which is used to set the node address
-  "USE_NET_FOR_SERVER_ADDRES": 1,       //indicates whether to add information from the mac address to the node address. Useful when copying nodes - no need to manually change private nodes
+  "CLUSTER_HOT_ONLY",                   //enable communication only with the nodes of the cluster
 
-  //DIRECT CONNECTION
-  "NET_WORK_MODE": {
-    "ip": "",                          //the IP address of the node, if not specified, is determined automatically
-    "port": 30000,                     //port
-    "UseDirectIP": true                //indication of direct connection, if not specified, then the gray ip mode is enabled without the possibility of mining
-  },
 
 
   //STATISTICS
   "STAT_MODE": 1,                      //enable statistics-see Counters, Monitor pages
-  "MAX_STAT_PERIOD": 3600,             //statistics period
-
-
-  //HTTP access to the wallet and control Noda
-  "HTTP_PORT_NUMBER": 8000,            //http access port
-  "HTTP_PORT_PASSWORD": "SecretWord",  //password
-  "HTTP_IP_CONNECT": "123.111.222.233, 123.11.22.223", //enable IP address filter for remote management (wallet) over http
-  "WALLET_NAME": "=Node1=",            //the name of the wallet displayed on the tab in the browser
+  "MAX_STAT_PERIOD": 600,              //statistics period
 
   //Information display
+  "LOG_LEVEL":2,                       //logging details, the higher the number, the more messages
   "COUNT_VIEW_ROWS": 20,               //number of rows per page - displayed in all tables with pagination
-  "ALL_VIEW_ROWS": 1,                  //view all rows of blockchain tables, even if they are blacklisted (for example, accounts created by hackers or DAPs misleading)
-  "ALL_LOG_TO_CLIENT": 1,              //displaying the node log in the wallet
+  "ALL_VIEW_ROWS": 1,                  //view all rows of blockchain tables, even if they are blacklisted (for example, DAPs misleading)
+  "START_HISTORY": 16,                 //the account number from which the transaction history is recorded
+
+
+  //HTTP access to the full-nodes wallet
+  "HTTP_PORT_NUMBER": 8000,            //http access port
+  "HTTP_PORT_PASSWORD": "SecretWord",  //password
+  "HTTP_IP_CONNECT": "123.111.222.233, 123.11.22.223", //enable IP address filter for remote access
+  "WALLET_NAME": "=Node1=",            //the name of the wallet displayed on the tab in the browser
+
 
   //MINING:
   "USE_MINING": true,                  //enable mining
@@ -46,20 +44,43 @@
   "POW_RUN_COUNT": 5000,               //the number of hashes (hash1, hash2) calculated at each mining iteration in each process (each iteration is started once in 1 MS - but within this second the POW_MAX_PERCENT parameter is taken)
 
 
+
+  //HTTP access to the light node, API1 and API2
+  "USE_API_WALLET": 1,                 //enabling light (web) client support
+  "USE_API_V1": 1,                     //enabling API1
+  "MAX_TX_FROM_WEB_IP": 20,            //limit the number of tx (every 10 minutes)
+  "USE_HARD_API_V2": 0,                //enabling API2 node support is not recommended for public access
+
+  //parameters:
+  "HTTP_HOSTING_PORT": 80,             //web port number
+  "HTTPS_HOSTING_DOMAIN": "",          //domain name
+  "HTTP_MAX_COUNT_ROWS": 20,           //limit on the number of rows of data requests
+  "HTTP_START_PAGE": "",               //home page (default web wallet)
+  "HTTP_CACHE_LONG": 10000,            //page cache time (sec)
+  "HTTP_USE_ZIP": 0,                   //using the page archiving
+  "WEB_LOG": 0,                        //enabling logging
+
+
+
   //ETC
   "USE_AUTO_UPDATE": 1,                //using online auto-updates
+  "JINN_MAX_MEMORY_USE": 400,          //memory limit that is used for the blockchain database cache in MB
   "RESTART_PERIOD_SEC": 0,             //auto restart nodes after a specified period in seconds
-  "MAX_GRAY_CONNECTIONS_TO_SERVER": 10,//the number of servers to which the node connects in gray ip mode
-  "TRANSACTION_PROOF_COUNT": 2000000,  //number of transactions stored in the database to be able to roll back the chain
+  "NOT_RUN": 0,                        //disabling the node
+  "DELTA_CURRENT_TIME": -50,           //time deviation relative to Tera network (set automatically)
+  "LOG_LEVEL":2,                       //logging details, the higher the number, the more messages
 
-  //WATCHDOG
-  "WATCHDOG_BADACCOUNT": 1,            //watching for errors of the type "BAD ACCOUNT"
 
-  "RESYNC_CONDITION": {                //if the last 10 blocks are created by their own node, then their POW should not differ more than 10 times from the previous blocks, otherwise the forced synchronization of the blockchain with the network is started. 
-    "OWN_BLOCKS": 10,
-    "K_POW": 10
-   },    				
-
-  "REST_START_COUNT": 100000,          //The number of blocks that must be checked when loading from the end of the blockchain. If the value is not set, the download mode from the end of the blockchain is not activated
 }
 ````
+
+##Note:
+ * Constants are stored in JSON format
+ * In logical constants, such as enabling or disabling something, we recommend using the number 0 or 1
+ * Any constant can be changed from the command line as follows (run inside the wallet/Source directory):
+``
+node set NAME=Value
+```
+ * After changing the constants restart the node
+
+

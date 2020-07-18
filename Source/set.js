@@ -9,9 +9,10 @@ require("./core/library");
 CheckCreateDir(global.DATA_PATH);
 
 
+//InitParamsArg(); было в require("./core/constant");
 InitParamsArg();
 
-
+//ToLog("save to "+global.DATA_PATH);
 
 SAVE_CONST(true);
 
