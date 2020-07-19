@@ -372,7 +372,7 @@ function InitClass(Engine)
                     if(!Item)
                         continue;
                     
-                    if(Item.ROOT_NODE || Item.Self || Engine.InHotDeny(Item))
+                    if(Item.ROOT_NODE || Item.Self || Engine.InHotDeny(Item) || Engine.WasBanItem(Item))
                     {
                         continue;
                     }

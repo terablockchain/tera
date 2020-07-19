@@ -1,4 +1,4 @@
-﻿Description of constants (from version 2263):
+﻿Description of constants (from version 2265):
 
 ````javascript
 {
@@ -6,6 +6,7 @@
   "IP_VERSION": 4,                      //version of ip Protocol, valid values are 4 or 6
   "JINN_IP": "10.20.30.40",             //the public IP address of the node, if not specified, is determined automatically
   "JINN_PORT": 30000,                   //port
+  "AUTODETECT_IP": 0,                   //ip address detection mode (i.e., the value of the JINN_IP constant is reset at startup)
   "CLIENT_MODE": 0                      //mode works only in client mode without a possibility to accept incoming connections
 
 

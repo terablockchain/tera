@@ -44,7 +44,7 @@ function Init(Engine)
             if(Power < global.MIN_POW_ADDRES)
                 continue;
             
-            var Item2 = {ip:Item.ip, port:Item.port, Score:Item.Score};
+            var Item2 = {ip:Item.ip, port:Item.port, Score:Item.Score, System:Item.System};
             
             Arr.push(Item2);
             

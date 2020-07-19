@@ -156,7 +156,29 @@ function InitClass(Engine)
         
         if(myip && Engine.ip === "0.0.0.0" && !IsLocalIP(myip))
         {
+            
             Child.myip = myip;
+            var AllSum = 0;
+            var CurSum = 0;
+            for(var i = 0; i < Engine.ConnectArray.length; i++)
+            {
+                var Child = Engine.ConnectArray[i];
+                if(Child && Child.IsOpen())
+                {
+                    AllSum += Child.Score;
+                    if(Child.myip === myip)
+                    {
+                        CurSum += Child.Score;
+                    }
+                }
+            }
+            
+            if(AllSum > CurSum && CurSum > 10000 && 100 * CurSum / AllSum > 50)
+            {
+                Child.ToLogNet("Set self IP: " + myip + " Score: " + CurSum, 3);
+                Engine.SetOwnIP(myip);
+                return;
+            }
             var Child2 = Engine.NewConnect(Engine.IDArr, myip, Engine.port);
             if(Child2)
             {

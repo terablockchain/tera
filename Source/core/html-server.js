@@ -1209,6 +1209,7 @@ HTTPCaller.SetNetMode = function (SetObj)
 {
     global.JINN_IP = SetObj.ip;
     global.JINN_PORT = SetObj.port;
+    global.AUTODETECT_IP = SetObj.AutoDetectIP;
     
     SAVE_CONST(true);
     
@@ -1476,6 +1477,25 @@ HTTPCaller.StartLoadNewCode = function (Param)
     
     global.StartLoadNewCode(1);
     return {result:1, sessionid:sessionid};
+}
+
+HTTPCaller.AddSetNode = function (AddrItem)
+{
+    if(!Engine.NodesTree.find(AddrItem))
+        Engine.AddNodeAddr(AddrItem);
+    var Find = Engine.NodesTree.find(AddrItem);
+    if(Find)
+    {
+        Find.System = 1;
+        Find.Score = AddrItem.Score;
+        Engine.SaveAddrNodes();
+        
+        return {result:1, sessionid:sessionid};
+    }
+    else
+    {
+        return {result:0, sessionid:sessionid};
+    }
 }
 
 

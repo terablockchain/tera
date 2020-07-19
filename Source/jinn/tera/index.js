@@ -137,29 +137,30 @@ function Create(MapName)
     
     if(Engine.AddNodeAddr)
     {
+        const SYSTEM_SCORE = 5000000;
         if(global.NETWORK === "MAIN-JINN")
         {
-            Engine.AddNodeAddr({ip:"t1.teraexplorer.com", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"t2.teraexplorer.com", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"t4.teraexplorer.com", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"t5.teraexplorer.com", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"terablockchain.org", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"teraexplorer.org", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"212.80.218.35", port:30000, Score:1000000000, System:1});
-            Engine.AddNodeAddr({ip:"149.154.70.158", port:30000, Score:1000000000, System:1});
+            Engine.AddNodeAddr({ip:"t1.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"t2.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"t4.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"t5.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"terablockchain.org", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"teraexplorer.org", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"212.80.218.35", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"149.154.70.158", port:30000, Score:SYSTEM_SCORE, System:1});
         }
         else
             if(global.NETWORK === "TEST-JINN")
             {
-                Engine.AddNodeAddr({ip:"149.154.70.158", port:33000, Score:1000000000, System:1});
-                Engine.AddNodeAddr({ip:"212.80.217.95", port:33006, Score:1000000000, System:1});
-                Engine.AddNodeAddr({ip:"212.80.217.187", port:33007, Score:1000000000, System:1});
+                Engine.AddNodeAddr({ip:"149.154.70.158", port:33000, Score:SYSTEM_SCORE, System:1});
+                Engine.AddNodeAddr({ip:"212.80.217.95", port:33006, Score:SYSTEM_SCORE, System:1});
+                Engine.AddNodeAddr({ip:"212.80.217.187", port:33007, Score:SYSTEM_SCORE, System:1});
                 Engine.AddNodeAddr({ip:"36.104.146.7", port:33000, System:1});
             }
             else
                 if(global.NETWORK === "LOCAL-JINN")
                 {
-                    Engine.AddNodeAddr({ip:"127.0.0.1", port:50001, Score:1000000000, System:1});
+                    Engine.AddNodeAddr({ip:"127.0.0.1", port:50001, Score:SYSTEM_SCORE, System:1});
                 }
         
         Engine.LoadAddrOnStart();

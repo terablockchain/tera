@@ -365,7 +365,7 @@ class AccountApp extends require("./dapp")
     ControlActSize()
     {
         var MaxNum = this.DBAct.GetMaxNum();
-        if(MaxNum >= TRANSACTION_PROOF_COUNT * 2)
+        if(MaxNum >= MAX_ACTS_LENGTH)
         {
             this.DBActPrev.CloseDBFile(this.DBActPrev.FileName)
             this.DBAct.CloseDBFile(this.DBAct.FileName)

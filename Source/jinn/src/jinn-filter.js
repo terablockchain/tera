@@ -118,9 +118,6 @@ function InitClass(Engine)
     
     Engine.AddToBan = function (Child,StrErr)
     {
-        if(Child.WasBan)
-            return;
-        Child.WasBan = 1;
         if(typeof Child.ip !== "string")
             return;
         var Key = "" + Child.ip.trim();
@@ -129,11 +126,29 @@ function InitClass(Engine)
         
         var DeltaBan = 600;
         var TimeTo = Date.now() + DeltaBan * 1000;
+        if(Child.AddrItem)
+            Child.AddrItem.BanTimeTo = TimeTo;
         Engine.BAN_IP[Key] = {TimeTo:TimeTo};
         
         JINN_STAT.BanCount++;
         
         Engine.StartDisconnect(Child, 1);
+    };
+    
+    Engine.WasBanItem = function (Child)
+    {
+        var AddrItem;
+        if(Child.AddrItem)
+            AddrItem = Child.AddrItem;
+        else
+            AddrItem = Child;
+        
+        if(AddrItem && AddrItem.BanTimeTo)
+        {
+            if(AddrItem.BanTimeTo > Date.now())
+                return 1;
+        }
+        return 0;
     };
     
     Engine.WasBanIP = function (rinfo)

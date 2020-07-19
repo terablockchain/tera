@@ -507,6 +507,9 @@ function InitClass(Engine)
         {
             for(var n = 0; n < CountItem; n++)
             {
+                if(n % 20 === 0 && !Engine.CheckProcessTime(Child))
+                    break;
+                
                 var Num = LoadNum - n;
                 if(Num <= 0)
                     break;
@@ -526,6 +529,9 @@ function InitClass(Engine)
         
         for(var n = 0; n < CountItem; n++)
         {
+            if(n % 20 === 0 && !Engine.CheckProcessTime(Child))
+                break;
+            
             if(!LoadHash || LoadNum < 0)
                 break;
             var BlockHeader = Engine.GetHeaderForChild(LoadNum, LoadHash);
@@ -548,6 +554,23 @@ function InitClass(Engine)
         return Size;
     };
     
+    Engine.CheckProcessTime = function (Child)
+    {
+        
+        if(!Child.LastTransferHRTime)
+            return 1;
+        
+        var Time = process.hrtime(Child.LastTransferHRTime);
+        var deltaTime = Time[0] * 1000 + Time[1] / 1e6;
+        if(deltaTime > JINN_CONST.MAX_CHILD_PROCESS_TIME)
+        {
+            JINN_STAT.BreakUploadTime++;
+            return 0;
+        }
+        else
+            return 1;
+    };
+    
     Engine.GetBodyArrForChild = function (Child,BlockNum,LoadNum,LoadHash,CountItem,bFirstBody)
     {
         
@@ -560,6 +583,9 @@ function InitClass(Engine)
         {
             for(var n = 0; true; n++)
             {
+                if(n % 2 === 0 && !Engine.CheckProcessTime(Child))
+                    break;
+                
                 var Num = LoadNum - n;
                 if(Num <= 0)
                     break;
@@ -607,6 +633,9 @@ function InitClass(Engine)
             
             for(var n = 1; n < true; n++)
             {
+                if(n % 2 === 0 && !Engine.CheckProcessTime(Child))
+                    break;
+                
                 if(n >= JINN_CONST.MAX_ITEMS_FOR_LOAD * 2)
                     break;
                 

@@ -145,7 +145,7 @@ if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
         var certs = LoadParams(file_sert, {});
         
         var Delta = certs.expiresAt - Date.now();
-        if(Delta >= 12 * 24 * 3600 * 1000)
+        if(Delta >= 20 * 24 * 3600 * 1000)
         {
             ToLog("*************** USE EXIST SERT. ExpiresAt: " + new Date(certs.expiresAt));
             

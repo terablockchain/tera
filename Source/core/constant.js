@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2263;
+global.UPDATE_CODE_VERSION_NUM = 2265;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -35,14 +35,15 @@ catch(e)
 
 global.InitParamsArg = InitParamsArg;
 
-global.CONST_NAME_ARR = ["IP_VERSION", "JINN_IP", "JINN_PORT", "CLIENT_MODE", "WALLET_NAME", "WALLET_DESCRIPTION", "COMMON_KEY",
-"NODES_NAME", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS", "ALL_VIEW_ROWS", "START_HISTORY",
-"LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET", "USE_API_V1", "MAX_TX_FROM_WEB_IP",
-"USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE",
-"HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU",
-"SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE", "RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET",
-"NOT_RUN", "DELTA_CURRENT_TIME", ];
+global.CONST_NAME_ARR = ["IP_VERSION", "JINN_IP", "JINN_PORT", "AUTODETECT_IP", "CLIENT_MODE", "WALLET_NAME", "WALLET_DESCRIPTION",
+"COMMON_KEY", "NODES_NAME", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS", "ALL_VIEW_ROWS",
+"START_HISTORY", "LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET", "USE_API_V1",
+"MAX_TX_FROM_WEB_IP", "USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD",
+"HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT",
+"COUNT_MINING_CPU", "SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE", "RESTART_PERIOD_SEC",
+"WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN", "DELTA_CURRENT_TIME", ];
 
+global.AUTODETECT_IP = 0;
 global.CLUSTER_HOT_ONLY = 0;
 global.NOT_RUN = 0;
 global.WEB_LOG = 0;
@@ -213,7 +214,7 @@ global.GENERATE_BLOCK_ACCOUNT = 0;
 global.TOTAL_SUPPLY_TERA = 1e9;
 
 
-global.TRANSACTION_PROOF_COUNT = 1000 * 1000;
+global.MAX_ACTS_LENGTH = 5 * 1000 * 1000;
 global.MIN_POWER_POW_ACC_CREATE = 16;
 
 global.START_MINING = 2 * 1000 * 1000;
@@ -282,8 +283,6 @@ global.DEF_CLIENT = "TERA-CORE";
 global.FIRST_TIME_BLOCK = START_NETWORK_DATE;
 global.START_BLOCK_RUN = 0;
 
-if(global.START_IP === undefined)
-    global.START_IP = "";
 if(global.LISTEN_IP === undefined)
     global.LISTEN_IP = "0.0.0.0";
 
@@ -329,6 +328,7 @@ function InitParamsArg()
     for(var i = 1; i < process.argv.length; i++)
     {
         var str = process.argv[i];
+        
         var STR = str.toUpperCase();
         var indexConst = str.indexOf("=");
         if(indexConst > 0)
@@ -362,8 +362,7 @@ function InitParamsArg()
                         else
                             if(STR.substr(0, 3) == "IP:")
                             {
-                                global.START_IP = str.substr(3);
-                                global.JINN_IP = global.START_IP;
+                                global.JINN_IP = str.substr(3);
                             }
                             else
                                 if(STR.substr(0, 7) == "LISTEN:")

@@ -368,6 +368,9 @@ function InitClass(Engine)
                 {
                     var Item = LevelData.NotConnect[i];
                     
+                    if(Engine.WasBanItem(Item))
+                        continue;
+                    
                     if(!CanTime(Item, "SendConnect", 1000, 1.5))
                         continue;
                     

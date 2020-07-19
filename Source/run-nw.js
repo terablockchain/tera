@@ -10,7 +10,7 @@ global.CODE_PATH=process.cwd();
 global.NWMODE=1;
 //global.NWVERSION="0.37.4";
 
-global.START_IP="";
+
 global.START_PORT_NUMBER = 30000;
 global.CREATE_ON_START=0;
 

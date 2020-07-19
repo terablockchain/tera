@@ -114,7 +114,9 @@ function RunServer()
 
 function StartJinn()
 {
-    global.START_IP = global.JINN_IP;
+    if(global.AUTODETECT_IP)
+        global.JINN_IP = "";
+    
     global.START_PORT_NUMBER = global.JINN_PORT;
     
     var JinnLib = require("../jinn/tera");

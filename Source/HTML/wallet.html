@@ -725,9 +725,9 @@
         $("idLogLevel").max=CONFIG_DATA.MaxLogLevel;
 
         //JINN
-        //$("idChains").disabled=!!JinnStat;
-        //$("idChains").disabled=!!JinnStat;
-        SetVisibleBlock("idUseDirectIPView",!JinnStat);
+
+
+
         SetVisibleBlock("idAMIDRow",!!JinnStat?"table-row":"none");
         SetVisibleBlock("idSetDeltaTime",!JinnStat);
 
@@ -1533,10 +1533,9 @@
             <DIV>
                 <DIV id="idNetworkView" style="display: none">
                     <H3>Network connections:</H3>
-                        <div id="idUseDirectIPView">
-                        <INPUT type="checkbox" id="idUseDirectIP">Run server and use direct IP:
-                        </div>
-                    Own IP: <INPUT  maxlength="40" id="idIP"> Port: <INPUT maxlength="9" id="idPort">
+                    Own IP: <INPUT  maxlength="40" id="idIP">
+                    Port: <INPUT maxlength="9" id="idPort">
+                    <INPUT type="checkbox" id="idAutoDetectIP" onchange="OnSetNetworkMode()">Auto detect IP
                     <INPUT type="button" onclick="SetNetworkParams(1)" class="btdoit bt" value="Save and Restart">
                     <HR>
                 </DIV>
@@ -1714,7 +1713,6 @@
 
             <INPUT type="button" onclick="RestartNode()"  class="bt btdoit btutil" value="Restart node">
             <INPUT type="button" onclick="window.Open('./HTML/stat.html','counters',920)" class="btdoit btopen bt" id="idCounters" value="Counters">
-<!--            <INPUT type="button" onclick="window.Open('./HTML/chains.html','chains',1240,600)" class="btdoit btopen bt" id="idChains" value="Chains">-->
             <INPUT type="button" onclick="window.Open('./HTML/console.html','console',1240)" class="btdoit btopen bt" id="idConsole" value="Console">
             <INPUT type="button" onclick="window.Open('./HTML/monitor.html','monitor',1200)" class="btdoit btopen bt" id="idMonitor" value="Monitor">
 
@@ -1886,7 +1884,13 @@
 
                 <DIV id="idUtilView" style="display: none">
                     <HR>
-                    <DIV id="view_header" >UTILITES<BR></DIV>
+                    <DIV id="view_header" >NETWORK UTILITES<BR></DIV><BR>
+
+                    Node ip: <INPUT class="child-node" maxlength="40" id="idChildIP"> Port: <INPUT class="child-node" type="number" id="idChildPort" value="30000"> Score: <INPUT class="child-node" type="number" id="idChildScore" value="0">
+                    <INPUT type="button" onclick="AddSetNode()" class="btdoit btutil bt" value="Add/set node">
+
+                    <HR>
+                    <DIV id="view_header" >BLOCKCHAIN UTILITES<BR></DIV><BR>
 
                     Number of blocks in depth:<INPUT type="number" id="idBlockCount" onchange = "SaveValues()" value="0"><BR>
                     <INPUT type="button" onclick="StartLoadNewCode();InitArrInfo();" class="btdoit btutil bt" value="Update code">
@@ -1896,9 +1900,9 @@
                     <INPUT type="button" onclick="ClearDataBase();InitArrInfo();" class="btdoit btutil bt" value="Clear DataBase">
 
 
-<!--                    <INPUT type="button" id="idCleanChain" onclick="CleanChain()"  class="btdoit btutil bt" style="display: none;" value="DEV:Clean chain">-->
 
                     <DIV id="idDevelopService2">
+                        <HR>
                         <BR>
                         <textarea id="idRunText" rows="8" cols="98" autofocus></textarea>
                         <BR>

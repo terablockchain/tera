@@ -253,6 +253,7 @@ function InitClass(Engine)
             var startTime = process.hrtime();
             var WasReads = JINN_STAT.ReadRowsDB;
             
+            Child.LastTransferHRTime = startTime;
             var Ret = F(Child, Data);
             
             var DeltaReads = JINN_STAT.ReadRowsDB - WasReads;

@@ -376,15 +376,27 @@ function ViewNetworkMode()
     else
     {
         SetVisibleBlock('idNetworkView', true);
-        $("idIP").value = CONFIG_DATA.CONSTANTS.JINN_IP;
+        
+        $("idAutoDetectIP").checked = CONFIG_DATA.CONSTANTS.AUTODETECT_IP;
+        if(CONFIG_DATA.CONSTANTS.AUTODETECT_IP)
+            $("idIP").value = "";
+        else
+            $("idIP").value = CONFIG_DATA.CONSTANTS.JINN_IP;
         $("idPort").value = CONFIG_DATA.CONSTANTS.JINN_PORT;
+        
+        OnSetNetworkMode();
     }
+}
+function OnSetNetworkMode()
+{
+    $("idIP").disabled = $("idAutoDetectIP").checked;
 }
 
 function SetNetworkParams(bRestart)
 {
     
     var Mode = {};
+    Mode.AutoDetectIP = $("idAutoDetectIP").checked;
     Mode.ip = $("idIP").value;
     Mode.port = ParseNum($("idPort").value);
     
@@ -500,6 +512,22 @@ function ClearDataBase()
 function StartLoadNewCode()
 {
     DoBlockChainProcess("StartLoadNewCode", "Download last code and restart node", 0);
+}
+
+
+function AddSetNode()
+{
+    var Params = {ip:$("idChildIP").value, port: + $("idChildPort").value, Score: + $("idChildScore").value, };
+    GetData("AddSetNode", Params, function (Data)
+    {
+        if(Data)
+        {
+            if(!Data.result)
+                SetStatus("Error AddSetNode", 1);
+            else
+                SetStatus("OK AddSetNode");
+        }
+    });
 }
 
 function DoBlockChainProcess(FuncName,Text,LastBlock)
