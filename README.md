@@ -200,7 +200,7 @@ pm2 start run-jinn.js
 * Algorithm:  Terahash (sha3 + Optimize RAM hashing)
 * Total suplay: 1 Bln
 * Reward for block: about 3 TERA (one billionth of the remainder of undistributed amount of coins (account 0) multiplied  by 9)
-* Block size 300 KB
+* Block size 350 KB
 * Premine: 5%
 * Development fund: 1% of the mining amount
 * Block generation time: 3 second
