@@ -20,7 +20,8 @@ function AllAlive()
 {
     for(var i = 0; i < ArrMiningWrk.length; i++)
     {
-        ArrMiningWrk[i].send({cmd:"Alive", DELTA_CURRENT_TIME:DELTA_CURRENT_TIME});
+        if(ArrMiningWrk[i])
+            ArrMiningWrk[i].send({cmd:"Alive", DELTA_CURRENT_TIME:DELTA_CURRENT_TIME});
     }
 }
 
@@ -28,7 +29,8 @@ function ClearArrMining()
 {
     for(var i = 0; i < ArrMiningWrk.length; i++)
     {
-        ArrMiningWrk[i].send({cmd:"Exit"});
+        if(ArrMiningWrk[i])
+            ArrMiningWrk[i].send({cmd:"Exit"});
     }
     
     ArrMiningWrk = [];
@@ -211,8 +213,6 @@ function SetCalcPOW(Block,cmd)
     if(global.POW_MAX_PERCENT < 0)
         global.POW_MAX_PERCENT = 0;
     
-    var BlockTimeCreate = CONSENSUS_PERIOD_TIME + Date.now() - Block.BlockNum * CONSENSUS_PERIOD_TIME - global.FIRST_TIME_BLOCK + global.DELTA_CURRENT_TIME;
-    
     BlockMining = Block;
     for(var i = 0; i < ArrMiningWrk.length; i++)
     {
@@ -221,8 +221,8 @@ function SetCalcPOW(Block,cmd)
             continue;
         CurWorker.send({cmd:cmd, BlockNum:Block.BlockNum, Account:GENERATE_BLOCK_ACCOUNT, MinerID:GENERATE_BLOCK_ACCOUNT, SeqHash:Block.SeqHash,
             Hash:Block.Hash, PrevHash:Block.PrevHash, Time:Date.now(), Num:CurWorker.Num, RunPeriod:global.POWRunPeriod, RunCount:global.POW_RUN_COUNT,
-            Percent:global.POW_MAX_PERCENT, CountMiningCPU:GetCountMiningCPU(), ProcessMemorySize:ProcessMemorySize, LastNonce0:BlockTimeCreate * 0x10000,
-            Meta:Block.Meta, });
+            Percent:global.POW_MAX_PERCENT, CountMiningCPU:GetCountMiningCPU(), ProcessMemorySize:ProcessMemorySize, LastNonce0:0, Meta:Block.Meta,
+        });
     }
 }
 

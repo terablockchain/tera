@@ -23,7 +23,7 @@
 <script type="text/javascript" src="../HTML/JS/client.js"></script>
 
 <script>
-    var JINN_MODE=0;
+    var JINN_MODE=1;
     var MaxChildCount=1;
     var SaveIdArr=[];
     //var NodesArr=[];
@@ -76,11 +76,6 @@
         {
             if(Data && Data.result)
             {
-                JINN_MODE=Data.JINN_MODE;
-                if(!JINN_MODE)
-                {
-                    MaxChildCount = 7;
-                }
                 SetHotTable(Data.ArrTree);
             }
         });
@@ -171,8 +166,7 @@
                     else
                         strClass+=" close";
 
-                    if(JINN_MODE)
-                        strClass+=" jinnnode";
+                    strClass+=" jinnnode";
 
                     // if(CurNodeID===Node.ID)
                     //     strClass=strClass+" current";
@@ -198,10 +192,7 @@
                         Str+='<INPUT type="button" class="connect" onclick="AddConnect('+Node.ID+')" value="Con...">';
                     }
 
-                    if(JINN_MODE)
-                    {
-                        Str += '<input type="checkbox" class="checkbox" id="D' + Node.ID + '" '+(Node.Debug?' checked':'')+' onchange = "SetDebug(' + Node.ID + ')"/>';
-                    }
+                    Str += '<input type="checkbox" class="checkbox" id="D' + Node.ID + '" '+(Node.Debug?' checked':'')+' onchange = "SetDebug(' + Node.ID + ')"/>';
 
                     if(Node.Hot)
                         Str+='<INPUT type="button" class="edit" onclick="DeleteNode('+Node.ID+')" value="Del">';

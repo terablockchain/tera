@@ -15,7 +15,7 @@ global.START_PORT_NUMBER = 30000;
 global.CREATE_ON_START=0;
 
 global.LOCAL_RUN=0;
-global.JINN_MODE = 1;
+
 
 require('./core/library.js');
 if(!global.HTTP_PORT_NUMBER)//try 2

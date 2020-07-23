@@ -159,7 +159,7 @@ function Init(Engine)
         }
         if(arrContentResult.length)
         {
-            JINN.DBResult.WriteBodyResult(BlockNum, arrContentResult);
+            Engine.DBResult.WriteBodyResult(BlockNum, arrContentResult);
         }
         
         for(var key in DApps)

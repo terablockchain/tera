@@ -45,7 +45,7 @@ function InitTeraHashConst()
     }
 }
 
-function GetHashFromSeqAddr(SeqHash,AddrHash,BlockNum,PrevHash,MiningVer)
+function GetHashFromSeqAddr(SeqHash,AddrHash,BlockNum,PrevHash)
 {
     if(BlockNum < BLOCKNUM_ALGO2)
     {
@@ -108,11 +108,19 @@ function GetHash(BlockHash,PrevHashNum,BlockNum,Miner,Nonce0,Nonce1,Nonce2,Delta
     return Ret;
 }
 
-function CalcHashBlockFromSeqAddr(Block,PrevHash,MiningVer)
+function CalcHashBlockFromSeqAddr(Block,PrevHash)
 {
-    var Value = GetHashFromSeqAddr(Block.SeqHash, Block.AddrHash, Block.BlockNum, PrevHash, MiningVer);
+    var Value = GetHashFromSeqAddr(Block.SeqHash, Block.AddrHash, Block.BlockNum, PrevHash);
     Block.Hash = Value.Hash;
     Block.PowHash = Value.PowHash;
+}
+
+function CalcBlockHashJinn(Block,SeqHash,AddrHash,BlockNum,PrevHash)
+{
+    var Value = GetHashFromSeqAddr(SeqHash, AddrHash, BlockNum, PrevHash);
+    Block.Hash = Value.Hash;
+    Block.PowHash = Value.PowHash;
+    Block.Power = GetPowPower(Value.PowHash);
 }
 
 
@@ -433,14 +441,6 @@ function CalcDataHash(BlockNum,PrevHash,TreeHash,PrevSumPow)
     }
 }
 
-function CalcBlockHash(Block,SeqHash,AddrHash,BlockNum,PrevHash)
-{
-    var Value = GetHashFromSeqAddr(SeqHash, AddrHash, BlockNum, PrevHash);
-    Block.Hash = Value.Hash;
-    Block.PowHash = Value.PowHash;
-    Block.Power = GetPowPower(Value.PowHash);
-}
-
 function CalcSumHash(PrevSumHash,Hash,BlockNum,SumPow)
 {
     if(BlockNum === 0)
@@ -593,7 +593,7 @@ if(typeof global === "object")
     global.CalcHashFromArray = CalcHashFromArray;
     global.CalcSumHash = CalcSumHash;
     global.CalcDataHash = CalcDataHash;
-    global.CalcBlockHash = CalcBlockHash;
+    global.CalcBlockHashJinn = CalcBlockHashJinn;
     
     global.GetArrFromValue = GetArrFromValue;
     

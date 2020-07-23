@@ -13,9 +13,9 @@ var MapInfo = {};
 function InitArrInfo()
 {
     MapInfo = {};
-    ArrInfo = [{Name:"Hashrate from the beginning of the chain", Delta:1000000000, DX:310}, {Name:"month", Delta:30.5 * 24 * 3600,
-        DX:190, Mult:10000}, {Name:"day", Delta:24 * 3600, DX:140, Mult:1000}, {Name:"hour", Delta:3600, DX:100, Mult:100}, {Name:"minute",
-        Delta:60, DX:60, Mult:1}, ];
+    ArrInfo = [{Name:"Hashrate from the beginning of the chain", Delta:1000000000, DX:310}, {Name:"month", Delta0:30.5 * 24 * 3600,
+        DX:190, Mult:10000}, {Name:"day", Delta0:24 * 3600, DX:140, Mult:1000}, {Name:"hour", Delta0:3600, DX:100, Mult:100}, {Name:"minute",
+        Delta0:60, DX:60, Mult:1}, ];
     
     for(var i = 0; i < ArrInfo.length; i++)
     {
@@ -34,6 +34,8 @@ function StartDrawBlockInfo()
     for(var i = ArrInfo.length - 1; i >= 0; i--)
     {
         var Item = ArrInfo[i];
+        Item.Delta = 1000 * Item.Delta0 / CONSENSUS_PERIOD_TIME;
+        
         Item.BlockNum2 = CurBlockNum;
         Item.BlockNum1 = Item.BlockNum2 - Item.Delta;
         if(Item.BlockNum1 < 0)
@@ -65,7 +67,7 @@ function StartDrawBlockInfo()
         if(!Item.PowerArr || Item.PowerArr.length === 0 || MustUpdate || i === ArrInfo.length - 1)
         {
             WasArr = 1;
-            Arr[i] = {BlockNum1:Item.BlockNum1, BlockNum2:Item.BlockNum2};
+            Arr[i] = {BlockNum1:Item.BlockNum1, BlockNum2:Item.BlockNum2, UseMaxChainHash:$("idChainMode").checked};
         }
     }
     

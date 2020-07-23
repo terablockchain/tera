@@ -84,7 +84,6 @@ function Init(Engine)
         }
         else
         {
-            
             Block.Hash = Engine.CalcBlockHashInner(Block);
         }
         
@@ -118,7 +117,7 @@ function Init(Engine)
             process.exit();
         }
         
-        CalcBlockHash(Block, Block.DataHash, Block.MinerHash, Block.BlockNum, PrevHash);
+        CalcBlockHashJinn(Block, Block.DataHash, Block.MinerHash, Block.BlockNum, PrevHash);
         return Block.Hash;
     };
     
@@ -154,7 +153,7 @@ function Init(Engine)
     {
         if(!Data.DataHash)
             ToLogTrace("NO DataHash on block:" + BlockNum);
-        CalcBlockHash(Data, Data.DataHash, Data.MinerHash, BlockNum);
+        CalcBlockHashJinn(Data, Data.DataHash, Data.MinerHash, BlockNum);
     };
     Engine.SetBlockDataFromDB = function (Block)
     {

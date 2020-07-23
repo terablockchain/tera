@@ -96,7 +96,7 @@ function InitClass(Engine)
         
         var Miner = ReadUintFromArr(Block.MinerHash, 0);
         var Delta = CurBlockNumT - Block.BlockNum;
-        Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### SumPow=" + Block.SumPow + " Miner=" + Miner + " Delta=" + Delta, 4);
+        Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### Power=" + Block.Power + " Miner=" + Miner + " Delta=" + Delta, 4);
     };
     
     Engine.DoCreateNewBlock = function ()

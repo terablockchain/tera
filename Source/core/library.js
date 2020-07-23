@@ -78,11 +78,6 @@ if(fs.existsSync("./lib/bintrees"))
 else
     global.RBTree = require('bintrees').RBTree;
 
-if(fs.existsSync("./lib/ntp-client"))
-    global.ntpClient = require('../lib/ntp-client');
-else
-    global.ntpClient = require('ntp-client');
-
 global.Stun = require('stun');
 global.ZIP = require("zip");
 
@@ -429,36 +424,6 @@ global.SAVE_CONST = function (bForce)
 }
 
 
-function CheckGlobalTime()
-{
-    if(global.JINN_MODE)
-        return;
-    return;
-    ntpClient.getNetworkTime("pool.ntp.org", 123, function (err,NetTime)
-    {
-        if(err)
-        {
-            TO_ERROR_LOG("MAINLIB", 110, err);
-            return;
-        }
-        
-        var curTime = new Date;
-        global.DELTA_CURRENT_TIME = NetTime - curTime;
-        
-        if(isNaN(global.DELTA_CURRENT_TIME) || typeof global.DELTA_CURRENT_TIME !== "number")
-            global.DELTA_CURRENT_TIME = 0;
-        else
-            if(Math.abs(global.DELTA_CURRENT_TIME) > 24 * 3600 * 1000)
-                global.DELTA_CURRENT_TIME = 0;
-        
-        ToLog("Get global time: " + NetTime);
-        
-        SAVE_CONST();
-    });
-    SAVE_CONST();
-}
-global.CheckGlobalTime = CheckGlobalTime;
-
 global.GetDeltaCurrentTime = function ()
 {
     if(isNaN(global.DELTA_CURRENT_TIME) || typeof global.DELTA_CURRENT_TIME !== "number")
@@ -604,18 +569,6 @@ if(global.TEST_JINN)
 }
 
 var ResConst = LOAD_CONST();
-if(global.START_SERVER)
-{
-    if(!ResConst)
-    {
-        CheckGlobalTime();
-    }
-    else
-        if(global.CHECK_GLOBAL_TIME)
-        {
-            CheckGlobalTime();
-        }
-}
 
 function GetTxSize(Tx)
 {

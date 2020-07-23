@@ -109,8 +109,7 @@ function SetNetConstJSON()
 {
     var Str = JSON.stringify(Data, "", 2);
     $("idDevService").value = Str;
-    var Data = {TERA:{MaxTrasactionLimit:CONFIG_DATA.MAX_TRANSACTION_LIMIT, ProtocolVer:CONFIG_DATA.PROTOCOL_VER, ProtocolMode:CONFIG_DATA.PROTOCOL_MODE,
-            MaxLevel:CONFIG_DATA.MAX_LEVEL, }, JINN:CONFIG_DATA.JINN_NET_CONSTANT};
+    var Data = {JINN:CONFIG_DATA.JINN_NET_CONSTANT};
     
     if(Data.JINN)
     {

@@ -83,12 +83,8 @@ function InitClass(Engine)
         });
     };
     Engine.GETNODES_SEND = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}};
-    if(global.GETNODES_VERSION <= 6)
-        Engine.GETNODES_RET = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}, Arr:[{ip:"str30", port:"uint16", BlockNum:"uint32",
-                Nonce:"uint"}]};
-    else
-        Engine.GETNODES_RET = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}, Arr:[{ip:"str40", port:"uint16", BlockNum:"uint32",
-                Nonce:"uint"}]};
+    Engine.GETNODES_RET = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}, Arr:[{ip:"str40", port:"uint16", BlockNum:"uint32",
+            Nonce:"uint"}]};
     Engine.GETNODES = function (Child,Data)
     {
         if(!Data || Data.Version !== GETNODES_VERSION)

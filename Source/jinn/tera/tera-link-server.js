@@ -128,7 +128,6 @@ function Init(Engine)
         Engine.ConvertToTera(Block, 0);
         return Block;
     };
-    SERVER.ReadBlockHeaderFromMapDB = SERVER.ReadBlockHeaderDB;
     
     SERVER.TruncateBlockDB = function (LastNum)
     {
@@ -621,34 +620,12 @@ function Init(Engine)
             
             if(PrevBlock)
             {
-                var PrevHash;
                 if(Block.BlockNum < global.UPDATE_CODE_JINN)
-                {
-                    if(arr.length !== BLOCK_PROCESSING_LENGTH)
-                    {
-                        var start = num - BLOCK_PROCESSING_LENGTH2;
-                        for(var n = 0; n < BLOCK_PROCESSING_LENGTH; n++)
-                        {
-                            var Prev = SERVER.ReadBlockHeaderDB(start + n);
-                            arr.push(Prev.Hash);
-                        }
-                    }
-                    else
-                    {
-                        arr.shift();
-                        var Prev = SERVER.ReadBlockHeaderDB(num - BLOCK_PROCESSING_LENGTH - 1);
-                        arr.push(Prev.Hash);
-                    }
-                    
-                    PrevHash = CalcLinkHashFromArray(arr, Block.BlockNum);
-                }
-                else
-                {
-                    PrevHash = Block.PrevHash;
-                }
-                var SeqHash = GetSeqHash(Block.BlockNum, PrevHash, Block.TreeHash, PrevBlock.SumPow);
+                    return num;
                 
-                var Value = GetHashFromSeqAddr(SeqHash, Block.AddrHash, Block.BlockNum, PrevHash);
+                var SeqHash = GetSeqHash(Block.BlockNum, Block.PrevHash, Block.TreeHash, PrevBlock.SumPow);
+                
+                var Value = GetHashFromSeqAddr(SeqHash, Block.AddrHash, Block.BlockNum, Block.PrevHash);
                 
                 if(CompareArr(Value.Hash, Block.Hash) !== 0)
                 {

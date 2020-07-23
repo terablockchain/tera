@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2266;
+global.UPDATE_CODE_VERSION_NUM = 2277;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -36,15 +36,16 @@ catch(e)
 global.InitParamsArg = InitParamsArg;
 
 global.CONST_NAME_ARR = ["IP_VERSION", "JINN_IP", "JINN_PORT", "AUTODETECT_IP", "CLIENT_MODE", "WALLET_NAME", "WALLET_DESCRIPTION",
-"COMMON_KEY", "NODES_NAME", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS", "ALL_VIEW_ROWS",
-"START_HISTORY", "LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET", "USE_API_V1",
-"MAX_TX_FROM_WEB_IP", "USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD",
-"HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT",
-"COUNT_MINING_CPU", "SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE", "RESTART_PERIOD_SEC",
-"WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN", "DELTA_CURRENT_TIME", ];
+"COMMON_KEY", "NODES_NAME", "CLUSTER_LEVEL_START", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS",
+"ALL_VIEW_ROWS", "START_HISTORY", "LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET",
+"USE_API_V1", "MAX_TX_FROM_WEB_IP", "USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS",
+"HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_START_TIME",
+"MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU", "SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE",
+"RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN", "DELTA_CURRENT_TIME", ];
 
 global.AUTODETECT_IP = 0;
 global.CLUSTER_HOT_ONLY = 0;
+global.CLUSTER_LEVEL_START = 0;
 global.NOT_RUN = 0;
 global.WEB_LOG = 0;
 
@@ -431,9 +432,6 @@ function InitParamsArg()
                                                         
                                                     case "TESTJINN":
                                                         global.TEST_JINN = 1;
-                                                        break;
-                                                    case "JINNMODE":
-                                                        global.JINN_MODE = 1;
                                                         break;
                                                         
                                                     case "NOPSWD":

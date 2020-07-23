@@ -71,8 +71,8 @@ function ClearDataBase()
         DApps[key].ClearDataBase();
     }
     
-    if(global.JINN)
-        global.JINN.DBResult.Clear();
+    if(global.Engine)
+        global.Engine.DBResult.Clear();
     ToLog("Start num = 0", 2);
 }
 
@@ -291,15 +291,7 @@ class CTXProcess
         if(BlockNum % 100000 === 0 || bShowDetail)
             ToLog("CALC: " + BlockNum)
         
-        try
-        {
-            SERVER.BlockProcessTX(Block)
-        }
-        catch(e)
-        {
-            ToLog("" + e, 1)
-            return 0;
-        }
+        SERVER.BlockProcessTX(Block)
         
         return 1;
     }

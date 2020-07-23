@@ -859,25 +859,6 @@
     <BR>
     <BR>
     <BR>
-    <DIV style="text-align: center;">Blockchain Power</DIV>
-    Miner:
-    <INPUT type="search" id="idMiner" style="width:50px" value="">
-
-    Block start:<INPUT type="number" id="idBlockNum" style="width:80px" value="0"> length:<INPUT type="number" id="idBlockCount" style="width:80px" value="3600">
-    <INPUT type="button" onclick="GetBlockchainPrev()" value="Prev">
-    <INPUT type="button" onclick="GetBlockchainNext()" value="Next">
-    <INPUT type="button" onclick="GetBlockchainEnd()" id="idBtEnd" value="-&gt;|">
-
-    Mode:
-    <select size="1" id="idMode">
-        <option value="POW">POW</option>
-        <option value="SenderGistogram">Sender</option>
-    </select>
-
-    <INPUT type="button" onclick="GetBlockchainStat()" value="Update">
-    <!--<DIV style="text-align: center;">Blockchain Hashrate, MH/s</DIV>-->
-    <BR>
-    <canvas  class="DIAGRAM" width='1100' height='200' id='idBlockchainStat'></canvas>
 
 
 
@@ -900,6 +881,27 @@
     <BR>
     <BR>
 
+    <b style="text-align: center;">Blockchain DB Stats:</b><BR><BR>
+    Miner:
+    <INPUT type="search" id="idMiner" style="width:50px" value="">
+
+    Block start:<INPUT type="number" id="idBlockNum" style="width:80px" value="0"> length:<INPUT type="number" id="idBlockCount" style="width:80px" value="3600">
+    <INPUT type="button" onclick="GetBlockchainPrev()" value="Prev">
+    <INPUT type="button" onclick="GetBlockchainNext()" value="Next">
+    <INPUT type="button" onclick="GetBlockchainEnd()" id="idBtEnd" value="-&gt;|">
+
+    Mode:
+    <select size="1" id="idMode">
+        <option value="POW">POW</option>
+        <option value="SenderGistogram">Sender</option>
+    </select>
+
+    <INPUT type="button" onclick="GetBlockchainStat()" value="Update">
+    <!--<DIV style="text-align: center;">Blockchain Hashrate, MH/s</DIV>-->
+    <BR>
+    <canvas  class="DIAGRAM" width='1100' height='200' id='idBlockchainStat'></canvas>
+    <BR>
+    <BR>
 
 </DIV>
 

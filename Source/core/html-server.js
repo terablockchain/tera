@@ -18,8 +18,6 @@ require("./log.js");
 const crypto = require('crypto');
 const os = require('os');
 
-var BlockTree = new STreeBuffer(300 * 1000, CompareItemHashSimple, "number");
-
 const http = require('http'), net = require('net'), url = require('url'), fs = require('fs'), querystring = require('querystring');
 
 const zlib = require('zlib');
@@ -1066,35 +1064,22 @@ HTTPCaller.SetCheckNetConstant = function (Data)
     if(Ret !== true)
         return Ret;
     
-    if(!Data || !Data.TERA)
+    if(!Data || !Data.JINN)
     {
-        ToLogClient("Data not set");
-        return {result:0, text:"Data not set"};
+        ToLogClient("Data JINN not set");
+        return {result:0, text:"Data JINN not set"};
     }
     
     var Num = GetCurrentBlockNumByTime();
     var BlockNum = GetCurrentBlockNumByTime() + Math.floor(10 * 1000 / global.CONSENSUS_PERIOD_TIME);
-    if(global.JINN)
-    {
-        var DataJinn = Data.JINN;
-        if(!DataJinn.NetConstVer)
-            DataJinn.NetConstVer = Num;
-        if(!DataJinn.NetConstStartNum)
-            DataJinn.NetConstStartNum = BlockNum;
-        var SignArr = JINN.GetSignCheckNetConstant(DataJinn);
-        DataJinn.NET_SIGN = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
-        JINN.CheckNetConstant(DataJinn);
-    }
-    else
-    {
-        var DataTera = Data.TERA;
-        DataTera.Num = Num;
-        DataTera.BlockNum = BlockNum;
-        var SignArr = SERVER.GetSignCheckNetConstant(DataTera);
-        DataTera.Sign = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
-        SERVER.CheckNetConstant({NetConstant:DataTera}, {addrStr:"local"});
-        SERVER.ResetNextPingAllNode();
-    }
+    var DataJinn = Data.JINN;
+    if(!DataJinn.NetConstVer)
+        DataJinn.NetConstVer = Num;
+    if(!DataJinn.NetConstStartNum)
+        DataJinn.NetConstStartNum = BlockNum;
+    var SignArr = Engine.GetSignCheckNetConstant(DataJinn);
+    DataJinn.NET_SIGN = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
+    Engine.CheckNetConstant(DataJinn);
     
     return {result:1, text:"Set NET_CONSTANT BlockNum=" + BlockNum};
 }
@@ -1175,7 +1160,6 @@ HTTPCaller.SaveConstant = function (SetObj)
     }
     SAVE_CONST(true);
     SERVER.DO_CONSTANT();
-    WALLET.FindMyAccounts(1);
     
     if(!WasUpdate && global.USE_AUTO_UPDATE && CODE_VERSION.VersionNum && global.UPDATE_CODE_VERSION_NUM < CODE_VERSION.VersionNum)
     {
@@ -1240,7 +1224,7 @@ HTTPCaller.GetNodeData = function (Param)
     if(!Item)
         return {};
     
-    if(global.JINN)
+    if(global.GetJinnNode)
     {
         return global.GetJinnNode(Item);
     }
@@ -1260,17 +1244,13 @@ HTTPCaller.GetHotArray = function (Param)
         if(!arr)
             continue;
         
-        if(!global.JINN)
-            arr.sort(SortNodeHot);
         for(var n = 0; n < arr.length; n++)
         {
             arr[n] = GetCopyNode(arr[n], 1);
         }
     }
     
-    var Ret = {result:1, ArrTree:ArrTree};
-    if(global.JINN)
-        Ret.JINN_MODE = 1;
+    var Ret = {result:1, ArrTree:ArrTree, JINN_MODE:1};
     return Ret;
 }
 
@@ -1332,11 +1312,7 @@ function GetCopyNode(Node,bSimple)
 
 HTTPCaller.GetBlockchainStat = function (Param)
 {
-    var Result;
-    if(global.JINN)
-        Result = global.JINN.GetBlockchainStatForMonitor(Param);
-    else
-        Result = SERVER.GetStatBlockchainPeriod(Param);
+    var Result = global.Engine.GetBlockchainStatForMonitor(Param);
     
     Result.result = 1;
     Result.sessionid = sessionid;
@@ -1453,7 +1429,6 @@ HTTPCaller.TruncateBlockChain = function (Param)
 
 HTTPCaller.ClearDataBase = function (Param)
 {
-    BlockTree.Clear();
     SERVER.ClearDataBase();
     return {result:1, sessionid:sessionid};
 }
@@ -2237,7 +2212,7 @@ if(global.HTTP_PORT_NUMBER)
         if(!ClientIPMap[remoteAddress])
         {
             ClientIPMap[remoteAddress] = 1;
-            ToLog("TRY CONNECT TO HTTP ACCESS FROM: " + remoteAddress, 0);
+            ToLog("TRY CONNECT FOR HTTP ACCESS FROM: " + remoteAddress, 0);
             ToLog("Path: " + Path, 0);
         }
         
@@ -2559,9 +2534,9 @@ function GetEventArray(SmartNum,Context)
 
 HTTPCaller.GetHashRate = function (ArrParams)
 {
-    var AllReadCount = 0;
     var CurBlockNum = GetCurrentBlockNumByTime();
     var ResArr = [];
+    var DeltaMinute = 0;
     for(var i = 0; i < ArrParams.length; i++)
     {
         var bMinutes = (i === ArrParams.length - 1);
@@ -2587,7 +2562,8 @@ HTTPCaller.GetHashRate = function (ArrParams)
         var StepDelta = Math.floor(Delta / Count);
         if(StepDelta < 1)
             StepDelta = 1;
-        
+        if(bMinutes)
+            DeltaMinute = Delta;
         var CountAvg = 3;
         
         var StepDeltaAvg = Math.floor(StepDelta / CountAvg);
@@ -2598,50 +2574,50 @@ HTTPCaller.GetHashRate = function (ArrParams)
         for(var Num = Item.BlockNum1; Num < Item.BlockNum2; Num += StepDelta)
         {
             var Power;
-            var Item2 = BlockTree.LoadValue(Num, 1);
-            if(Item2 && !bMinutes)
+            var Sum = 0;
+            var CountSum = 0;
+            for(var d = 0; d < CountAvg; d++)
             {
-                Power = Item2.Power;
+                var BlockNum = Num + d * StepDeltaAvg;
+                var Block = Engine.GetBlockHeaderDB(BlockNum);
+                if(Block)
+                {
+                    CountSum++;
+                    if(Item.UseMaxChainHash)
+                    {
+                        var MaxPower = 0;
+                        var ArrChain = Engine.DB.GetChainArrByNum(BlockNum);
+                        for(var m = 0; m < ArrChain.length; m++)
+                        {
+                            if(MaxPower < ArrChain[m].Power)
+                                MaxPower = ArrChain[m].Power;
+                        }
+                        Sum += MaxPower;
+                    }
+                    else
+                    {
+                        Sum += Block.Power;
+                    }
+                }
+                if(StepDelta / CountAvg <= 1)
+                    break;
+            }
+            if(CountSum)
+            {
+                Power = Math.floor(Sum / CountSum);
             }
             else
             {
-                var Sum = 0;
-                var CountSum = 0;
-                for(var d = 0; d < CountAvg; d++)
-                {
-                    var Block = SERVER.ReadBlockHeaderFromMapDB(Num + d * StepDeltaAvg);
-                    if(Block)
-                    {
-                        if(!Block.FromMap)
-                            AllReadCount++;
-                        
-                        CountSum++;
-                        Sum += GetPowPower(Block.PowHash);
-                    }
-                    if(StepDelta / CountAvg <= 1)
-                        break;
-                }
-                if(CountSum)
-                {
-                    Power = Math.floor(Sum / CountSum);
-                    if(Power && !bMinutes)
-                        BlockTree.SaveValue(Num, {BlockNum:Num, Power:Power});
-                }
-                else
-                {
-                    Power = 0;
-                }
+                Power = 0;
             }
+            
             ItervalArr.push(Power);
         }
         ResArr[i] = ItervalArr;
     }
     
     var Ret = {result:1, ItervalArr:ResArr};
-    if(global.JINN)
-    {
-        Ret.MaxHashStatArr = JINN.GetTimeStatArr(GetCurrentBlockNumByTime() - 60);
-    }
+    Ret.MaxHashStatArr = Engine.GetTimeStatArr(GetCurrentBlockNumByTime() - DeltaMinute);
     return Ret;
 }
 
@@ -2704,7 +2680,7 @@ function GetTransactionFromBody(Params,Block,TrNum,Body)
         
         if(global.JINN_MODE)
         {
-            JINN.DBResult.CheckLoadResult(Block);
+            Engine.DBResult.CheckLoadResult(Block);
         }
         
         if(Block.VersionBody === 1 && Block.arrContentResult)

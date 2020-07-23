@@ -31,7 +31,9 @@ function InitClass(Engine)
     {
         if(a.BlockNum !== b.BlockNum)
             return a.BlockNum - b.BlockNum;
-        return CompareArr(a.Hash, b.Hash);
+        if(a.Power !== b.Power)
+            return b.Power - a.Power;
+        return CompareArr(b.Hash, a.Hash);
     });
     
     Engine.MaxTimeStatus = {Power:0, Hash:MAX_ARR_32, PowHash:MAX_ARR_32};
@@ -50,7 +52,7 @@ function InitClass(Engine)
         if(Math.abs(NewDelta) > 1000000000)
             NewDelta = 0;
         
-        if(Engine.WasCorrectTime > 0)
+        if(Engine.WasCorrectTime >= 2)
         {
             var NewDeltaAbs = Math.abs(NewDelta);
             if(NewDeltaAbs >= JINN_CONST.CORRECT_TIME_TRIGGER)
@@ -146,18 +148,27 @@ function InitClass(Engine)
     Engine.GetTimeStatArr = function (StartBlockNum)
     {
         var Arr = [];
-        var find = {BlockNum:StartBlockNum, Hash:ZERO_ARR_32};
+        var find = {BlockNum:StartBlockNum - 1, Power:100, Hash:ZERO_ARR_32};
         var it = Engine.TreeTimeStat.lowerBound(find);
+        
+        var PrevBlockNum = 0;
         while(it)
         {
+            
             it.next();
             var item = it.data();
             if(!item)
                 break;
             
+            if(PrevBlockNum === item.BlockNum)
+                continue;
+            
+            PrevBlockNum = item.BlockNum;
+            
             Arr.push(item.Power);
             Arr.push(item.BlockNum);
         }
+        
         return Arr;
     };
     Engine.DoTimeCorrect = function (bReglament)
@@ -170,7 +181,7 @@ function InitClass(Engine)
         if(!MaxItem.BlockNum)
             return;
         
-        if(Engine.TreeTimeStat.find({Hash:MaxItem.Hash, BlockNum:MaxItem.BlockNum}))
+        if(Engine.TreeTimeStat.find(MaxItem))
             return;
         
         var DeltaStart = Date.now() - MaxItem.StartTime;
@@ -193,6 +204,9 @@ function InitClass(Engine)
         if(!global.FIRST_TIME_BLOCK)
             return;
         
+        if(Engine.TreeTimeStat.find(Item))
+            return;
+        
         var CurBlockNum = Engine.CurrentBlockNum;
         var Delta = CurBlockNum - BlockNum;
         if(Engine.WasCorrectTime && Math.abs(Delta) > OLD_STAT_BLOCKNUM_PERIOD)
@@ -203,20 +217,13 @@ function InitClass(Engine)
         var MaxItem = Engine.MaxTimeStatus;
         if(Item.Power && !IsEqArr(Item.Hash, MaxItem.Hash) && Engine.CompareMaxLider(Item, MaxItem) > 0)
         {
-            var BlockTimeCreate = ReadUintFromArr(Item.MinerHash, 6);
-            BlockTimeCreate = Math.floor(BlockTimeCreate / 0x10000);
-            if(BlockTimeCreate < 1000 * JINN_CONST.STEP_CALC_POW_LAST || BlockTimeCreate > 1000 * JINN_CONST.STEP_CALC_POW_FIRST)
-            {
-                return;
-            }
             
-            if(Engine.TreeTimeStat.find({Hash:Item.Hash, BlockNum:BlockNum}))
-                return;
-            
+            var BlockTimeCreate = CONSENSUS_PERIOD_TIME * JINN_CONST.STEP_NEW_BLOCK + JINN_CONST.DELTA_TIME_NEW_BLOCK;
             var BlockTimeNow = CONSENSUS_PERIOD_TIME + Date.now() - BlockNum * CONSENSUS_PERIOD_TIME - global.FIRST_TIME_BLOCK + global.DELTA_CURRENT_TIME;
+            
             MaxItem.Delta = (BlockTimeNow - BlockTimeCreate) / 1000;
             
-            ToLog("BlockNum=" + BlockNum + " Power=" + Item.Power + " Time: " + BlockTimeNow + " - " + BlockTimeCreate + " = " + MaxItem.Delta,
+            ToLog("BlockNum=" + BlockNum + " Power=" + Item.Power + " Time: " + BlockTimeNow + " - " + Delta + " = " + MaxItem.Delta + "  BlockTimeCreate=" + BlockTimeCreate,
             5);
             
             MaxItem.StartTime = Date.now();
@@ -240,7 +247,7 @@ function InitClass(Engine)
         var OldBlockNum = CurBlockNum - OLD_STAT_BLOCKNUM_PERIOD;
         while(1)
         {
-            var Item = Engine.TreeTimeStat.max();
+            var Item = Engine.TreeTimeStat.min();
             if(!Item || Item.BlockNum >= OldBlockNum)
                 break;
             Engine.TreeTimeStat.remove(Item);

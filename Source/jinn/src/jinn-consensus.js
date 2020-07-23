@@ -629,14 +629,14 @@ function InitClass(Engine)
         var Delta = CurBlockNumT - BlockSeed.BlockNum;
         var Miner = ReadUintFromArr(BlockSeed.MinerHash, 0);
         if(BlockSeed.BlockNum > 25)
-            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockHead) + " - " + BlockInfo(BlockSeed) + "  ### SumPow=" + BlockSeed.SumPow + " Miner=" + Miner + " COUNT=" + Count,
+            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + "  ### Power=" + BlockSeed.Power + " Miner=" + Miner + " COUNT=" + Count,
             3);
         
         var Res = Engine.DB.SaveChainToDB(BlockHead, BlockSeed);
         
         if(Res !== 1)
         {
-            Engine.ToLog("Error on SaveChainToDB " + BlockHead.BlockNum + "-" + BlockSeed.BlockNum + " POW:" + BlockSeed.SumPow, 2);
+            Engine.ToLog("Error on SaveChainToDB " + BlockHead.BlockNum + "-" + BlockSeed.BlockNum + " Power:" + BlockSeed.Power, 2);
             Engine.TruncateChain(BlockHead.BlockNum);
             return Res;
         }

@@ -17,7 +17,7 @@
 global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Hot"});
 
 
-var START_TRANSFER_TIMEOUT = 3 * 1000;
+var START_TRANSFER_TIMEOUT = 5 * 1000;
 var MAX_TRANSFER_TIMEOUT = 3 * 1000;
 
 var MAX_DENY_HOT_CONNECTION = 7 * 1000;
@@ -70,6 +70,9 @@ function InitClass(Engine)
     {
         if(!Child.HotItem)
             Engine.LinkHotItem(Child);
+        
+        if(!Child.HotItem)
+            Child.ToLogNet("Err ChecHotItem");
         
         return !!Child.HotItem;
     };
@@ -130,10 +133,8 @@ function InitClass(Engine)
             return 0;
         
         if(!Engine.ChecHotItem(Child))
-        {
-            Child.ToLogNet("Err ChecHotItem");
             return 0;
-        }
+        
         var CanSet = Engine.CanSetHot(Child);
         if(CanSet <= 0)
         {
@@ -185,13 +186,15 @@ function InitClass(Engine)
     Engine.CanSetHot = function (Child)
     {
         if(global.CLUSTER_HOT_ONLY && !Child.Name)
-            return 0;
+            return  - 7;
+        if(!global.CLUSTER_HOT_ONLY && Child.Level < global.CLUSTER_LEVEL_START && Child.Name)
+            return  - 6;
         
         if(!Child.TestExchangeTime)
-            return 0;
+            return  - 5;
         
         if(Engine.IsStartingTime && Child.TestExchangeTime !== global.BEST_TEST_TIME)
-            return 0;
+            return  - 4;
         
         if(!Engine.ChecHotItem(Child))
             return  - 1;
@@ -214,8 +217,10 @@ function InitClass(Engine)
         if(bCheckLevel)
             Engine.RecalcChildLevel(Child, 2);
         
-        if(Engine.CanSetHot(Child) <= 0)
+        var CanSet = Engine.CanSetHot(Child);
+        if(CanSet <= 0)
         {
+            Child.ToLogNet("Err CanSetHot=" + CanSet);
             return 0;
         }
         
@@ -254,9 +259,8 @@ function InitClass(Engine)
         
         Child.HotReady = 0;
         
-        Child.ToLogNet("GOT CONNECTLEVEL UseExtraSlot=" + Data.UseExtraSlot);
-        
         var WasExtra = 0;
+        Child.ToLogNet("GOT CONNECTLEVEL UseExtraSlot=" + Data.UseExtraSlot);
         var Ret = Engine.SetHotConnection(Child, 1);
         if(!Ret && Data.UseExtraSlot)
         {
@@ -294,6 +298,8 @@ function InitClass(Engine)
         {
             Engine.DenyHotConnection(Child);
         }
+        
+        Child.ToLogNet("Result CONNECTLEVEL=" + Ret);
         
         return {result:Ret};
     };

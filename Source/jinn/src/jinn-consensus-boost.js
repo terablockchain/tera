@@ -327,6 +327,16 @@ function InitClass(Engine)
         BodyTreeHash:"zhash", };
     Engine.MAXHASH = function (Child,Data)
     {
+        var Ret = Engine.DoMaxHash(Child, Data);
+        if(!Ret.result)
+        {
+            Child.ToLogNet("MAXHASH result 0, errnum:" + Ret.errnum);
+        }
+        return Ret;
+    };
+    
+    Engine.DoMaxHash = function (Child,Data)
+    {
         var WasReads = JINN_STAT.ReadRowsDB;
         Engine.MaxHashReceiveCount++;
         
@@ -443,13 +453,6 @@ function InitClass(Engine)
         }
         
         Engine.MaxHashReceiveCount++;
-        
-        var DeltaReads = JINN_STAT.ReadRowsDB - WasReads;
-        if(DeltaReads > 5000 && global.JINN_WARNING >= 3)
-        {
-            Child.ToLog("DeltaReads=" + DeltaReads + " HeaderArr=" + HeaderArr.length + "  BodyArr=" + BodyArr.length + " to " + ChildName(Child));
-            Child.ToLog("Data: " + JSON.stringify(Data));
-        }
         
         return {result:1, Mode:RetMode, HeaderArr:HeaderArr, BodyArr:BodyArr, BodyTreeNum:BodyTreeNum, BodyTreeHash:BodyTreeHash};
     };

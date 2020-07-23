@@ -285,8 +285,7 @@ function CreateTransaction(F,CheckErr,Run)
     
     var TR = {Type:111, Version:3, OperationSortID:OperationID, FromID:FromID, OperationID:OperationID, To:[{PubKey:ToPubKeyArr,
             ID:ToID, SumCOIN:Coin.SumCOIN, SumCENT:Coin.SumCENT}], Description:Description, Body:AttachBody, Sign:CurrentTR.Sign, };
-    if(window.JINN_MODE)
-        TR.Version = 4;
+    TR.Version = 4;
     
     Object.defineProperties(TR, {bFindAcc:{configurable:true, writable:true, enumerable:false, value:bFindAcc}});
     Object.defineProperties(TR, {Run:{configurable:true, writable:true, enumerable:false, value:Run}});

@@ -167,7 +167,6 @@ function Create(MapName)
     }
     
     global.Engine = Engine;
-    global.JINN = Engine;
     
     StartRun();
 }

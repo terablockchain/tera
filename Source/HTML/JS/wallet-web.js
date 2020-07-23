@@ -333,7 +333,7 @@ function FindLider()
         {
             Item.Stat++;
             
-            SetStatus("Found node " + Item.ip + ":" + Item.port + " pow=" + Item.SumPower + "  t:" + Item.DeltaTime2 + " ms");
+            SetStatus("Found node " + Item.ip + ":" + Item.port + " pow=" + Item.SumPower / COUNT_BLOCK_PROOF + "  ping=" + Item.DeltaTime2 + " ms");
             MainServer = Item;
             SaveServerMap();
             break;
@@ -346,7 +346,7 @@ function CalcPowFromBlockChain(BufRead,name)
 {
     var Sum = 0;
     var Arr = GetBlockArrFromBuffer(BufRead);
-    if(Arr.length === COUNT_BLOCK_PROOF)
+    if(Arr.length && Arr.length === COUNT_BLOCK_PROOF)
     {
         var FirstBlockNum = Arr[0].BlockNum;
         var LastBlockNum = Arr[Arr.length - 1].BlockNum;
@@ -368,7 +368,7 @@ function CalcPowFromBlockChain(BufRead,name)
             }
             
             Block.DataHash = CalcDataHash(Block.BlockNum, Block.PrevHash, Block.TreeHash, Block.PrevSumPow);
-            CalcBlockHash(Block, Block.DataHash, Block.MinerHash, Block.BlockNum, Block.PrevHash);
+            CalcBlockHashJinn(Block, Block.DataHash, Block.MinerHash, Block.BlockNum, Block.PrevHash);
             
             Sum += Arr[i].Power;
             

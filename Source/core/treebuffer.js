@@ -50,7 +50,11 @@ class STreeBuffer
     SaveValue(Hash, Value)
     {
         if(typeof Hash !== this.KeyType)
-            throw "MUST ONLY TYPE=" + this.KeyType + " in " + Hash;
+        {
+            var Str = "MUST ONLY TYPE=" + this.KeyType + " in " + Hash;
+            ToLogTrace(Str)
+            throw Str;
+        }
         
         if(Value !== undefined)
         {

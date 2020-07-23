@@ -651,6 +651,9 @@
 
 
 
+
+        SetVisibleBlock("idChainMode",Data.IsDevelopAccount);
+
         SetVisibleBlock("idDevelopService",Data.IsDevelopAccount);
         SetVisibleBlock("idDevelopService2",CONFIG_DATA.CONSTANTS.WALLET_DESCRIPTION);
         //SetVisibleBlock("idTimeDelta",CONFIG_DATA.CONSTANTS.COMMON_KEY?"inline-block":0);
@@ -723,14 +726,6 @@
         $("idLogLevel").value=CONFIG_DATA.CONSTANTS.LOG_LEVEL;
         $("idLogLevelText").innerText=CONFIG_DATA.CONSTANTS.LOG_LEVEL;
         $("idLogLevel").max=CONFIG_DATA.MaxLogLevel;
-
-        //JINN
-
-
-
-        SetVisibleBlock("idAMIDRow",!!JinnStat?"table-row":"none");
-        SetVisibleBlock("idSetDeltaTime",!JinnStat);
-
 
     }
     
@@ -1381,6 +1376,7 @@
                     <HR>
                 </DIV>
             </DIV>
+            <INPUT type="checkbox" id="idChainMode" style="float: right; display: none" onchange="StartDrawBlockInfo()">
             <canvas  width='800' height='30' id='idBlockInfo'></canvas>
             <BR><BR>
             <DIV style="float: left; font-family: monospace">
@@ -1998,12 +1994,13 @@
 </html>
 
 <DIV id="idStableScroll" align='center'>
-    <A href="https://terafoundation.org/?utm_source=full_node&utm_medium=link&utm_campaign=wallet">Web</A>
+    <A href="https://terafoundation.org/?utm_source=full_node&utm_medium=link&utm_campaign=wallet">Web-site</A>
     <A href="https://bitcointalk.org/index.php?topic=4573801.0">ANN</A>
     <A href="https://twitter.com/terafoundation">Twitter</A>
     <A href="https://t.me/terafoundation">Telegram</A>
     <A href="https://discord.gg/CvwrbeG">Discord</A>
     <A href="https://jq.qq.com/?_wv=1027&k=5KpN5fw">QQ</A>
+    <A href="http://127.0.0.1/web-wallet">Wallet</A>
     <!--progr76@gmail.com-->
 </DIV>
 

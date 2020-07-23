@@ -650,7 +650,7 @@ class AccountApp extends require("./dapp")
     {
         if(global.JINN_MODE)
         {
-            JINN.DBResult.CheckLoadResult(Block)
+            Engine.DBResult.CheckLoadResult(Block)
         }
         
         if(Block.VersionBody === 1)

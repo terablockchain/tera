@@ -440,7 +440,7 @@ class CDBChain
             
             var PrevBlock = this.ReadBlock(Block.PrevBlockPosition, bRaw);
             
-            if(global.TEST_DB_BLOCK && !IsEqArr(Block.PrevSumHash, PrevBlock.SumHash))
+            if(global.TEST_DB_BLOCK && PrevBlock && !IsEqArr(Block.PrevSumHash, PrevBlock.SumHash))
                 PrevBlock = undefined
             
             if(PrevBlock)
