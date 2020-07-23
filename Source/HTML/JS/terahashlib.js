@@ -453,6 +453,7 @@ function CalcSumHash(PrevSumHash,Hash,BlockNum,SumPow)
     if(BlockNum >= global.UPDATE_CODE_JINN)
     {
         // new code
+        
         return Hash;
     }
     else

@@ -1065,7 +1065,15 @@ function PrevValueToString(Item)
 {
     if(Item.Mode === 200 && Item.HashData)
     {
-        return "Acc:\n" + GetHexFromArr(Item.HashData.AccHash) + "\n" + "Sum:\n" + GetHexFromArr(Item.HashData.SumHash);
+        var Str = "Acc:<BR>" + GetHexFromArr(Item.HashData.AccHash) + "<BR>";
+        
+        if(Item.HashData.ErrorSumHash)
+            Str += "<span class='red'>";
+        Str += "Sum:<BR>" + GetHexFromArr(Item.HashData.SumHash);
+        if(Item.HashData.ErrorSumHash)
+            Str += "</span>";
+        
+        return Str;
     }
     else
     {

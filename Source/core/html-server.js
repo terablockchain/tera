@@ -743,10 +743,7 @@ HTTPCaller.GetWalletInfo = function (Params)
         LastTimeGetHashRate = Date.now();
     }
     
-    var StateTX = DApps.Accounts.DBStateTX.Read(0);
-    var TXBlockNum = 0;
-    if(StateTX)
-        TXBlockNum = StateTX.BlockNum;
+    var TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
     var RestContext = SERVER.LoadRestContext;
     if(RestContext && RestContext.Mode < 200)
     {

@@ -211,8 +211,6 @@ class AccountApp extends require("./dapp")
         "{Type:byte, BlockNum:uint32,TrNum:uint16, NextPos:uint, Direct:str1,CorrID:uint, SumCOIN:uint,SumCENT:uint32,Description:str}",
         ]
         
-        this.DBStateTX = new DBRow("accounts-tx", 6 + 6 + 88, "{BlockNum:uint, BlockNumMin:uint, Reserve: arr88}", bReadOnly)
-        
         this.ErrSumHashCount = 0
         if(global.READ_ONLY_DB)
             return;
@@ -242,7 +240,6 @@ class AccountApp extends require("./dapp")
         this.DBAct.Truncate( - 1)
         this.DBActPrev.Truncate( - 1)
         this.DBAccountsHash.Truncate( - 1)
-        this.DBStateTX.Truncate( - 1)
         this.DBRest.Truncate( - 1)
         this.DBStateWriteInner({Num:0, PubKey:[], Value:{BlockNum:1, SumCOIN:0.95 * TOTAL_SUPPLY_TERA}, Name:"System account"}, 1)
         for(var i = 1; i < 8; i++)
@@ -253,8 +250,6 @@ class AccountApp extends require("./dapp")
         this.DBStateWriteInner({Num:9, PubKey:GetArrFromHex(ARR_PUB_KEY[1]), Value:{BlockNum:1, SumCOIN:0}, Name:"Developer account"})
         for(var i = 10; i < BLOCK_PROCESSING_LENGTH2; i++)
             this.DBStateWriteInner({Num:i, PubKey:GetArrFromHex(ARR_PUB_KEY[i - 8]), Value:{BlockNum:1}, Name:""})
-        
-        this.DBStateTX.Write({Num:0, BlockNum:0})
         
         var FileItem = HistoryDB.OpenDBFile(FILE_NAME_HISTORY, 1);
         fs.ftruncateSync(FileItem.fd, 0)
@@ -273,8 +268,6 @@ class AccountApp extends require("./dapp")
         this.DBAct.Close()
         if(this.DBAccountsHash)
             this.DBAccountsHash.Close()
-        if(this.DBStateTX)
-            this.DBStateTX.Close()
         this.DBRest.Close()
         
         if(this.DBStateHistory)
@@ -1107,13 +1100,6 @@ class AccountApp extends require("./dapp")
         if(global.START_SERVER)
             throw "DeleteAct START_SERVER";
         
-        if(BlockNumFrom > 0)
-        {
-            var StateTX = this.DBStateTX.Read(0);
-            StateTX.BlockNum = BlockNumFrom - 1
-            this.DBStateTX.Write(StateTX)
-        }
-        
         this.DeleteActOneDB(this.DBAct, BlockNumFrom)
         this.DeleteActOneDB(this.DBActPrev, BlockNumFrom)
         this.DBAccountsHash.Truncate(Math.trunc(BlockNumFrom / PERIOD_ACCOUNT_HASH))
@@ -1408,27 +1394,33 @@ class AccountApp extends require("./dapp")
             var Item = this.DBActPrev.Read(num);
             if(!Item)
                 break;
-            Item.Num = "Prev." + Item.Num
             if(Item.TrNum === 0xFFFF)
                 Item.TrNum = ""
             arr.push(Item)
             if(arr.length > count)
                 return arr;
         }
-        start = num - this.DBActPrev.GetMaxNum() - 1
+        var DeltaNum = this.DBActPrev.GetMaxNum() + 1;
+        start = num - DeltaNum
         
         for(num = start; num < start + count; num++)
         {
             var Item = this.DBAct.Read(num);
             if(!Item)
                 break;
-            Item.Num = Item.Num
+            Item.Num = Item.Num + DeltaNum
             if(Item.TrNum === 0xFFFF)
                 Item.TrNum = ""
             
             if(Item.Mode === 200)
             {
                 Item.HashData = this.GetActHashesFromBuffer(Item.PrevValue.Data)
+                if(Item)
+                {
+                    var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);
+                    if(!Block || !IsEqArr(Block.SumHash, Item.HashData.SumHash))
+                        Item.HashData.ErrorSumHash = 1
+                }
             }
             
             arr.push(Item)
@@ -1553,30 +1545,6 @@ class AccountApp extends require("./dapp")
     {
         var BlockNum = Block.BlockNum;
         var DBChanges = this.DBChanges;
-        var PrevSumHash;
-        if(Block.ForcePrevSumHash)
-        {
-            PrevSumHash = Block.PrevSumHash
-        }
-        else
-        {
-            var LastItem = this.GetLastBlockNumItem();
-            if(LastItem && LastItem.HashData && LastItem.BlockNum === Block.BlockNum - 1)
-                PrevSumHash = LastItem.HashData.SumHash
-            else
-                PrevSumHash = Block.PrevSumHash
-        }
-        
-        var SumHash = CalcSumHash(PrevSumHash, Block.Hash, Block.BlockNum, Block.SumPow);
-        if(!Block.NoChechkSumHash && !IsEqArr(Block.SumHash, SumHash))
-        {
-            ToLog("#SUMHASH: Error sum hash on Block=" + Block.BlockNum, 3)
-            this.ErrSumHashCount++
-        }
-        else
-        {
-            this.ErrSumHashCount = 0
-        }
         
         for(var i = 0; i < DBChanges.BlockHistory.length; i++)
         {
@@ -1641,13 +1609,9 @@ class AccountApp extends require("./dapp")
         this.DBChanges = undefined
         var AccHash = this.GetCalcHash();
         this.CalcHash(Block, DBChanges.BlockMaxAccount)
-        var HashData = {SumHash:SumHash, AccHash:AccHash};
+        var HashData = {SumHash:Block.SumHash, AccHash:AccHash};
         this.DBAct.Write({Num:undefined, ID:0, BlockNum:BlockNum, PrevValue:{Data:this.GetBufferFromActHashes(HashData)}, TrNum:0xFFFF,
             Mode:200})
-        
-        var StateTX = this.DBStateTX.Read(0);
-        StateTX.BlockNum = BlockNum
-        this.DBStateTX.Write(StateTX)
         
         return 1;
     }

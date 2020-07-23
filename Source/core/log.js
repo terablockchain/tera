@@ -106,10 +106,10 @@ global.ToError = function (Str)
     ToLogFile(file_name_error, Str);
 }
 
-global.ToErrorTx = function (Str)
+global.ToErrorTx = function (Str,LogLevel)
 {
     SaveToLogFileSync(file_name_error_tx, Str);
-    ToLog(Str);
+    ToLog(Str, LogLevel);
 }
 
 function ToLogFile(file_name,Str,bNoFile)

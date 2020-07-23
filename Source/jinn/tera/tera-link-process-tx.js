@@ -201,12 +201,8 @@ function Init(Engine)
         if(!Length)
             return 0;
         
-        var StartNum;
-        var StateTX = DApps.Accounts.DBStateTX.Read(0);
-        if(StateTX)
-            StartNum = StateTX.BlockNum - Length + 1;
-        else
-            StartNum = SERVER.BlockNumDB - Length + 1;
+        var LastBlockNum = DApps.Accounts.GetLastBlockNumAct();
+        var StartNum = LastBlockNum - Length + 1;
         
         if(StartNum < 0)
             StartNum = 0;
