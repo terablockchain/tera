@@ -36,14 +36,23 @@ function RunOnUpdate()
             {
                 if(!IsValidAccHash(60000000, "606875E0C29CD23BDB1CD57F3A7CDAE2D0560E40009AD36967CCE2635305F737", 1))
                 {
-                    SendRewrteTx();
+                    SendRewrteAllTx();
                 }
             }
             if(CurNum < 2256)
             {
                 if(!IsValidAccHash(63768000, "DC94462951421910D727E9B47D23D4A8E55A30A2C740782130D92C4561B1084D", 0))
                 {
-                    SendRewrteTx();
+                    SendRewrteAllTx();
+                }
+            }
+            
+            if(CurNum < 2280)
+            {
+                if(!IsValidAccHash(64066000, "BEDE06813E6FA24FB5A896138EA3CE2AE509A5CFF889DC0051917C33EFA18ED1", 1))
+                {
+                    ToLog("Find error AccHash - Start check on Acts...");
+                    global.CheckSumHashInActs();
                 }
             }
         }
@@ -51,7 +60,7 @@ function RunOnUpdate()
     }
 }
 
-function SendRewrteTx()
+function SendRewrteAllTx()
 {
     setTimeout(function ()
     {
@@ -60,6 +69,15 @@ function SendRewrteTx()
     }, 4000);
 }
 
+function SendRewrteTx(StartNum)
+{
+    setTimeout(function ()
+    {
+        ToLog("---------- UPD: START RewrteTx from: " + StartNum);
+        if(global.TX_PROCESS && global.TX_PROCESS.RunRPC)
+            global.TX_PROCESS.RunRPC("ReWriteDAppTransactions", {StartNum:StartNum});
+    }, 4000);
+}
 
 function IsValidAccHash(BlockNum,StrHash,bMust)
 {
@@ -78,3 +96,42 @@ function IsValidAccHash(BlockNum,StrHash,bMust)
         return 0;
 }
 
+
+
+global.CheckSumHashInActs = function ()
+{
+    if(CheckActDB("DBActPrev"))
+        CheckActDB("DBAct");
+}
+
+function CheckActDB(Name)
+{
+    var DBAct = DApps.Accounts[Name];
+    
+    var Num = 0;
+    while(1)
+    {
+        var Item = DBAct.Read(Num);
+        if(!Item)
+            return 1;
+        
+        if(Item.Mode === 200)
+        {
+            Item.HashData = DApps.Accounts.GetActHashesFromBuffer(Item.PrevValue.Data);
+            if(Item)
+            {
+                var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);
+                if(!Block || !IsEqArr(Block.SumHash, Item.HashData.SumHash))
+                {
+                    ToLog("---------Error SumHash on BlockNum=" + Item.BlockNum);
+                    SendRewrteTx(Item.BlockNum);
+                    
+                    return 0;
+                }
+            }
+        }
+        
+        Num++;
+        Num % 100000 === 0 && ToLog(Name + ": Check " + Num);
+    }
+}

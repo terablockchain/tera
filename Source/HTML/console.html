@@ -137,11 +137,13 @@
     {
         var Select=document.getElementById("idConsoleIndex");
         Select.options.length=0;
+        var Arr=[];
         for(var Name in CodeList)
         {
-            Select.options[Select.options.length]=new Option(Name,Name,false,(Name===CurrName));
+            Arr.unshift(new Option(Name,Name,false,(Name===CurrName)));
         }
-
+        for(var i=0;i<Arr.length;i++)
+            Select.options[i]=Arr[i];
     }
     ///////////////////
 

@@ -92,9 +92,8 @@ function ReWriteDAppTransactions(Params,bSilent)
     StopTxProcess = 0;
     
     var StartNum = Params.StartNum;
-    var EndNum = Params.EndNum;
     if(!bSilent)
-        ToErrorTx("ReWriteDAppTransactions: " + StartNum + " - " + EndNum);
+        ToErrorTx("ReWriteDAppTransactions from: " + StartNum);
     
     while(1)
     {
@@ -132,7 +131,7 @@ class CTXProcess
         var LastBlockNum = DApps.Accounts.GetLastBlockNumAct();
         ToErrorTx("Init CTXProcess: " + LastBlockNum)
         
-        ReWriteDAppTransactions({StartNum:LastBlockNum - 10, EndNum:LastBlockNum}, 1)
+        ReWriteDAppTransactions({StartNum:LastBlockNum - 10}, 1)
         
         this.ErrorAccHash = 0
         this.TimeWait = 0
