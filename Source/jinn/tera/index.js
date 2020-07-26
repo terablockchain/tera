@@ -120,7 +120,6 @@ function Create(MapName)
     if(global.LOCAL_RUN)
     {
         JINN_CONST.UNIQUE_IP_MODE = 0;
-        global.AUTO_CORRECT_TIME = 0;
         
         global.DELTA_CURRENT_TIME = 0;
         JINN_CONST.MIN_COUNT_FOR_CORRECT_TIME = 10;

@@ -175,7 +175,7 @@ function NormalizeMaxArr(Arr,TimeBlockNum)
 }
 function DrawBlockMaxArr(ArrMax,AvgTotal)
 {
-    if(!ArrMax)
+    if(!ArrMax || !ArrMax.length)
         return 0;
     
     var obj = document.getElementById("idBlockInfo");
@@ -186,6 +186,7 @@ function DrawBlockMaxArr(ArrMax,AvgTotal)
         return 0;
     
     var Arr = Minute.PowerArr;
+    var DX = Minute.DX / ArrMax.length;
     
     var CountErrMax = 0;
     for(var i = 0; i < ArrMax.length; i++)
@@ -194,19 +195,22 @@ function DrawBlockMaxArr(ArrMax,AvgTotal)
             continue;
         
         var PowerMax = ArrMax[i];
-        var Delta = i;
+        var DeltaX = i * DX;
         
-        var x = obj.width - Delta;
+        var x = obj.width - DeltaX;
         var y = ValueToY(obj, AvgTotal, PowerMax);
         
         var PowerBlock = Arr[i];
         if(!PowerBlock)
             PowerBlock = 0;
         var DeltaPow = PowerMax - PowerBlock;
-        if(DeltaPow > 0)
+        if(DeltaPow >= 0)
         {
             CountErrMax++;
             ctx.beginPath();
+            if(DeltaPow >= 1)
+                y--;
+            
             if(DeltaPow >= 8)
                 ctx.fillStyle = "#ff0f00";
             else

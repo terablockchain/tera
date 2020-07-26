@@ -115,8 +115,6 @@ function ReWriteDAppTransactions(Params,bSilent)
     }
     
     ToErrorTx("Start num = " + StartNum, 2);
-    
-    DApps.Accounts.ErrSumHashCount = 0;
 }
 
 
@@ -136,6 +134,7 @@ class CTXProcess
         this.ErrorAccHash = 0
         this.TimeWait = 0
     }
+    
     Run()
     {
         if(StopTxProcess)
@@ -150,9 +149,9 @@ class CTXProcess
         this.TimeWait = 0
         if(this.ErrorAccHash >= 10000)
         {
-            this.ErrorAccHash = 0
             ToErrorTx("FORCE CalcMerkleTree")
             DApps.Accounts.CalcMerkleTree(1)
+            this.ErrorAccHash = 0
             return;
         }
         

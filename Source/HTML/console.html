@@ -241,7 +241,7 @@
     var LastOK="";
     function SendECode(Code)
     {
-        var DeltaBlockNum = parseInt($("idConsoleDeltaBlockNum").value);
+        var DeltaBlockNum = 0;
 
 
 //        if($("idSendAll").checked)
@@ -420,12 +420,12 @@
             return;
 
         $("idConsoleSend").value=localStorage["idConsoleSend"];
-        $("idConsoleDeltaBlockNum").value=localStorage["idConsoleDeltaBlockNum"];
+        // $("idConsoleDeltaBlockNum").value=localStorage["idConsoleDeltaBlockNum"];
         $("idNode").value=localStorage["idConsoleNode"];
         if(localStorage["ConsoleCodeList2"])
             CodeList=JSON.parse(localStorage["ConsoleCodeList2"]);
-        if(localStorage["idConsolePow"])
-            $("idPow").value=localStorage["idConsolePow"];
+        // if(localStorage["idConsolePow"])
+        //     $("idPow").value=localStorage["idConsolePow"];
 
 
         $("idProcessTX").checked=(localStorage["idConsoleProcessTX"]==="true");
@@ -438,10 +438,10 @@
         localStorage["WasSaveConsole"]=1;
 
         localStorage["idConsoleSend"]=$("idConsoleSend").value;
-        localStorage["idConsoleDeltaBlockNum"]=$("idConsoleDeltaBlockNum").value;
+        // localStorage["idConsoleDeltaBlockNum"]=$("idConsoleDeltaBlockNum").value;
         localStorage["idConsoleNode"]=$("idNode").value;
         localStorage["ConsoleCodeList2"]=JSON.stringify(CodeList);
-        localStorage["idConsolePow"]=$("idPow").value;
+        //localStorage["idConsolePow"]=$("idPow").value;
         //localStorage["idConsoleSendAll"]=$("idSendAll").checked;
 
         localStorage["idConsoleProcessTX"]=$("idProcessTX").checked;
@@ -480,7 +480,10 @@
         <option value="HEX">HEX Transaction</option>
     </select>
 
-    POW:<INPUT type="number" id="idPow" style="width: 50px;" onchange="SaveValues();" value="14"> Delta BlockNum:<INPUT type="number" id="idConsoleDeltaBlockNum" style="width: 50px;" value="10">
+    <INPUT type="checkbox" id="idProcessTX">TX-process
+    <INPUT type="checkbox" id="idProcessWEB">Web-process
+
+<!--    POW:<INPUT type="number" id="idPow" style="width: 50px;" onchange="SaveValues();" value="14"> Delta BlockNum:<INPUT type="number" id="idConsoleDeltaBlockNum" style="width: 50px;" value="10">-->
 
     <BR>
 
@@ -507,9 +510,7 @@
             <INPUT type="button" onclick="SendToServer()" class="bt btdoit" id="idBtRun" value="Send">
             <!--All<input type="checkbox" id="idSendAll" onchange = "SaveValues()"/>-->
             <INPUT type="button" onclick="StartSendServerPeriod()" class="bt btdoit" id="idBtRun2" value="Run every">
-            <INPUT type="number" id="idPeriodRun" style="width: 50px;" onchange="SaveValues();" value="1">sec
-            <INPUT type="checkbox" id="idProcessTX">TX-process
-            <INPUT type="checkbox" id="idProcessWEB">Web-process
+            <INPUT type="number" id="idPeriodRun" style="width: 50px;" onchange="SaveValues();" value="1"> sec
 
 
             <BR>

@@ -15,7 +15,7 @@
 'use strict';
 global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, DoNodeFirst:DoNodeFirst, Name:"Timing"});
 
-const OLD_STAT_BLOCKNUM_PERIOD = 3600;
+const OLD_STAT_BLOCKNUM_PERIOD = 1000;
 
 //Engine context
 function InitClass(Engine)
@@ -36,7 +36,8 @@ function InitClass(Engine)
         return CompareArr(b.Hash, a.Hash);
     });
     
-    Engine.MaxTimeStatus = {Power:0, Hash:MAX_ARR_32, PowHash:MAX_ARR_32};
+    Engine.MaxStatItem = {};
+    
     Engine.SetTimeDelta = function (DeltaTime)
     {
         global.DELTA_CURRENT_TIME = DeltaTime;
@@ -91,7 +92,7 @@ function InitClass(Engine)
                 NewDelta =  - global.DELTA_CURRENT_TIME;
             }
         
-        if(NewDelta && global.JINN_AUTO_CORRECT_TIME)
+        if(NewDelta && global.AUTO_CORRECT_TIME)
         {
             var Value = Math.floor(global.DELTA_CURRENT_TIME + NewDelta);
             ToLog("SET TIME DELTA: " + Value + " ms (" + NewDelta + ")", 4);
@@ -177,26 +178,38 @@ function InitClass(Engine)
         if(bReglament)
             Engine.ClearOldStatTree();
         
-        var MaxItem = Engine.MaxTimeStatus;
-        if(!MaxItem.BlockNum)
+        var MaxItem = Engine.MaxStatItem;
+        if(!MaxItem.BlockNum || IsEqArr(MaxItem.Hash, MAX_ARR_32))
+            return;
+        
+        MaxItem.DeltaStart = Date.now() - MaxItem.StartTime;
+        if(!bReglament && MaxItem.DeltaStart < 2000)
             return;
         
         if(Engine.TreeTimeStat.find(MaxItem))
+        {
+            Engine.InitMaxStatItem();
             return;
+        }
         
-        var DeltaStart = Date.now() - MaxItem.StartTime;
-        if(DeltaStart < 1000)
-            return;
-        
-        Engine.TreeTimeStat.insert({Hash:MaxItem.Hash, BlockNum:MaxItem.BlockNum, Power:MaxItem.Power});
+        Engine.TreeTimeStat.insert({BlockNum:MaxItem.BlockNum, Power:MaxItem.Power, Hash:MaxItem.Hash});
         
         JINN_STAT.DeltaTime = MaxItem.Delta;
         
         var Delta = MaxItem.Delta;
         Engine.StatArray.push(Delta);
-        Engine.MaxTimeStatus = {Power:0, Hash:MAX_ARR_32, PowHash:MAX_ARR_32};
+        Engine.InitMaxStatItem();
         
         Engine.CorrectTimeByArr(Engine.StatArray);
+    };
+    
+    Engine.InitMaxStatItem = function ()
+    {
+        Engine.MaxStatItem = {};
+        Engine.MaxStatItem.Power = 0;
+        Engine.MaxStatItem.StartTime = 0;
+        Engine.MaxStatItem.Hash = MAX_ARR_32;
+        Engine.MaxStatItem.PowHash = MAX_ARR_32;
     };
     
     Engine.AddMaxHashToTimeStat = function (Item,BlockNum)
@@ -211,21 +224,16 @@ function InitClass(Engine)
         var Delta = CurBlockNum - BlockNum;
         if(Engine.WasCorrectTime && Math.abs(Delta) > OLD_STAT_BLOCKNUM_PERIOD)
             return;
-        
+        var MaxItem = Engine.MaxStatItem;
         Engine.CalcHashMaxLider(Item, BlockNum);
         
-        var MaxItem = Engine.MaxTimeStatus;
-        if(Item.Power && !IsEqArr(Item.Hash, MaxItem.Hash) && Engine.CompareMaxLider(Item, MaxItem) > 0)
+        if(Item.Power && MaxItem.Hash && !IsEqArr(Item.Hash, MaxItem.Hash) && Engine.CompareMaxLider(Item, MaxItem) > 0)
         {
             
             var BlockTimeCreate = CONSENSUS_PERIOD_TIME * JINN_CONST.STEP_NEW_BLOCK + JINN_CONST.DELTA_TIME_NEW_BLOCK;
             var BlockTimeNow = CONSENSUS_PERIOD_TIME + Date.now() - BlockNum * CONSENSUS_PERIOD_TIME - global.FIRST_TIME_BLOCK + global.DELTA_CURRENT_TIME;
             
             MaxItem.Delta = (BlockTimeNow - BlockTimeCreate) / 1000;
-            
-            ToLog("BlockNum=" + BlockNum + " Power=" + Item.Power + " Time: " + BlockTimeNow + " - " + Delta + " = " + MaxItem.Delta + "  BlockTimeCreate=" + BlockTimeCreate,
-            5);
-            
             MaxItem.StartTime = Date.now();
             MaxItem.BlockNum = BlockNum;
             MaxItem.Power = Item.Power;
@@ -233,6 +241,9 @@ function InitClass(Engine)
             MaxItem.Hash = Item.Hash;
             MaxItem.PowHash = Item.PowHash;
             MaxItem.CurBlockNum = CurBlockNum;
+            
+            ToLog("BlockNum=" + BlockNum + " Power=" + Item.Power + " Time: " + BlockTimeNow + " - " + Delta + " = " + MaxItem.Delta + "  BlockTimeCreate=" + BlockTimeCreate,
+            5);
         }
         
         Engine.DoTimeCorrect();
@@ -268,6 +279,7 @@ function InitClass(Engine)
                 delete Map[Key];
         }
     };
+    Engine.InitMaxStatItem();
 }
 
 global.BlockStatCount = 10;

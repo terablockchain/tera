@@ -210,8 +210,6 @@ class AccountApp extends require("./dapp")
         this.HistoryFormatArr = ["{Type:byte, BlockNum:uint32,TrNum:uint16, NextPos:uint}", "{Type:byte, BlockNum:uint32,TrNum:uint16, NextPos:uint, Direct:str1,CorrID:uint, SumCOIN:uint,SumCENT:uint32}",
         "{Type:byte, BlockNum:uint32,TrNum:uint16, NextPos:uint, Direct:str1,CorrID:uint, SumCOIN:uint,SumCENT:uint32,Description:str}",
         ]
-        
-        this.ErrSumHashCount = 0
         if(global.READ_ONLY_DB)
             return;
         this.DBAccountsHash = new DBRow("accounts-hash3", 6 + 32 + 32 + 32 + 6 + 6 + 14, "{BlockNum:uint, AccHash:hash, SumHash:hash, SmartHash:hash, AccountMax:uint, SmartCount:uint, Reserve: arr14}",
@@ -1503,9 +1501,6 @@ class AccountApp extends require("./dapp")
     {
         this.DBState.MerkleHash = this.DBState.CalcMerkleTree(bForce)
         this.DBState.WasUpdate = 0
-        
-        if(bForce)
-            this.ErrSumHashCount = 0
     }
     GetAdviserByMiner(Map, Id)
     {

@@ -45,7 +45,7 @@ switch(global.MODE_RUN)
         global.START_BAD_ACCOUNT_CONTROL = 0;
         global.BLOCKNUM_TICKET_ALGO = 0;
         global.MIN_POWER_POW_TR = 0;
-        global.AUTO_CORRECT_TIME = 0;
+        
         global.CHECK_GLOBAL_TIME = 0;
         
         global.UPDATE_CODE_1 = 0;
@@ -96,7 +96,7 @@ switch(global.MODE_RUN)
         global.START_BAD_ACCOUNT_CONTROL = 500000;
         global.BLOCKNUM_TICKET_ALGO = 0;
         global.MIN_POWER_POW_TR = 0;
-        global.AUTO_CORRECT_TIME = 0;
+        
         global.CHECK_GLOBAL_TIME = 0;
         
         global.UPDATE_CODE_JINN = 0;
