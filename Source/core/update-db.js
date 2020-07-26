@@ -39,22 +39,31 @@ function RunOnUpdate()
                     SendRewrteAllTx();
                 }
             }
-            if(CurNum < 2256)
-            {
-                if(!IsValidAccHash(63768000, "DC94462951421910D727E9B47D23D4A8E55A30A2C740782130D92C4561B1084D", 0))
+            else
+                if(CurNum < 2256)
                 {
-                    SendRewrteAllTx();
+                    if(!IsValidAccHash(63768000, "DC94462951421910D727E9B47D23D4A8E55A30A2C740782130D92C4561B1084D", 0))
+                    {
+                        SendRewrteAllTx();
+                    }
                 }
-            }
-            
-            if(CurNum < 2280)
-            {
-                if(!IsValidAccHash(64066000, "BEDE06813E6FA24FB5A896138EA3CE2AE509A5CFF889DC0051917C33EFA18ED1", 1))
-                {
-                    ToLog("Find error AccHash - Start check on Acts...");
-                    global.CheckSumHashInActs();
-                }
-            }
+                else
+                    if(CurNum < 2280)
+                    {
+                        if(!IsValidAccHash(64066000, "BEDE06813E6FA24FB5A896138EA3CE2AE509A5CFF889DC0051917C33EFA18ED1", 1))
+                        {
+                            ToLog("Find error AccHash - Start check on Acts...");
+                            global.CheckSumHashInActs();
+                        }
+                    }
+                    else
+                        if(CurNum < 2282)
+                        {
+                            if(!IsValidAccHash(64111000, "B7E2E8DD5391432419C9BD58F5443660F76C4CCB063C411EB125C10A77DC7C3D", 0))
+                            {
+                                SendRewrteAllTx();
+                            }
+                        }
         }
         ToLog("UPDATER Finish");
     }
