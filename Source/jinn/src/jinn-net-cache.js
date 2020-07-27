@@ -323,7 +323,7 @@ function InitClass(Engine)
     {
     };
     
-    Engine.ProcessMaxHashOnSend = function (Child,BlockNum,Arr,ArrRepeat)
+    Engine.PackMaxHashOnSend = function (Child,BlockNum,Arr,ArrRepeat)
     {
         if(!glUsePackMaxHash)
             return;
@@ -361,7 +361,7 @@ function InitClass(Engine)
         }
     };
     
-    Engine.ProcessMaxHashOnReceive = function (Child,BlockNum,Arr,ArrRepeat)
+    Engine.UnpackMaxHashOnReceive = function (Child,BlockNum,Arr,ArrRepeat)
     {
         if(!glUsePackMaxHash)
             return 1;

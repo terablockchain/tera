@@ -2614,7 +2614,7 @@ HTTPCaller.GetHashRate = function (ArrParams)
     }
     
     var Ret = {result:1, ItervalArr:ResArr};
-    Ret.MaxHashStatArr = Engine.GetTimeStatArr(GetCurrentBlockNumByTime() - DeltaMinute);
+    Ret.MaxHashStatArr = Engine.GetTimePowerArr(GetCurrentBlockNumByTime() - DeltaMinute);
     return Ret;
 }
 

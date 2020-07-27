@@ -205,7 +205,7 @@ function InitClass(Engine)
         }
         
         var ChildWas = Engine.LevelArr[Child.Level];
-        if(ChildWas && ChildWas !== Child && (ChildWas.IsHot() || Engine.InHotStart(ChildWas)))
+        if(ChildWas && ChildWas !== Child)
         {
             return  - 3;
         }
@@ -435,6 +435,9 @@ function InitClass(Engine)
                         var NowTime = Date.now();
                         var Delta1 = NowTime - Child.FirstTransferTime;
                         var Delta2 = NowTime - Child.LastTransferTime;
+                        if(Child.Name)
+                            Delta2 = Delta2 / 3;
+                        
                         if((Delta1 > START_TRANSFER_TIMEOUT) && (Delta2 > MAX_TRANSFER_TIMEOUT))
                         {
                             bNeedDisconnect = 1;

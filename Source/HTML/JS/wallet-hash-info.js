@@ -208,8 +208,6 @@ function DrawBlockMaxArr(ArrMax,AvgTotal)
         {
             CountErrMax++;
             ctx.beginPath();
-            if(DeltaPow >= 1)
-                y--;
             
             if(DeltaPow >= 8)
                 ctx.fillStyle = "#ff0f00";

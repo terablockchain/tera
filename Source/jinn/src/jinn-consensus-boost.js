@@ -172,7 +172,7 @@ function InitClass(Engine)
         let DeltaForSend = Engine.CurrentBlockNum - BlockNum;
         
         var ArrRepeat = [];
-        Engine.ProcessMaxHashOnSend(Child, BlockNum, Arr, ArrRepeat);
+        Engine.PackMaxHashOnSend(Child, BlockNum, Arr, ArrRepeat);
         
         let SendTransferTime = Date.now();
         Engine.Send("MAXHASH", Child, {BlockNum:BlockNum, Receive:Engine.MaxHashReceiveCount, CodeVersionNum:CODE_VERSION.VersionNum,
@@ -345,7 +345,7 @@ function InitClass(Engine)
         
         var BlockNum = Data.BlockNum;
         
-        if(!Engine.ProcessMaxHashOnReceive(Child, BlockNum, Data.Arr, Data.ArrRepeat))
+        if(!Engine.UnpackMaxHashOnReceive(Child, BlockNum, Data.Arr, Data.ArrRepeat))
             return {result:0, errnum:2};
         
         Engine.ProcessNetConstant(Child, Data.NetConstVer);
