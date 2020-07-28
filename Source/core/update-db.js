@@ -32,7 +32,7 @@ function RunOnUpdate()
         
         if(global.NETWORK === "MAIN-JINN")
         {
-            if(CurNum < 2294)
+            if(CurNum < 2297)
             {
                 if(!IsValidAccHash(64166000, "98352EF599DDBA82882A95504C5CBEFB864CDBBBDB7C1F524647921761ED96B7", 0))
                 {
@@ -51,7 +51,7 @@ function SendRewrteAllTx()
     {
         ToLog("---------- UPD: START RewriteAllTransactions");
         SERVER.RewriteAllTransactions();
-    }, 4000);
+    }, 30 * 1000);
 }
 
 function SendRewrteTx(StartNum)
@@ -61,7 +61,7 @@ function SendRewrteTx(StartNum)
         ToLog("---------- UPD: START RewrteTx from: " + StartNum);
         if(global.TX_PROCESS && global.TX_PROCESS.RunRPC)
             global.TX_PROCESS.RunRPC("ReWriteDAppTransactions", {StartNum:StartNum});
-    }, 4000);
+    }, 30 * 1000);
 }
 
 function IsValidAccHash(BlockNum,StrHash,bMust)
