@@ -357,20 +357,9 @@ function TxHexToArr(TR)
     }
 }
 
-
-global.DELTA_FOR_TIME_TX = 1;
-
 function GetBlockNumTr(arr)
 {
-    var BlockNum = DELTA_FOR_TIME_TX + GetCurrentBlockNumByTime(0);
-    if(arr[0] === TYPE_TRANSACTION_CREATE)
-    {
-        var BlockNum2 = Math.floor(BlockNum / 10) * 10;
-        if(BlockNum2 < BlockNum)
-            BlockNum2 = BlockNum2 + 10;
-        BlockNum = BlockNum2;
-    }
-    
+    var BlockNum = GetCurrentBlockNumByTime(0);
     return BlockNum;
 }
 

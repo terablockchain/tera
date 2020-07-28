@@ -1889,8 +1889,13 @@ class AccountApp extends require("./dapp")
             return 0;
         
         var Type = Body[0];
-        if(Type === TYPE_TRANSACTION_CREATE && (BlockNum % BLOCK_CREATE_INTERVAL === 0 || BlockNum >= global.UPDATE_CODE_7))
-            return 1;
+        if(Type === TYPE_TRANSACTION_CREATE)
+        {
+            if(JINN_CONST.BLOCK_CREATE_INTERVAL < 2 || BlockNum % JINN_CONST.BLOCK_CREATE_INTERVAL > 1 === 0)
+                return 1;
+            else
+                return 0;
+        }
         else
             if(Type !== TYPE_TRANSACTION_TRANSFER)
                 return 0;

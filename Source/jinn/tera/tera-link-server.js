@@ -27,11 +27,11 @@ function Init(Engine)
         var Delta_Time = 0;
         
         var BlockNum = GetCurrentBlockNumByTime(Delta_Time);
-        if(arr[0] === TYPE_TRANSACTION_CREATE)
+        if(arr[0] === TYPE_TRANSACTION_CREATE && JINN_CONST.BLOCK_CREATE_INTERVAL > 1)
         {
-            var BlockNum2 = Math.floor(BlockNum / 10) * 10;
+            var BlockNum2 = Math.floor(BlockNum / JINN_CONST.BLOCK_CREATE_INTERVAL) * JINN_CONST.BLOCK_CREATE_INTERVAL;
             if(BlockNum2 < BlockNum)
-                BlockNum2 = BlockNum2 + 10;
+                BlockNum2 = BlockNum2 + JINN_CONST.BLOCK_CREATE_INTERVAL;
             BlockNum = BlockNum2;
         }
         

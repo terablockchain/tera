@@ -185,56 +185,22 @@ function GetBlockNumTr(arr)
         Delta_Time = 2000;
     
     var BlockNum = window.DELTA_FOR_TIME_TX + GetCurrentBlockNumByTime(Delta_Time);
-    if(arr[0] === TYPE_TRANSACTION_CREATE)
-    {
-        var BlockNum2 = Math.floor(BlockNum / 10) * 10;
-        if(BlockNum2 < BlockNum)
-            BlockNum2 = BlockNum2 + 10;
-        BlockNum = BlockNum2;
-    }
     
     return BlockNum;
 }
 
-var LastCreatePOWTrType = 0;
-var LastCreatePOWBlockNum = 0;
-var LastCreatePOWHash = [255, 255, 255, 255];
 var glNonce = 0;
-function CreateHashBodyPOWInnerMinPower(arr,MinPow)
+function CreateHashBodyPOWInnerMinPower(arr)
 {
     SetMinPow();
     
     var TrType = arr[0];
     var BlockNum = GetBlockNumTr(arr);
-    if(MinPow === undefined)
-    {
-        MinPow = MIN_POWER_POW_TR + Math.log2(arr.length / 128);
-    }
-    if(window.JINN_MODE)
-        MinPow = 0;
     while(1)
     {
         var arrhash = CreateHashBody(arr, BlockNum, glNonce);
         var power = GetPowPower(arrhash);
-        if(power >= MinPow)
-        {
-            if(!window.JINN_MODE && LastCreatePOWBlockNum === BlockNum && LastCreatePOWTrType === TrType && CompareArr(LastCreatePOWHash,
-            arrhash) > 0)
-            {
-            }
-            else
-            {
-                LastCreatePOWBlockNum = BlockNum;
-                LastCreatePOWTrType = TrType;
-                LastCreatePOWHash = arrhash;
-                return glNonce;
-            }
-        }
-        glNonce++;
-        if(glNonce % 2000 === 0)
-        {
-            BlockNum = GetBlockNumTr(arr);
-        }
+        return glNonce;
     }
 }
 
