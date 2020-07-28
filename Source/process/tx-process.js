@@ -93,7 +93,9 @@ function ReWriteDAppTransactions(Params,bSilent)
     
     var StartNum = Params.StartNum;
     if(!bSilent)
+    {
         ToErrorTx("ReWriteDAppTransactions from: " + StartNum);
+    }
     
     while(1)
     {
@@ -113,8 +115,6 @@ function ReWriteDAppTransactions(Params,bSilent)
             break;
         }
     }
-    
-    ToErrorTx("Start num = " + StartNum, 2);
 }
 
 
@@ -226,89 +226,17 @@ class CTXProcess
         if(!Block)
             return 0;
         
-        if(Block.BlockNum !== BlockNum)
+        if(CheckSumHash && !IsEqArr(Block.PrevSumHash, CheckSumHash))
         {
-            ToLogOne("Error read block on " + BlockNum)
+            ToErrorTx("DB was rewrited on Block=" + BlockNum, 2)
             return 0;
         }
-        
-        this.ErrorAccHash = 0
-        
-        if(BlockNum % 100000 === 0 || bShowDetail)
-            ToErrorTx("CALC: " + BlockNum)
-        
-        SERVER.BlockProcessTX(Block)
-        
-        return 1;
-    }
-    RunItem0()
-    {
-        
-        var LastItem = DApps.Accounts.GetLastBlockNumItem();
-        if(!LastItem)
-        {
-            if(SERVER.GetMaxNumBlockDB() < BLOCK_PROCESSING_LENGTH2)
-                return 0;
-            
-            return this.DoBlock(1);
-        }
-        
-        var PrevBlockNum = LastItem.BlockNum;
-        var NextBlockNum = PrevBlockNum + 1;
-        var PrevBlock = SERVER.ReadBlockHeaderDB(PrevBlockNum);
-        if(!PrevBlock)
-        {
-            ToErrorTx("Block:DeleteTX on Block=" + PrevBlockNum, 3)
-            BlockDeleteTX(PrevBlockNum)
-            return 0;
-        }
-        
-        return this.DoBlock0(NextBlockNum, PrevBlock.SumHash, LastItem.HashData);
-    }
-    
-    DoBlock0(BlockNum, PrevSumHash, PrevHashData)
-    {
-        var PrevBlockNum = BlockNum - 1;
-        if(global.glStopTxProcessNum && BlockNum >= global.glStopTxProcessNum)
-        {
-            if(global.WasStopTxProcessNum !== BlockNum)
-                ToErrorTx("--------------------------------Stop TX AT NUM: " + BlockNum)
-            global.WasStopTxProcessNum = BlockNum
-            return 0;
-        }
-        
-        if(BlockNum >= BLOCK_PROCESSING_LENGTH2 && PrevBlockNum && PrevHashData)
-        {
-            if(!IsEqArr(PrevHashData.SumHash, PrevSumHash))
-            {
-                ToErrorTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 4)
-                
-                BlockDeleteTX(PrevBlockNum)
-                return 0;
-            }
-            
-            var AccHash = DApps.Accounts.GetCalcHash();
-            if(!IsEqArr(PrevHashData.AccHash, AccHash))
-            {
-                ToErrorTx("AccHash:DeleteTX on Block=" + PrevBlockNum, 2)
-                
-                this.ErrorAccHash++
-                BlockDeleteTX(PrevBlockNum)
-                return 0;
-            }
-        }
-        
-        var Block = SERVER.ReadBlockDB(BlockNum);
-        if(!Block)
-            return 0;
         
         if(Block.BlockNum !== BlockNum)
         {
             ToLogOne("Error read block on " + BlockNum)
             return 0;
         }
-        
-        Block.PrevSumHash = PrevSumHash
         
         this.ErrorAccHash = 0
         
@@ -326,6 +254,50 @@ function BlockDeleteTX(BlockNum)
     SERVER.BlockDeleteTX({BlockNum:BlockNum});
 }
 
+function CheckActDB()
+{
+    if(!SERVER)
+        return;
+    
+    SERVER.Close();
+    
+    var DBAct = DApps.Accounts.DBAct;
+    var MaxNum = DBAct.GetMaxNum();
+    var Num = MaxNum - 100;
+    if(Num < 0)
+        Num = 0;
+    var Item = DBAct.Read(Num);
+    if(!Item)
+        return;
+    ToErrorTx("Check " + Item.BlockNum, 4);
+    while(1)
+    {
+        var Item = DBAct.Read(Num);
+        if(!Item)
+            return;
+        
+        if(Item.Mode === 200)
+        {
+            Item.HashData = DApps.Accounts.GetActHashesFromBuffer(Item.PrevValue.Data);
+            if(Item)
+            {
+                var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);
+                if(!Block)
+                    return;
+                if(!IsEqArr(Block.SumHash, Item.HashData.SumHash))
+                {
+                    ToErrorTx("Error SumHash on BlockNum=" + Item.BlockNum, 4);
+                    ReWriteDAppTransactions({StartNum:Item.BlockNum}, 1);
+                    
+                    return;
+                }
+            }
+        }
+        
+        Num++;
+    }
+}
+
 var TxProcess = new CTXProcess();
 
 setInterval(function ()
@@ -338,3 +310,9 @@ setInterval(function ()
     TxProcess.Run();
 }
 , 50);
+
+setInterval(function ()
+{
+    CheckActDB();
+}
+, 10 * 1000);

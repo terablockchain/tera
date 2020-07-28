@@ -1378,6 +1378,16 @@ class AccountApp extends require("./dapp")
         return SmartState;
     }
     
+    FindActByBlockNum(BlockNum)
+    {
+        var Num = this.DBAct.FastFindBlockNum(BlockNum);
+        if(typeof Num === "number")
+            Num += 1 + this.DBActPrev.GetMaxNum()
+        else
+            Num = this.DBActPrev.FastFindBlockNum(BlockNum)
+        return Num;
+    }
+    
     GetActsMaxNum()
     {
         return this.DBActPrev.GetMaxNum() + this.DBAct.GetMaxNum();

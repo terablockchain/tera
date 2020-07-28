@@ -554,3 +554,20 @@ function DoBlockChainProcess(FuncName,Text,LastBlock)
         }
     });
 }
+
+function SetNewActSearch(DefActs)
+{
+    var BlockNum =  + $("idViewActBlockNum").value;
+    if(!BlockNum)
+        return;
+    
+    GetData("FindActByBlockNum", {BlockNum:BlockNum}, function (Data)
+    {
+        ToLog(Data);
+        if(Data && Data.Num)
+        {
+            $("idViewActNum").value = Data.Num;
+            ViewCurrent(DefActs);
+        }
+    });
+}

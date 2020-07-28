@@ -691,6 +691,12 @@ HTTPCaller.GetActList = function (Params)
     return {arr:arr, result:1};
 }
 
+HTTPCaller.FindActByBlockNum = function (Params)
+{
+    var Num = DApps.Accounts.FindActByBlockNum(Params.BlockNum);
+    return {Num:Num, result:1};
+}
+
 HTTPCaller.GetHashList = function (Params)
 {
     var arr = DApps.Accounts.DBAccountsHash.GetRows(Params.StartNum, Params.CountNum, Params.Filter);

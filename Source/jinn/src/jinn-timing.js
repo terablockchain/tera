@@ -67,7 +67,6 @@ function InitClass(Engine)
             {
                 NewDelta = 0;
             }
-            
             var TestValue = Math.floor(global.DELTA_CURRENT_TIME + NewDelta);
             if(Math.abs(TestValue) > Math.abs(global.DELTA_CURRENT_TIME))
             {
@@ -84,7 +83,7 @@ function InitClass(Engine)
                     NewDelta += JINN_CONST.INFLATION_TIME_VALUE;
         }
         else
-            if(!NewDelta)
+            if(!NewDelta && Math.abs(global.DELTA_CURRENT_TIME) <= JINN_CONST.INFLATION_TIME_VALUE)
             {
                 NewDelta =  - global.DELTA_CURRENT_TIME;
             }
@@ -135,7 +134,6 @@ function InitClass(Engine)
         
         if(Count < MinCount / 2)
         {
-            Engine.CorrectTimeByDelta(0);
             return 0;
         }
         
@@ -181,7 +179,6 @@ function InitClass(Engine)
         var Arr = Engine.GetTimeStatArr(Engine.TimeCorrectStartNum);
         
         var ArrDelta = [];
-        Engine.StatArray2 = [];
         for(var i = 0; i < Arr.length; i++)
         {
             var Item = Arr[i];
@@ -189,7 +186,6 @@ function InitClass(Engine)
                 continue;
             
             ArrDelta.push(Item.Delta);
-            Engine.StatArray2.push({Delta:Item.Delta, BlockNum:Item.BlockNum, Power:Item.Power});
         }
         
         Engine.LastArrDelta = ArrDelta;

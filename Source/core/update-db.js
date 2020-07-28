@@ -32,38 +32,14 @@ function RunOnUpdate()
         
         if(global.NETWORK === "MAIN-JINN")
         {
-            if(CurNum < 2254)
+            if(CurNum < 2294)
             {
-                if(!IsValidAccHash(60000000, "606875E0C29CD23BDB1CD57F3A7CDAE2D0560E40009AD36967CCE2635305F737", 1))
+                if(!IsValidAccHash(64166000, "98352EF599DDBA82882A95504C5CBEFB864CDBBBDB7C1F524647921761ED96B7", 0))
                 {
-                    SendRewrteAllTx();
+                    ToLog("Find error AccHash - Start check on Acts...");
+                    global.CheckSumHashInActs();
                 }
             }
-            else
-                if(CurNum < 2256)
-                {
-                    if(!IsValidAccHash(63768000, "DC94462951421910D727E9B47D23D4A8E55A30A2C740782130D92C4561B1084D", 0))
-                    {
-                        SendRewrteAllTx();
-                    }
-                }
-                else
-                    if(CurNum < 2280)
-                    {
-                        if(!IsValidAccHash(64066000, "BEDE06813E6FA24FB5A896138EA3CE2AE509A5CFF889DC0051917C33EFA18ED1", 1))
-                        {
-                            ToLog("Find error AccHash - Start check on Acts...");
-                            global.CheckSumHashInActs();
-                        }
-                    }
-                    else
-                        if(CurNum < 2282)
-                        {
-                            if(!IsValidAccHash(64111000, "B7E2E8DD5391432419C9BD58F5443660F76C4CCB063C411EB125C10A77DC7C3D", 0))
-                            {
-                                SendRewrteAllTx();
-                            }
-                        }
         }
         ToLog("UPDATER Finish");
     }
