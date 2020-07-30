@@ -218,10 +218,10 @@ function InitAfter(Engine)
         {
             if(State === 0)
             {
-                Child.ToLog("Try connect to " + Child.Name(), 4);
+                Child.ToLog("Try connect to " + Child.Name(), 5);
                 Child.Socket = net.createConnection(Child.port, Child.ip, function ()
                 {
-                    Child.ToLog("OK create connection to " + Child.Name(), 4);
+                    Child.ToLog("OK create connection to " + Child.Name(), 5);
                     
                     if(Child.Socket)
                     {
@@ -253,7 +253,7 @@ function InitAfter(Engine)
         }
         
         if(Child.Socket)
-            Child.ToLog("CloseSocket: " + Child.Socket.remoteAddress + ":" + Child.Socket.remotePort + " " + StrError, 4);
+            Child.ToLog("CloseSocket: " + Child.Socket.remoteAddress + ":" + Child.Socket.remotePort + " " + StrError, 5);
         else
             Child.ToLog(StrError, 4);
         

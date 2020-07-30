@@ -40,6 +40,14 @@ function RunOnUpdate()
                     global.CheckSumHashInActs();
                 }
             }
+            else
+                if(CurNum < 2304)
+                {
+                    if(!IsValidAccHash(64228000, "7ECC63FDDCE8CBE54D82B60AED0B73A8B094F5E8333656CE3F8EA8254EC0A85A", 0))
+                    {
+                        SendRewrteAllTx();
+                    }
+                }
         }
         ToLog("UPDATER Finish");
     }

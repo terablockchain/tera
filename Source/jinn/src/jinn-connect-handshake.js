@@ -128,7 +128,7 @@ function InitClass(Engine)
         
         if(!Data.result)
         {
-            Child.ToLogNet("OnHandShakeReturn : result=" + Data.result + " text:" + Data.text, 4);
+            Child.ToLogNet("OnHandShakeReturn : result=" + Data.result + " text:" + Data.text, 5);
             
             Engine.OnDeleteConnect(Child, "OnHandShakeReturn");
             return;

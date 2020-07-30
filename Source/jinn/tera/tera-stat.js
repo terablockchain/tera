@@ -308,9 +308,6 @@ function Init(Engine)
         Engine.StatSecondNum = Date.now();
         if(global.JINN_WARNING >= 3 && DeltaStat > 1500)
             ToLog("=============== DeltaStat: " + DeltaStat + " ms  !!!!");
-        else
-            if(global.JINN_WARNING >= 4)
-                ToLog("--------------- DeltaStat: " + DeltaStat + " ms");
         
         PrepareStatEverySecond();
         

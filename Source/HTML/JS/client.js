@@ -1445,6 +1445,7 @@ function InitMapCurrency()
         MapCurrency[0] = "TERA";
         MapCurrency[9] = "BTC";
         MapCurrency[10] = "USD";
+        MapCurrencyIcon[9] = "./PIC/B.svg";
     }
     if(!bWasCodeSys)
         for(var key in MapCurrency)

@@ -121,7 +121,7 @@ function RunStopPOWProcess(Mode)
     var Memory;
     if(global.TEST_JINN)
     {
-        Memory = 70 * 1e6;
+        Memory = 90 * 1e6 * global.GetCountMiningCPU();
     }
     else
     {

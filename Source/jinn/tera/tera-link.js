@@ -55,7 +55,7 @@ function Init(Engine)
             return 0;
     };
     
-    Engine.GetAccountOperationID = function (SenderNum)
+    Engine.GetAccountOperationID = function (SenderNum,BlockNum)
     {
         if(!SenderNum)
             return 0;

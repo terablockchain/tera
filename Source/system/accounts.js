@@ -1187,13 +1187,14 @@ class AccountApp extends require("./dapp")
     
     GetHole()
     {
-        if(global.TEST_NETWORK)
-            return [];
-        return [{s:8300, f:186478}];
+        if(global.NETWORK === "MAIN-JINN")
+            return [{s:8300, f:186478}];
+        
+        return [];
     }
-    IsHole(num)
+    IsHole(num, bForce)
     {
-        if(global.ALL_VIEW_ROWS)
+        if(!bForce && global.ALL_VIEW_ROWS)
             return 0;
         
         var ArrHole = this.GetHole();
@@ -1207,7 +1208,7 @@ class AccountApp extends require("./dapp")
         var Count = 0;
         for(var num = 0; true; num++)
         {
-            if(this.IsHole(num) || (HiddenMap && HiddenMap[num] !== undefined))
+            if(this.IsHole(num, 1) || (HiddenMap && HiddenMap[num] !== undefined))
                 continue;
             
             var Data = this.ReadState(num);
@@ -1891,7 +1892,7 @@ class AccountApp extends require("./dapp")
         var Type = Body[0];
         if(Type === TYPE_TRANSACTION_CREATE)
         {
-            if(JINN_CONST.BLOCK_CREATE_INTERVAL < 2 || BlockNum % JINN_CONST.BLOCK_CREATE_INTERVAL > 1 === 0)
+            if(JINN_CONST.BLOCK_CREATE_INTERVAL < 2 || BlockNum % JINN_CONST.BLOCK_CREATE_INTERVAL === 0)
                 return 1;
             else
                 return 0;

@@ -277,7 +277,8 @@ function DoNode(Engine)
         return;
     
     var CurBlockNum = Engine.CurrentBlockNum;
-    Engine.DoSaveMainWithContinues();
+    
+    Engine.DoSaveMain();
     
     if(Engine.LastCurBlockNum !== CurBlockNum)
     {
@@ -293,6 +294,8 @@ function DoNode(Engine)
         Engine.ClearListToNum(Engine.StepTaskTt, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
         Engine.ClearListToNum(Engine.StepTaskTx, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
         Engine.ClearListToNum(Engine.StepTaskMax, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
+        
+        Engine.ClearListToNum(Engine.MiningBlockArr, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
     }
     var CurBlockNum3 = JINN_EXTERN.GetCurrentBlockNumByTime( - JINN_CONST.DELTA_TIME_NEW_BLOCK);
     if(Engine.LastNewBlockCreate !== CurBlockNum3)
@@ -311,8 +314,6 @@ function DoNode(Engine)
     for(var BlockNum = CurBlockNum - JINN_CONST.STEP_LAST - JINN_CONST.MAX_DELTA_PROCESSING; BlockNum <= CurBlockNum; BlockNum++)
     {
         var Delta = CurBlockNum - BlockNum;
-        
-        Engine.AfterMiningDoBlockArr(BlockNum);
         
         if(Delta >= JINN_CONST.STEP_TICKET)
             if(Engine.StepTaskTt[BlockNum])
@@ -333,5 +334,4 @@ function DoNode(Engine)
                 Engine.StepTaskMax[BlockNum] = 0;
             }
     }
-    Engine.InitMiningBlockArr();
 }

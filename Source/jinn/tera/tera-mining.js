@@ -50,14 +50,13 @@ function Init(Engine)
             
             Engine.ConvertToTera(Block);
             
-            Block.Meta = {DB:Block.DB};
             global.SetCalcPOW(Block, "FastCalcBlock");
         }
     };
     
     SERVER.MiningProcess = function (msg)
     {
-        
+        var MiningBlock;
         var PrevHash = msg.PrevHash;
         var DataHash = msg.SeqHash;
         var MinerHash = msg.AddrHash;
@@ -65,27 +64,22 @@ function Init(Engine)
         var bWas = 0;
         var bFind = 0;
         var Arr = Engine.MiningBlockArr[msg.BlockNum];
-        if(!Arr)
+        for(var i = 0; Arr && i < Arr.length; i++)
         {
-            Arr = [];
-            Engine.MiningBlockArr[msg.BlockNum] = Arr;
-        }
-        
-        for(var i = 0; i < Arr.length; i++)
-        {
-            var MiningBlock = Arr[i];
-            if(IsEqArr(DataHash, MiningBlock.DataHash) && IsEqArr(PrevHash, MiningBlock.PrevHash))
+            var Block = Arr[i];
+            if(IsEqArr(DataHash, Block.DataHash) && IsEqArr(PrevHash, Block.PrevHash))
             {
                 bFind = 1;
-                var MinerHashArr = MiningBlock.MinerHash.slice(0);
-                if(DoBestMiningArr(MiningBlock, MinerHash, MinerHashArr))
+                var MinerHashArr = Block.MinerHash.slice(0);
+                if(DoBestMiningArr(Block, MinerHash, MinerHashArr))
                 {
+                    MiningBlock = Engine.GetCopyBlock(Block);
                     MiningBlock.MinerHash = MinerHashArr;
-                    if(msg.Meta)
-                        MiningBlock.DB = msg.Meta.DB;
                     Engine.CalcBlockData(MiningBlock);
                     
                     bWas = 2;
+                    Engine.AddFromMining(MiningBlock);
+                    break;
                 }
             }
         }
@@ -95,28 +89,28 @@ function Init(Engine)
             var PrevBlock = Engine.DB.FindBlockByHash(msg.BlockNum - 1, PrevHash);
             if(PrevBlock)
             {
-                var MiningBlock = Engine.GetNewBlock(PrevBlock);
+                MiningBlock = Engine.GetNewBlock(PrevBlock);
                 MiningBlock.PrevHash = PrevHash;
+                
                 MiningBlock.MinerHash = MinerHash;
-                if(msg.Meta)
-                    MiningBlock.DB = msg.Meta.DB;
                 Engine.CalcBlockData(MiningBlock);
                 
                 if(!IsEqArr(DataHash, MiningBlock.DataHash))
                 {
+                    
                     return;
                 }
                 
                 bWas = 1;
                 
-                Arr.push(MiningBlock);
+                Engine.AddFromMining(MiningBlock);
             }
         }
         
-        if(bWas)
+        if(bWas && MiningBlock)
         {
-            Engine.ToLog("Mining Block = " + BlockInfo(MiningBlock) + " Total=" + (msg.TotalCount / 1000000) + "M Power=" + MiningBlock.Power + "  Mode=" + bWas + " Arr=" + Arr.length,
-            4);
+            Engine.ToLog("Mining Block = " + BlockInfo(MiningBlock) + " Total=" + (msg.TotalCount / 1000000) + " M Power=" + MiningBlock.Power + "  Mode=" + bWas,
+            5);
             
             ADD_TO_STAT("MAX:POWER", MiningBlock.Power);
             var HashCount = Math.pow(2, MiningBlock.Power);

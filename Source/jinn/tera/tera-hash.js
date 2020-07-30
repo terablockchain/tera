@@ -87,8 +87,12 @@ function Init(Engine)
             Block.Hash = Engine.CalcBlockHashInner(Block);
         }
         
+        if(!Block.PowHash)
+            ToLogTrace("Not found Block.PowHash in " + Block.BlockNum);
+        
         Block.SumPow = Block.PrevSumPow + Block.Power;
     };
+    
     Engine.CalcDataHashInner = function (Block)
     {
         var PrevHash;

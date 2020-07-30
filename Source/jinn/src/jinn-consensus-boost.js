@@ -187,6 +187,10 @@ function InitClass(Engine)
             Child.LastTransferTime = Date.now();
             Child.TransferCount++;
             Child.DeltaTransfer = Child.LastTransferTime - SendTransferTime;
+            
+            if(!JINN_STAT.MinDTransfer || JINN_STAT.MinDTransfer > Child.DeltaTransfer)
+                JINN_STAT.MinDTransfer = (Child.DeltaTransfer < 1 ? 1 : Child.DeltaTransfer);
+            JINN_STAT.MaxDTransfer = Math.max(JINN_STAT.MaxDTransfer, Child.DeltaTransfer);
             var Store = Engine.GetLiderArrAtNum(BlockNum);
             if(!Store)
                 return;

@@ -122,15 +122,15 @@ function InitClass(Engine)
         Engine.StepTaskTx[BlockNum] = 1;
     };
     
-    Engine.CheckErrTx = function (Tx,BlockNum,TreeTTAll,ArrErr)
+    Engine.DoCheckErrTx = function (Tx,BlockNum,TreeTTAll,ArrErr)
     {
         if(JINN_CONST.TX_CHECK_OPERATION_ID)
-            Engine.CheckTxOperationID(Tx, BlockNum, TreeTTAll, ArrErr);
+            Engine.DoCheckTxOperationID(Tx, BlockNum, TreeTTAll, ArrErr);
         if(JINN_CONST.TX_CHECK_SIGN_ON_TRANSFER)
-            Engine.CheckTxSign(Tx, BlockNum, TreeTTAll, ArrErr);
+            Engine.DoCheckTxSign(Tx, BlockNum, TreeTTAll, ArrErr);
     };
     
-    Engine.CheckTxOperationID = function (Tx,BlockNum)
+    Engine.DoCheckTxOperationID = function (Tx,BlockNum)
     {
         if(Tx.OperationIDForNum === Engine.CurrentBlockNum)
             return;
@@ -143,7 +143,7 @@ function InitClass(Engine)
         if(Tx.OperationID === undefined)
             Tx.OperationID = Engine.GetTxSenderOperationID(Tx, BlockNum);
         
-        var AccountOperationID = Engine.GetAccountOperationID(Tx.SenderNum);
+        var AccountOperationID = Engine.GetAccountOperationID(Tx.SenderNum, BlockNum);
         
         if(AccountOperationID > Tx.OperationID)
         {
@@ -151,7 +151,7 @@ function InitClass(Engine)
         }
     };
     
-    Engine.CheckTxSign = function (Tx,BlockNum,TreeTTAll,ArrErr)
+    Engine.DoCheckTxSign = function (Tx,BlockNum,TreeTTAll,ArrErr)
     {
         
         if(Tx.ErrSign !== undefined)

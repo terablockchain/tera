@@ -18,7 +18,7 @@ global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Hot"});
 
 
 var START_TRANSFER_TIMEOUT = 5 * 1000;
-var MAX_TRANSFER_TIMEOUT = 3 * 1000;
+var MAX_TRANSFER_TIMEOUT = 5 * 1000;
 
 var MAX_DENY_HOT_CONNECTION = 7 * 1000;
 var MAX_HOT_CONNECTION_DELAY = 2 * 1000;

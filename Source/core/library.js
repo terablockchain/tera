@@ -562,8 +562,10 @@ if(global.TEST_JINN)
     global.GetCountMiningCPU = function ()
     {
         var CountCPU = GetCountMiningCPU0();
-        if(CountCPU > 1)
+        if(!CountCPU)
             CountCPU = 1;
+        if(CountCPU > 2)
+            CountCPU = 2;
         return CountCPU;
     };
 }

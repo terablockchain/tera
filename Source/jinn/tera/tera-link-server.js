@@ -48,14 +48,14 @@ function Init(Engine)
         
         if(JINN_CONST.TX_CHECK_OPERATION_ID)
         {
-            Engine.CheckTxOperationID(Tx, BlockNum);
+            Engine.DoCheckTxOperationID(Tx, BlockNum);
             if(Tx.ErrOperationID)
                 return TX_RESULT_OPERATIOON_ID;
         }
         
         if(JINN_CONST.TX_CHECK_SIGN_ON_ADD)
         {
-            Engine.CheckTxSign(Tx, BlockNum);
+            Engine.DoCheckTxSign(Tx, BlockNum);
             if(Tx.ErrSign)
                 return TX_RESULT_SIGN;
         }

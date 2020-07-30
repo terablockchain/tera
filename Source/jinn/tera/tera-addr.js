@@ -55,7 +55,6 @@ function Init(Engine)
         Engine.SortAddrArrByScore(Arr);
         var AddrData = {Arr:Arr, AddrItem:Engine.AddrItem};
         SaveParams(GetDataPath("jinn-nodes-" + global.GETNODES_VERSION + ".lst"), AddrData);
-        ToLog("--- SaveParams jinn-nodes Count=" + Arr.length, 4);
     };
     
     Engine.LoadAddrOnStart = function ()
@@ -74,7 +73,6 @@ function Init(Engine)
         {
             if(Arr.length)
             {
-                ToLog("--- Load jinn-nodes Count=" + Arr.length, 4);
                 Engine.UseExtraSlot = 1;
             }
             for(var i = 0; i < Arr.length; i++)

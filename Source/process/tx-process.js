@@ -205,7 +205,7 @@ class CTXProcess
         {
             if(!IsEqArr(LastHashData.SumHash, CheckSumHash))
             {
-                ToErrorTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 4)
+                ToErrorTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 5)
                 
                 BlockDeleteTX(PrevBlockNum)
                 return 0;
@@ -214,7 +214,7 @@ class CTXProcess
             var AccHash = DApps.Accounts.GetCalcHash();
             if(!IsEqArr(LastHashData.AccHash, AccHash))
             {
-                ToErrorTx("AccHash:DeleteTX on Block=" + PrevBlockNum, 2)
+                ToErrorTx("AccHash:DeleteTX on Block=" + PrevBlockNum, 3)
                 
                 this.ErrorAccHash++
                 BlockDeleteTX(PrevBlockNum)
@@ -269,7 +269,7 @@ function CheckActDB()
     var Item = DBAct.Read(Num);
     if(!Item)
         return;
-    ToErrorTx("Check " + Item.BlockNum, 4);
+    ToErrorTx("Check " + Item.BlockNum, 5);
     while(1)
     {
         var Item = DBAct.Read(Num);
@@ -315,4 +315,4 @@ setInterval(function ()
 {
     CheckActDB();
 }
-, 10 * 1000);
+, 60 * 1000);

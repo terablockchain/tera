@@ -20,6 +20,8 @@ global.JINN_MODULES.push({InitClass:InitClass, Name:"Consensus"});
 
 global.TEST_DOUBLE_LOAD_BLOCK = 0;
 
+const MAX_BLOCKNUM_FOR_CHECK_SAVE = 20;
+
 //Engine context
 
 function InitClass(Engine)
@@ -415,19 +417,15 @@ function InitClass(Engine)
         Data.Hash = Engine.CalcBlockHashInner(Data);
         
         Data.PowHash = Data.Hash;
-        Data.Power = GetPowPowerBlock(BlockNum, Data.Hash);
+        Data.Power = GetPowPower(Data.PowHash);
     };
     
     Engine.CompareMaxLider = function (Data1,Data2)
     {
-        if(Data1.Power < Data2.Power || (Data1.Power === Data2.Power && CompareArr(Data2.Hash, Data1.Hash) <= 0))
-        {
-            return  - 1;
-        }
-        else
-        {
-            return 1;
-        }
+        if(Data1.Power !== Data2.Power)
+            return Data1.Power - Data2.Power;
+        
+        return CompareArr(Data2.PowHash, Data1.PowHash);
     };
     
     Engine.FindRowByDataHash = function (Arr,DataHash,Miner)
@@ -480,16 +478,17 @@ function InitClass(Engine)
                 return  - 1;
             }
             else
-            {
-                
-                var Item = LiderArr[DataHashN];
-                Data.LoadNum = Item.LoadNum;
-                Data.LoadHash = Item.LoadHash;
-                Data.LoadTreeNum = Item.LoadTreeNum;
-                Data.LoadTreeHash = Item.LoadTreeHash;
-                
-                LiderArr.splice(DataHashN, 1);
-            }
+                if(0)
+                {
+                    
+                    var Item = LiderArr[DataHashN];
+                    Data.LoadNum = Item.LoadNum;
+                    Data.LoadHash = Item.LoadHash;
+                    Data.LoadTreeNum = Item.LoadTreeNum;
+                    Data.LoadTreeHash = Item.LoadTreeHash;
+                    
+                    LiderArr.splice(DataHashN, 1);
+                }
         }
         
         if(Ret ===  - 1 && LiderArr.length < JINN_CONST.MAX_LEADER_COUNT)
@@ -585,27 +584,13 @@ function InitClass(Engine)
     
     Engine.CheckAndSaveChainToDB = function (BlockHead,BlockSeed)
     {
-        
-        //Calc SumPow
-        var BlockDB = Engine.GetBlockHeaderDB(BlockHead.BlockNum);
-        if(!BlockDB)
-            return 0;
-        
-        var CurBlockNumT = Engine.CurrentBlockNum;
-        var BlockNumSave = CurBlockNumT - JINN_CONST.STEP_SAVE;
-        var BlockNumLast = CurBlockNumT - JINN_CONST.STEP_LAST;
+        var BlockNumSave = Engine.CurrentBlockNum - JINN_CONST.STEP_SAVE;
         var BlockNumDB = Engine.GetMaxNumBlockDB();
-        if(BlockNumDB === BlockNumSave - 1)
-            BlockNumSave--;
         while(BlockSeed.BlockNum > BlockNumSave)
         {
-            var PrevBlockSeed = Engine.GetPrevBlock(BlockSeed);
-            if(!PrevBlockSeed)
-            {
-                Engine.ToLog("#1 CheckAndSaveChainToDB: Error GetPrevBlock at block=" + BlockSeed.BlockNum, 3);
+            BlockSeed = Engine.GetPrevBlock(BlockSeed);
+            if(!BlockSeed)
                 return 0;
-            }
-            BlockSeed = PrevBlockSeed;
         }
         
         if(BlockSeed.BlockNum < BlockNumSave)
@@ -614,23 +599,38 @@ function InitClass(Engine)
             return 0;
         if(BlockHead.BlockNum >= BlockSeed.BlockNum)
             return 0;
-        if(BlockNumDB === BlockSeed.BlockNum)
+        //check SumPow
+        
+        var StrCheckSum = "";
+        var DeltaNum = BlockNumSave - BlockNumDB;
+        if(DeltaNum < MAX_BLOCKNUM_FOR_CHECK_SAVE)
         {
+            var CheckBlockSeed = BlockSeed;
+            while(CheckBlockSeed.BlockNum > BlockNumSave)
+            {
+                CheckBlockSeed = Engine.GetPrevBlock(CheckBlockSeed);
+                if(!CheckBlockSeed)
+                    return 0;
+            }
+            if(CheckBlockSeed.BlockNum !== BlockNumSave)
+                StrCheckSum = "--- Checked on " + CheckBlockSeed.BlockNum;
+            
             var BlockDB = Engine.GetBlockHeaderDB(BlockNumDB);
-            if(BlockSeed.SumPow < BlockDB.SumPow || BlockSeed.SumPow === BlockDB.SumPow && CompareArr(BlockDB.Hash, BlockSeed.Hash) <= 0)
+            if(CheckBlockSeed.SumPow < BlockDB.SumPow || CheckBlockSeed.SumPow === BlockDB.SumPow && CompareArr(BlockDB.PowHash, CheckBlockSeed.PowHash) <= 0)
             {
                 return 0;
             }
         }
-        
-        //writing a chain to the database
+        else
+        {
+            StrCheckSum = " --- Not Checked SumPow (Delta:" + DeltaNum + ")";
+        }
         
         var Count = BlockSeed.BlockNum - BlockHead.BlockNum;
-        var Delta = CurBlockNumT - BlockSeed.BlockNum;
+        var Delta = Engine.CurrentBlockNum - BlockSeed.BlockNum;
         var Miner = ReadUintFromArr(BlockSeed.MinerHash, 0);
         if(BlockSeed.BlockNum > 25)
-            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + "  ### Power=" + BlockSeed.Power + " Miner=" + Miner + " COUNT=" + Count,
-            3);
+            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + "  ### Miner=" + Miner + " COUNT=" + Count + StrCheckSum, 3);
         
         var Res = Engine.DB.SaveChainToDB(BlockHead, BlockSeed);
         
