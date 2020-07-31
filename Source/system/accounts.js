@@ -1115,7 +1115,7 @@ class AccountApp extends require("./dapp")
             if(!ItemCheck)
             {
                 
-                ToLogTrace("!ItemCheck")
+                ToLogTrace("!ItemCheck on " + num + " BlockNum=" + BlockNum)
                 throw "ERRR DeleteActOneDB";
             }
             

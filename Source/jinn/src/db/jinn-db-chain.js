@@ -117,8 +117,7 @@ class CDBChain
         }
         if(!IsZeroArr(Block.TestZero))
         {
-            ToLogTrace("Error TestZero = " + GetHexFromArr(Block.TestZero))
-            return undefined;
+            ToLogOne("Error TestZero = " + GetHexFromArr(Block.TestZero) + " on PosFile=" + Position)
         }
         
         if(!bRaw)

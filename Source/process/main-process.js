@@ -30,7 +30,9 @@ require("../core/upnp.js");
 
 require("../system");
 
+ToLog("==================================================================");
 ToLog(os.platform() + " (" + os.arch() + ") " + os.release());
+ToLog("==================================================================");
 
 var VerArr = process.versions.node.split('.');
 
@@ -63,18 +65,23 @@ global.NeedRestart = 0;
 
 process.on('uncaughtException', function (err)
 {
-    if(global.PROCESS_NAME !== "MAIN")
-    {
-        process.send({cmd:"log", message:err});
-    }
+    console.log("--------------------uncaughtException--------------------");
     
     if(err.code === "ENOTFOUND" || err.code === "ECONNRESET" || err.code === "EPIPE" || err.code === "ETIMEDOUT")
     {
     }
     else
     {
-        ToError(err.stack);
-        ToLog(err.stack);
+        if(global.PROCESS_NAME !== "MAIN")
+        {
+            process.send({cmd:"log", message:err});
+        }
+        
+        if(err)
+        {
+            ToLog(err.stack);
+            ToError(err.stack);
+        }
         
         TO_ERROR_LOG("APP", 666, err);
         ToLog("-----------------EXIT------------------");
@@ -84,8 +91,17 @@ process.on('uncaughtException', function (err)
 );
 process.on('error', function (err)
 {
+    console.log("--------------------error--------------------");
+    
     ToError(err.stack);
     ToLog(err.stack);
+}
+);
+process.on('unhandledRejection', function (reason,p)
+{
+    console.log("--------------------unhandledRejection--------------------");
+    ToLog('Unhandled Rejection at:' + p + 'reason:' + reason);
+    ToError('Unhandled Rejection at:' + p + 'reason:' + reason);
 }
 );
 

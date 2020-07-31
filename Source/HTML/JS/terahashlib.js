@@ -362,12 +362,20 @@ function CompareArrL(a,b)
     }
     return 0;
 }
+
 function IsEqArr(a,b)
 {
     if(!a)
-        ToLog("Error a IsEqArr");
+    {
+        ToLogTrace("IsEqArr Error array a");
+        throw "IsEqArr Error a";
+    }
     if(!b)
-        ToLog("Error b IsEqArr");
+    {
+        ToLogTrace("IsEqArr Error array b");
+        throw "IsEqArr Error b";
+    }
+    
     if(a.length !== b.length)
         return 0;
     return (CompareArr(a, b) === 0) ? 1 : 0;

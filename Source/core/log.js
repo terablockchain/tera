@@ -36,8 +36,16 @@ CheckSizeLogFile(file_name_error_tx, file_name_error_txPrev);
 
 
 global.MaxLogLevel = 0;
+global.ToLogWasEnter = 0;
 global.ToLog = function (Str,Level)
 {
+    if(global.ToLogWasEnter)
+    {
+        console.log(Str);
+        return;
+    }
+    global.ToLogWasEnter = 1;
+    
     if(Level === undefined)
         Level = 1;
     Level =  + Level;
@@ -46,10 +54,19 @@ global.ToLog = function (Str,Level)
     if(Level > 50)
         ToLogTrace("Err Log Level=" + Level);
     
-    if(Level && Level > global.LOG_LEVEL)
-        return;
-    ToLogClient(Str, undefined, undefined);
+    if(!Level || Level <= global.LOG_LEVEL)
+    {
+        ToLogClient(Str, undefined, undefined);
+    }
+    
+    global.ToLogWasEnter = 0;
 }
+setInterval(function ()
+{
+    global.ToLogWasEnter = 0;
+}
+, 1000);
+
 
 global.ToLogWeb = function (Str)
 {
@@ -121,6 +138,9 @@ function ToLogFile(file_name,Str,bNoFile)
     if(!global.START_SERVER && global.PROCESS_NAME)
         Str = global.PROCESS_NAME + ": " + Str;
     
+    if(!bNoFile)
+        SaveToLogFileSync(file_name, Str);
+    
     if(global.PROCESS_NAME !== "MAIN" && process.send)
     {
         process.send({cmd:"log", message:Str});
@@ -128,17 +148,11 @@ function ToLogFile(file_name,Str,bNoFile)
     }
     else
     {
-        
         if(global.PROCESS_NAME)
             console.log("" + START_PORT_NUMBER + ": " + GetStrOnlyTime() + ": " + Str);
         else
             console.log(Str);
     }
-    
-    if(bNoFile)
-        return;
-    
-    SaveToLogFileSync(file_name, Str);
 }
 
 global.ArrLogClient = [];
@@ -150,13 +164,16 @@ function ToLogClient(Str,StrKey,bFinal)
     
     ToLogFile(file_name_log, Str);
     
-    if(!StrKey)
-        StrKey = "";
-    global.ArrLogCounter++;
-    ArrLogClient.push({id:global.ArrLogCounter, time:GetStrOnlyTime(), text:Str, key:StrKey, final:bFinal, });
-    
-    if(ArrLogClient.length > 13)
-        ArrLogClient.shift();
+    if(global.PROCESS_NAME === "MAIN")
+    {
+        if(!StrKey)
+            StrKey = "";
+        global.ArrLogCounter++;
+        ArrLogClient.push({id:global.ArrLogCounter, time:GetStrOnlyTime(), text:Str, key:StrKey, final:bFinal, });
+        
+        if(ArrLogClient.length > 13)
+            ArrLogClient.shift();
+    }
 }
 global.ToLogClient = ToLogClient;
 global.ToLogClient0 = ToLogClient;

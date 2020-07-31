@@ -108,7 +108,8 @@ function InitClass(Engine)
         
         SOCKET.on('error', function (err)
         {
-            Engine.CloseSocket(SOCKET, Child, "ERRORS");
+            if(Child)
+                Engine.AddCheckErrCount(Child, 1, "ERRORS", 1);
         });
         SOCKET.on('end', function ()
         {

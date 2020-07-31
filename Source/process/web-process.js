@@ -121,6 +121,8 @@ global.STAT_MODE = 1;
 setInterval(PrepareStatEverySecond, 1000);
 
 
+var bWasRun = 0;
+
 if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
 {
     var file_sert = GetDataPath("sertif.lst");
@@ -169,7 +171,8 @@ if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
             var tlsOptions = {key:certs.privkey, cert:certs.cert + '\r\n' + certs.chain};
             HostingServer = require('https').createServer(tlsOptions, MainHTTPFunction);
             
-            RunListenServer();
+            if(!bWasRun)
+                RunListenServer();
         }, function (err)
         {
             ToError(err);
@@ -189,6 +192,15 @@ function MainHTTPFunction(request,response)
     
     if(!request.socket || !request.socket.remoteAddress)
         return;
+    
+    if(request.socket._events && request.socket._events.error.length < 2)
+        request.socket.on("error", function (err)
+        {
+            console.log("WEB request.socket.error code=" + err.code);
+            if(err.code === "EPIPE")
+                return;
+            ToLog(err.stack);
+        });
     
     SetSafeResponce(response);
     
@@ -246,7 +258,6 @@ function MainHTTPFunction(request,response)
     }
 }
 
-var bWasRun = 0;
 var TimeToRerun = 3000;
 function RunListenServer()
 {
@@ -254,19 +265,16 @@ function RunListenServer()
     {
         if(err.code === 'EADDRINUSE')
         {
-            TimeToRerun = Math.floor(TimeToRerun * 1.1);
+            TimeToRerun = Math.floor(TimeToRerun * 1.5);
             if(TimeToRerun > 1000000 * 1000)
                 return;
             ToLog('Port ' + global.HTTP_HOSTING_PORT + ' in use, retrying...');
             if(HostingServer.Server)
                 HostingServer.Server.close();
-            
-            if(!bWasRun)
-                setTimeout(function ()
-                {
-                    if(!bWasRun)
-                        RunListenServer();
-                }, TimeToRerun);
+            setTimeout(function ()
+            {
+                RunListenServer();
+            }, TimeToRerun);
             return;
         }
         

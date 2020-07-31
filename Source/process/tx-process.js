@@ -147,7 +147,7 @@ class CTXProcess
                 return;
         }
         this.TimeWait = 0
-        if(this.ErrorAccHash >= 10000)
+        if(this.ErrorAccHash >= 100)
         {
             ToErrorTx("FORCE CalcMerkleTree")
             DApps.Accounts.CalcMerkleTree(1)
@@ -214,11 +214,14 @@ class CTXProcess
             var AccHash = DApps.Accounts.GetCalcHash();
             if(!IsEqArr(LastHashData.AccHash, AccHash))
             {
-                ToErrorTx("AccHash:DeleteTX on Block=" + PrevBlockNum, 3)
+                if(this.ErrorAccHash < 10)
+                    ToErrorTx("AccHash:DeleteTX on Block=" + PrevBlockNum + " GOT:" + GetHexFromArr(LastHashData.AccHash) + " NEED:" + GetHexFromArr(AccHash),
+                    3)
                 
                 this.ErrorAccHash++
                 BlockDeleteTX(PrevBlockNum)
-                return 0;
+                
+                return  - 1;
             }
         }
         

@@ -23,22 +23,15 @@ setTimeout(function ()
 
 if(process.send)
 {
+    process.send({cmd:"online", message:"OK"}, function ()
+    {
+    });
     setInterval(function ()
     {
-        process.send({cmd:"Alive"});
+        process.send({cmd:"Alive"}, function ()
+        {
+        });
     }, 1000);
-    process.send({cmd:"online", message:"OK"});
-    
-    setInterval(function ()
-    {
-        process.send({cmd:"Alive"});
-    }, 1000);
-    
-    global.ToLogClient = function (Str,StrKey,bFinal)
-    {
-        if(typeof Str === "string")
-            process.send({cmd:"ToLogClient", Str:"" + Str, StrKey:StrKey, bFinal:bFinal});
-    };
 }
 
 function CheckAlive()
@@ -159,20 +152,61 @@ global.EvalCode = function (Code)
     return Result;
 }
 
+global.WasEnterChildProcessErr = 0;
 
 process.on('uncaughtException', function (err)
 {
-    ToError(err.stack);
+    if(global.WasEnterChildProcessErr)
+    {
+        console.log("===============WasEnterChildProcessErr===============");
+        console.log(err.stack);
+        Exit();
+        return;
+    }
+    global.WasEnterChildProcessErr = 1;
+    
+    console.log("===============child uncaughtException===============");
     ToLog(err.stack);
+    ToError(err.stack);
     TO_ERROR_LOG(global.PROCESS_NAME, 777, err);
     ToLog("-----------------" + global.PROCESS_NAME + " EXIT------------------");
     process.exit();
+    global.WasEnterChildProcessErr = 0;
 }
 );
 
+global.WasEnterChildProcessErr2 = 0;
 process.on('error', function (err)
 {
-    ToError(global.PROCESS_NAME + ":\n" + err.stack);
+    if(err.code === 'ERR_IPC_CHANNEL_CLOSED')
+    {
+        console.log("===============ERR_IPC_CHANNEL_CLOSED===============");
+        console.log(err.stack);
+        Exit();
+        return;
+    }
+    
+    if(global.WasEnterChildProcessErr2)
+    {
+        console.log("===============child WasEnterChildProcessErr2===============");
+        console.log(err.stack);
+        Exit();
+        return;
+    }
+    global.WasEnterChildProcessErr2 = 1;
+    
+    console.log("===============code: " + err.code + "===============");
+    
     ToLog(err.stack);
+    ToError(global.PROCESS_NAME + ":\n" + err.stack);
+    global.WasEnterChildProcessErr2 = 0;
+}
+);
+
+process.on('unhandledRejection', function (reason,p)
+{
+    console.log("===============child unhandledRejection===============");
+    ToLog('Unhandled Rejection at:' + p + 'reason:' + reason);
+    ToError('Unhandled Rejection at:' + p + 'reason:' + reason);
 }
 );

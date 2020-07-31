@@ -571,3 +571,18 @@ function SetNewActSearch(DefActs)
         }
     });
 }
+
+
+function SetNewAccHashSearch(Def)
+{
+    var BlockNum =  + $("idViewAccHashBlockNum").value;
+    if(!BlockNum)
+        return;
+    
+    var Period = CONFIG_DATA.CONSTANTS.PERIOD_ACCOUNT_HASH;
+    if(!Period)
+        Period = 50;
+    
+    $("idViewHashNum").value = Math.floor(BlockNum / Period);
+    ViewCurrent(Def);
+}
