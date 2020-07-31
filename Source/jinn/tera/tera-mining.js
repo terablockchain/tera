@@ -74,6 +74,7 @@ function Init(Engine)
                 if(DoBestMiningArr(Block, MinerHash, MinerHashArr))
                 {
                     MiningBlock = Engine.GetCopyBlock(Block);
+                    MiningBlock.PrevHash = PrevHash;
                     MiningBlock.MinerHash = MinerHashArr;
                     Engine.CalcBlockData(MiningBlock);
                     
@@ -91,7 +92,6 @@ function Init(Engine)
             {
                 MiningBlock = Engine.GetNewBlock(PrevBlock);
                 MiningBlock.PrevHash = PrevHash;
-                
                 MiningBlock.MinerHash = MinerHash;
                 Engine.CalcBlockData(MiningBlock);
                 
