@@ -378,6 +378,7 @@ function InitClass(Engine)
             return;
         Data.BlockNum = BlockNum;
         Data.TimeNum = BlockNum;
+        Data.Miner = ReadUintFromArr(Data.MinerHash, 0);
         if(!Engine.MaxLiderTimeCache)
         {
             Engine.MaxLiderTimeCache = new CTimeCache(function (Val1,Val2)
@@ -428,20 +429,6 @@ function InitClass(Engine)
         return CompareArr(Data2.PowHash, Data1.PowHash);
     };
     
-    Engine.FindRowByDataHash = function (Arr,DataHash,Miner)
-    {
-        for(var n = 0; n < Arr.length; n++)
-        {
-            var NodeStatus = Arr[n];
-            var Miner2 = ReadUintFromArr(NodeStatus.MinerHash, 0);
-            if(Miner === Miner2 && IsEqArr(DataHash, NodeStatus.DataHash))
-            {
-                return n;
-            }
-        }
-        return  - 1;
-    };
-    
     Engine.AddHashToMaxLider = function (Data,BlockNum,bFromCreateNew)
     {
         if(!bFromCreateNew && !Engine.CanProcessMaxHash(BlockNum))
@@ -469,27 +456,6 @@ function InitClass(Engine)
                 break;
             }
         }
-        var Miner = ReadUintFromArr(Data.MinerHash, 0);
-        var DataHashN = Engine.FindRowByDataHash(LiderArr, Data.DataHash, Miner);
-        if(DataHashN !==  - 1)
-        {
-            if(DataHashN < Ret)
-            {
-                return  - 1;
-            }
-            else
-                if(0)
-                {
-                    
-                    var Item = LiderArr[DataHashN];
-                    Data.LoadNum = Item.LoadNum;
-                    Data.LoadHash = Item.LoadHash;
-                    Data.LoadTreeNum = Item.LoadTreeNum;
-                    Data.LoadTreeHash = Item.LoadTreeHash;
-                    
-                    LiderArr.splice(DataHashN, 1);
-                }
-        }
         
         if(Ret ===  - 1 && LiderArr.length < JINN_CONST.MAX_LEADER_COUNT)
         {
@@ -515,7 +481,7 @@ function InitClass(Engine)
         for(var n = 1; n < LiderArr.length; n++)
         {
             var NodeStatus = LiderArr[n];
-            if(MaxPower >= NodeStatus.Power + 4)
+            if(MaxPower >= NodeStatus.Power + 4 || n > Ret && NodeStatus.Miner === Data.Miner)
             {
                 LiderArr.splice(n, 1);
                 n--;

@@ -414,6 +414,7 @@ function Init(Engine)
     
     Engine.CanUploadData = function (CurBlockNum,LoadBlockNum)
     {
+        return 1;
         if(global.glKeccakCount < global.MAX_SHA3_VALUE && GetBusyTime() <= global.MAX_BUSY_VALUE)
         {
             return 1;

@@ -488,13 +488,6 @@ function InitClass(Engine)
         {
             return 0;
         }
-        
-        if(global.MAX_SHA3_VALUE && global.glKeccakCount > global.MAX_SHA3_VALUE)
-        {
-            var Delta = Math.abs(BlockNumLoad - BlockNum);
-            if(Delta > 8)
-                return 0;
-        }
         return 1;
     };
     
@@ -515,7 +508,9 @@ function InitClass(Engine)
             for(var n = 0; n < CountItem; n++)
             {
                 if(n % 20 === 0 && !Engine.CheckProcessTime(Child))
+                {
                     break;
+                }
                 
                 var Num = LoadNum - n;
                 if(Num <= 0)
@@ -526,11 +521,13 @@ function InitClass(Engine)
                     break;
                 
                 BlockHeader = Engine.HeaderFromBlock(BlockHeader);
+                
                 Size = Engine.AddHeaderBlockToArr(Child, ArrRet, BlockHeader, Size, BlockNum);
                 
                 if(!Engine.CheckPacketSize(BlockNum, LoadNum, Size))
                     break;
             }
+            
             return ArrRet;
         }
         

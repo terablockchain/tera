@@ -123,8 +123,8 @@ function RunServer()
     }
     
     idRunOnce = setInterval(RunOnce, 1000);
-    ToLog("NETWORK: " + GetNetworkName());
-    ToLog("VERSION: " + DEF_VERSION);
+    ToLog("NETWORK: " + global.NETWORK);
+    ToLog("VERSION: " + global.UPDATE_CODE_VERSION_NUM);
     
     StartJinn();
 }

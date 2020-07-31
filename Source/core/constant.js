@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2337;
+global.UPDATE_CODE_VERSION_NUM = 2339;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -273,12 +273,9 @@ global.STANDART_PORT_NUMBER = 30000;
 InitParamsArg();
 require("./const-mode.js");
 
-global.GetNetworkName = function ()
-{
-    return NETWORK + "-" + DEF_MAJOR_VERSION;
-}
 
-global.DEF_VERSION = DEF_MAJOR_VERSION + "." + UPDATE_CODE_VERSION_NUM;
+
+
 global.START_CODE_VERSION_NUM = UPDATE_CODE_VERSION_NUM;
 global.DEF_CLIENT = "TERA-CORE";
 

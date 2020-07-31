@@ -196,10 +196,10 @@ function MainHTTPFunction(request,response)
     if(request.socket._events && request.socket._events.error.length < 2)
         request.socket.on("error", function (err)
         {
-            console.log("WEB request.socket.error code=" + err.code);
             if(err.code === "EPIPE")
                 return;
-            ToLog(err.stack);
+            console.log("WEB socket.error code=" + err.code);
+            ToLog(err.stack, 3);
         });
     
     SetSafeResponce(response);

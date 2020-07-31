@@ -2208,10 +2208,10 @@ if(global.HTTP_PORT_NUMBER)
         if(request.socket._events && request.socket._events.error.length < 2)
             request.socket.on("error", function (err)
             {
-                console.log("WEB request.socket.error code=" + err.code);
                 if(err.code === "EPIPE")
                     return;
-                ToLog(err.stack);
+                console.log("HTML socket.error code=" + err.code);
+                ToLog(err.stack, 3);
             });
         
         var remoteAddress = request.socket.remoteAddress.replace(/^.*:/, '');
