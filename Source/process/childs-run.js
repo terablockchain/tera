@@ -191,6 +191,9 @@ function StartChildProcess(Item)
                 ITEM.LastAlive = (Date.now()) + ITEM.PeriodAlive * 3;
                 ToLog("STARTING " + ITEM.Name);
                 ITEM.Worker = RunFork(ITEM.Path, ["READONLYDB"]);
+                if(!ITEM.Worker)
+                    return;
+                
                 ITEM.pid = ITEM.Worker.pid;
                 ToLog("STARTED " + ITEM.Name + ":" + ITEM.pid);
                 ITEM.Worker.on('message', function (msg)

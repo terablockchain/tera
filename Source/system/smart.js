@@ -248,7 +248,7 @@ class SmartApp extends require("./dapp")
         {
             Result = "" + e
             if(global.WATCHDOG_DEV)
-                ToErrorTx("BlockNum :" + BlockNum + ":" + e)
+                ToLogTx("BlockNum :" + BlockNum + ":" + e)
         }
         
         return Result;

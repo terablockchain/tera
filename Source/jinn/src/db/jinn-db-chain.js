@@ -62,7 +62,7 @@ class CDBChain
             var Find2 = this.FindBlockByHash(Block.BlockNum, Block.SumHash);
             if(Find2)
             {
-                ToLog("Find double block on Block=" + Block.BlockNum, 2)
+                ToLogTrace("Find double block on Block=" + Block.BlockNum, 2)
             }
         }
         

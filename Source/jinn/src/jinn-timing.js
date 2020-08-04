@@ -91,7 +91,7 @@ function InitClass(Engine)
         if(NewDelta && global.AUTO_CORRECT_TIME)
         {
             var Value = Math.floor(global.DELTA_CURRENT_TIME + NewDelta);
-            ToLog("SET TIME DELTA: " + Value + " ms (" + NewDelta + ")", 3);
+            ToLog("SET TIME DELTA: " + Value + " ms (" + NewDelta + ")", 4);
             Engine.SetTimeDelta(Value);
         }
         

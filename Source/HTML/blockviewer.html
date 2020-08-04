@@ -66,16 +66,35 @@
         function ViewBlock(BlockNum)
         {
             if(BlockNum!==undefined)
-                document.getElementById("idViewBlockNum").value=BlockNum;
+            {
+                $("idViewBlockNum").value = BlockNum;
+            }
             else
             {
-                BlockNum=ParseNum(document.getElementById("idViewBlockNum").value);
+                BlockNum=ParseNum($("idViewBlockNum").value);
                 history.pushState(null,null,"#"+BlockNum);
             }
 
             document.title="Block: "+BlockNum;
             DefTr.Param3=BlockNum;
+            DefTr.ChainMode=ParseNum($("idViewChainMode").value);
             ViewCurrent(DefTr);
+
+            GetData("GetBlockList",{StartNum:BlockNum,CountNum:1,ChainMode:DefTr.ChainMode},function (Data)
+            {
+                var Str="";
+                if(Data && Data.result  && Data.arr.length)
+                {
+                    var Block=Data.arr[0];
+                    Str+="Hash: <b class='hash'>"+GetHexFromArr(Block.Hash)+"</b>";
+                    Str+="<BR>PrevHash: <b class='hash'>"+GetHexFromArr(Block.PrevHash)+"</b>";
+                    Str+="<BR>TreeHash: <b class='hash'>"+GetHexFromArr(Block.TreeHash)+"</b>";
+                    Str+="<BR>Pow: <b>"+Block.Power+"</b>";
+                    Str+=" Miner: <b>"+Block.Miner+"</b>";
+                }
+
+                $("idHeaderInfo").innerHTML=Str;
+            })
         }
 
 
@@ -105,7 +124,7 @@
             FrameData=Data;
             if(Data.BlockNum)
             {
-                document.getElementById("idViewBlockNum").value=Data.BlockNum;
+                $("idViewBlockNum").value=Data.BlockNum;
                 ViewBlock();
 
                 $("MTabWelcome").className+=" back-link";
@@ -120,6 +139,18 @@
 
     </script>
 </head>
+
+
+<style>
+    .hash
+    {
+        font-family: "courier new", "times new roman", monospace;
+        font-size: 80%;
+        text-align: left;
+    }
+</style>
+
+
 <body>
     <header class="header">
         <div class="header__wrapper">
@@ -141,8 +172,10 @@
             <div class="history__text-block">
                 <div class="history-page__id" >
                     Transactions on block: <INPUT class="history-page__id-count" type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewBlock()">
+                    <INPUT class="history-page__id-count" type="number" id="idViewChainMode" style="width: 40px" value="" min=0 max=100 onchange="ViewBlock()">
                 </div>
                 <BR>
+                <DIV id="idHeaderInfo"></DIV>
             </div>
             <div class="history-page__table">
                 <div class="page-pagination">

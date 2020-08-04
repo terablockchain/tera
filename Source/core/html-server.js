@@ -619,35 +619,7 @@ HTTPCaller.GetBlockList = function (Params,response,bOnlyNum)
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    if(Params.StartNum < SERVER.BlockNumDBMin)
-    {
-        let CountWait = 0;
-        var WasWait = 0;
-        for(var BlockNum = Params.StartNum; BlockNum < Params.StartNum + Params.CountNum; BlockNum++)
-        {
-            var Block = SERVER.ReadBlockHeaderDB(BlockNum);
-            if(!Block)
-            {
-                CountWait++;
-                WasWait = 1;
-                LoadBlockFromNetwork({BlockNum:BlockNum}, function (Err,Block)
-                {
-                    CountWait--;
-                    if(CountWait === 0)
-                    {
-                        var arr = SERVER.GetRows(Params.StartNum, Params.CountNum, Params.Filter);
-                        var Result = {arr:arr, result:1};
-                        response.end(JSON.stringify(Result));
-                    }
-                });
-            }
-        }
-        
-        if(WasWait)
-            return null;
-    }
-    
-    var arr = SERVER.GetRows(Params.StartNum, Params.CountNum, Params.Filter, !bOnlyNum);
+    var arr = SERVER.GetRows(Params.StartNum, Params.CountNum, Params.Filter, !bOnlyNum, Params.ChainMode);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetTransactionAll = function (Params,response)
@@ -656,32 +628,8 @@ HTTPCaller.GetTransactionAll = function (Params,response)
         Params.CountNum = 1;
     
     var BlockNum = Params.Param3;
-    if(BlockNum < SERVER.BlockNumDBMin)
-    {
-        var Block = SERVER.ReadBlockHeaderDB(BlockNum);
-        if(!Block)
-        {
-            LoadBlockFromNetwork({BlockNum:BlockNum}, function (Err,Block)
-            {
-                var Result;
-                if(Err)
-                {
-                    Result = {arr:[], result:0};
-                }
-                else
-                {
-                    var arr = SERVER.GetTrRows(Block.BlockNum, Params.StartNum, Params.CountNum, Params.Filter);
-                    Result = {arr:arr, result:1};
-                }
-                var Str = JSON.stringify(Result);
-                response.end(Str);
-            });
-            
-            return null;
-        }
-    }
     
-    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.ChainMode);
     return {arr:arr, result:1};
 }
 

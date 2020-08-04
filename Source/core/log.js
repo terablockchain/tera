@@ -30,9 +30,9 @@ var file_name_error = GetDataPath("err.log");
 var file_name_errorPrev = GetDataPath("err-prev.log");
 CheckSizeLogFile(file_name_error, file_name_errorPrev);
 
-var file_name_error_tx = GetDataPath("err-tx.log");
-var file_name_error_txPrev = GetDataPath("err-tx-prev.log");
-CheckSizeLogFile(file_name_error_tx, file_name_error_txPrev);
+var file_name_log_tx = GetDataPath("log-tx.log");
+var file_name_log_txPrev = GetDataPath("log-tx-prev.log");
+CheckSizeLogFile(file_name_log_tx, file_name_log_txPrev);
 
 
 global.MaxLogLevel = 0;
@@ -123,9 +123,9 @@ global.ToError = function (Str)
     ToLogFile(file_name_error, Str);
 }
 
-global.ToErrorTx = function (Str,LogLevel)
+global.ToLogTx = function (Str,LogLevel)
 {
-    SaveToLogFileSync(file_name_error_tx, Str);
+    SaveToLogFileSync(file_name_log_tx, Str);
     ToLog(Str, LogLevel);
 }
 

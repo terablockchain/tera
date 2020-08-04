@@ -393,7 +393,8 @@ global.BlockInfo = function (Block)
 {
     if(!Block)
         return "<undefined>";
-    return "" + Block.BlockNum + " Power=" + Block.Power;
+    
+    return "" + Block.BlockNum + " SumPow=" + Block.SumPow;
     return "" + Block.BlockNum + " (" + GetHexFromArr(Block.SumHash).substr(0, 8) + "<" + GetHexFromArr(Block.PrevSumHash).substr(0,
     8) + ") Avg=" + Block.AvgSumPow + " Pow=" + Block.Power;
 }

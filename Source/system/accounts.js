@@ -122,7 +122,7 @@ class MerkleDBRow extends DBRow
                 if(!Buf)
                 {
                     if(global.WATCHDOG_DEV)
-                        ToErrorTx("CalcMerkleTree: Break account reading on num: " + num)
+                        ToLogTx("CalcMerkleTree: Break account reading on num: " + num)
                     break;
                 }
                 
@@ -369,7 +369,7 @@ class AccountApp extends require("./dapp")
                 }
                 catch(e)
                 {
-                    ToErrorTx("Can-t rename for delete act-file: " + FileNameFull2)
+                    ToLogTx("Can-t rename for delete act-file: " + FileNameFull2)
                     return;
                 }
                 
@@ -382,7 +382,7 @@ class AccountApp extends require("./dapp")
             }
             catch(e)
             {
-                ToErrorTx("Can-t rename act-file!")
+                ToLogTx("Can-t rename act-file!")
                 return;
             }
         }
@@ -462,7 +462,7 @@ class AccountApp extends require("./dapp")
         }
         catch(e)
         {
-            ToErrorTx("BlockNum:" + Block.BlockNum + " - DoCoinBaseTR: " + e)
+            ToLogTx("BlockNum:" + Block.BlockNum + " - DoCoinBaseTR: " + e)
             this.RollBackTransaction()
         }
         
@@ -481,7 +481,7 @@ class AccountApp extends require("./dapp")
         {
             Result = "" + e
             if(global.WATCHDOG_DEV)
-                ToErrorTx("BlockNum:" + BlockNum + " : " + e)
+                ToLogTx("BlockNum:" + BlockNum + " : " + e)
         }
         
         if(Result !== true)
@@ -561,7 +561,7 @@ class AccountApp extends require("./dapp")
             var FindAMID = AccountID;
             AccountID = this.GetIDByAMID(FindAMID)
             if(!AccountID)
-                ToErrorTx("DoCoinBaseTR: Error find AMID:" + FindAMID + " on BlockNum:" + Block.BlockNum)
+                ToLogTx("DoCoinBaseTR: Error find AMID:" + FindAMID + " on BlockNum:" + Block.BlockNum)
         }
         
         if(AccountID < 8)
@@ -1497,7 +1497,7 @@ class AccountApp extends require("./dapp")
         }
         if(Block.BlockNum > 1000 && IsZeroArr(Hash))
         {
-            ToErrorTx("BlockNum:" + Block.BlockNum + " AccHash = Zero")
+            ToLogTx("BlockNum:" + Block.BlockNum + " AccHash = Zero")
             throw "AccHash = Zero";
         }
         

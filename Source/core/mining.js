@@ -145,6 +145,8 @@ function RunStopPOWProcess(Mode)
     {
         
         let Worker = RunFork(PathMiner);
+        if(!Worker)
+            continue;
         ArrMiningWrk.push(Worker);
         Worker.Num = ArrMiningWrk.length;
         

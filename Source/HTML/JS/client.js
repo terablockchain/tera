@@ -838,7 +838,7 @@ function ViewCurrent(Def,flag,This)
         Def.Param3 = "";
     
     ViewGrid(Def.APIName, {StartNum:ParseNum(item.value), CountNum:GetCountViewRows(Def), Param3:Def.Param3, Filter:Filter, Filter2:Filter2,
-    }, Def.TabName, 1, Def.TotalSum);
+        ChainMode:Def.ChainMode}, Def.TabName, 1, Def.TotalSum);
     SaveValues();
     
     if(This)

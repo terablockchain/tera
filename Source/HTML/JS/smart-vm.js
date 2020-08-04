@@ -623,6 +623,8 @@ ListF.$Event = function (Description)
     DApps.Accounts.DBChanges.TREvent.push({Description:Description, Smart:RunContext.Smart.Num, Account:RunContext.Account.Num,
         BlockNum:RunContext.BlockNum, TrNum:RunContext.TrNum});
     
+    ToLogTx("Block: " + RunContext.BlockNum + " TxNum:" + RunContext.TrNum + " Event: " + JSON.stringify(Description), 4);
+    
     if(global.DebugEvent)
         DebugEvent(Description);
     

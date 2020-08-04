@@ -109,9 +109,11 @@ function Init(Engine)
         return Engine.SaveToDB(Block);
     };
     
-    SERVER.ReadBlockDB = function (BlockNum)
+    SERVER.ReadBlockDB = function (BlockNum,ChainMode)
     {
-        var Block = Engine.GetBlockDB(BlockNum);
+        var Block = SERVER.ReadBlockHeaderDB(BlockNum, ChainMode);
+        Engine.CheckLoadBody(Block);
+        
         Engine.ConvertToTera(Block, 1);
         return Block;
     };
@@ -122,9 +124,19 @@ function Init(Engine)
         Engine.ConvertToTera(Block, 1);
     };
     
-    SERVER.ReadBlockHeaderDB = function (BlockNum)
+    SERVER.ReadBlockHeaderDB = function (BlockNum,ChainMode)
     {
-        var Block = Engine.GetBlockHeaderDB(BlockNum);
+        var Block;
+        if(ChainMode)
+        {
+            var ArrChain = Engine.DB.GetChainArrByNum(BlockNum);
+            Block = ArrChain[ChainMode - 1];
+        }
+        else
+        {
+            Block = Engine.GetBlockHeaderDB(BlockNum);
+        }
+        
         Engine.ConvertToTera(Block, 0);
         return Block;
     };
@@ -203,7 +215,7 @@ function Init(Engine)
         }
         return 0;
     };
-    SERVER.GetRows = function (start,count,Filter,bMinerName)
+    SERVER.GetRows = function (start,count,Filter,bMinerName,ChainMode)
     {
         if(Filter)
         {
@@ -217,7 +229,7 @@ function Init(Engine)
         
         for(var num = start; true; num++)
         {
-            var Block = SERVER.ReadBlockHeaderDB(num);
+            var Block = SERVER.ReadBlockHeaderDB(num, ChainMode);
             if(!Block)
                 break;
             
@@ -279,10 +291,10 @@ function Init(Engine)
         return arr;
     };
     
-    SERVER.GetTrRows = function (BlockNum,start,count)
+    SERVER.GetTrRows = function (BlockNum,start,count,ChainMode)
     {
         var arr = [];
-        var Block = SERVER.ReadBlockDB(BlockNum);
+        var Block = SERVER.ReadBlockDB(BlockNum, ChainMode);
         
         if(Block && Block.arrContent)
             for(var num = start; num < start + count; num++)

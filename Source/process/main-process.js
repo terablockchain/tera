@@ -218,7 +218,15 @@ function RunFork(Path,ArrArgs)
     glPortDebug++;
     var execArgv = [];
     
-    var Worker = child_process.fork(Path, ArrArgs, {execArgv:execArgv});
+    try
+    {
+        var Worker = child_process.fork(Path, ArrArgs, {execArgv:execArgv});
+    }
+    catch(e)
+    {
+        ToError("" + e);
+        return undefined;
+    }
     return Worker;
 }
 

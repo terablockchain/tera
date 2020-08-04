@@ -32,22 +32,30 @@ function RunOnUpdate()
         
         if(global.NETWORK === "MAIN-JINN")
         {
-            if(CurNum < 2297)
+            if(CurNum < 2304)
             {
-                if(!IsValidAccHash(64166000, "98352EF599DDBA82882A95504C5CBEFB864CDBBBDB7C1F524647921761ED96B7", 0))
+                if(!IsValidAccHash(64382000, "9D37B1CA6A998734F1B65A1DA737AEFB5182D05291502C6A484618992184F3E6", 0))
                 {
-                    ToLog("Find error AccHash - Start check on Acts...");
-                    global.CheckSumHashInActs();
+                    if(IsValidAccHash(64300000, "C80D6EE465BF54E69647D94B852ED896B611E1027ABF9AE57D08DD0698EEDD68", 1))
+                    {
+                        SendRewrteTx(64300000);
+                    }
+                    else
+                        if(IsValidAccHash(64200000, "04157B03A87F282055B6779C327B241776C1CDAAB3E0A1593B7B943661979D78", 1))
+                        {
+                            SendRewrteTx(64200000);
+                        }
+                        else
+                            if(IsValidAccHash(64100000, "F587B8F9DE5FCF8221CC35125A86D29ED1A65DCE40D1DD20F302129C2A3F5853", 1))
+                            {
+                                SendRewrteTx(64100000);
+                            }
+                            else
+                            {
+                                SendRewrteAllTx();
+                            }
                 }
             }
-            else
-                if(CurNum < 2304)
-                {
-                    if(!IsValidAccHash(64228000, "7ECC63FDDCE8CBE54D82B60AED0B73A8B094F5E8333656CE3F8EA8254EC0A85A", 0))
-                    {
-                        SendRewrteAllTx();
-                    }
-                }
         }
         ToLog("UPDATER Finish");
     }
