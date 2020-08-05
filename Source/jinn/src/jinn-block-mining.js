@@ -96,7 +96,7 @@ function InitClass(Engine)
                     
                     Engine.CopyBodyTx(MaxBlock, Block);
                     Block = MaxBlock;
-                    Engine.DoCreateNewBlock();
+                    Engine.DoCreateNewBlock(2);
                 }
                 else
                 {
@@ -158,7 +158,7 @@ function InitClass(Engine)
         return MaxBlock;
     };
     
-    Engine.DoCreateNewBlock = function ()
+    Engine.DoCreateNewBlock = function (StepNum)
     {
         var BlockNumNew = Engine.CurrentBlockNum - JINN_CONST.STEP_NEW_BLOCK;
         var PrevBlockNum = BlockNumNew - 1;
@@ -175,6 +175,7 @@ function InitClass(Engine)
         }
         
         Block.CreateMode = 2;
+        Block.StepNum = StepNum;
         Engine.AddToMining(Block);
         Engine.AddBlockToChain(Block);
     };

@@ -28,6 +28,8 @@ function InitClass(Engine)
     {
         Engine.Server = net.createServer(function (Socket)
         {
+            Engine.SetEventsOnError(Socket);
+            
             if(global.StopNetwork)
                 return;
             
@@ -96,6 +98,17 @@ function InitClass(Engine)
         });
     };
     
+    Engine.SetEventsOnError = function (SOCKET,Child)
+    {
+        SOCKET.on('error', function (err)
+        {
+            if(Child)
+                Engine.AddCheckErrCount(Child, 1, "ERRORS:" + err, 1);
+            else
+                ToError("ERRORS:" + err, 4);
+        });
+    };
+    
     Engine.SetEventsProcessing = function (SOCKET,Child,StrConnect,bAll)
     {
         if(bAll && !Engine.LinkSocketToChild(SOCKET, Child, StrConnect))
@@ -106,11 +119,6 @@ function InitClass(Engine)
             Engine.ClearSocket(SOCKET, Child);
         });
         
-        SOCKET.on('error', function (err)
-        {
-            if(Child)
-                Engine.AddCheckErrCount(Child, 1, "ERRORS", 1);
-        });
         SOCKET.on('end', function ()
         {
             if(Child.LogNetBuf && Child.AddrItem)
@@ -226,10 +234,13 @@ function InitAfter(Engine)
                     
                     if(Child.Socket)
                     {
+                        Engine.SetEventsOnError(Child.Socket, Child);
                         Engine.SetEventsProcessing(Child.Socket, Child, "Server", 1);
                     }
                     F(!!Child.Socket);
+                    return;
                 });
+                Engine.SetEventsOnError(Child.Socket, Child);
                 SetSocketStatus(Child.Socket, 1);
                 Engine.SetEventsProcessing(Child.Socket, Child, "Server", 0);
             }

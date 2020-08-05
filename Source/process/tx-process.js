@@ -264,6 +264,7 @@ function CheckActDB()
     
     SERVER.Close();
     
+    var MaxBlockNumDB = SERVER.GetMaxNumBlockDB();
     var DBAct = DApps.Accounts.DBAct;
     var MaxNum = DBAct.GetMaxNum();
     var Num = MaxNum - 100;
@@ -284,12 +285,15 @@ function CheckActDB()
             Item.HashData = DApps.Accounts.GetActHashesFromBuffer(Item.PrevValue.Data);
             if(Item)
             {
+                if(Item.BlockNum > MaxBlockNumDB - 5)
+                    break;
+                
                 var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);
                 if(!Block)
                     return;
                 if(!IsEqArr(Block.SumHash, Item.HashData.SumHash))
                 {
-                    ToLogTx("Error SumHash on BlockNum=" + Item.BlockNum, 4);
+                    ToLogTx("---CheckActDB: Error SumHash on BlockNum=" + Item.BlockNum, 4);
                     ReWriteDAppTransactions({StartNum:Item.BlockNum}, 1);
                     
                     return;

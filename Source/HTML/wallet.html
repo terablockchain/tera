@@ -727,6 +727,15 @@
         $("idLogLevelText").innerText=CONFIG_DATA.CONSTANTS.LOG_LEVEL;
         $("idLogLevel").max=CONFIG_DATA.MaxLogLevel;
 
+
+        if(!CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
+        {
+            SetVisibleBlock("GetStateItem(Item)","none");
+            $("GetStateItem(Item)").innerText="";
+            SetVisibleBlock("GetStateItem2(Item)","none");
+            $("GetStateItem2(Item)").innerText="";
+        }
+
     }
     
     function ChangeLog()
@@ -1512,6 +1521,7 @@
 
                     <th id="(RetChangeSmart(Item))" data-name="Smart contract (DApp)" class="smart hint">Smart</th>
                     <th id="Item.WN" class="num" style="width: 30px;"></th>
+                    <th id="GetStateItem(Item)" class="hash2">State</th>
                 </tr>
             </table>
 
@@ -1755,11 +1765,7 @@
                             <th id="(RetHistoryAccount(Item,'Adviser'))" class="num">Adv</th>
                             <th id="Item.Value.Smart" class="num">Smart</th>
                             <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="num">Block Num</th>
-                            <!--<th id="Item.Arr[0].BlockNum" class="num">0</th>-->
-                            <!--<th id="Item.Arr[1].BlockNum" class="num">1</th>-->
-                            <!--<th id="Item.Arr[2].BlockNum" class="num">2</th>-->
-                            <!--<th id="Item.Arr[3].BlockNum" class="num">3</th>-->
-                            <!--<th id="Item.Arr[4].BlockNum" class="num">4</th>-->
+                            <th id="GetStateItem2(Item)" class="hash2">State</th>
                         </tr>
                     </table>
 

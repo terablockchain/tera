@@ -301,7 +301,7 @@ function DoNode(Engine)
     if(Engine.LastNewBlockCreate !== CurBlockNum3)
     {
         Engine.LastNewBlockCreate = CurBlockNum3;
-        Engine.DoCreateNewBlock();
+        Engine.DoCreateNewBlock(1);
     }
     
     if(JINN_CONST.TEST_DELTA_TIMING_HASH)

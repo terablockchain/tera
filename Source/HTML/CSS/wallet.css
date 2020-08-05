@@ -170,6 +170,16 @@ td.code2
     text-align: left;
     word-break: break-all;
 }
+.hash2
+{
+    width: 165px;
+    min-width: 100px;
+    font-family: "courier new", "times new roman", monospace;
+    font-size: 90%;
+    align-content: left;
+    text-align: left;
+    word-break: break-all;
+}
 .pubkey
 {
     width: 180px;

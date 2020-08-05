@@ -838,7 +838,7 @@ function ViewCurrent(Def,flag,This)
         Def.Param3 = "";
     
     ViewGrid(Def.APIName, {StartNum:ParseNum(item.value), CountNum:GetCountViewRows(Def), Param3:Def.Param3, Filter:Filter, Filter2:Filter2,
-        ChainMode:Def.ChainMode}, Def.TabName, 1, Def.TotalSum);
+        ChainMode:Def.ChainMode, GetState:window.DEBUG_WALLET}, Def.TabName, 1, Def.TotalSum);
     SaveValues();
     
     if(This)
@@ -1191,9 +1191,6 @@ function RetChangeSmart(Item)
         }
         else
             Name = "" + Item.SmartObj.Num + "." + escapeHtml(Item.SmartObj.Name) + "<BR>";
-        
-        if(window.DEBUG_WALLET)
-            State = "<BR>State:" + JSON.stringify(Item.SmartState);
     }
     
     var Height = 20;
@@ -2560,4 +2557,17 @@ function RunServerCode(Code)
             SetStatus(Data.text);
         }
     });
+}
+
+function GetStateItem(Item)
+{
+    var Str = "";
+    if(Item.SmartState)
+        Str = JSON.stringify(Item.SmartState);
+    
+    return Str;
+}
+function GetStateItem2(Item)
+{
+    return GetStateItem(Item);
 }

@@ -105,8 +105,6 @@ if(!global.HTTP_HOSTING_PORT)
     process.exit();
 }
 
-
-
 var JinnLib = require("../jinn/tera");
 var Map = {"Block":1, "BlockDB":1, "Log":1, };
 JinnLib.Create(Map);
@@ -115,11 +113,8 @@ global.HTTP_PORT_NUMBER = 0;
 require("../core/html-server");
 require("../system");
 
-
-
 global.STAT_MODE = 1;
 setInterval(PrepareStatEverySecond, 1000);
-
 
 var bWasRun = 0;
 
@@ -231,6 +226,7 @@ function MainHTTPFunction(request,response)
                 ToLog(Str, 0);
                 Response.writeHead(405, {'Content-Type':'text/html'});
                 Response.end(Str);
+                return;
             }
         });
         
@@ -247,6 +243,7 @@ function MainHTTPFunction(request,response)
                 {
                     Response.writeHead(405, {'Content-Type':'text/html'});
                     Response.end("Error data parsing");
+                    return;
                 }
             }
             DoCommandNew(request, response, Type, Path, Data);
@@ -1210,14 +1207,6 @@ global.LoadBlockFromNetwork = function (Params,F)
         ToLog("RETURN: LoadBlockFromNetwork: " + Params.BlockNum, 2);
         F(Err, Block);
     });
-}
-
-if(0 && global.LOCAL_RUN)
-{
-    setTimeout(function ()
-    {
-        require("../UnitTest/new-tx.js");
-    }, 1000);
 }
 
 global.WebApi1.DappStaticCall = global.HostingCaller.DappStaticCall;

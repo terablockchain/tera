@@ -604,7 +604,7 @@ HTTPCaller.GetAccountList = function (Params)
 {
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = DApps.Accounts.GetRowsAccounts(Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = DApps.Accounts.GetRowsAccounts(Params.StartNum, Params.CountNum, Params.Filter, Params.GetState);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetDappList = function (Params)
@@ -2340,6 +2340,7 @@ if(global.HTTP_PORT_NUMBER)
                     ToError("--------Error data parsing : " + Params[0] + " " + postData.substr(0, 200));
                     Response.writeHead(405, {'Content-Type':'text/html'});
                     Response.end("Error data parsing");
+                    return;
                 }
                 
                 if(Params[0] === "HTML")
