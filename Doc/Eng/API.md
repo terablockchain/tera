@@ -488,3 +488,15 @@ Delta block num: <INPUT type="number" id="idDeltaTime" value=2 style="width: 40p
 </body>
 </html>
 ```
+
+12)**/GetSupply**  - returns a single number-the sum of the mined coins
+
+Example (GET)
+```js
+http://127.0.0.1/GetSupply
+```
+
+return value:
+```
+643000000
+```
