@@ -698,6 +698,11 @@ HTTPCaller.GetWalletInfo = function (Params)
     }
     
     var TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
+    if(TXBlockNum <= 0)
+    {
+        SERVER.UpdateAllDB();
+        TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
+    }
     var RestContext = SERVER.LoadRestContext;
     if(RestContext && RestContext.Mode < 200)
     {

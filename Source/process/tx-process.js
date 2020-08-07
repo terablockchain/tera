@@ -96,6 +96,10 @@ function ReWriteDAppTransactions(Params,bSilent)
     {
         ToLogTx("ReWriteDAppTransactions from: " + StartNum);
     }
+    else
+    {
+        ToLogTx("ReWriteDAppTransactions from: " + StartNum, 5);
+    }
     
     while(1)
     {
@@ -201,8 +205,16 @@ class CTXProcess
             return 0;
         }
         
-        if(BlockNum >= BLOCK_PROCESSING_LENGTH2 && PrevBlockNum && LastHashData)
+        if(BlockNum >= BLOCK_PROCESSING_LENGTH2 && PrevBlockNum)
         {
+            if(!LastHashData)
+            {
+                ToLogTx("SumHash:!LastHashData : DeleteTX on Block=" + PrevBlockNum, 5)
+                
+                BlockDeleteTX(PrevBlockNum)
+                return 0;
+            }
+            
             if(!IsEqArr(LastHashData.SumHash, CheckSumHash))
             {
                 ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 5)
@@ -305,10 +317,53 @@ function CheckActDB()
     }
 }
 
-var TxProcess = new CTXProcess();
 
+
+global.OnBadAccountHash = function (BlockNum,BlockNumHash)
+{
+    var MinBlockNum = SERVER.GetMaxNumBlockDB() - 10000;
+    if(MinBlockNum < 0)
+        MinBlockNum = 0;
+    if(DApps.Accounts.BadBlockNumChecked < MinBlockNum)
+        DApps.Accounts.BadBlockNumChecked = MinBlockNum;
+    
+    if(BlockNum > DApps.Accounts.BadBlockNumChecked)
+    {
+        if(DApps.Accounts.BadBlockNum < BlockNum)
+            DApps.Accounts.BadBlockNum = BlockNum;
+        if(!DApps.Accounts.BadBlockNumHash || BlockNumHash < DApps.Accounts.BadBlockNumHash)
+        {
+            DApps.Accounts.BadBlockNumHash = BlockNumHash;
+            
+            ToLog("****FIND BAD ACCOUNT HASH IN BLOCK: " + BlockNumHash + " DO BLOCK=" + BlockNum, 3);
+        }
+    }
+}
+
+function CheckBadsBlock()
+{
+    if(DApps.Accounts.BadBlockNumHash)
+    {
+        var StartRewrite = DApps.Accounts.BadBlockNumHash - global.PERIOD_ACCOUNT_HASH - 1;
+        if(StartRewrite < 0)
+            StartRewrite = 0;
+        ToLogTx("---CheckBadsBlock: Rewrite tx from BlockNum=" + StartRewrite, 3);
+        
+        DApps.Accounts.BadBlockNumChecked = DApps.Accounts.BadBlockNum;
+        DApps.Accounts.BadBlockNumHash = 0;
+        
+        DApps.Accounts.CalcMerkleTree(1);
+        
+        ReWriteDAppTransactions({StartNum:StartRewrite}, 1);
+    }
+}
+
+var TxProcess = undefined;
 setInterval(function ()
 {
+    if(!TxProcess)
+        TxProcess = new CTXProcess();
+    
     if(SERVER)
     {
         SERVER.Close();
@@ -321,5 +376,6 @@ setInterval(function ()
 setInterval(function ()
 {
     CheckActDB();
+    CheckBadsBlock();
 }
 , 60 * 1000);

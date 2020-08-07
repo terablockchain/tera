@@ -2571,3 +2571,36 @@ function GetStateItem2(Item)
 {
     return GetStateItem(Item);
 }
+
+function SaveWebDataToFile(text,filename)
+{
+    var blob = new Blob([text], {type:"text/plain"});
+    var anchor = document.createElement("a");
+    anchor.download = filename;
+    anchor.href = window.URL.createObjectURL(blob);
+    anchor.target = "_blank";
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+}
+
+function LoadWebDataFromFile(idname,F,Meta)
+{
+    var file = $(idname).files[0];
+    var reader = new FileReader();
+    reader.onload = function ()
+    {
+        if(reader.result.byteLength < 2)
+            SetStatus("Error file length (" + reader.result.byteLength + ")");
+        else
+        {
+            var view = new Uint8Array(reader.result);
+            var Str = Utf8ArrayToStr(view);
+            F(Str, Meta);
+            
+            $(idname).value = "";
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}

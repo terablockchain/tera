@@ -225,7 +225,7 @@ function Init(Engine)
         if(BlockNum % PERIOD_ACCOUNT_HASH !== 0)
             return undefined;
         
-        var BlockNumHash = BlockNum - DELTA_BLOCK_ACCOUNT_HASH;
+        var BlockNumHash = BlockNum - PERIOD_ACCOUNT_HASH;
         if(BlockNumHash < 0)
             return undefined;
         
@@ -248,15 +248,6 @@ function Init(Engine)
             return Tx;
         }
         return undefined;
-    };
-    SERVER.AddDAppTransactions = function (BlockNum,Arr)
-    {
-        var Tx = SERVER.GetDAppTransactions(BlockNum);
-        if(Tx)
-        {
-            SERVER.CheckCreateTransactionObject(Tx, 0, BlockNum);
-            Arr.unshift(Tx);
-        }
     };
     
     SERVER.AddTransactionOwn = function (Tr)

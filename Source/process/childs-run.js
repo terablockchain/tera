@@ -140,17 +140,6 @@ function StartAllProcess(bClose)
         var Item = ArrChildProcess[i];
         StartChildProcess(Item);
     }
-    if(bClose)
-        setInterval(function ()
-        {
-            if(global.DApps && DApps.Accounts)
-            {
-                DApps.Accounts.Close();
-                DApps.Smart.DBSmart.Close();
-            }
-            if(WALLET && WALLET.DBHistory)
-                WALLET.DBHistory.Close();
-        }, 500);
 }
 
 var GlobalRunID = 0;
@@ -241,7 +230,7 @@ function StartChildProcess(Item)
                             }
                             break;
                         case "log":
-                            ToLog(msg.message);
+                            ToLog(msg.message, msg.level, msg.nofile);
                             break;
                         case "ToLogClient":
                             if(WebProcess && WebProcess.Worker)

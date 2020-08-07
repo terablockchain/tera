@@ -62,12 +62,6 @@ class CDBResult
     
     Close()
     {
-        this.DBResultIndex.Close()
-        this.DBResultData.Close()
-    }
-    
-    CloseResultDB()
-    {
         this.DBResultData.Close()
         this.DBResultIndex.Close()
     }

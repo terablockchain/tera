@@ -28,8 +28,6 @@ require("../src");
 
 
 
-
-
 global.JINN_WARNING = 3;
 
 
@@ -145,7 +143,6 @@ function Create(MapName)
             Engine.AddNodeAddr({ip:"t5.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"terablockchain.org", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"teraexplorer.org", port:30000, Score:SYSTEM_SCORE, System:1});
-            Engine.AddNodeAddr({ip:"212.80.218.35", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"149.154.70.158", port:30000, Score:SYSTEM_SCORE, System:1});
         }
         else
@@ -174,6 +171,7 @@ const PERIOD_FOR_RUN = 100;
 
 function StartRun()
 {
+    SERVER.UpdateAllDB();
     SERVER.NodeSyncStatus = {Header1:Engine.Header1, Header2:Engine.Header2, Block1:Engine.Block1, Block2:Engine.Block2, };
     
     if(Engine.CanRunStat)

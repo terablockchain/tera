@@ -37,7 +37,7 @@ CheckSizeLogFile(file_name_log_tx, file_name_log_txPrev);
 
 global.MaxLogLevel = 0;
 global.ToLogWasEnter = 0;
-global.ToLog = function (Str,Level)
+global.ToLog = function (Str,Level,bNoFile)
 {
     if(global.ToLogWasEnter)
     {
@@ -56,7 +56,7 @@ global.ToLog = function (Str,Level)
     
     if(!Level || Level <= global.LOG_LEVEL)
     {
-        ToLogClient(Str, undefined, undefined);
+        ToLogClient(Str, undefined, undefined, bNoFile);
     }
     
     global.ToLogWasEnter = 0;
@@ -66,6 +66,30 @@ setInterval(function ()
     global.ToLogWasEnter = 0;
 }
 , 1000);
+
+global.ArrLogClient = [];
+global.ArrLogCounter = 0;
+function ToLogClient(Str,StrKey,bFinal,bNoFile)
+{
+    if(!Str)
+        return;
+    
+    if(!bNoFile)
+        ToLogFile(file_name_log, Str);
+    
+    if(global.PROCESS_NAME === "MAIN")
+    {
+        if(!StrKey)
+            StrKey = "";
+        global.ArrLogCounter++;
+        ArrLogClient.push({id:global.ArrLogCounter, time:GetStrOnlyTime(), text:Str, key:StrKey, final:bFinal, });
+        
+        if(ArrLogClient.length > 13)
+            ArrLogClient.shift();
+    }
+}
+global.ToLogClient = ToLogClient;
+global.ToLogClient0 = ToLogClient;
 
 
 global.ToLogWeb = function (Str)
@@ -121,6 +145,7 @@ global.ToInfo = function (Str)
 global.ToError = function (Str)
 {
     ToLogFile(file_name_error, Str);
+    ToLog(Str, 3);
 }
 
 global.ToLogTx = function (Str,LogLevel)
@@ -141,42 +166,16 @@ function ToLogFile(file_name,Str,bNoFile)
     if(!bNoFile)
         SaveToLogFileSync(file_name, Str);
     
+    if(global.PROCESS_NAME)
+        console.log("" + START_PORT_NUMBER + ": " + GetStrOnlyTime() + ": " + Str);
+    else
+        console.log(Str);
+    
     if(global.PROCESS_NAME !== "MAIN" && process.send)
     {
-        process.send({cmd:"log", message:Str});
-        return;
-    }
-    else
-    {
-        if(global.PROCESS_NAME)
-            console.log("" + START_PORT_NUMBER + ": " + GetStrOnlyTime() + ": " + Str);
-        else
-            console.log(Str);
+        process.send({cmd:"log", nofile:!bNoFile, message:Str});
     }
 }
-
-global.ArrLogClient = [];
-global.ArrLogCounter = 0;
-function ToLogClient(Str,StrKey,bFinal)
-{
-    if(!Str)
-        return;
-    
-    ToLogFile(file_name_log, Str);
-    
-    if(global.PROCESS_NAME === "MAIN")
-    {
-        if(!StrKey)
-            StrKey = "";
-        global.ArrLogCounter++;
-        ArrLogClient.push({id:global.ArrLogCounter, time:GetStrOnlyTime(), text:Str, key:StrKey, final:bFinal, });
-        
-        if(ArrLogClient.length > 13)
-            ArrLogClient.shift();
-    }
-}
-global.ToLogClient = ToLogClient;
-global.ToLogClient0 = ToLogClient;
 
 var StartStatTime;
 var CONTEXT_STATS = {Total:{}, Interval:[]};

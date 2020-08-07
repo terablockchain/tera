@@ -93,11 +93,6 @@ function Init(Engine)
         Engine.ClearDataBase();
     };
     
-    SERVER.Close = function ()
-    {
-        Engine.Close();
-    };
-    
     SERVER.WriteBlockDB = function (Block)
     {
         Engine.ConvertFromTera(Block, 1);
@@ -575,7 +570,7 @@ function Init(Engine)
             {
                 delta = 1;
                 Count++;
-                if(Count > COUNT_BLOCKS_FOR_LOAD / 10)
+                if(Count > 100)
                     return num;
             }
             else
@@ -717,5 +712,33 @@ function Init(Engine)
     SERVER.StopNode = function ()
     {
         global.StopNetwork = true;
+    };
+    SERVER.Close = function ()
+    {
+        Engine.Close();
+    };
+    
+    SERVER.CloseDappDB = function ()
+    {
+        Engine.DBResult.Close();
+        
+        if(global.DApps)
+        {
+            DApps.Accounts.Close();
+            DApps.Smart.Close();
+        }
+    };
+    
+    SERVER.UpdateAllDB = function ()
+    {
+        if(global.PROCESS_NAME !== "TX")
+        {
+            SERVER.CloseDappDB();
+        }
+        
+        if(global.PROCESS_NAME !== "MAIN")
+        {
+            SERVER.Close();
+        }
     };
 }

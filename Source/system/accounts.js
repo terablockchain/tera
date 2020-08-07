@@ -226,11 +226,17 @@ class AccountApp extends require("./dapp")
     
     Start(bClean)
     {
+        this.BadBlockNum = 0
+        this.BadBlockNumChecked = 0
+        this.BadBlockNumHash = 0
         
         this.InitAMIDTab()
         
         if(!bClean && this.DBState.GetMaxNum() + 1 >= BLOCK_PROCESSING_LENGTH2)
+        {
+            ToLog("ACCOUNTS MAX_NUM:" + this.DBState.GetMaxNum())
             return;
+        }
         
         this.DBState.MerkleTree = undefined
         this.DBState.Truncate( - 1)
@@ -254,8 +260,6 @@ class AccountApp extends require("./dapp")
         FileItem.size = 0
         
         this.CalcMerkleTree(1)
-        
-        ToLog("MAX_NUM:" + this.DBState.GetMaxNum())
     }
     
     Close()
@@ -527,11 +531,22 @@ class AccountApp extends require("./dapp")
                     if(BlockNum < START_BLOCK_ACCOUNT_HASH + START_BAD_ACCOUNT_CONTROL)
                         break;
                     
-                    var BlockNumHash = BlockNum - DELTA_BLOCK_ACCOUNT_HASH;
                     if(!this.TRCheckAccountHash(Body, BlockNum, TrNum))
                     {
                         Result = "BAD ACCOUNT HASH"
-                        ToLog("2. ****FIND BAD ACCOUNT HASH IN BLOCK: " + BlockNumHash + " DO BLOCK=" + BlockNum, 3)
+                        if(global.OnBadAccountHash)
+                        {
+                            var TR = undefined;
+                            try
+                            {
+                                TR = BufLib.GetObjectFromBuffer(Body, FORMAT_ACCOUNT_HASH3, {})
+                            }
+                            catch(e)
+                            {
+                            }
+                            if(TR && TR.BlockNum)
+                                global.OnBadAccountHash(BlockNum, TR.BlockNum)
+                        }
                     }
                     else
                     {
@@ -1066,7 +1081,9 @@ class AccountApp extends require("./dapp")
     {
         var Item = this.GetLastBlockNumItem();
         if(!Item)
+        {
             return  - 1;
+        }
         else
             return Item.BlockNum;
     }
@@ -1158,8 +1175,11 @@ class AccountApp extends require("./dapp")
                 else
                 {
                     var Data = this.DBState.Read(Item.ID);
-                    Data.Value = Item.PrevValue
-                    this.DBStateWriteInner(Data, Item.BlockNum, 1)
+                    if(Data)
+                    {
+                        Data.Value = Item.PrevValue
+                        this.DBStateWriteInner(Data, Item.BlockNum, 1)
+                    }
                     var History = this.DBStateHistory.Read(Item.ID);
                     if(History)
                     {

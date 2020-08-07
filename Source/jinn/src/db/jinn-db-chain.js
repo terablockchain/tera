@@ -628,6 +628,7 @@ class CDBChain
         {
             if(!this.WriteBlockMain(Arr[i]))
             {
+                ToError("Error WriteBlockMain")
                 return 0;
             }
         }

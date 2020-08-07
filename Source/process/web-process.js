@@ -1138,16 +1138,6 @@ HostingCaller.GetTotalSupply = function (Params)
 
 
 
-
-setInterval(function ()
-{
-    if(SERVER)
-        SERVER.Close();
-    DApps.Accounts.Close();
-    DApps.Smart.DBSmart.Close();
-}
-, 500);
-
 setInterval(function ()
 {
     

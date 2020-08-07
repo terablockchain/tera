@@ -598,11 +598,11 @@ function InitClass(Engine)
         if(BlockSeed.BlockNum > 25)
             Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + "  ### Miner=" + Miner + " COUNT=" + Count + StrCheckSum, 3);
         
-        var Res = Engine.DB.SaveChainToDB(BlockHead, BlockSeed);
-        
+        var BlockHeadDB = Engine.GetBlockHeaderDB(BlockHead.BlockNum);
+        var Res = Engine.DB.SaveChainToDB(BlockHeadDB, BlockSeed);
         if(Res !== 1)
         {
-            Engine.ToLog("Error on SaveChainToDB " + BlockHead.BlockNum + "-" + BlockSeed.BlockNum + " Power:" + BlockSeed.Power, 2);
+            Engine.ToLog("Error on SaveChainToDB " + BlockHead.BlockNum + "-" + BlockSeed.BlockNum + " Res=" + Res, 2);
             Engine.TruncateChain(BlockHead.BlockNum);
             return Res;
         }

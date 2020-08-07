@@ -522,10 +522,8 @@
                 CurrentProject:$("idProjectList").value,
                 CurrentTab:ArrTabs[1].Current,
             };
-        //FillEditorsPos(Env);
 
         localStorage["SMART-ENV"]=JSON.stringify(Env);
-        //ToLog("SaveValues: Env="+JSON.stringify(Env));
     }
 
     function LoadValues()
@@ -2143,8 +2141,23 @@ function HTMLTemplate(){
         cursor: auto;
     }
 
+
+    .hidden
+    {
+        display: none;
+    }
+
 </style>
 
+<script>
+function DoLoadingConfig(Str,Meta)
+{
+    localStorage["SMART-ProjectArray"]=Str;
+    LoadValues();
+}
+
+
+</script>
 
 <body>
     <span id="MTabProjects" onclick="SelectTab('TabProjects')" class="tab1">Projects</span>
@@ -2401,7 +2414,12 @@ function HTMLTemplate(){
                 <option value="styleLight">Light</option>
                 <option value="styleDark">Dark</option>
             </select>
-
+            <BR><BR>
+            <button onclick="SaveValues(1);SaveWebDataToFile(localStorage['SMART-ProjectArray'],'dapp-ide.txt')" class="bt"> Save to file</button>
+            <label for="load-key" class="bt" onchange="LoadWebDataFromFile('load-key',DoLoadingConfig)" id="idLoad">
+                <input class="hidden" id="load-key" type="file">
+                <span>Load from file</span>
+            </label>
         </DIV>
 
         <DIV id="idServerBlock" style="width2: 50%;max-height: 300px;">

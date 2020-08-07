@@ -49,7 +49,10 @@ class CDBItem extends global.CDBFile
         {
             var Position = this.WriteUint32(DataSize, Data.Position);
             if(!Position)
+            {
+                ToError("Write: Error write position Data.Position=" + Data.Position + " DataSize=" + DataSize)
                 return 0;
+            }
             Data.Position = Position
         }
         if(this.WriteInner(BufWrite, Data.Position + 4, 0, DataSize))

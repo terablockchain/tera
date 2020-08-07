@@ -297,12 +297,8 @@ function DoNode(Engine)
         
         Engine.ClearListToNum(Engine.MiningBlockArr, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
     }
-    var CurBlockNum3 = JINN_EXTERN.GetCurrentBlockNumByTime( - JINN_CONST.DELTA_TIME_NEW_BLOCK);
-    if(Engine.LastNewBlockCreate !== CurBlockNum3)
-    {
-        Engine.LastNewBlockCreate = CurBlockNum3;
-        Engine.DoCreateNewBlock(1);
-    }
+    
+    Engine.DoCreateNewBlock();
     
     if(JINN_CONST.TEST_DELTA_TIMING_HASH)
         for(var Delta = 0; Delta < JINN_CONST.TEST_DELTA_TIMING_HASH; Delta++)

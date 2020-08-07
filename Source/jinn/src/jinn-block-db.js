@@ -37,7 +37,6 @@ function InitClass(Engine)
     Engine.Close = function ()
     {
         Engine.DB.Close();
-        Engine.DBResult.Close();
     };
     
     Engine.WriteGenesisDB = function ()
@@ -229,9 +228,6 @@ function DoNode(Engine)
     {
         Engine.DB.DoNode();
     }
-    
-    if(BWRITE_MODE)
-        Engine.DBResult.Close();
 }
 
 function InitAfter(Engine)

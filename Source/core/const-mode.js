@@ -17,8 +17,6 @@ switch(global.MODE_RUN)
         if(global.FORK_MODE || global.LOCAL_RUN === 1)
             global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
-        
-        global.DELTA_BLOCK_ACCOUNT_HASH = 30;
         global.PERIOD_ACCOUNT_HASH = 10;
         global.START_BLOCK_ACCOUNT_HASH = 1;
         global.START_BLOCK_ACCOUNT_HASH3 = 1;
@@ -69,7 +67,6 @@ switch(global.MODE_RUN)
         
         global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
-        global.DELTA_BLOCK_ACCOUNT_HASH = 30;
         global.PERIOD_ACCOUNT_HASH = 10;
         global.START_BLOCK_ACCOUNT_HASH = 0;
         global.START_BLOCK_ACCOUNT_HASH3 = 1;
@@ -125,8 +122,6 @@ switch(global.MODE_RUN)
         
         global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
-        
-        global.DELTA_BLOCK_ACCOUNT_HASH = 30;
         global.PERIOD_ACCOUNT_HASH = 10;
         global.START_BLOCK_ACCOUNT_HASH = 1;
         global.START_BLOCK_ACCOUNT_HASH3 = 1;

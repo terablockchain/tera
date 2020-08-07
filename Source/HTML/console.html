@@ -452,6 +452,13 @@
     }
 
 
+    function DoLoadingList(Str,Meta)
+    {
+        //ToLog("Result: "+Str);
+        CodeList=JSON.parse(Str);
+        localStorage["ConsoleCodeList2"]=Str;
+        SaveArrToSelect();
+    }
 
 
 
@@ -460,7 +467,15 @@
 
 
 <style type="text/css">
+    .pad2
+    {
+        margin: 3px;
+    }
 
+    .hidden
+    {
+        display: none;
+    }
 </style>
 
 
@@ -489,10 +504,16 @@
 
     <DIV align='left' style="border: 1px solid #39519b;width:1198px;height:800px;">
         <DIV style="width: 200px;height:100%; float:left;">
-            <select size="45" id="idConsoleIndex" style="width:100%;height:100%;" onchange="SetConsoleText()" ondblclick="SetAndRun()">
+            <select size="45" id="idConsoleIndex" style="width:100%;height:97%;" onchange="SetConsoleText()" ondblclick="SetAndRun()">
             </select>
-        </DIV>
+            <button onclick="SaveWebDataToFile(JSON.stringify(CodeList),'console.txt')" class="bt pad2"> Save to file</button>
+            <label for="load-key" class="bt pad2" onchange="LoadWebDataFromFile('load-key',DoLoadingList)" id="idLoad">
+                <input class="hidden" id="load-key" type="file">
+                <span>Load from file</span>
+            </label>
 
+
+        </DIV>
         <DIV style="width: 998px;height:100%; float: left;">
             <DIV>
                 <DIV>
