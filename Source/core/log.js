@@ -105,6 +105,7 @@ global.SmallAddr = function (Str)
     return Str.substr(0, 5);
 }
 
+
 global.ToLogTrace = function (Str)
 {
     var Data = new Error().stack;
@@ -114,6 +115,16 @@ global.ToLogTrace = function (Str)
     
     ToError("" + Str + ":" + Data);
 }
+global.ToLogTraceOne = function (Str)
+{
+    var Data = new Error().stack;
+    var index = Data.indexOf("\n");
+    index = Data.indexOf("\n", index + 1);
+    Data = Data.substr(index);
+    
+    ToLogOne("" + Str + ":" + Data);
+}
+
 var MapLogOne = {};
 var StartLogOne = Date.now();
 global.ToLogOne = function (Str,Str2,Level)

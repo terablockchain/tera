@@ -131,9 +131,19 @@ class CTXProcess
     {
         
         var LastBlockNum = DApps.Accounts.GetLastBlockNumAct();
+        
+        var AccountLastNum = DApps.Accounts.DBState.GetMaxNum();
+        if(LastBlockNum <= 0 && AccountLastNum > 16)
+        {
+            ToLogTx("Error Init CTXProcess: " + LastBlockNum + "  AccountLastNum=" + AccountLastNum)
+            this.ErrorInit = 1
+            return;
+        }
+        
         ToLogTx("Init CTXProcess: " + LastBlockNum)
         
-        ReWriteDAppTransactions({StartNum:LastBlockNum - 10}, 1)
+        if(LastBlockNum)
+            ReWriteDAppTransactions({StartNum:LastBlockNum - 10}, 1)
         
         this.ErrorAccHash = 0
         this.TimeWait = 0
@@ -217,7 +227,8 @@ class CTXProcess
             
             if(!IsEqArr(LastHashData.SumHash, CheckSumHash))
             {
-                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 5)
+                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum + " LastItemHash=" + GetHexFromArr(LastHashData.SumHash) + " NEED=" + GetHexFromArr(CheckSumHash),
+                5)
                 
                 BlockDeleteTX(PrevBlockNum)
                 return 0;
@@ -362,7 +373,14 @@ var TxProcess = undefined;
 setInterval(function ()
 {
     if(!TxProcess)
+    {
         TxProcess = new CTXProcess();
+        if(TxProcess.ErrorInit)
+        {
+            TxProcess = undefined;
+            return;
+        }
+    }
     
     if(SERVER)
     {

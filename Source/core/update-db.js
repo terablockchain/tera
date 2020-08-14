@@ -57,6 +57,18 @@ function RunOnUpdate()
                 }
             }
         }
+        
+        if(global.NETWORK === "TEST-JINN")
+        {
+            if(CurNum < 2360)
+            {
+                
+                if(!IsValidAccHash(1138800, "DC55EC6EF12B8AEF08BDA66B66DCBB26A07C2F48D12BAFA519B9AAEDD723AB61", 0))
+                {
+                    SendRewrteAllTx();
+                }
+            }
+        }
         ToLog("UPDATER Finish");
     }
 }

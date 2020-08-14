@@ -24,6 +24,8 @@ function Init(Engine)
             var TxAdd = Engine.AddToTreeWithAll(TreeTTAll, Tx);
             if(TxAdd)
                 Block.TxData.unshift(TxAdd);
+            else
+                Block.TxData.unshift(Tx);
         }
     };
     

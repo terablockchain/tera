@@ -37,7 +37,7 @@ function InitClass(Engine)
         var Block = BlockSeed;
         while(Block)
         {
-            if(Engine.IsExistBlockDB(Block))
+            if(Engine.IsExistBlockMain(Block))
                 break;
             
             var PrevBlock = Engine.GetPrevBlock(Block);
@@ -120,7 +120,7 @@ function InitClass(Engine)
         while(true)
         {
             Count++;
-            if(Engine.IsExistBlockDB(Block))
+            if(Engine.IsExistBlockMain(Block))
             {
                 break;
             }
@@ -208,7 +208,7 @@ function InitClass(Engine)
         {
             BlockSet = Block;
             Count++;
-            if(Block.BlockNum < FirstBlockHeadNum || Engine.IsExistBlockDB(Block))
+            if(Block.BlockNum < FirstBlockHeadNum || Engine.IsExistBlockMain(Block))
             {
                 Block = undefined;
                 break;
@@ -257,7 +257,7 @@ function InitClass(Engine)
         return Block;
     };
     
-    Engine.IsExistBlockDB = function (Block)
+    Engine.IsExistBlockMain = function (Block)
     {
         
         if(Block.BlockNum > Engine.GetMaxNumBlockDB())

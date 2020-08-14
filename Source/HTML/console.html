@@ -230,8 +230,8 @@
             SetStatus("Error length HEX transaction");
             return;
         }
-        Body.length+=12;
-        SendTransaction(Body);
+        //Body.length+=12;
+        SendTransactionNew(Body);
     }
 
     var AllSend=0;
@@ -368,8 +368,20 @@
             window.close();
         }
 
+        if(e.ctrlKey && e.keyCode===83)//Ctrl+S
+        {
+            e.preventDefault();
+            $("idSave").click();
+        }
+        if(e.ctrlKey && e.keyCode===79)//Ctrl+O
+        {
+            e.preventDefault();
+            $("idLoad").click();
+        }
+
         //SetStatus("keyCode="+e.keyCode)
     }
+
 
 
     function CheckDevelop()
@@ -452,6 +464,16 @@
     }
 
 
+    //Save & Loads
+    function SaveFile()
+    {
+        SaveWebDataToFile(JSON.stringify(CodeList),'console.txt');
+    }
+    function LoadFile()
+    {
+        LoadWebDataFromFile('load-key',DoLoadingList);
+    }
+
     function DoLoadingList(Str,Meta)
     {
         //ToLog("Result: "+Str);
@@ -506,8 +528,8 @@
         <DIV style="width: 200px;height:100%; float:left;">
             <select size="45" id="idConsoleIndex" style="width:100%;height:97%;" onchange="SetConsoleText()" ondblclick="SetAndRun()">
             </select>
-            <button onclick="SaveWebDataToFile(JSON.stringify(CodeList),'console.txt')" class="bt pad2"> Save to file</button>
-            <label for="load-key" class="bt pad2" onchange="LoadWebDataFromFile('load-key',DoLoadingList)" id="idLoad">
+            <button onclick="SaveFile()" class="bt pad2" id="idSave"> Save to file</button>
+            <label for="load-key" class="bt pad2" onchange="LoadFile()" id="idLoad">
                 <input class="hidden" id="load-key" type="file">
                 <span>Load from file</span>
             </label>

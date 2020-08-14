@@ -20,6 +20,8 @@
     </script>
     <script type="text/javascript" src="./JS/coinlib.js"></script>
     <script type="text/javascript" src="./JS/client.js"></script>
+    <script type="text/javascript" src="./JS/terahashlib.js"></script>
+    <script type="text/javascript" src="./JS/crypto-client.js"></script>
 
 
 
@@ -80,6 +82,12 @@
             DefTr.ChainMode=ParseNum($("idViewChainMode").value);
             ViewCurrent(DefTr);
 
+            GetData("GetCurrentInfo",{}, function (Data)
+            {
+                if(Data && Data.result)
+                    SetBlockChainConstant(Data);
+            });
+
             GetData("GetBlockList",{StartNum:BlockNum,CountNum:1,ChainMode:DefTr.ChainMode},function (Data)
             {
                 var Str="";
@@ -89,7 +97,10 @@
                     Str+="Hash: <b class='hash'>"+GetHexFromArr(Block.Hash)+"</b>";
                     Str+="<BR>PrevHash: <b class='hash'>"+GetHexFromArr(Block.PrevHash)+"</b>";
                     Str+="<BR>TreeHash: <b class='hash'>"+GetHexFromArr(Block.TreeHash)+"</b>";
-                    Str+="<BR>Pow: <b>"+Block.Power+"</b>";
+                    Str+="<BR>";
+                    Str+="Time: <b>"+DateFromBlock(BlockNum)+"</b> ";
+                    Str+="SumPow: <b>"+Block.SumPow+"</b>";
+                    Str+=" Pow: <b>"+Block.Power+"</b>";
                     Str+=" Miner: <b>"+Block.Miner+"</b>";
                 }
 
@@ -192,7 +203,7 @@
                             <th id="(escapeHtml(Item.Script))" class="code">JSON</th>
                             <th id="Item.TxID" class="hash">TxID</th>
                             <th id="Item.Length" class="num">Bytes</th>
-                            <th id="Item.TimePow" class="num">Power</th>
+<!--                            <th id="Item.TimePow" class="num">Power</th>-->
                             <th id="(Item.VerifyHTML)" class="verify">Verify</th>
                         </tr>
                     </table>

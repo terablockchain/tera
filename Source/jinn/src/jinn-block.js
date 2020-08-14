@@ -101,7 +101,7 @@ function InitClass(Engine)
         
         var Block = {};
         Block.BlockNum = PrevBlock.BlockNum + 1;
-        Engine.FillBodyTransferTx(Block);
+        Engine.FillBodyFromTransfer(Block);
         
         Block.MinerHash = ZERO_ARR_32;
         Block.PrevSumHash = PrevBlock.SumHash;
@@ -368,10 +368,12 @@ function NeedLoadBodyFromNet(Block)
 
 function NeedLoadBodyFromDB(Block)
 {
-    if(Block && !IsZeroArr(Block.TreeHash) && !Block.TxData && Block.TxPosition)
-        return 1;
-    else
+    if(IsZeroArr(Block.TreeHash))
         return 0;
+    
+    if(Block && !Block.TxData && Block.TxPosition)
+        return 1;
+    return 0;
 }
 
 function CalcAvgSumPow(Block)
@@ -395,6 +397,4 @@ global.BlockInfo = function (Block)
         return "<undefined>";
     
     return "" + Block.BlockNum + " SumPow=" + Block.SumPow;
-    return "" + Block.BlockNum + " (" + GetHexFromArr(Block.SumHash).substr(0, 8) + "<" + GetHexFromArr(Block.PrevSumHash).substr(0,
-    8) + ") Avg=" + Block.AvgSumPow + " Pow=" + Block.Power;
 }

@@ -526,9 +526,7 @@ function SendMoneyTR(TR)
     var Body = GetArrFromTR(TR);
     WriteArr(Body, TR.Sign, 64);
     
-    Body.length += 12;
-    
-    SendTransaction(Body, TR, undefined, function (Err,TR,Body)
+    SendTransactionNew(Body, TR, undefined, function (Err,TR,Body)
     {
         if(Err)
             return;

@@ -364,6 +364,7 @@ WalletFileMap["up.png"] = 1;
 WalletFileMap["down.png"] = 1;
 
 WalletFileMap["dapp-edit.html"] = 1;
+WalletFileMap["_test-api.html"] = 1;
 
 
 WalletFileMap["TeraLogo.svg"] = 1;
@@ -914,6 +915,13 @@ function CheckDappCategoryMap()
 
 
 var MapIPSend = {};
+HostingCaller.SendHexTx = function (Params,response,ArrPath,request)
+{
+    if(typeof Params === "object" && typeof Params.Hex === "string")
+        Params.Hex += "000000000000000000000000";
+    return HostingCaller.SendTransactionHex(Params, response, ArrPath, request);
+}
+
 HostingCaller.SendTransactionHex = function (Params,response,ArrPath,request)
 {
     if(typeof Params !== "object" || !Params.Hex)

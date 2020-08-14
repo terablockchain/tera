@@ -302,7 +302,7 @@ function SetArrLog(arr)
         if(!CanAdItemToLog(Item))
             continue;
         
-        var tr_text = GetTransactionText(MapSendTransaction[Item.key], Item.key.substr(0, 16));
+        var tr_text = GetTransactionText(MapSendTransaction[Item.key], Item.key.substr(0, 12));
         var info = Item.time + " " + Item.text;
         if(tr_text)
             info += " (" + tr_text + ")";

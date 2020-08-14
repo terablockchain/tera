@@ -108,7 +108,7 @@ function RunStopPOWProcess(Mode)
     if(SERVER.LoadHistoryMode)
         return;
     
-    if(GENERATE_BLOCK_ACCOUNT < 8)
+    if(GetMiningAccount() < 8)
         return;
     
     var PathMiner = GetCodePath("../miner.js");
@@ -221,7 +221,7 @@ function SetCalcPOW(Block,cmd)
         var CurWorker = ArrMiningWrk[i];
         if(!CurWorker.bOnline)
             continue;
-        CurWorker.send({cmd:cmd, BlockNum:Block.BlockNum, Account:GENERATE_BLOCK_ACCOUNT, MinerID:GENERATE_BLOCK_ACCOUNT, SeqHash:Block.SeqHash,
+        CurWorker.send({cmd:cmd, BlockNum:Block.BlockNum, Account:GetMiningAccount(), MinerID:GetMiningAccount(), SeqHash:Block.SeqHash,
             Hash:Block.Hash, PrevHash:Block.PrevHash, Time:Date.now(), Num:CurWorker.Num, RunPeriod:global.POWRunPeriod, RunCount:global.POW_RUN_COUNT,
             Percent:global.POW_MAX_PERCENT, CountMiningCPU:GetCountMiningCPU(), ProcessMemorySize:ProcessMemorySize, LastNonce0:0, Meta:Block.Meta,
         });

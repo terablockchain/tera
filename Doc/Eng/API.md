@@ -318,20 +318,17 @@ GET
 http://127.0.0.1/api/v1/GetHistoryTransactions?AccountID=190480
 ```
 
-## SendTransactionHex
+## SendHexTx
 
-11)**/api/v1/SendTransactionHex**  - The transaction
+11)**/api/v1/SendHexTx**  - The transaction
 
 To send a transaction, a number of processes must be performed on the client side:
-1. Get the current blockchain block number
-2. To obtain the parameters of the user's account (OperationID)
-3. Generate the transaction based on the account parameter (OperationID)
-4. Sign transaction with private key
-5. Set the number of the block in which the transaction will fall (using the information from paragraph 1) 
-6. To create a POW for transaction
-7. Convert the transaction in Hex format
+1. To obtain the parameters of the user's account (OperationID)
+2. Generate the transaction based on the account parameter (OperationID)
+3. Sign transaction with private key
+4. Convert the transaction in Hex format
 
-If you have done all this, you can send the transaction command SendTransactionHex
+If you have done all this, you can send the transaction command SendHexTx
 
 P.S.
 If this method is difficult for you, it is recommended to use API2, which is very easy to use.
@@ -339,7 +336,7 @@ If this method is difficult for you, it is recommended to use API2, which is ver
 
 Example:
 ```js
-http://127.0.0.1/api/v1/SendTransactionHex?Hex=6F030000000000002D00000000000100000000008400000000000100000000000000000004007465737425000000000000007AA29739FD458DF8AB1139881DAA4584CCDA3D4995B6849FB1F55F3B2EA40704116647823E97A60C70213EFA8D83CBFBEE6D753FCA6771B4792985B57186F3BCFBCEC0000000930600000000
+http://127.0.0.1/api/v1/SendHexTx?Hex=6F04FC0000000000BBE20200000001000000000009000000000000000000000001000000040054657374000000000000000012EB8196115106B9931E7D5BA05B6406E302F5A753378182BFF6F6BCE0407FAB56991286300BADDFF191B4A3722F1E9D10E70AE70476748840D6A24571382E1C
 ```
 Result:
 ```
@@ -353,141 +350,6 @@ Note: The transaction in hex format can be obtained if you use a functions from 
 
 Note: for the correct operation of the examples, make sure that the OperationID is not lower than the current value in the user's account
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Test-API </title>
-
-
-    <script type="text/javascript" src="./JS/client.js"></script>
-    <script type="text/javascript" src="./JS/sha3.js"></script>
-    <script type="text/javascript" src="./JS/crypto-client.js"></script>
-    <script type="text/javascript" src="./JS/terahashlib.js"></script>
-    <script type="text/javascript" src="./JS/wallet-lib.js"></script>
-    <script type="text/javascript" src="./JS/sign-lib-min.js"></script>
-
-    <script>
-
-        //Init
-        window.onload=function ()
-        {
-            window.DELTA_FOR_TIME_TX=+($("idDeltaTime").value);
-            window.MainServer={ip:"dappsgate.com",port:80};
-
-            //run every 1 sec for getting current block number and network time
-            setInterval(function ()
-            {
-                GetData("GetCurrentInfo",{}, function (Data)
-                {
-                    if(Data && Data.result)
-                        SetBlockChainConstant(Data);
-                });
-            },1000);
-        }
-
-
-        //Use API
-        function SignTr()
-        {
-            var PrivKey=$("idPrivKey").value;
-            var TR=JSON.parse($("idTr").value);
-
-
-
-
-            GetSignTransaction(TR,PrivKey,function ()
-            {
-                TR.Sign=GetHexFromArr(TR.Sign);
-                $("idTr").value=JSON.stringify(TR,"",4);
-            });
-        }
-
-        function GetHexFromTr()
-        {
-            var TR=JSON.parse($("idTr").value);
-            var Body=GetArrFromTR(TR);
-            if(!TR.Sign)
-            {
-                $("idOut").value="Error: sign tx";
-                return "";
-            }
-
-            var Arr=GetArrFromHex(TR.Sign);
-            WriteArr(Body,Arr,64);
-            Body.length+=12;
-            CreateHashBodyPOWInnerMinPower(Body);
-            var StrHex=GetHexFromArr(Body);
-
-            $("idOut").value=StrHex;
-            return StrHex;
-        }
-
-        function SendTr()
-        {
-            var StrHex=GetHexFromTr();
-            if(!StrHex)
-                return;
-
-            GetData("SendTransactionHex",{Hex:StrHex}, function (Data)
-            {
-                if(Data && Data.result)
-                {
-                    $("idOut").value=Data.text;
-                }
-                else
-                {
-                    if(Data)
-                        $("idOut").value="Error: "+Data.text;
-                    else
-                        $("idOut").value="Error";
-                }
-
-            });
-        }
-
-    </script>
-</head>
-<body>
-
-<B>Priv key:</B>
-<INPUT type="search" id="idPrivKey" value="7AF1726733E39D95DD7E9DAD1F6F2B76D0477B3B604439B1353B97BC24A72844" style="width: 600px"><BR>
-<B>Tx</B> (after each transaction is sent, the OperationID number is increased by 1):<BR>
-<textarea id="idTr" rows="20" cols="98">
-{
-    "Type": 111,
-    "Version": 3,
-    "Reserve": 0,
-    "FromID": 189115,
-    "OperationID": 101,
-    "To": [
-        {
-            "PubKey": "",
-            "ID": 9,
-            "SumCOIN": 0,
-            "SumCENT": 1
-        }
-    ],
-    "Description": "Test",
-    "Body": "",
-    "Sign": ""
-}
-</textarea><BR>
-<B>Actions:</B><BR>
-<button onclick="SignTr()">Sign Tx</button>
-<button onclick="GetHexFromTr()">Get Hex</button>
-<button onclick="SendTr()">Send tx</button>
-
-
-Delta block num: <INPUT type="number" id="idDeltaTime" value=2 style="width: 40px">
-
-
-<BR><B>Result:</B><BR>
-<textarea id="idOut" rows="20" cols="98"></textarea>
-</body>
-</html>
-```
 
 12)**/GetSupply**  - returns a single number-the sum of the mined coins
 

@@ -689,10 +689,8 @@
     };
     root.SHA3ARR=function (data,num)
     {
-        // if(!num)
-        //     num=GetCurrentBlockNumByTime();
 
-        if(!NEW_SIGN_TIME || !num || num>=NEW_SIGN_TIME)
+        if(!root.NEW_SIGN_TIME || !num || num>=root.NEW_SIGN_TIME)
             return sha3(data);
         else
             return meshhash(methods.sha3_array_256(data));

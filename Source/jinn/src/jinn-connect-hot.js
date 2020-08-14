@@ -66,20 +66,20 @@ function InitClass(Engine)
         Engine.DisconnectLevel(Child, 0);
     };
     
-    Engine.ChecHotItem = function (Child)
+    Engine.CheckHotItem = function (Child)
     {
         if(!Child.HotItem)
             Engine.LinkHotItem(Child);
         
         if(!Child.HotItem)
-            Child.ToLogNet("Err ChecHotItem");
+            Child.ToLogNet("Err CheckHotItem");
         
         return !!Child.HotItem;
     };
     
     Engine.DenyHotConnection = function (Child,bSend)
     {
-        if(!Engine.ChecHotItem(Child))
+        if(!Engine.CheckHotItem(Child))
             return 0;
         
         Child.HotItem.HotStart = 0;
@@ -105,7 +105,7 @@ function InitClass(Engine)
     
     Engine.InHotStart = function (Item)
     {
-        if(!Engine.ChecHotItem(Item))
+        if(!Engine.CheckHotItem(Item))
             return 0;
         
         var HotItem = Item.HotItem;
@@ -117,7 +117,7 @@ function InitClass(Engine)
     
     Engine.InHotDeny = function (Item)
     {
-        if(!Engine.ChecHotItem(Item))
+        if(!Engine.CheckHotItem(Item))
             return 0;
         
         var HotItem = Item.HotItem;
@@ -132,7 +132,7 @@ function InitClass(Engine)
         if(Engine.ROOT_NODE)
             return 0;
         
-        if(!Engine.ChecHotItem(Child))
+        if(!Engine.CheckHotItem(Child))
             return 0;
         
         var CanSet = Engine.CanSetHot(Child);
@@ -196,7 +196,7 @@ function InitClass(Engine)
         if(Engine.IsStartingTime && Child.TestExchangeTime !== global.BEST_TEST_TIME)
             return  - 4;
         
-        if(!Engine.ChecHotItem(Child))
+        if(!Engine.CheckHotItem(Child))
             return  - 1;
         
         if(Engine.InHotDeny(Child))
@@ -224,7 +224,7 @@ function InitClass(Engine)
             return 0;
         }
         
-        if(!Engine.ChecHotItem(Child))
+        if(!Engine.CheckHotItem(Child))
             return 0;
         
         Child.HotItem.HotStart = 0;

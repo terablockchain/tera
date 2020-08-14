@@ -316,9 +316,9 @@
 
             var Body=GetArrFromTR(TR);
             WriteArr(Body,TR.Sign,64);
-            Body.length+=12;
+            //Body.length+=12;
 
-            SendTransaction(Body,TR,undefined,function (Err,TR,Body)
+            SendTransactionNew(Body,TR,undefined,function (Err,TR,Body)
             {
                 if(Err)
                     return;
@@ -417,6 +417,18 @@
             if(window.closeModal)
                 closeModal();
         }
+
+        if(e.ctrlKey && e.keyCode===83)//Ctrl+S
+        {
+            e.preventDefault();
+            $("idSave").click();
+        }
+        if(e.ctrlKey && e.keyCode===79)//Ctrl+O
+        {
+            e.preventDefault();
+            $("idLoad").click();
+        }
+
 
     }
 
@@ -619,14 +631,14 @@
                 WriteStr(Body,file.type);
                 for(var i=0;i<10;i++)Body[Body.length]=0;//Reserve
                 WriteTr(Body,view);
-                Body.length+=12;
+                //Body.length+=12;
 
                 if(!TR)
                     TR={};
                 TR.Name=file.name;
                 TR.Type=file.type;
 
-                SendTransaction(Body,TR);
+                SendTransactionNew(Body,TR);
             }
         }
         reader.readAsArrayBuffer(file)
@@ -663,14 +675,14 @@
         WriteStr(Body,type);
         for(var i=0;i<10;i++)Body[Body.length]=0;//Reserve
             WriteTr(Body,view);
-        Body.length+=12;
+        //Body.length+=12;
 
         if(!TR)
             TR={};
         TR.Name=name;
         TR.Type=type;
 
-        SendTransaction(Body,TR);
+        SendTransactionNew(Body,TR);
     }
 
 
@@ -684,16 +696,17 @@
                 continue;
 
             var info=Item.text;
-            var index=info.indexOf("Add to blockchain: file");
-            if(index>=0)
+
+            var index1=info.indexOf("Add to blockchain");
+            var index2=info.indexOf("file");
+            if(index1>=0 && index2>0)
             {
-                var StrRef0=info.substr(index+19);
+                var StrRef0=info.substr(index2);
                 var StrRef="/"+StrRef0;
-                Str=Str+info.substr(0,index+19)+" "+StrRef+"\n";
+                Str=Str+info.substr(0,index2)+" "+StrRef+"\n";
 
 
                 var TR=MapSendTransaction[Item.key];
-                if(TR)
                 if(TR && !SendFileMap[StrRef])
                 {
                     SendFileMap[StrRef]={text:TR.Name+" ("+StrRef0+")",value:StrRef,Name:TR.Name,Type:TR.Type};
@@ -2415,7 +2428,7 @@ function DoLoadingConfig(Str,Meta)
                 <option value="styleDark">Dark</option>
             </select>
             <BR><BR>
-            <button onclick="SaveValues(1);SaveWebDataToFile(localStorage['SMART-ProjectArray'],'dapp-ide.txt')" class="bt"> Save to file</button>
+            <button onclick="SaveValues(1);SaveWebDataToFile(localStorage['SMART-ProjectArray'],'dapp-ide.txt')" class="bt" id="idSave"> Save to file</button>
             <label for="load-key" class="bt" onchange="LoadWebDataFromFile('load-key',DoLoadingConfig)" id="idLoad">
                 <input class="hidden" id="load-key" type="file">
                 <span>Load from file</span>

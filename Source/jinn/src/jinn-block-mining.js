@@ -10,6 +10,8 @@
 'use strict';
 global.JINN_MODULES.push({InitClass:InitClass, Name:"Mining"});
 
+const MAX_BLOCK_RECALC_DEPTH = 10;
+
 function InitClass(Engine)
 {
     Engine.MiningBlockArr = {};
@@ -21,28 +23,9 @@ function InitClass(Engine)
     
     Engine.FillBodyFromTransfer = function (Block)
     {
-        var Arr = Engine.GetArrTx(Block.BlockNum);
-        
-        Block.TxData = Arr.slice(0);
-        Engine.SortBlockPriority(Block);
-        Engine.CheckSizeBlockTXArray(Block.TxData);
-        
-        if(Engine.FillBodyFromTransferNext)
-            Engine.FillBodyFromTransferNext(Block);
-    };
-    
-    Engine.FillBodyTransferTx = function (Block)
-    {
         var CurBlockNum = Engine.CurrentBlockNum;
         var BlockNumLast = CurBlockNum - JINN_CONST.STEP_LAST;
         var BlockNumNew = CurBlockNum - JINN_CONST.STEP_NEW_BLOCK;
-        
-        if(Block.BlockNum < BlockNumLast || Block.BlockNum > BlockNumNew)
-        {
-            Block.TreeHash = ZERO_ARR_32;
-            Block.TxCount = 0;
-            return 0;
-        }
         
         var Find = Engine.CurrentBodyTx.FindItemInCache(Block);
         if(Find)
@@ -51,7 +34,19 @@ function InitClass(Engine)
         }
         else
         {
-            Engine.FillBodyFromTransfer(Block);
+            if(Block.BlockNum < BlockNumLast || Block.BlockNum > BlockNumNew)
+            {
+                Block.TreeHash = ZERO_ARR_32;
+                Block.TxCount = 0;
+                return 0;
+            }
+            var Arr = Engine.GetArrTx(Block.BlockNum);
+            Block.TxData = Arr.slice(0);
+            Engine.SortBlockPriority(Block);
+            Engine.CheckSizeBlockTXArray(Block.TxData);
+            
+            if(Engine.FillBodyFromTransferNext)
+                Engine.FillBodyFromTransferNext(Block);
             
             Block.TreeHash = Engine.CalcTreeHash(Block.BlockNum, Block.TxData);
             
@@ -99,8 +94,7 @@ function InitClass(Engine)
                 if(!BlockNew)
                     return;
                 BlockNew.CreateMode = 1;
-                
-                var Block = Engine.GetMaxBlockFromDBChain(BlockNum, undefined, BlockNew.PrevSumHash, BlockNew.TreeHash);
+                var Block = Engine.GetMaxBlockFromDBChain(BlockNum, undefined, BlockNew.TreeHash);
                 if(Block)
                 {
                     Engine.CopyBodyTx(Block, BlockNew);
@@ -114,18 +108,14 @@ function InitClass(Engine)
                         Block = BlockNew;
                     }
             }
-        
-        if(!Engine.SaveToDB(Block))
+        if(!Engine.SaveToDBWithPrevs(Block, MAX_BLOCK_RECALC_DEPTH))
         {
             Engine.ToLog("--Can not save DB block=" + Block.BlockNum);
             return;
         }
-        
-        var Miner = ReadUintFromArr(Block.MinerHash, 0);
-        Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### Miner=" + Miner, 4);
     };
     
-    Engine.GetMaxBlockFromDBChain = function (BlockNum,MaxBlock,PrevSumHash,TreeHash)
+    Engine.GetMaxBlockFromDBChain00 = function (BlockNum,MaxBlock,TreeHash,PrevSumHash)
     {
         var ArrBlock = Engine.DB.GetChainArrByNum(BlockNum);
         for(var n = 0; n < ArrBlock.length; n++)
@@ -139,6 +129,69 @@ function InitClass(Engine)
             }
         }
         return MaxBlock;
+    };
+    
+    Engine.GetMaxBlockFromDBChain = function (BlockNum,MaxBlock,TreeHash)
+    {
+        var ArrBlock = Engine.DB.GetChainArrByNum(BlockNum);
+        for(var n = 0; n < ArrBlock.length; n++)
+        {
+            var CurBlock = ArrBlock[n];
+            if(!IsEqArr(CurBlock.TreeHash, TreeHash))
+                continue;
+            if(!Engine.IsFullLoadedBlock(CurBlock, MAX_BLOCK_RECALC_DEPTH))
+                continue;
+            if(!MaxBlock || (MaxBlock.SumPow < CurBlock.SumPow || (MaxBlock.SumPow === CurBlock.SumPow && CompareArr(CurBlock.PowHash,
+            MaxBlock.PowHash) < 0)))
+                MaxBlock = CurBlock;
+        }
+        return MaxBlock;
+    };
+    
+    Engine.IsFullLoadedBlock = function (Block,MaxIteration)
+    {
+        if(MaxIteration <= 0)
+            return 0;
+        
+        if(!Block)
+            return 0;
+        
+        if(Engine.IsExistBlockMain(Block))
+            return 1;
+        
+        if(!IsZeroArr(Block.TreeHash) && !Block.TxPosition)
+            return 0;
+        
+        return Engine.IsFullLoadedBlock(Engine.GetPrevBlock(Block), MaxIteration - 1);
+    };
+    
+    Engine.SaveToDBWithPrevs = function (Block,MaxIteration)
+    {
+        if(MaxIteration <= 0)
+            return 0;
+        
+        if(!Block)
+            return 0;
+        
+        if(!IsZeroArr(Block.TreeHash) && !Block.TxPosition && !Block.TxData)
+        {
+            Engine.ToLog("SaveToDBWithPrevs : Not found body tx in BLOCK=" + Block.BlockNum, 3);
+            return 0;
+        }
+        
+        if(Engine.IsExistBlockMain(Block))
+            return 1;
+        
+        var Result = Engine.SaveToDBWithPrevs(Engine.GetPrevBlock(Block), MaxIteration - 1);
+        if(Result)
+        {
+            
+            Result = Engine.SaveToDB(Block);
+            var Miner = ReadUintFromArr(Block.MinerHash, 0);
+            Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### Miner=" + Miner + " Result=" + Result, 4);
+        }
+        
+        return Result;
     };
     
     Engine.DoCreateNewBlock = function ()
@@ -161,8 +214,10 @@ function InitClass(Engine)
             if(PrevBlock.SumPow < WasBlock.SumPow || PrevBlock.SumPow === WasBlock.SumPow && CompareArr(WasBlock.PowHash, PrevBlock.PowHash) <= 0)
                 return;
             
-            ToLog("--- Remining Block:" + BlockNumNew + " prev Power=" + PrevBlock.Power + " was Power=" + Engine.LastPrevMiningBlock.Power,
-            3);
+            Engine.MiningBlockArr[BlockNumNew.BlockNum] = [];
+            
+            Engine.ToLog("--- Remining Block:" + BlockNumNew + " prev Power=" + PrevBlock.Power + " was Power=" + Engine.LastPrevMiningBlock.Power,
+            4);
         }
         
         var Block = Engine.GetNewBlock(PrevBlock);
@@ -265,19 +320,10 @@ function InitClass(Engine)
             return undefined;
         }
         
-        var Find = Engine.DB.FindBlockByHash(Block.BlockNum, Block.SumHash);
+        var Find = Engine.DB.FindBlockByHash(Block.BlockNum, Block.Hash);
         if(Find)
         {
             return 1;
-            if(NeedLoadBodyFromNet(Find))
-            {
-                Engine.CopyBodyTx(Find, Block);
-            }
-            else
-            {
-                Block = Find;
-                return 1;
-            }
         }
         Engine.DB.WriteBlock(Block);
         return 1;

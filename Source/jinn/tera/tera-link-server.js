@@ -50,7 +50,7 @@ function Init(Engine)
         {
             Engine.DoCheckTxOperationID(Tx, BlockNum);
             if(Tx.ErrOperationID)
-                return TX_RESULT_OPERATIOON_ID;
+                return TX_RESULT_OPERATION_ID;
         }
         
         if(JINN_CONST.TX_CHECK_SIGN_ON_ADD)
@@ -176,19 +176,21 @@ function Init(Engine)
             SERVER.TruncateBlockDB(CurNumTime);
         }
         var BlockNum = SERVER.CheckBlocksOnStartReverse(SERVER.BlockNumDB);
-        BlockNum = BlockNum - 10000;
+        BlockNum = BlockNum - 5000;
         if(BlockNum < 0)
             BlockNum = 0;
         ToLog("CheckStartedBlocks at " + BlockNum);
-        BlockNum = SERVER.CheckBlocksOnStartFoward(BlockNum, 0);
-        BlockNum = SERVER.CheckBlocksOnStartFoward(BlockNum - 100, 1);
+        BlockNum = SERVER.CheckBlocksOnStartFoward(BlockNum, 1, 0);
+        BlockNum = SERVER.CheckBlocksOnStartFoward(BlockNum - 100, 1, 1);
         
         if(BlockNum < SERVER.BlockNumDB)
         {
             BlockNum--;
             ToLog("******************************** SET NEW BlockNumDB = " + BlockNum + "/" + SERVER.BlockNumDB);
-            if(global.DEV_MODE)
+            if(1 && global.DEV_MODE)
+            {
                 throw "STOP AND EXIT!";
+            }
             
             SERVER.TruncateBlockDB(BlockNum);
         }
@@ -292,6 +294,7 @@ function Init(Engine)
         var Block = SERVER.ReadBlockDB(BlockNum, ChainMode);
         
         if(Block && Block.arrContent)
+        {
             for(var num = start; num < start + count; num++)
             {
                 if(num < 0)
@@ -341,6 +344,7 @@ function Init(Engine)
                 
                 arr.push(Tr);
             }
+        }
         return arr;
     };
     SERVER.ClearStat = function ()
@@ -478,7 +482,7 @@ function Init(Engine)
                         {
                             Power = GetPowPower(Block.PowHash);
                             var Miner = ReadUintFromArr(Block.AddrHash, 0);
-                            if(Miner === GENERATE_BLOCK_ACCOUNT)
+                            if(Miner === GetMiningAccount())
                             {
                                 PowerMy = Power;
                             }
@@ -522,28 +526,6 @@ function Init(Engine)
         return arr;
     };
     
-    SERVER.FindStartBlockNum = function ()
-    {
-        SERVER.ReadStateTX();
-        
-        var BlockNum = SERVER.GetMaxNumBlockDB();
-        if(global.NO_CHECK_BLOCKNUM_ONSTART)
-        {
-            SERVER.BlockNumDB = SERVER.CheckBlocksOnStartFoward(BlockNum - 2, 0);
-            ToLog("START_BLOCK_NUM:" + SERVER.BlockNumDB, 2);
-            return;
-        }
-        BlockNum = SERVER.CheckBlocksOnStartReverse(BlockNum);
-        SERVER.BlockNumDB = SERVER.CheckBlocksOnStartFoward(BlockNum - 2000, 0);
-        SERVER.BlockNumDB = SERVER.CheckBlocksOnStartFoward(SERVER.BlockNumDB - 100, 1);
-        if(SERVER.BlockNumDB >= BLOCK_PROCESSING_LENGTH2)
-        {
-            SERVER.TruncateBlockDB(SERVER.BlockNumDB);
-        }
-        
-        ToLog("START_BLOCK_NUM : " + SERVER.BlockNumDB, 2);
-        SERVER.CheckOnStartComplete = 1;
-    };
     SERVER.CheckBlocksOnStartReverse = function (StartNum)
     {
         var delta = 1;
@@ -582,11 +564,12 @@ function Init(Engine)
         return 0;
     };
     
-    SERVER.CheckBlocksOnStartFoward = function (StartNum,bCheckBody)
+    SERVER.CheckBlocksOnStartFoward = function (StartNum,bCheckHash,bCheckBody)
     {
         var PrevBlock;
         if(StartNum < SERVER.BlockNumDBMin + BLOCK_PROCESSING_LENGTH2 - 1)
             StartNum = SERVER.BlockNumDBMin + BLOCK_PROCESSING_LENGTH2 - 1;
+        
         var MaxNum = SERVER.GetMaxNumBlockDB();
         var BlockNumTime = GetCurrentBlockNumByTime();
         if(BlockNumTime < MaxNum)
@@ -630,20 +613,28 @@ function Init(Engine)
                 if(Block.BlockNum < global.UPDATE_CODE_JINN)
                     return num;
                 
-                var SeqHash = GetSeqHash(Block.BlockNum, Block.PrevHash, Block.TreeHash, PrevBlock.SumPow);
-                
-                var Value = GetHashFromSeqAddr(SeqHash, Block.AddrHash, Block.BlockNum, Block.PrevHash);
-                
-                if(CompareArr(Value.Hash, Block.Hash) !== 0)
+                if(Block > 16 && CompareArr(Block.PrevHash, PrevBlock.Hash) !== 0)
                 {
-                    ToLog("=================== FIND ERR Hash in " + Block.BlockNum + "  bCheckBody=" + bCheckBody);
+                    ToLog("=================== FIND ERR PrevHash in " + Block.BlockNum + "  bCheckBody=" + bCheckBody + " WAS=" + GetHexFromArr(Block.PrevHash) + " NEED=" + GetHexFromArr(PrevBlock.Hash));
                     return num > 0 ? num - 1 : 0;
                 }
-                var SumHash = CalcSumHash(PrevBlock.SumHash, Block.Hash, Block.BlockNum, Block.SumPow);
-                if(CompareArr(SumHash, Block.SumHash) !== 0)
+                
+                if(bCheckHash)
                 {
-                    ToLog("=================== FIND ERR SumHash in " + Block.BlockNum);
-                    return num > 0 ? num - 1 : 0;
+                    var SeqHash = GetSeqHash(Block.BlockNum, Block.PrevHash, Block.TreeHash, PrevBlock.SumPow);
+                    var Value = GetHashFromSeqAddr(SeqHash, Block.AddrHash, Block.BlockNum, Block.PrevHash);
+                    if(CompareArr(Value.Hash, Block.Hash) !== 0)
+                    {
+                        ToLog("=================== FIND ERR Hash in " + Block.BlockNum + "  bCheckBody=" + bCheckBody + " WAS=" + GetHexFromArr(Block.Hash) + " NEED=" + GetHexFromArr(Value.Hash));
+                        return num > 0 ? num - 1 : 0;
+                    }
+                    
+                    var SumHash = CalcSumHash(PrevBlock.SumHash, Block.Hash, Block.BlockNum, Block.SumPow);
+                    if(CompareArr(SumHash, Block.SumHash) !== 0)
+                    {
+                        ToLog("=================== FIND ERR SumHash in " + Block.BlockNum);
+                        return num > 0 ? num - 1 : 0;
+                    }
                 }
             }
             PrevBlock = Block;

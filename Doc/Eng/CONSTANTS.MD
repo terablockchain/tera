@@ -1,4 +1,4 @@
-﻿Description of constants (from version 2265):
+﻿Description of constants (from version 2360):
 
 ````javascript
 {
@@ -37,6 +37,7 @@
 
   //MINING:
   "USE_MINING": true,                  //enable mining
+  "MINING_ACCOUNT": 0,                 //number of the account that receives the reward for the found block
   "MINING_START_TIME": "6:30",         //mining start time during the day in the format hh:mm: ss time in UTC (mining must be enabled by the constant USE_MINING), if the value is not set then mining is performed all the time
   "MINING_PERIOD_TIME": "16:30",       //the period of mining since the beginning of the format hh: mm:ss
   "POW_MAX_PERCENT": "70",             //max CPU usage as a percentage of each mining process

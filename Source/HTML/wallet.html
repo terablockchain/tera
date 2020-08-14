@@ -500,32 +500,6 @@
 
         var JinnStat=Data.NodeSyncStatus;
 
-        var RestContext=Data.RestContext;
-        if(RestContext)
-        {
-            CanSendTransaction=0;
-             var Percent=StrMode
-
-            var Percent;
-            if(RestContext.Mode<=4)
-            {
-                //4%
-                Percent=RestContext.Mode;
-            }
-            else
-            {
-                //90%
-                var AllTask=1+RestContext.SmartTask+RestContext.AccTask;
-                var FinischTask=RestContext.SmartTaskFinished+RestContext.AccTaskFinished;
-                Percent=4+90*FinischTask/AllTask;
-                Percent=Percent.toFixed(1);
-            }
-            var StrMode=" "+Percent+" %";
-
-            SetMainStatus("<DIV align='center' style='color:red'><big><B>Waiting for the balance to load "+StrMode+"</B></big></DIV>");
-            WalletStatus="WAIT";
-        }
-        else
         if(DeltaDB>BLOCK_PROCESSING_LENGTH*2)
         {
             var Percent=0;
@@ -1796,7 +1770,7 @@
                             <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
                             <th id="GetHexFromArr(Item.Hash)" class="hash">Hash</th>
 
-<!--                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>-->
+                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>
 <!--                            <th id="GetHexFromArr(Item.SeqHash)" class="hash">SeqHash</th>-->
 <!--                            <th id="GetHexFromArr(Item.SumHash)" class="hash">SumHash</th>-->
 <!--                            <th id="GetHexFromArr(Item.AddrHash)" class="hash">AddrHash</th>-->
@@ -1876,10 +1850,11 @@
                             <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
                             <th id="GetHexFromArr(Item.AccHash)" class="code">AccHash</th>
                             <th id="GetHexFromArr(Item.SumHash)" class="code">SumHash</th>
-                            <th id="Item.AccountMax" class="num">AccountMax</th>
-                            <th id="Item.SmartCount" class="num">SmartCount</th>
+                            <th id="Item.AccountMax" class="num">Account Max</th>
+                            <th id="Item.SmartCount" class="num">Smarts Count</th>
                             <th id="GetHexFromArr(Item.SmartHash)" class="code">SmartHash</th>
-<!--                            <th id="GetHexFromArr(Item.Hash100)" class="code">Hash100</th>-->
+                            <th id="(RetHistoryAccount(Item,'Miner'))+'</b>'" class="num">Miner</th>
+                            <th id="(Item.VerifyHTML)" class="verify">Verify</th>
                         </tr>
                     </table>
                     <INPUT type="button" onclick="ViewPrev(DefHash)" class="btdoit bt" value="&lt;&lt; Prev">

@@ -49,8 +49,9 @@ class CApp
             Params.MiningAccount = 0
         }
         
-        if(Params.MiningAccount)
+        if(Params.MiningAccount && !global.MINING_ACCOUNT)//support old mode
             global.GENERATE_BLOCK_ACCOUNT = Params.MiningAccount
+        
         this.AccountMap = Params.AccountMap
         this.KeyPair = crypto.createECDH('secp256k1')
         
@@ -75,23 +76,6 @@ class CApp
                 SELF.FindMyAccounts(1)
             }, 5000)
         }
-    }
-    
-    SetMiningAccount(Account)
-    {
-        global.GENERATE_BLOCK_ACCOUNT = Account
-        this.SaveWallet()
-    }
-    
-    AddTransaction(Tr)
-    {
-        if(!global.TX_PROCESS.Worker)
-            return 0;
-        
-        var StrHex = GetHexFromArr(sha3(Tr.body, 30));
-        global.TX_PROCESS.Worker.send({cmd:"FindTX", TX:StrHex})
-        
-        return SERVER.AddTransaction(Tr, 1);
     }
     SetPrivateKey(KeyStr, bSetNew)
     {
@@ -254,7 +238,6 @@ class CApp
         }
         
         Params.AccountMap = this.AccountMap
-        Params.MiningAccount = global.GENERATE_BLOCK_ACCOUNT
         SaveParams(CONFIG_NAME, Params)
     }
     

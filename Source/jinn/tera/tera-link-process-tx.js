@@ -134,7 +134,7 @@ function Init(Engine)
                     var ResultStr = Result;
                     if(Result === true || typeof Result === "number")
                     {
-                        ResultStr = "Add to blockchain on Block: " + BlockNum;
+                        ResultStr = "Add to blockchain on Block " + BlockNum;
                         if(type === global.TYPE_TRANSACTION_FILE)
                             ResultStr += ": file/" + BlockNum + "/" + i;
                     }
@@ -252,13 +252,13 @@ function Init(Engine)
     
     SERVER.AddTransactionOwn = function (Tr)
     {
-        
-        if(global.TX_PROCESS.Worker)
+        var Result = SERVER.AddTransaction(Tr, 1);
+        if(Result > 0 && global.TX_PROCESS.Worker)
         {
             var StrHex = GetHexFromArr(sha3(Tr.body, 38));
             global.TX_PROCESS.Worker.send({cmd:"FindTX", TX:StrHex});
         }
         
-        return SERVER.AddTransaction(Tr, 1);
+        return Result;
     };
 }

@@ -513,7 +513,7 @@ function InitClass(Engine)
             var BlockHead = Engine.GetFirstHeadBlock(BlockSeed);
             
             //checking for database entries
-            if(!Engine.IsExistBlockDB(BlockHead))
+            if(!Engine.IsExistBlockMain(BlockHead))
             {
                 if(BlockHead.BlockNum >= JINN_CONST.BLOCK_GENESIS_COUNT)
                 {

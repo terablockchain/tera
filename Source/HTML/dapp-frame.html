@@ -269,7 +269,7 @@
             SetStatus("Calculate Tx, wait pls ...");
             var TR=GetTrCreateAcc(Currency,CONFIG_DATA.PubKey,SMART.Name,0,SMART.Num);
             var Body=GetBodyCreateAcc(TR);
-            SendTransaction(Body,TR);
+            SendTransactionNew(Body,TR);
         }
 
         function InstallApp()

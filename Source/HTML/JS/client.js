@@ -980,12 +980,13 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
                 if(cell0.id.substr(0, 1) === "(")
                     cell0.H = 1;
                 
-                var cell = row.insertCell(n);
+                var cell = row.insertCell();
                 cell.className = cell0.className;
             }
         }
         row.Work = glWorkNum;
         CUR_ROW = row;
+        
         for(var n = 0; n < colcount; n++)
         {
             var cell = row.cells[n];
@@ -1002,12 +1003,13 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
                     cell.innerHTML = text;
             }
             else
-            {
-                var text = "" + cell0.F(Item);
-                text.trim();
-                if(cell.innerText !== text)
-                    cell.innerText = text;
-            }
+                if(cell0.F)
+                {
+                    var text = "" + cell0.F(Item);
+                    text.trim();
+                    if(cell.innerText !== text)
+                        cell.innerText = text;
+                }
         }
         
         if(TotalSum && Item.Currency === 0)
@@ -1779,7 +1781,7 @@ function ParseFileName(Str)
 
 
 window.MapSendTransaction = {};
-function SendTransaction(Body,TR,SumPow,F)
+function SendTransactionNew(Body,TR,SumPow,F)
 {
     if(Body.length > 12000)
     {
@@ -1790,65 +1792,32 @@ function SendTransaction(Body,TR,SumPow,F)
         
         return;
     }
-    
-    if(window.SetStatus)
-        SetStatus("Prepare to sending...");
-    
-    CreateNonceAndSend(1, 0, 0);
-    function CreateNonceAndSend(bCreateNonce,startnonce,NumNext)
+    var StrHex = GetHexFromArr(Body);
+    GetData("SendHexTx", {Hex:StrHex}, function (Data)
     {
-        if(!NumNext)
-            NumNext = 0;
-        var nonce = startnonce;
-        if(bCreateNonce)
-            nonce = CreateHashBodyPOWInnerMinPower(Body, SumPow, startnonce);
-        
-        var StrHex = GetHexFromArr(Body);
-        
-        if(NumNext > 10)
+        if(Data)
         {
-            if(window.SetError)
-                SetError("Not sending. Cannt calc pow.");
-            return;
-        }
-        
-        GetData("SendTransactionHex", {Hex:StrHex}, function (Data)
-        {
-            if(Data)
-            {
-                var key = GetHexFromArr(sha3(Body));
-                if(window.SetStatus)
-                    SetStatus("Send '" + key.substr(0, 16) + "' result:" + Data.text);
-                
-                if(Data.text === "Not add")
-                {
-                    CreateNonceAndSend(1, nonce + 1, NumNext + 1);
-                }
-                else
-                    if(Data.text === "Bad time")
-                    {
-                        if(window.DELTA_FOR_TIME_TX < 6)
-                        {
-                            window.DELTA_FOR_TIME_TX++;
-                            console.log("New set Delta time: " + window.DELTA_FOR_TIME_TX);
-                            CreateNonceAndSend(1, 0, NumNext + 1);
-                        }
-                    }
-                    else
-                    {
-                        var key = GetHexFromArr(sha3(Body));
-                        MapSendTransaction[key] = TR;
-                        if(F)
-                            F(0, TR, Body);
-                    }
-            }
-            else
+            var key = GetHexFromArr(sha3(Body));
+            if(Data.ResultSend <= 0)
             {
                 if(window.SetError)
-                    SetError("Error Data");
+                    SetError("Error: " + Data.text);
+                return;
             }
-        });
-    };
+            
+            if(window.SetStatus)
+                SetStatus("Send '" + key.substr(0, 12) + "' result:" + Data.text);
+            
+            MapSendTransaction[key] = TR;
+            if(F)
+                F(0, TR, Body);
+        }
+        else
+        {
+            if(window.SetError)
+                SetError("Error Data");
+        }
+    });
 }
 
 var MapSendID = {};
@@ -1945,8 +1914,7 @@ function SendCallMethod(Account,MethodName,Params,FromNum,FromSmartNum)
         Body.push(4);
         Body.length += 9;
         Body.length += 64;
-        Body.length += 12;
-        SendTransaction(Body, TR);
+        SendTransactionNew(Body, TR);
     }
 }
 
@@ -1957,8 +1925,7 @@ function SendTrArrayWithSign(Body,Account,TR)
         var Sign = GetSignFromArr(Body);
         var Arr = GetArrFromHex(Sign);
         WriteArr(Body, Arr, 64);
-        Body.length += 12;
-        SendTransaction(Body, TR);
+        SendTransactionNew(Body, TR);
     }
     else
     {
@@ -1969,8 +1936,7 @@ function SendTrArrayWithSign(Body,Account,TR)
             {
                 var Arr = GetArrFromHex(Data.Sign);
                 WriteArr(Body, Arr, 64);
-                Body.length += 12;
-                SendTransaction(Body, TR);
+                SendTransactionNew(Body, TR);
             }
         });
     }
@@ -1991,13 +1957,13 @@ function GetBodyCreateAcc(TR)
     WriteUint(Body, TR.Adviser);
     WriteUint32(Body, TR.Smart);
     Body.length += 3;
-    Body.length += 12;
     return Body;
 }
 
 function GetArrFromTR(TR)
 {
-    MaxBlockNum = GetCurrentBlockNumByTime();
+    if(window.MapAccounts)
+        MaxBlockNum = GetCurrentBlockNumByTime();
     
     var Body = [];
     WriteByte(Body, TR.Type);
@@ -2014,8 +1980,8 @@ function GetArrFromTR(TR)
         WriteUint(Body, Item.SumCOIN);
         WriteUint32(Body, Item.SumCENT);
         
-        if(MapAccounts && MapAccounts[Item.ID])
-            MapAccounts[Item.ID].MustUpdate = MaxBlockNum + 10;
+        if(window.MapAccounts && MapAccounts[Item.ID])
+            MapAccounts[Item.ID].MustUpdate = MaxBlockNum + 5;
     }
     
     WriteStr(Body, TR.Description);
@@ -2046,42 +2012,10 @@ function GetSignTransaction(TR,StrPrivKey,F)
             F(TR);
         }
         else
-            if(TR.Version === 3)
-            {
-                var Arr = [];
-                
-                var GetCount = 0;
-                for(var i = 0; i < TR.To.length; i++)
-                {
-                    var Item = TR.To[i];
-                    
-                    GetData("GetAccountList", {StartNum:Item.ID}, function (Data)
-                    {
-                        if(Data && Data.result === 1 && Data.arr.length)
-                        {
-                            GetCount++;
-                            var DataItem = Data.arr[0];
-                            var DataPubArr = DataItem.PubKey.data;
-                            for(var j = 0; j < 33; j++)
-                                Arr[Arr.length] = DataPubArr[j];
-                            
-                            if(GetCount === TR.To.length)
-                            {
-                                var Body = GetArrFromTR(TR);
-                                for(var j = 0; j < Body.length; j++)
-                                    Arr[Arr.length] = Body[j];
-                                TR.Sign = GetArrFromHex(GetSignFromArr(Arr, StrPrivKey));
-                                F(TR);
-                            }
-                        }
-                    });
-                }
-            }
-            else
-            {
-                TR.Sign = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-                F(TR);
-            }
+        {
+            TR.Sign = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            F(TR);
+        }
     }
     else
     {

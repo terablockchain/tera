@@ -652,14 +652,18 @@ HTTPCaller.GetHashList = function (Params)
     {
         var item = arr[i];
         item.BlockNum = item.Num * PERIOD_ACCOUNT_HASH;
-        
-        item.Hash100 = [];
-        if(item.BlockNum % 100 === 0 && SERVER.DBHeader100)
+        var Block = SERVER.ReadBlockHeaderDB(item.BlockNum);
+        if(Block.MinerHash)
         {
-            var Data = SERVER.DBHeader100.Read(item.BlockNum / 100);
-            if(Data)
-                item.Hash100 = Data.Hash100;
+            item.Miner = ReadUintFromArr(Block.MinerHash, 0);
         }
+        
+        var Arr = SERVER.GetTrRows(item.BlockNum, 0, 1, 0);
+        var Tx = Arr[0];
+        if(Tx && Tx.Type === global.TYPE_TRANSACTION_ACC_HASH)
+            item.VerifyHTML = Tx.VerifyHTML;
+        else
+            item.VerifyHTML = "";
     }
     return {arr:arr, result:1};
 }
@@ -703,17 +707,6 @@ HTTPCaller.GetWalletInfo = function (Params)
         SERVER.UpdateAllDB();
         TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
     }
-    var RestContext = SERVER.LoadRestContext;
-    if(RestContext && RestContext.Mode < 200)
-    {
-        RestContext = {Mode:RestContext.Mode, BlockNumRest:RestContext.BlockNumRest, BlockNumProof:RestContext.BlockNumProof, SmartTask:RestContext.SmartTaskList.length,
-            AccTask:RestContext.AccTaskList.length, SmartTaskFinished:RestContext.SmartTaskFinished, AccTaskFinished:RestContext.AccTaskFinished,
-        };
-    }
-    else
-    {
-        RestContext = undefined;
-    }
     
     var Ret = {result:1, WalletOpen:WALLET.WalletOpen, WalletIsOpen:(WALLET.WalletOpen !== false), WalletCanSign:(WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit),
         CODE_VERSION:CODE_VERSION, MAX_TRANSACTION_LIMIT:MAX_TRANSACTION_LIMIT, PROTOCOL_VER:PROTOCOL_VER, PROTOCOL_MODE:PROTOCOL_MODE,
@@ -725,11 +718,11 @@ HTTPCaller.GetWalletInfo = function (Params)
         FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME,
         DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)), NodeAddrStr:SERVER.addrStr,
         STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD, CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum,
-        MiningAccount:global.GENERATE_BLOCK_ACCOUNT, CountMiningCPU:GetCountMiningCPU(), CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused,
+        MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(), CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused,
         HashRate:HashRateOneSec, MIN_POWER_POW_TR:MIN_POWER_POW_TR, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
         MAX_ACCOUNT_HASH:DApps.Accounts.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum, SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK,
-        RestContext:RestContext, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:global.JINN_MODE,
-        sessionid:sessionid, };
+        MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:global.JINN_MODE, sessionid:sessionid,
+    };
     
     if(Params.Account)
         Ret.PrivateKey = GetHexFromArr(WALLET.GetPrivateKey(WALLET.AccountMap[Params.Account]));
@@ -795,18 +788,27 @@ HTTPCaller.GetSignFromHEX = function (Params)
     return {Sign:Sign, result:1};
 }
 
+HTTPCaller.SendHexTx = function (Params)
+{
+    if(typeof Params === "object" && typeof Params.Hex === "string")
+        Params.Hex += "000000000000000000000000";
+    return HTTPCaller.SendTransactionHex(Params);
+}
+
 HTTPCaller.SendTransactionHex = function (Params)
 {
     if(typeof Params.Hex !== "string")
         return {result:0};
     
-    var body;
-    body = GetArrFromHex(Params.Hex.substr(0, Params.Hex.length - 12 * 2));
-    
+    var body = GetArrFromHex(Params.Hex.substr(0, Params.Hex.length - 12 * 2));
     var Result = {result:1};
-    var Res = SERVER.AddTransactionOwn({body:body, ToAll:1});
+    var Tx = {body:body, ToAll:1};
+    var Res = SERVER.AddTransactionOwn(Tx);
     Result.sessionid = sessionid;
+    Result.TxID = Tx._TxID;
     Result.text = TR_MAP_RESULT[Res];
+    Result.ResultSend = Res;
+    
     var final = false;
     if(Res <= 0 && Res !==  - 3)
         final = true;
@@ -860,7 +862,10 @@ HTTPCaller.SendDirectCode = function (Params,response)
 
 HTTPCaller.SetMining = function (MiningAccount)
 {
-    WALLET.SetMiningAccount(parseInt(MiningAccount));
+    var Account = parseInt(MiningAccount);
+    global.MINING_ACCOUNT = Account;
+    SAVE_CONST(1);
+    
     return {result:1};
 }
 
@@ -2185,7 +2190,8 @@ if(global.HTTP_PORT_NUMBER)
         
         var CheckPassword = 1;
         if(global.NOHTMLPASSWORD)
-            CheckPassword = 0;
+            if(global.HTTP_IP_CONNECT || remoteAddress === "127.0.0.1")
+                CheckPassword = 0;
         
         if(CheckPassword && !Password)
         {
