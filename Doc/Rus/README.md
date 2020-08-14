@@ -87,7 +87,7 @@ yum  install -y nodejs
 yum install gcc gcc-c++
 npm install pm2 -g
 git clone https://gitlab.com/terafoundation/tera.git wallet
-cd wallet/Source
+cd ~/wallet/Source
 npm install
 node set httpport:8080 password:<секретное слово без пробела>
 ```
@@ -101,7 +101,7 @@ systemctl disable firewalld
 ### запуск ноды:
 Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 7.6 Gb), запустите команды:
 ```
-cd ../DATA
+cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
 unzip -o jinn-db.zip
 
@@ -109,7 +109,7 @@ unzip -o jinn-db.zip
 
 После этого запустите ноду командой:
 ```
-cd ../Source
+cd ~/wallet/Source
 pm2 start run-node.js
 ```
 
@@ -125,7 +125,7 @@ npm install pm2 -g
 git clone https://gitlab.com/terafoundation/tera.git wallet
 apt install build-essential
 apt group install "Development Tools"
-cd wallet/Source
+cd ~/wallet/Source
 npm install
 node set httpport:8080 password:<секретное слово без пробела>
 ```
@@ -145,7 +145,7 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 ### запуск ноды:
 Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 7.6 Gb), запустите команды:
 ```
-cd ../DATA
+cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
 unzip -o jinn-db.zip
 
@@ -153,7 +153,7 @@ unzip -o jinn-db.zip
 
 После этого запустите ноду командой:
 ```
-cd ../Source
+cd ~/wallet/Source
 pm2 start run-node.js
 ```
 
@@ -175,7 +175,7 @@ httpport:8800
 Запуск: 
 ```
 cp -a Source SourceJinn
-cd SourceJinn
+cd ~/wallet/SourceJinn
 node set-jinn httpport:8800 password:<SecretWord>
 pm2 start run-jinn.js
 ```
@@ -184,8 +184,7 @@ pm2 start run-jinn.js
 ## Обновления
 
 ```
-cd wallet
-cd Source
+cd ~/wallet/Source
 node update.js
 ```
 
