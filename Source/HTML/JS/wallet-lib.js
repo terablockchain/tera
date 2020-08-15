@@ -707,7 +707,7 @@ function SendTrCreateAcc(Currency,PubKey,Description,Adviser,Smart,bFindAcc,bAdd
     else
     {
         
-        SendTransaction(Body, TR);
+        SendTransactionNew(Body, TR);
     }
     
     $("idAccountName").value = "";
