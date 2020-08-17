@@ -324,7 +324,10 @@
         if(StrPrivHex && window.SignLib)
         {
             var PrivKeyArr = GetArrFromHex($("idKeyNew").value);
-            $("idPubKey").innerText=GetHexFromArr(SignLib.publicKeyCreate(PrivKeyArr, 1));
+            if(PrivKeyArr.length===33)
+                $("idPubKey").innerText=$("idKeyNew").value;
+            else
+                $("idPubKey").innerText=GetHexFromArr(SignLib.publicKeyCreate(PrivKeyArr, 1));
         }
 
 
