@@ -86,6 +86,9 @@ Result:
 ## GetAccountList 
 
 4)**/api/v1/GetAccountList** - getting a list of accounts
+#### Parameters:
+* StartNum - start account number
+* CountNum - count
 
 Example:
 ```js
@@ -111,8 +114,11 @@ Result:
 
 ## GetBlockList
 5)**/api/v1/GetBlockList** - getting a list of blocks 
+#### Parameters:
+* StartNum - start block number
+* CountNum - count of blocks
 
-Пример:
+Example:
 http://127.0.0.1/api/v1/GetBlockList?StartNum=38808420&CountNum=1
 
 Result:
@@ -123,8 +129,12 @@ Result:
 ## GetTransactionList
 6)**/api/v1/GetTransactionList** -  getting a list of block transactions
 
-Пример:
+Example:
 http://127.0.0.1/api/v1/GetTransactionList?BlockNum=12373020?StartNum=0&CountNum=10
+#### Parameters:
+* BlockNum - block number
+* StartNum - start tx number (from 0)
+* CountNum - count of tx
 
 Result:
 ```
@@ -136,8 +146,11 @@ Result:
 
 7)**/api/v1/GetDappList* - getting a list of DApps
 
-Пример:
+Example:
 http://127.0.0.1/api/v1/GetDappList?StartNum=8&CountNum=1
+#### Parameters:
+* StartNum - start smart number
+* CountNum - count
 
 Result:
 ```
@@ -149,7 +162,7 @@ Result:
 
 8)**/api/v1/GetAccountListByKey** - getting a list of accounts by public key
 
-Пример:
+Example:
 http://127.0.0.1/api/v1/GetAccountListByKey?Key=027AE0DCE92D8BE1F893525B226695DDF0FE6AD756349A76777FF51F3B59067D70
 
 Result:
