@@ -10,7 +10,7 @@ This API is available if fullnode server is running http and hosting included co
  "HTTP_HOSTING_PORT":80,
  "USE_HARD_API_V2":1,
 ```
-
+After setting the constants, you need to restart the node.
 
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.
 
