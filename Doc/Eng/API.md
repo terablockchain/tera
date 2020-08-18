@@ -37,7 +37,8 @@ http://127.0.0.1/api/v1/DappStaticCall
     "MethodName": "Test",
     "Account":540
     
-}```
+}
+```
 
 return value:
 ```js
