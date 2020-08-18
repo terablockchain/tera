@@ -1,5 +1,5 @@
 ﻿## API v1
-Works with update version 0.1263
+Works with update version 1263
 
 Official public gateways supporting this API:
 * https://teraexplorer.org

@@ -1,5 +1,5 @@
 ﻿# API v2 (for exchanges)
-Works with update version 0.991
+Works with update version 991
 
 The API is designed to make it easier to write third-party applications. Server-side cryptography and POW operations are performed. Therefore, it is not recommended for public access, because it is not protected from DDOS attacks. Use it if applications such as the exchange server are on the same private network.
 
