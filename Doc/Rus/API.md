@@ -40,7 +40,8 @@ http://127.0.0.1/api/v1/DappStaticCall
     "MethodName": "Test",
     "Account":540
     
-}```
+}
+```
 
 return value:
 ```js
@@ -59,7 +60,7 @@ Diagram - если значение равно 1, то дополнительн�
 Example:
 http://127.0.0.1/api/v1/GetCurrentInfo?Diagram=0
 
-Result:
+Поля возвращаемого результата (ответа):
 * MaxNumBlockDB - максимальный номер блока записанный в БД (текущая высота блокчейна)
 * CurBlockNum - новый формируемый блок
 * MaxAccID - текущий максимальный номер счета
@@ -88,6 +89,9 @@ http://127.0.0.1/api/v1/GetNodeList
 ## GetAccountList 
 
 4)**/api/v1/GetAccountList** - получение списка счетов
+#### Параметры:
+* StartNum - номер первого счета
+* CountNum - количество строк счетов результата
 
 Example:
 ```js
@@ -113,6 +117,9 @@ http://127.0.0.1/api/v1/GetAccountList?StartNum=0&CountNum=1
 
 ## GetBlockList
 5)**/api/v1/GetBlockList** - получение списка блоков
+#### Параметры:
+* StartNum - номер первого блока
+* CountNum - количество блоков результата
 
 Пример:
 http://127.0.0.1/api/v1/GetBlockList?StartNum=38808420&CountNum=1
@@ -124,6 +131,9 @@ http://127.0.0.1/api/v1/GetBlockList?StartNum=38808420&CountNum=1
 
 ## GetTransactionList
 6)**/api/v1/GetTransactionList** -  получение списка транзакций блока
+#### Параметры:
+* StartNum - номер первой транзакции (с нуля)
+* CountNum - количество результата
 
 Пример:
 http://127.0.0.1/api/v1/GetTransactionList?BlockNum=12373020?StartNum=0&CountNum=10
@@ -137,6 +147,9 @@ http://127.0.0.1/api/v1/GetTransactionList?BlockNum=12373020?StartNum=0&CountNum
 ## GetDappList 
 
 7)**/api/v1/GetDappList* - получение списка ДАпов
+#### Параметры:
+* StartNum - номер первого смарт-контракта (даппа)
+* CountNum - количество результата
 
 Пример:
 http://127.0.0.1/api/v1/GetDappList?StartNum=8&CountNum=1
@@ -146,10 +159,11 @@ http://127.0.0.1/api/v1/GetDappList?StartNum=8&CountNum=1
 {"arr":[{"Version":0,"TokenGenerate":0,"ISIN":"","Zip":0,"BlockNum":10034043,"TrNum":0,"IconBlockNum":10033892,"IconTrNum":0,"ShortName":"","Name":"List-Lib","Account":187007,"AccountLength":1,"Category1":40,"Category2":0,"Category3":0,"Owner":186573,"Reserve":{"type":"Buffer","data":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"StateFormat":"","Description":"List-lib v1.0","Num":"8","CodeLength":3705,"HTMLLength":0}],"result":1}
 ```
 
-
 ## GetAccountListByKey
 
 8)**/api/v1/GetAccountListByKey** - получение списка счетов по публичному ключу
+#### Параметры:
+* Key - строка публичного ключа в HEX формате
 
 Пример:
 http://127.0.0.1/api/v1/GetAccountListByKey?Key=027AE0DCE92D8BE1F893525B226695DDF0FE6AD756349A76777FF51F3B59067D70
