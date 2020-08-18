@@ -18,6 +18,8 @@ To do this, set the constants (from the full node interface or in the file: cons
 "HTTP_HOSTING_PORT":80,
 "USE_API_V1":1,
 ```
+After setting the constants, you need to restart the node.
+
 
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.
 
