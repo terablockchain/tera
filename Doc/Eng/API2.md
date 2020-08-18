@@ -6,8 +6,10 @@ The API is designed to make it easier to write third-party applications. Server-
 This API is available if fullnode server is running http and hosting included constant USE_HARD_API_V2.
 
 ### Set the constants (file const.lst):
-* "HTTP_HOSTING_PORT":80,
-* "USE_HARD_API_V2":1,
+```js
+ "HTTP_HOSTING_PORT":80,
+ "USE_HARD_API_V2":1,
+```
 
 
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.

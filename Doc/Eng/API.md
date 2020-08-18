@@ -16,6 +16,7 @@ This API is available if the fullnode is running public http-access. Set the con
 To do this, set the constants (from the full node interface or in the file: const.lst):
 ```js
 "HTTP_HOSTING_PORT":80,
+"USE_API_V1":1,
 ```
 
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.
