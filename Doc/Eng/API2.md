@@ -455,3 +455,19 @@ return:
     "BlockNum": 22222900
 }
 ```
+
+##Generating url links
+####Viewing block transactions:
+/blockviewer.html#Numberblock
+Example:
+```
+https://teraexplorer.org/blockviewer.html#64382498
+```
+
+
+####Viewing a transaction by TxID:
+/blockviewer.html#TxID
+Example:
+```
+https://teraexplorer.org/blockviewer.html#FA975F95E26FA43E036D78F2DC030000
+```

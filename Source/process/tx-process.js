@@ -227,8 +227,7 @@ class CTXProcess
             
             if(!IsEqArr(LastHashData.SumHash, CheckSumHash))
             {
-                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum + " LastItemHash=" + GetHexFromArr(LastHashData.SumHash) + " NEED=" + GetHexFromArr(CheckSumHash),
-                5)
+                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 5)
                 
                 BlockDeleteTX(PrevBlockNum)
                 return 0;

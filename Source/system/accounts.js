@@ -1852,11 +1852,15 @@ class AccountApp extends require("./dapp")
         if(FromData.Value.Smart)
         {
             var Context = {FromID:FromID, ToID:ToID, Description:DescriptionFrom, Value:CoinSum};
+            if(BlockNum >= global.UPDATE_CODE_SHARDING)
+                Context.SmartMode = (bSmartMode ? 1 : 0)
             RunSmartMethod(Block, FromData.Value.Smart, FromData, BlockNum, TrNum, Context, "OnSend")
         }
         if(ToData.Value.Smart)
         {
             var Context = {FromID:FromID, ToID:ToID, Description:DescriptionTo, Value:CoinSum};
+            if(BlockNum >= global.UPDATE_CODE_SHARDING)
+                Context.SmartMode = (bSmartMode ? 1 : 0)
             RunSmartMethod(Block, ToData.Value.Smart, ToData, BlockNum, TrNum, Context, "OnGet")
         }
     }

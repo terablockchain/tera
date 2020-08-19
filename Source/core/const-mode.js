@@ -164,6 +164,8 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_JINN_KTERA = global.UPDATE_CODE_JINN;
         global.NEW_FORMULA_JINN_KTERA = 3 * 3;
         
+        global.UPDATE_CODE_SHARDING = 100;
+        
         break;
         
     case "MAIN_JINN":

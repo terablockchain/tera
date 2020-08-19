@@ -174,8 +174,9 @@ httpport:8800
 ```
 Запуск: 
 ```
+cd ~/wallet
 cp -a Source SourceJinn
-cd ~/wallet/SourceJinn
+cd SourceJinn
 node set-jinn httpport:8800 password:<SecretWord>
 pm2 start run-jinn.js
 ```

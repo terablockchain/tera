@@ -777,13 +777,15 @@ function MoveUp(elem)
     }
 }
 
-function ViewGrid(APIName,Params,nameid,bClear,TotalSum)
+function ViewGrid(APIName,Params,nameid,bClear,TotalSum,F)
 {
     GetData(APIName, Params, function (Data)
     {
         if(!Data || !Data.result)
             return;
         SetGridData(Data.arr, nameid, TotalSum, bClear);
+        if(F)
+            F(APIName, Params, Data);
     });
 }
 
@@ -838,7 +840,7 @@ function ViewCurrent(Def,flag,This)
         Def.Param3 = "";
     
     ViewGrid(Def.APIName, {StartNum:ParseNum(item.value), CountNum:GetCountViewRows(Def), Param3:Def.Param3, Filter:Filter, Filter2:Filter2,
-        ChainMode:Def.ChainMode, GetState:window.DEBUG_WALLET}, Def.TabName, 1, Def.TotalSum);
+        ChainMode:Def.ChainMode, GetState:window.DEBUG_WALLET}, Def.TabName, 1, Def.TotalSum, Def.F);
     SaveValues();
     
     if(This)
@@ -1045,6 +1047,11 @@ function ClearTable(htmlTable)
         htmlTable.deleteRow(i);
     htmlTable.ItemsMap = {};
     htmlTable.RowCount = 0;
+}
+
+function RetRepeatTx(BlockNum,TrNum)
+{
+    return String(TrNum);
 }
 
 function RetOpenBlock(BlockNum,bTrDataLen)

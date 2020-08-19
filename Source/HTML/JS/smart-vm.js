@@ -91,6 +91,12 @@ function GET_ACCOUNT(Obj)
         {
             return {SumCOIN:Data.Value.SumCOIN, SumCENT:Data.Value.SumCENT, OperationID:Data.Value.OperationID, Smart:Data.Value.Smart};
         }, };
+    
+    if(RunContext && RunContext.BlockNum >= global.UPDATE_CODE_SHARDING)
+    {
+        GET_PROP.PubKeyStr = GetHexFromArr(Data.PubKey);
+    }
+    
     return GET_PROP;
 }
 function GET_SMART(Obj)
@@ -963,6 +969,8 @@ function RunSmartMethod(Block,SmartOrSmartID,Account,BlockNum,TrNum,PayContext,M
         context.Description = PayContext.Description;
         if(PayContext.Value)
             context.Value = {SumCOIN:PayContext.Value.SumCOIN, SumCENT:PayContext.Value.SumCENT};
+        
+        context.SmartMode = PayContext.SmartMode;
     }
     
     if(Block.BlockNum === 0)

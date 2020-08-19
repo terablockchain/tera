@@ -66,7 +66,7 @@
     var SaveIdArr=["idAccount","idTo","idSumSend","idDescription","idSelStyle",
         "idViewAccountNum","idViewBlockNum","idViewActNum","idViewHashNum","idViewDappNum",
         "idRunText","idViewAccountFilter",
-        "idBlockCount","idDeltaPow"];
+        "idBlockCount"];
 
 
     var MaxAccID=0;
@@ -745,6 +745,12 @@
     {
         GetData("TestSignLib",{});
     }
+
+    function DoRepeatTx(BlockNum,Tx)
+    {
+        ToLog("Copy OK!");
+    }
+
 </script>
 
 
@@ -1623,7 +1629,6 @@
                 <BR>
                 <INPUT type="button" onclick="SignJSON()" class="btdoit bt" value="Sign JSON" id="idSignJSON">
                 <INPUT type="button" onclick="SendMoneyJSON()" class="btdoit bt" value="Send from JSON">
-                Pow:<INPUT type="number" id="idDeltaPow" style="width: 60px" value="" onchange="SetMinPow()">&nbsp;
             </DIV>
 
             <script>
@@ -1704,7 +1709,7 @@
 
             <BR>
             <INPUT type="button" onclick="ViewCurrent(DefAccounts,1,this);" class="btdoit bt btexlporer" id="idDown" value="Accounts">
-            <INPUT type="button" onclick="ViewCurrent(DefBlock,1,this)" class="btdoit bt btexlporer" id="idDown" value="Blocks & Tr">
+            <INPUT type="button" onclick="ViewCurrent(DefBlock,1,this)" class="btdoit bt btexlporer" id="idDown" value="Blocks & Tx">
             <INPUT type="button" onclick="ViewCurrent(DefActs,1,this)" class="btdoit bt btexlporer" id="idDown" value="Accounts acts">
             <INPUT type="button" onclick="ViewCurrent(DefHash,1,this)" class="btdoit bt btexlporer" id="idDown" value="Accounts hash">
             <INPUT type="button" onclick="SetVisibleUtil(this)" class="btdoit bt btexlporer" id="idDown" value="Utilites">

@@ -26,7 +26,7 @@
 
 
     <script>
-        var DefTr={NumName:"idViewTrNum", TabName:"grid_transaction_all",APIName:"GetTransactionAll",Param3:undefined};
+        var DefTr={NumName:"idViewTrNum", TabName:"grid_transaction_all",APIName:"GetTransactionAll",Param3:undefined,FilterName:"idTxFilter",F:OnUpdateView};
         var CountViewRows=10;//global
         window.onload=function()
         {
@@ -36,8 +36,8 @@
             var i=document.URL.indexOf("#");
             if(i>0)
             {
-                var BlockNum=ParseNum(document.URL.substr(i+1));
-                ViewBlock(BlockNum);
+                var Str=document.URL.substr(i+1);
+                ViewBlockOrTx(Str);
             }
 
             window.onkeydown = function (e)
@@ -50,8 +50,9 @@
 
             window.addEventListener("popstate", function(event)
             {
-                var BlockNum=ParseNum(window.location.hash.substr(1));
-                ViewBlock(BlockNum);
+                ViewBlockOrTx(window.location.hash.substr(1));
+                // var BlockNum=ParseNum(window.location.hash.substr(1));
+                // ViewBlock(BlockNum);
 
             }, false);
 
@@ -63,18 +64,35 @@
                 // IE8
                 window.attachEvent("onmessage", OnMessage);
             }
+        };
 
+        function ViewBlockOrTx(Str)
+        {
+            if(Str.length>=20)
+            {
+                $("idTxFilter").value=Str;
+                OnFindByTx();
+            }
+            else
+            {
+                var BlockNum=ParseNum(Str);
+                ViewBlock(BlockNum);
+            }
         }
+
         function ViewBlock(BlockNum)
         {
             if(BlockNum!==undefined)
             {
                 $("idViewBlockNum").value = BlockNum;
+                if(IsFindMode())
+                    history.pushState(null,null,"#"+$("idTxFilter").value);
             }
             else
             {
                 BlockNum=ParseNum($("idViewBlockNum").value);
                 history.pushState(null,null,"#"+BlockNum);
+
             }
 
             document.title="Block: "+BlockNum;
@@ -82,16 +100,20 @@
             DefTr.ChainMode=ParseNum($("idViewChainMode").value);
             ViewCurrent(DefTr);
 
+            if(window.outerWidth<760)
+                return;
+
             GetData("GetCurrentInfo",{}, function (Data)
             {
                 if(Data && Data.result)
                     SetBlockChainConstant(Data);
             });
 
+
             GetData("GetBlockList",{StartNum:BlockNum,CountNum:1,ChainMode:DefTr.ChainMode},function (Data)
             {
                 var Str="";
-                if(Data && Data.result  && Data.arr.length)
+                if(BlockNum && Data && Data.result  && Data.arr.length)
                 {
                     var Block=Data.arr[0];
                     Str+="Hash: <b class='hash'>"+GetHexFromArr(Block.Hash)+"</b>";
@@ -108,6 +130,65 @@
             })
         }
 
+
+        function OnFindByTx()
+        {
+            SetActualFilterMode();
+
+            var Num=$("idTxFilter").value;
+            if(!IsFindMode())
+            {
+                //set hidden item
+                $("idViewTrNum").value=ParseNum(Num);
+                return ViewCurrent(DefTr);
+            }
+
+            GetData("api/v1/GetTransaction",{TxID:Num}, function (Data)
+            {
+                if(!Data)
+                    return;
+                if(!Data.Type)
+                {
+                    Data={BlockNum:0,TrNum:0};
+                }
+                $("idViewTrNum").value=Data.TrNum;
+                ViewBlock(+Data.BlockNum);
+            });
+        }
+
+        function OnUpdateView(APIName,Params,Data)
+        {
+            if(!IsFindMode())
+            {
+                //from hidden to visible
+                $("idTxFilter").value=$("idViewTrNum").value;
+
+                if($("idTxFilter").value==0)
+                    $("idTxFilter").value="";
+            }
+        }
+        function ResetFind()
+        {
+            $("idTxFilter").value=$("idViewTrNum").value;
+            SetActualFilterMode();
+        }
+        function SetActualFilterMode()
+        {
+            if(IsFindMode())
+                DefTr.FilterName="idTxFilter";
+            else
+                DefTr.FilterName="";
+
+        }
+        function IsFindMode()
+        {
+            var Num=$("idTxFilter").value;
+            if(Num.length>=20 && Num!=+Num)
+            {
+                return 1;
+            }
+            return 0;
+        }
 
         function SaveValues()
         {
@@ -159,6 +240,7 @@
         font-size: 80%;
         text-align: left;
     }
+
 </style>
 
 
@@ -182,17 +264,17 @@
         <section class="history-page" id="idTransactionBlock" style="display: block">
             <div class="history__text-block">
                 <div class="history-page__id" >
-                    Transactions on block: <INPUT class="history-page__id-count" type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewBlock()">
-                    <INPUT class="history-page__id-count" type="number" id="idViewChainMode" style="width: 40px" value="" min=0 max=100 onchange="ViewBlock()">
+                    Transactions on block: <INPUT class="history-page__id-count" type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ResetFind();ViewBlock()">
+                    <INPUT class="history-page__id-count" type="number" id="idViewChainMode" style="width: 40px" value="" min=0 max=100 onchange="ResetFind();ViewBlock()">
                 </div>
                 <BR>
                 <DIV id="idHeaderInfo"></DIV>
             </div>
             <div class="history-page__table">
                 <div class="page-pagination">
-                    <button onclick="ViewPrev(DefTr)" class="btnav btn"><</button>
-                    <INPUT type="number" class="page-pagination__num" id="idViewTrNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefTr)">
-                    <button onclick="ViewNext(DefTr,5000)" class="btnav btn">></button>
+                    <button onclick="ResetFind();ViewPrev(DefTr)" class="btnav btn"><</button>
+                    <INPUT type="string" class="page-pagination__num" id="idTxFilter" style="text-align: center" value="" placeholder="TxID or TxNum" onchange="OnFindByTx()">
+                    <button onclick="ResetFind();ViewNext(DefTr,5000)" class="btnav btn">></button>
                 </div>
                 <div class="history-page__table-wrap">
                     <table id="grid_transaction_all" class="grid">
@@ -203,7 +285,6 @@
                             <th id="(escapeHtml(Item.Script))" class="code">JSON</th>
                             <th id="Item.TxID" class="hash">TxID</th>
                             <th id="Item.Length" class="num">Bytes</th>
-<!--                            <th id="Item.TimePow" class="num">Power</th>-->
                             <th id="(Item.VerifyHTML)" class="verify">Verify</th>
                         </tr>
                     </table>
@@ -212,7 +293,7 @@
         </section>
     </main>
 
-
+    <INPUT type="hidden" id="idViewTrNum">
 </body>
 </html>
 

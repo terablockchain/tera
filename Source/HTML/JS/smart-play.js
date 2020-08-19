@@ -475,7 +475,7 @@ const SetValue = function (ID,CoinSum)
     return true;
 }
 
-function MoveCoin(FromID,ToID,CoinSum,Description)
+function MoveCoin(FromID,ToID,CoinSum,Description,SmartMode)
 {
     CoinSum = CoinSumHelper(CoinSum);
     
@@ -512,7 +512,7 @@ function MoveCoin(FromID,ToID,CoinSum,Description)
     SUB(FromData.Value, CoinSum);
     ADD(ToData.Value, CoinSum);
     
-    var Context = {FromID:FromID, ToID:ToID, Description:Description, Value:CoinSum};
+    var Context = {FromID:FromID, ToID:ToID, Description:Description, Value:CoinSum, SmartMode:SmartMode};
     if(FromData.Value.Smart)
     {
         RunPublicMethod("OnSend", VM_VALUE.CurrentBlock, FromData, Context);
@@ -527,13 +527,13 @@ function MoveCoin(FromID,ToID,CoinSum,Description)
 const $Send = function (ToID,CoinSum,Description)
 {
     DO(3000);
-    MoveCoin(RunContext.Account.Num, ToID, CoinSum, Description);
+    MoveCoin(RunContext.Account.Num, ToID, CoinSum, Description, 1);
 }
 
 const $Move = function (FromID,ToID,CoinSum,Description)
 {
     DO(3000);
-    MoveCoin(FromID, ToID, CoinSum, Description);
+    MoveCoin(FromID, ToID, CoinSum, Description, 1);
 }
 const $Event = function (Description)
 {

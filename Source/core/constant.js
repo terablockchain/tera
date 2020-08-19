@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2371;
+global.UPDATE_CODE_VERSION_NUM = 2373;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -66,6 +66,9 @@ global.CLIENT_MODE = 0;
 
 
 global.DEBUG_EXIT_ON_BADS = 0;
+
+
+global.UPDATE_CODE_SHARDING = 1000000000;
 
 // Code updates for JINN
 

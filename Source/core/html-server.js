@@ -629,7 +629,7 @@ HTTPCaller.GetTransactionAll = function (Params,response)
     
     var BlockNum = Params.Param3;
     
-    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.ChainMode);
+    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.ChainMode, Params.Filter);
     return {arr:arr, result:1};
 }
 
@@ -2650,10 +2650,7 @@ function GetTransactionFromBody(Params,Block,TrNum,Body)
         TR.result = 1;
         TR.Meta = Params.Meta;
         
-        if(global.JINN_MODE)
-        {
-            Engine.DBResult.CheckLoadResult(Block);
-        }
+        Engine.DBResult.CheckLoadResult(Block);
         
         if(Block.VersionBody === 1 && Block.arrContentResult)
         {

@@ -227,10 +227,8 @@ function InitAfter(Engine)
         {
             if(State === 0)
             {
-                Child.ToLog("Try connect to " + Child.Name(), 5);
                 Child.Socket = net.createConnection(Child.port, Child.ip, function ()
                 {
-                    Child.ToLog("OK create connection to " + Child.Name(), 5);
                     
                     if(Child.Socket)
                     {

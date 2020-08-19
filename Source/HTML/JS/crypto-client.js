@@ -170,14 +170,6 @@ window.GetCurrentBlockNumByTime = function ()
     return 0;
 }
 
-function SetMinPow()
-{
-    var item = $("idDeltaPow");
-    if(item)
-    {
-        window.DELTA_POWER_POW_TR = ParseNum(item.value);
-    }
-}
 function GetBlockNumTr(arr)
 {
     var Delta_Time = 0;
@@ -192,7 +184,6 @@ function GetBlockNumTr(arr)
 var glNonce = 0;
 function CreateHashBodyPOWInnerMinPower(arr)
 {
-    SetMinPow();
     
     var TrType = arr[0];
     var BlockNum = GetBlockNumTr(arr);

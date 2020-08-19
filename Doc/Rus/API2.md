@@ -462,3 +462,19 @@ return:
     "BlockNum": 22222900
 }
 ```
+
+##Формирование ссылок
+####Просмотр транзакций блока:
+/blockviewer.html#НомерБлока
+Пример:
+```
+https://teraexplorer.org/blockviewer.html#64382498
+```
+
+
+####Просмотр транзакции по TxID:
+/blockviewer.html#TxID
+Пример:
+```
+https://teraexplorer.org/blockviewer.html#FA975F95E26FA43E036D78F2DC030000
+```

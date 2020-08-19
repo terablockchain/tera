@@ -288,7 +288,7 @@ function Init(Engine)
         return arr;
     };
     
-    SERVER.GetTrRows = function (BlockNum,start,count,ChainMode)
+    SERVER.GetTrRows = function (BlockNum,start,count,ChainMode,FilterTxId)
     {
         var arr = [];
         var Block = SERVER.ReadBlockDB(BlockNum, ChainMode);
@@ -304,6 +304,8 @@ function Init(Engine)
                 
                 var Tr = {body:Block.arrContent[num]};
                 SERVER.CheckCreateTransactionObject(Tr, 1, BlockNum);
+                if(typeof FilterTxId === "string" && FilterTxId.length >= 20 && Tr.TxID !== FilterTxId)
+                    continue;
                 
                 Tr.Num = num;
                 Tr.Type = Tr.body[0];
