@@ -456,8 +456,8 @@ return:
 }
 ```
 
-##Generating url links
-####Viewing block transactions:
+## Generating url links
+#### Viewing block transactions:
 /blockviewer.html#Numberblock
 Example:
 ```
@@ -465,7 +465,7 @@ https://teraexplorer.org/blockviewer.html#64382498
 ```
 
 
-####Viewing a transaction by TxID:
+#### Viewing a transaction by TxID:
 /blockviewer.html#TxID
 Example:
 ```
