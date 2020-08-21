@@ -290,7 +290,7 @@ class CTXProcess
             return;
         
         var Item = DBAct.Read(MaxNum);
-        if(Item && Item.BlockNum < 16)
+        if(Item && !Item.BlockNum)
         {
             ToLogTx("Delete row at: " + MaxNum)
             DBAct.Truncate(MaxNum - 1)

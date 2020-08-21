@@ -1569,7 +1569,7 @@ class AccountApp extends require("./dapp")
         var BlockNum = Block.BlockNum;
         var DBChanges = this.DBChanges;
         
-        if(!BlockNum || BlockNum < 16)
+        if(!BlockNum)
         {
             ToLogTx("Error BlockNum=" + BlockNum)
             throw "Error BlockNum=" + BlockNum;
