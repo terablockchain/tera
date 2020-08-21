@@ -120,19 +120,16 @@ class DApp
         
         return Result;
     }
-    OnWriteBlockStart(Block)
+    OnProcessBlockStart(Block)
     {
     }
-    OnWriteBlockFinish(Block)
+    OnProcessBlockFinish(Block)
     {
     }
     OnDeleteBlock(Block)
     {
     }
-    OnWriteTransaction(Block, Body, BlockNum, TrNum)
-    {
-    }
-    OnMessage(Msg)
+    OnProcessTransaction(Block, Body, BlockNum, TrNum)
     {
     }
 };

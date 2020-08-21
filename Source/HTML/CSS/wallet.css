@@ -554,3 +554,16 @@ button.radius
 {
     width: 145px;
 }
+
+.findtxid
+{
+    display: flex;
+    position: relative;
+    margin-left: 15px;
+}
+.findtxid input
+{
+    width: 75%;
+    max-width: 400px;
+    margin-left: 10px;
+}

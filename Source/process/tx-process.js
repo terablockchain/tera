@@ -137,6 +137,9 @@ class CTXProcess
         {
             ToLogTx("Error Init CTXProcess: " + LastBlockNum + "  AccountLastNum=" + AccountLastNum)
             this.ErrorInit = 1
+            
+            this.RepairActRow()
+            
             return;
         }
         
@@ -271,6 +274,27 @@ class CTXProcess
         SERVER.BlockProcessTX(Block)
         
         return 1;
+    }
+    
+    RepairActRow()
+    {
+        var DBAct;
+        var MaxNum = DApps.Accounts.DBAct.GetMaxNum();
+        if(MaxNum ===  - 1)
+            DBAct = DApps.Accounts.DBActPrev
+        else
+            DBAct = DApps.Accounts.DBAct
+        
+        var MaxNum = DBAct.GetMaxNum();
+        if(MaxNum ===  - 1)
+            return;
+        
+        var Item = DBAct.Read(MaxNum);
+        if(Item && Item.BlockNum < 16)
+        {
+            ToLogTx("Delete row at: " + MaxNum)
+            DBAct.Truncate(MaxNum - 1)
+        }
     }
 };
 

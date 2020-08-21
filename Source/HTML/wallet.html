@@ -1010,7 +1010,7 @@
         setInterval(UpdatesData,1000);
         //setInterval(UpdatesConfigData,335);
         setInterval(UpdatesConfigData,1000);
-        setInterval(CheckNewMoney,1000);
+        setInterval(CheckNewMoney,2000);
         setInterval(SaveValues,2000);
         setTimeout(CheckNameAccTo,100);
 
@@ -1699,6 +1699,7 @@
 
         <DIV id="TabExplorer" style="display: none">
 
+            <div class="findtxid">Find Tx: <INPUT type="search" id="idFindTx" placeholder="Type TxID"><button onclick="OnFindTx('idFindTx')">Find</button></div>
 
             <INPUT type="button" onclick="RestartNode()"  class="btdoit btopen bt" value="Restart node">
             <INPUT type="button" onclick="window.Open('./HTML/stat.html','counters',920)" class="btdoit btopen bt" id="idCounters" value="Counters">

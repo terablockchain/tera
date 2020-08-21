@@ -273,7 +273,7 @@
             <div class="history-page__table">
                 <div class="page-pagination">
                     <button onclick="ResetFind();ViewPrev(DefTr)" class="btnav btn"><</button>
-                    <INPUT type="string" class="page-pagination__num" id="idTxFilter" style="text-align: center" value="" placeholder="TxID or TxNum" onchange="OnFindByTx()">
+                    <INPUT type="search" class="page-pagination__num" id="idTxFilter" style="text-align: center" value="" placeholder="TxID or TxNum" onchange="OnFindByTx()" onsearch="OnFindByTx()">
                     <button onclick="ResetFind();ViewNext(DefTr,5000)" class="btnav btn">></button>
                 </div>
                 <div class="history-page__table-wrap">

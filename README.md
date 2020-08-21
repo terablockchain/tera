@@ -1,7 +1,12 @@
 ﻿# TERA PLATFORM
 
-* What is the project and what he does we recommend you to read this review article: [Decentralized applications on TERA platform](https://medium.com/@evkara777/decentralized-applications-on-tera-platform-2aa56b597ae9)
-* The following describes how to install it on your computer
+
+This is a public blockchain whose main feature is true decentralization through the use of pow consensus and very high performance.
+
+
+* To learn more about this project, we recommend reading the review article: [Decentralized applications on TERA platform](https://medium.com/@evkara777/decentralized-applications-on-tera-platform-2aa56b597ae9)
+* The current Tera 2.0 Protocol is based on the new JINN library
+* The following describes how to install it on your device
 
 
 ## Light-wallet (web-version)
@@ -50,7 +55,7 @@ npm install --global --production windows-build-tools
 npm install -g node-gyp
 cd wallet/Source
 npm install
-node set httpport:8080 password:secret_word_no_spaces
+node set httpport:8080 password:password_no_spaces
 run-node.bat
 
 ```
@@ -90,7 +95,7 @@ npm install pm2 -g
 git clone https://gitlab.com/terafoundation/tera2.git wallet
 cd ~/wallet/Source
 npm install
-node set httpport:8080 password:<secret word (no spaces)>
+node set httpport:8080 password:password_no_spaces
 ```
 
 ### open ports (all):
@@ -130,7 +135,7 @@ apt install build-essential
 apt group install "Development Tools"
 cd ~/wallet/Source
 npm install
-node set httpport:8080 password:<secret word (no spaces)>
+node set httpport:8080 password:password_no_spaces
 ```
 
 ### open ports:
@@ -186,7 +191,7 @@ Launch:
 cd ~/wallet
 cp -a Source SourceJinn
 cd SourceJinn
-node set-jinn httpport:8800 password:<SecretWord>
+node set-jinn httpport:8800 password:password_no_spaces
 pm2 start run-jinn.js
 ```
 
@@ -211,10 +216,9 @@ pm2 start run-jinn.js
 * Platform: Node.JS
 
 
-# FAQs
+# NOTE
 
-A public ip address is recommended for starting a node:
-* Check the presence of a public static ip-address (order from the provider)
+* A public ip address is recommended for starting a node
 * Check the firewall (port must open on the computer)
 
 

@@ -75,6 +75,12 @@ function GET_ACCOUNT(Obj)
         }, get PubKey()
         {
             return CopyArr(Data.PubKey);
+        }, get PubKeyStr()
+        {
+            if(RunContext && RunContext.BlockNum >= global.UPDATE_CODE_SHARDING)
+            {
+                return GetHexFromArr(Data.PubKey);
+            }
         }, get Name()
         {
             return Data.Name;
@@ -91,11 +97,6 @@ function GET_ACCOUNT(Obj)
         {
             return {SumCOIN:Data.Value.SumCOIN, SumCENT:Data.Value.SumCENT, OperationID:Data.Value.OperationID, Smart:Data.Value.Smart};
         }, };
-    
-    if(RunContext && RunContext.BlockNum >= global.UPDATE_CODE_SHARDING)
-    {
-        GET_PROP.PubKeyStr = GetHexFromArr(Data.PubKey);
-    }
     
     return GET_PROP;
 }

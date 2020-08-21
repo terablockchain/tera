@@ -445,7 +445,7 @@ class AccountApp extends require("./dapp")
         this.DeleteAct(Block.BlockNum)
     }
     
-    OnWriteBlockStart(Block)
+    OnProcessBlockStart(Block)
     {
         this.CreateTrCount = 0
         if(Block.BlockNum < 1)
@@ -455,7 +455,7 @@ class AccountApp extends require("./dapp")
         this.BeginBlock()
     }
     
-    OnWriteBlockFinish(Block)
+    OnProcessBlockFinish(Block)
     {
         try
         {
@@ -473,7 +473,7 @@ class AccountApp extends require("./dapp")
         this.CommitBlock(Block)
     }
     
-    OnWriteTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
+    OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
     {
         
         var Result;
@@ -654,10 +654,7 @@ class AccountApp extends require("./dapp")
     
     GetVerifyTransaction(Block, BlockNum, TrNum, Body)
     {
-        if(global.JINN_MODE)
-        {
-            Engine.DBResult.CheckLoadResult(Block)
-        }
+        Engine.DBResult.CheckLoadResult(Block)
         
         if(Block.VersionBody === 1)
         {
@@ -1045,7 +1042,7 @@ class AccountApp extends require("./dapp")
             if(App)
             {
                 TR.FromPubKey = Data.PubKey
-                var Result = App.OnWriteTransaction(Block, TR.Body, BlockNum, TrNum, TR);
+                var Result = App.OnProcessTransaction(Block, TR.Body, BlockNum, TrNum, TR);
                 if(Result !== true)
                     return Result;
             }
@@ -1571,6 +1568,12 @@ class AccountApp extends require("./dapp")
     {
         var BlockNum = Block.BlockNum;
         var DBChanges = this.DBChanges;
+        
+        if(!BlockNum || BlockNum < 16)
+        {
+            ToLogTx("Error BlockNum=" + BlockNum)
+            throw "Error BlockNum=" + BlockNum;
+        }
         
         for(var i = 0; i < DBChanges.BlockHistory.length; i++)
         {

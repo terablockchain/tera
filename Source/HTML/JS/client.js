@@ -1246,9 +1246,9 @@ function ViewTransaction(BlockNum)
     else
         window.Open('./blockviewer.html#' + BlockNum, 'viewer', 800, 800);
 }
-function OpenBlockViewerPage(BlockNum)
+function OpenBlockViewerPage(Param)
 {
-    window.Open('./blockviewer.html#' + BlockNum, 'viewer', 800, 800);
+    window.Open('./blockviewer.html#' + Param, 'viewer', 800, 800);
 }
 
 function formatDate(now)
@@ -2544,4 +2544,14 @@ function LoadWebDataFromFile(idname,F,Meta)
         }
     };
     reader.readAsArrayBuffer(file);
+}
+
+function OnFindTx(idname)
+{
+    var TxID = $(idname).value;
+    if(!TxID)
+        return;
+    
+    OpenBlockViewerPage(TxID);
+    $(idname).value = "";
 }

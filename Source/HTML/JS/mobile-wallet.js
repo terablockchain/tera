@@ -114,6 +114,7 @@ window.onload = function ()
 function SetServerList(Name)
 {
     NETWORK_NAME = Name;
+    
     FillSelect("idCurNetwork", [{value:NETWORK_NAME, text:Name}]);
     $("idCurNetwork").value = NETWORK_NAME;
     Storage.setItem("NETWORK", NETWORK_NAME);
@@ -135,7 +136,7 @@ function OnLoad()
     
     StartWebWallet();
     
-    setInterval(UpdatesExplorerData, 2000);
+    setInterval(UpdatesExplorerData, 3000);
     setInterval(UpdatesAccountsData, 2000);
     
     DoStableScroll();
@@ -814,6 +815,11 @@ function ViewCounters(This)
         This.className = This.className.replace("btpress", "");
         if(ResVisible)
             This.className += " btpress";
+    }
+    
+    if(!bVisible)
+    {
+        UpdatesExplorerData(1);
     }
 }
 

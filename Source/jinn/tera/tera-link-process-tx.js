@@ -78,7 +78,7 @@ function Init(Engine)
         
         for(var key in DApps)
         {
-            DApps[key].OnWriteBlockStart(Block);
+            DApps[key].OnProcessBlockStart(Block);
         }
         
         var arrContentResult = [];
@@ -109,7 +109,7 @@ function Init(Engine)
                         global.CurTrItem = item.TX;
                 }
                 
-                var Result = App.OnWriteTransaction(Block, arr[i], BlockNum, i);
+                var Result = App.OnProcessTransaction(Block, arr[i], BlockNum, i);
                 var SetResult = Result;
                 if(Result === true)
                 {
@@ -164,7 +164,7 @@ function Init(Engine)
         
         for(var key in DApps)
         {
-            DApps[key].OnWriteBlockFinish(Block);
+            DApps[key].OnProcessBlockFinish(Block);
         }
     };
     

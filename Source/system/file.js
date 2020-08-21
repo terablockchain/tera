@@ -24,7 +24,7 @@ class FileApp extends require("./dapp")
         super()
     }
     
-    OnWriteTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
+    OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
     {
         return true;
     }

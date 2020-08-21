@@ -208,18 +208,18 @@ class SmartApp extends require("./dapp")
         this.DBSmart.DeleteHistory(Block.BlockNum)
     }
     
-    OnWriteBlockStart(Block)
+    OnProcessBlockStart(Block)
     {
         if(Block.BlockNum < 1)
             return;
         this.OnDeleteBlock(Block)
     }
     
-    OnWriteBlockFinish(Block)
+    OnProcessBlockFinish(Block)
     {
     }
     
-    OnWriteTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
+    OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
     {
         var Type = Body[0];
         
@@ -269,9 +269,18 @@ class SmartApp extends require("./dapp")
                     format = ""
         return format;
     }
-    
     GetVerifyTransaction(Block, BlockNum, TrNum, Body)
     {
+        Engine.DBResult.CheckLoadResult(Block)
+        
+        if(Block.VersionBody === 1)
+        {
+            var Result = Block.arrContentResult[TrNum];
+            if(!Result)
+                return  - 1;
+            else
+                return Result;
+        }
         return 1;
     }
     
