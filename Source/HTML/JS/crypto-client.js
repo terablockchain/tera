@@ -11,6 +11,7 @@
 var MAX_SUPER_VALUE_POW = (1 << 30) * 2;
 
 window.TYPE_TRANSACTION_CREATE = 100;
+window.TYPE_TRANSACTION_NEW_SHARD = 60;
 
 function GetHashWithValues(hash0,value1,value2,bNotCopy)
 {
@@ -124,7 +125,7 @@ window.DELTA_POWER_POW_TR = 0;
 window.DELTA_FOR_TIME_TX = 0;
 window.MIN_POWER_POW_TR = 0;
 
-window.CONSENSUS_PERIOD_TIME = 1000;
+window.CONSENSUS_PERIOD_TIME = 3000;
 window.FIRST_TIME_BLOCK = 1530446400000;
 window.NEW_SIGN_TIME = 25500000;
 
@@ -149,7 +150,7 @@ window.SetBlockChainConstant = function (Data)
     
     window.NEW_SIGN_TIME = Data.NEW_SIGN_TIME;
     window.CONSENSUS_PERIOD_TIME = Data.CONSENSUS_PERIOD_TIME;
-    window.JINN_MODE = Data.JINN_MODE;
+    window.JINN_MODE = 1;
     
     InitTeraHashConst();
     
@@ -375,3 +376,35 @@ function DecryptFields(ArrSecret,Params,ArrName)
         }
     }
 }
+
+window.CreateSign = function (Hash,PrivKey)
+{
+    if(!(Hash instanceof Buffer))
+        Hash = Buffer.from(Hash);
+    if(!(PrivKey instanceof Buffer))
+        PrivKey = Buffer.from(PrivKey);
+    return SignLib.sign(Hash, PrivKey, null, null).signature;
+}
+
+window.CheckSign = function (Hash,Sign,PubKey)
+{
+    if(PubKey[0] === 2 || PubKey[0] === 3)
+    {
+        if(!(Hash instanceof Buffer))
+            Hash = Buffer.from(Hash);
+        if(!(Sign instanceof Buffer))
+            Sign = Buffer.from(Sign);
+        if(!(PubKey instanceof Buffer))
+            PubKey = Buffer.from(PubKey);
+        
+        try
+        {
+            return SignLib.verify(Hash, Sign, PubKey);
+        }
+        catch(e)
+        {
+        }
+    }
+    return 0;
+}
+LoadSignLib();

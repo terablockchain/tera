@@ -30,15 +30,15 @@ function InitClass(Engine)
         
         Child.ToLogNet("StartHandShake");
         
-        var Data = {Network:JINN_CONST.NETWORK_NAME, Shard:JINN_CONST.SHARD_NAME, ip:Engine.ip, port:Engine.port, DirectIP:Engine.DirectIP,
+        var Data = {Network:JINN_CONST.NETWORK_NAME, DepricatedShard:JINN_CONST.SHARD_NAME, ip:Engine.ip, port:Engine.port, DirectIP:Engine.DirectIP,
             RndHash:Engine.RndHash, RunVersionNum:global.UPDATE_CODE_VERSION_NUM, CodeVersionNum:CODE_VERSION.VersionNum, FindSelfIP:Child.FindSelfIP,
-            RemoteIP:Child.ip, NameArr:Engine.ArrNodeName};
+            RemoteIP:Child.ip, NameArr:Engine.ArrNodeName, Shard:JINN_CONST.SHARD_NAME, CurTime:Engine.GetTransferTime(Child), };
         Engine.Send("HANDSHAKE", Child, Data, Engine.OnHandShakeReturn);
     };
-    Engine.HANDSHAKE_SEND = {Network:"str20", Shard:"str5", RemoteIP:"str30", port:"uint16", DirectIP:"byte", RndHash:"hash", RunVersionNum:"uint",
-        CodeVersionNum:"uint", FindSelfIP:"byte", NameArr:"arr40"};
+    Engine.HANDSHAKE_SEND = {Network:"str20", DepricatedShard:"str5", RemoteIP:"str30", port:"uint16", DirectIP:"byte", RndHash:"hash",
+        RunVersionNum:"uint", CodeVersionNum:"uint", FindSelfIP:"byte", NameArr:"arr40", Shard:SHARD_STR_TYPE, CurTime:"uint32", };
     Engine.HANDSHAKE_RET = {result:"byte", RndHash:"hash", RemoteIP:"str30", RunVersionNum:"uint", CodeVersionNum:"uint", text:"str",
-        NetConstVer:"uint", NameArr:"arr40"};
+        NetConstVer:"uint", NameArr:"arr40", Network:"str20", Shard:SHARD_STR_TYPE, CurTime:"uint32", };
     Engine.HANDSHAKE = function (Child,Data)
     {
         if(!Data)
@@ -46,18 +46,20 @@ function InitClass(Engine)
             Child.ToLog("Error HANDSHAKE data", 2);
             return;
         }
+        
         Child.ToLogNet("HANDSHAKE Level=" + Child.Level + " port:" + Data.port);
         
         Engine.ProcessNewVersionNum(Child, Data.CodeVersionNum);
         
         var Ret = {result:0, RndHash:Engine.RndHash, RemoteIP:Child.ip, RunVersionNum:global.UPDATE_CODE_VERSION_NUM, CodeVersionNum:CODE_VERSION.VersionNum,
-            NetConstVer:JINN_NET_CONSTANT.NetConstVer, NameArr:Engine.ArrNodeName, };
-        var AddrChild = {ip:Child.ip, port:Data.port, BlockNum:0, Nonce:0, RndHash:Data.RndHash};
+            NetConstVer:JINN_NET_CONSTANT.NetConstVer, NameArr:Engine.ArrNodeName, Network:JINN_CONST.NETWORK_NAME, Shard:JINN_CONST.SHARD_NAME,
+            CurTime:Engine.GetTransferTime(Child), };
+        var AddrChild = {ip:Child.ip, port:Data.port, BlockNum:0, Nonce:0, RndHash:Data.RndHash, ShardName:Data.Shard};
         
         var StrError;
         if(Data.Network !== JINN_CONST.NETWORK_NAME)
         {
-            StrError = "ERROR NETWORK_NAME";
+            StrError = "ERROR NETWORK_NAME=" + Data.Network;
             Engine.OnDeleteConnect(Child, StrError);
         }
         else
@@ -82,6 +84,13 @@ function InitClass(Engine)
                     if(Engine.FindConnectByHash(Data.RndHash))
                         StrError = "ERROR: FIND IN CONNECT";
         
+        Engine.SetChildRndHash(Child, Data.RndHash);
+        Engine.SetChildName(Child, Data.NameArr);
+        if(!Engine.CanShardConnect(Child, Data.Shard))
+        {
+            StrError = "ERROR SHARD_NAME=" + Data.Shard;
+        }
+        
         if(StrError)
         {
             Child.ToLogNet(StrError, 4);
@@ -90,8 +99,9 @@ function InitClass(Engine)
         }
         
         Engine.SetAddrItemForChild(AddrChild, Child, Data.DirectIP);
-        Engine.SetChildRndHash(Child, Data.RndHash);
-        Engine.SetChildName(Child, Data.NameArr);
+        
+        Engine.SetShardName(Child, Data.Shard);
+        Engine.SetTransferTime(Child, Data.CurTime);
         
         Engine.DoMyAddres(Child, Data.RemoteIP);
         Engine.SetItemRndHash(Child.AddrItem, Data.RndHash);
@@ -112,14 +122,18 @@ function InitClass(Engine)
     };
     Engine.SetChildName = function (Child,NameArr)
     {
+        Child.IsCluster = 0;
     };
     
     Engine.OnHandShakeReturn = function (Child,Data)
     {
         if(!Data)
             return;
+        
         Engine.SetChildRndHash(Child, Data.RndHash);
         Engine.SetChildName(Child, Data.NameArr);
+        Engine.SetShardName(Child, Data.Shard);
+        Engine.SetTransferTime(Child, Data.CurTime);
         Engine.DoMyAddres(Child, Data.RemoteIP);
         Engine.SetItemRndHash(Child, Data.RndHash);
         

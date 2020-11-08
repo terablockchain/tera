@@ -70,6 +70,8 @@ function InitClass(Engine)
                     {
                         Engine.DoTxFromTicket(Tx, Item);
                     }
+                
+                var Type = Tx.body[0];
                 if(GetBit(Tx.TXReceive, Level) || GetBit(Tx.TXSend, Level) || GetBit(Tx.TTTXReceive, Level))
                 {
                     ArrTtTx.push({HashTicket:Tx.HashTicket});
@@ -77,6 +79,9 @@ function InitClass(Engine)
                 }
                 else
                 {
+                    JINN_WARNING >= 4 && ToLog("SEND TX Type=" + Type + " KEY=" + Tx.KEY + " on BlockNum=" + BlockNum + " flags=" + GetBit(Tx.TXReceive,
+                    Level) + ":" + GetBit(Tx.TXSend, Level) + ":" + GetBit(Tx.TTTXReceive, Level));
+                    
                     ArrTtTx.push(Tx);
                     Size += JINN_CONST.TX_TICKET_HASH_LENGTH + Tx.body.length + 2;
                     Tx.TXSend = SetBit(Tx.TXSend, Level);
@@ -123,6 +128,7 @@ function InitClass(Engine)
             if(Block.ArrTtTx.length)
             {
                 var TreeTTAll = Engine.GetTreeTicketAll(BlockNum);
+                
                 var WasError = 0;
                 var ArrTtTx = Block.ArrTtTx;
                 for(var i = 0; i < ArrTtTx.length; i++)
@@ -137,16 +143,23 @@ function InitClass(Engine)
                     var Tx = TreeTTAll.find(Item);
                     if(Tx)
                     {
-                        if(!Tx.IsTx)
+                        if(!Tx.IsTx && !Item.body.length && Engine.SysTreeTx)
                         {
-                            if(!Item.body.length)
+                            var VTx = Engine.SysTreeTx.FindItemInCache(Tx);
+                            if(!VTx)
                             {
                                 if(!WasError)
-                                    Child.ToError("Error #1 load tx:" + Tx.KEY + " Receive:" + GetBit(Tx.TXReceive, Level) + " Send:" + GetBit(Tx.TXSend, Level) + " - not found body in BlockNum=" + BlockNum,
-                                    3);
+                                    Child.ToError("**** Error #1 find tx:" + Tx.KEY.substr(0, 8) + " in BlockNum=" + BlockNum + " Flags:" + GetBit(Tx.TXReceive,
+                                    Level) + ":" + GetBit(Tx.TXSend, Level), 3);
                                 WasError = 1;
+                                
                                 continue;
                             }
+                            Tx = VTx;
+                        }
+                        
+                        if(!Tx.IsTx)
+                        {
                             
                             Tx = Engine.GetTxFromReceiveBody(Child, Tx, Item.body, BlockNum, 2);
                             if(!Tx)
@@ -159,17 +172,17 @@ function InitClass(Engine)
                         if(!Item.body.length)
                         {
                             if(!WasError)
-                                Child.ToError("---------Error #2 load tx - not found body in BlockNum=" + BlockNum, 2);
+                                Child.ToError("---------Error #2 load tx - not found body in BlockNum=" + BlockNum, 3);
                             WasError = 1;
                             continue;
                         }
                         
                         Tx = Engine.GetTx(Item.body, BlockNum, undefined, 3);
                         
-                        if(!Engine.IsValidateTx(Tx, "ProcessBlockOnReceive", BlockNum))
+                        if(!Engine.IsValidateTx(Tx, "ProcessBlockOnReceive", BlockNum, 1))
                         {
                             if(!WasError)
-                                Child.ToError("---------Error #3 load tx - bad tx in BlockNum=" + BlockNum, 2);
+                                Child.ToError("---------Error #3 load tx - bad tx in BlockNum=" + BlockNum, 3);
                             WasError = 1;
                             continue;
                         }

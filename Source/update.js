@@ -5,7 +5,7 @@ var fs = require("fs");
 const http = require('http');
 const https = require('https');
 
-require("./core/update-code");
+require("./core/update-net");
 
 //global.DEV_MODE=1;
 

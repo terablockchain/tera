@@ -20,8 +20,8 @@ global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Hot"});
 var START_TRANSFER_TIMEOUT = 5 * 1000;
 var MAX_TRANSFER_TIMEOUT = 5 * 1000;
 
-var MAX_DENY_HOT_CONNECTION = 7 * 1000;
-var MAX_HOT_CONNECTION_DELAY = 2 * 1000;
+global.MAX_DENY_HOT_CONNECTION = 7 * 1000;
+global.MAX_HOT_CONNECTION_DELAY = 2 * 1000;
 
 //Engine context
 
@@ -32,7 +32,8 @@ function DoNode(Engine)
     if(Engine.TickNum % 5 !== 0)
         return;
     
-    Engine.CheckHotConnections();
+    Engine.CheckHotConnections(Engine.LevelArr);
+    Engine.CheckHotConnections(Engine.CrossLevelArr);
     Engine.DoConnectHotLevels();
 }
 
@@ -48,9 +49,10 @@ function InitClass(Engine)
         if(bSend && Child.IsOpen())
             Engine.Send("DISCONNECTLEVEL", Child, {});
         
-        if(Engine.LevelArr[Child.Level] === Child)
+        var LevelArr = Engine.GetLevelArr(Child);
+        if(LevelArr[Child.Level] === Child)
         {
-            Engine.LevelArr[Child.Level] = null;
+            LevelArr[Child.Level] = null;
             Child.ToLogNet("*DisconnectLevel* Level=" + Child.Level);
             
             Engine.NetConfiguration++;
@@ -141,7 +143,9 @@ function InitClass(Engine)
             Child.ToLogNet("Err CanSetHot=" + CanSet);
             return 0;
         }
-        Engine.LevelArr[Child.Level] = Child;
+        
+        var LevelArr = Engine.GetLevelArr(Child);
+        LevelArr[Child.Level] = Child;
         Child.StartHotTransferNum = Engine.CurrentBlockNum;
         Child.ToLogNet("TryHotConnection SetLevel: " + Child.Level);
         
@@ -185,6 +189,7 @@ function InitClass(Engine)
     
     Engine.CanSetHot = function (Child)
     {
+        
         if(global.CLUSTER_HOT_ONLY && !Child.Name)
             return  - 7;
         if(!global.CLUSTER_HOT_ONLY && Child.Level < global.CLUSTER_LEVEL_START && Child.Name)
@@ -204,7 +209,8 @@ function InitClass(Engine)
             return  - 2;
         }
         
-        var ChildWas = Engine.LevelArr[Child.Level];
+        var LevelArr = Engine.GetLevelArr(Child);
+        var ChildWas = LevelArr[Child.Level];
         if(ChildWas && ChildWas !== Child)
         {
             return  - 3;
@@ -232,7 +238,8 @@ function InitClass(Engine)
         Child.HotReady = 1;
         
         Child.StartHotTransferNum = Engine.CurrentBlockNum;
-        Engine.LevelArr[Child.Level] = Child;
+        var LevelArr = Engine.GetLevelArr(Child);
+        LevelArr[Child.Level] = Child;
         Child.ToLogNet("SetHotConnection Level: " + Child.Level + (Child.Level >= JINN_CONST.MAX_LEVEL_CONNECTION ? " (Extra slot)" : ""));
         
         Engine.NetConfiguration++;
@@ -250,7 +257,8 @@ function InitClass(Engine)
         if(Engine.ROOT_NODE)
             return 0;
         
-        var WasChild = Engine.LevelArr[Child.Level];
+        var LevelArr = Engine.GetLevelArr(Child);
+        var WasChild = LevelArr[Child.Level];
         if(WasChild && (Date.now() - WasChild.ConnectStart) > JINN_CONST.RECONNECT_MIN_TIME * 1000 && WasChild.Score * 2 < Child.Score)
         {
             Child.ToLogNet("DELETE OLD NODE FROM LEVEL", 3);
@@ -266,7 +274,7 @@ function InitClass(Engine)
         {
             for(var i = JINN_CONST.MAX_LEVEL_CONNECTION; i < JINN_CONST.MAX_LEVEL_ALL(); i++)
             {
-                var Slot = Engine.LevelArr[i];
+                var Slot = LevelArr[i];
                 if(!Slot)
                 {
                     WasExtra = 1;
@@ -360,16 +368,24 @@ function InitClass(Engine)
         var Delta = 10 - Math.floor((Date.now() - Engine.StartTime) / 1000);
         if(!Engine.DirectIP && Delta > 0)
         {
-            Engine.ToLog("---Wait " + Delta + " s for hot connections", 2);
+            Engine.ToLog("---Wait " + Delta + " s for hot connections", 4);
             return;
         }
         
-        var ArrLevels = Engine.GetTransferArrByLevel(1, 0);
+        var ArrLevels = Engine.GetTransferArrByLevel(3, 0);
         
         for(var L = 0; L < JINN_CONST.MAX_LEVEL_CONNECTION; L++)
         {
             var LevelData = ArrLevels[L];
-            if(!LevelData.HotChild)
+            if(!LevelData.HotChild && !LevelData.CrossChild)
+                LevelConnect(LevelData.HotChild, LevelData);
+            if(!LevelData.CrossChild)
+                LevelConnect(LevelData.CrossChild, LevelData);
+            
+            LevelCheck(LevelData.HotChild);
+            LevelCheck(LevelData.CrossChild);
+            
+            function LevelConnect(HotChild,LevelData)
             {
                 for(var i = 0; i < LevelData.Connect.length; i++)
                 {
@@ -396,23 +412,27 @@ function InitClass(Engine)
                     if(Engine.TryHotConnection(Child, 1))
                         break;
                 }
-            }
-            else
+            };
+            
+            function LevelCheck(HotChild)
             {
-                var Item = LevelData.HotChild.AddrItem;
-                if(Item.SendHotConnectPeriod !== 1000)
+                if(HotChild)
                 {
-                    ResetTimePeriod(LevelData.HotChild.AddrItem, "SendHotConnect", 1000, 20000);
+                    var Item = HotChild.AddrItem;
+                    if(Item.SendHotConnectPeriod !== 1000)
+                    {
+                        ResetTimePeriod(HotChild.AddrItem, "SendHotConnect", 1000, 20000);
+                    }
                 }
-            }
+            };
         }
     };
     
-    Engine.CheckHotConnections = function ()
+    Engine.CheckHotConnections = function (LevelArr)
     {
         for(var L = 0; L < JINN_CONST.MAX_LEVEL_ALL(); L++)
         {
-            var Child = Engine.LevelArr[L];
+            var Child = LevelArr[L];
             if(!Child)
                 continue;
             

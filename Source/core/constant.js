@@ -12,7 +12,7 @@
 "use strict";
 
 
-global.UPDATE_CODE_VERSION_NUM = 2377;
+global.UPDATE_CODE_VERSION_NUM = 2424;
 global.MIN_JINN_VERSION_NUM = 2177;
 
 global.MIN_CODE_VERSION_NUM = 0;
@@ -22,7 +22,7 @@ global.DEBUG_TRAFFIC = 0;
 global.FORK_MODE = 0;
 global.NETWORK = "NONE";
 global.START_NETWORK_DATE = 1530446400000;
-global.CONSENSUS_PERIOD_TIME = 1000;
+global.CONSENSUS_PERIOD_TIME = 3000;
 
 //Fork init values
 try
@@ -38,12 +38,16 @@ global.InitParamsArg = InitParamsArg;
 global.CONST_NAME_ARR = ["IP_VERSION", "JINN_IP", "JINN_PORT", "AUTODETECT_IP", "CLIENT_MODE", "WALLET_NAME", "WALLET_DESCRIPTION",
 "COMMON_KEY", "NODES_NAME", "CLUSTER_LEVEL_START", "CLUSTER_HOT_ONLY", "STAT_MODE", "MAX_STAT_PERIOD", "LOG_LEVEL", "COUNT_VIEW_ROWS",
 "ALL_VIEW_ROWS", "START_HISTORY", "LISTEN_IP", "HTTP_PORT_NUMBER", "HTTP_PORT_PASSWORD", "HTTP_IP_CONNECT", "USE_API_WALLET",
-"USE_API_V1", "MAX_TX_FROM_WEB_IP", "USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTP_MAX_COUNT_ROWS",
-"HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING", "MINING_ACCOUNT", "MINING_START_TIME",
-"MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU", "SIZE_MINING_MEMORY", "POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE",
-"RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN", "DELTA_CURRENT_TIME", ];
+"USE_API_V1", "MAX_TX_FROM_WEB_IP", "USE_HARD_API_V2", "HTTP_HOSTING_PORT", "HTTPS_HOSTING_DOMAIN", "HTTPS_HOSTING_EMAIL",
+"HTTP_MAX_COUNT_ROWS", "HTTP_ADMIN_PASSWORD", "HTTP_START_PAGE", "HTTP_CACHE_LONG", "HTTP_USE_ZIP", "WEB_LOG", "USE_MINING",
+"USE_MINING_SHARDS", "MINING_ACCOUNT", "MINING_START_TIME", "MINING_PERIOD_TIME", "POW_MAX_PERCENT", "COUNT_MINING_CPU", "SIZE_MINING_MEMORY",
+"POW_RUN_COUNT", "USE_AUTO_UPDATE", "JINN_MAX_MEMORY_USE", "RESTART_PERIOD_SEC", "WATCHDOG_DEV", "DEBUG_WALLET", "NOT_RUN",
+"DELTA_CURRENT_TIME", "CLUSTER_TIME_CORRECT", ];
+
+global.SHARD_NAME = "TERA";
 
 global.AUTO_CORRECT_TIME = 1;
+global.CLUSTER_TIME_CORRECT = 0;
 global.MINING_ACCOUNT = 0;
 global.GENERATE_BLOCK_ACCOUNT = 0;
 //old mode
@@ -52,7 +56,7 @@ global.AUTODETECT_IP = 0;
 global.CLUSTER_HOT_ONLY = 0;
 global.CLUSTER_LEVEL_START = 0;
 global.NOT_RUN = 0;
-global.WEB_LOG = 0;
+global.WEB_LOG = 1;
 
 
 global.JINN_MAX_MEMORY_USE = 500;
@@ -90,12 +94,7 @@ global.EXPERIMENTAL_CODE = 0;
 global.HTTP_USE_ZIP = 0;
 
 
-global.MAX_LENGTH_SENDER_MAP = 3000;
-global.DELTA_START_SENDER_MAP = 24;
 global.UNIQUE_IP_MODE = 0;
-
-
-global.NODES_DELTA_CALC_HOUR = 4;
 
 
 global.USE_API_WALLET = 1;
@@ -110,8 +109,6 @@ global.BLOCKNUM_TICKET_ALGO = 16070000;
 
 global.START_BAD_ACCOUNT_CONTROL = 200000;
 global.WATCHDOG_DEV = 0;
-
-global.RESYNC_CONDITION = {"OWN_BLOCKS":20, "K_POW":5};
 
 
 global.REST_BLOCK_SCALE = 1000;
@@ -129,11 +126,13 @@ global.COMMON_KEY = "";
 global.SERVER_PRIVATE_KEY_HEX = undefined;
 global.USE_NET_FOR_SERVER_ADDRES = 1;
 
-global.STAT_MODE = 1;
+global.STAT_MODE = 0;
 global.MAX_STAT_PERIOD = 600;
 global.WALLET_NAME = "TERA";
 global.WALLET_DESCRIPTION = "";
 global.USE_MINING = 0;
+global.USE_MINING_SHARDS = 1;
+
 global.POW_MAX_PERCENT = 50;
 
 
@@ -151,7 +150,7 @@ global.MIN_VER_STAT = 0;
 global.STOPGETBLOCK = 0;
 global.RESTART_PERIOD_SEC = 0;
 
-global.HARD_PACKET_PERIOD120 = 160;
+
 
 global.MINING_START_TIME = "";
 global.MINING_PERIOD_TIME = "";
@@ -163,6 +162,7 @@ global.SIZE_MINING_MEMORY = 0;
 
 global.HTTP_HOSTING_PORT = 0;
 global.HTTPS_HOSTING_DOMAIN = "";
+global.HTTPS_HOSTING_EMAIL = "";
 global.HTTP_MAX_COUNT_ROWS = 20;
 global.HTTP_ADMIN_PASSWORD = "";
 global.HTTP_START_PAGE = "";
@@ -208,8 +208,8 @@ if(global.MIN_POWER_POW_BL === undefined)
     global.MIN_POWER_POW_BL = 5;
 global.TOTAL_SUPPLY_TERA = 1e9;
 
-
-global.MAX_ACTS_LENGTH = 10 * 1000 * 1000;
+if(!global.MAX_ACTS_LENGTH)
+    global.MAX_ACTS_LENGTH = 10 * 1000 * 1000;
 global.MIN_POWER_POW_ACC_CREATE = 16;
 
 global.START_MINING = 2 * 1000 * 1000;
@@ -236,20 +236,22 @@ global.HISTORY_BLOCK_COUNT = 40;
 global.MAX_SIZE_LOG = 200 * 1024 * 1024;
 
 global.ZERO_ARR_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+global.MAX_ARR_32 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
 
 
 global.READ_ONLY_DB = 0;
-global.USE_CHECK_SAVE_DB = 1;
-
-
-global.DEF_MAJOR_VERSION = "0001";
 
 global.SMART_BLOCKNUM_START = 10000000;
 
 global.PRICE_DAO = function (BlockNum)
 {
-    return {NewAccount:10, NewSmart:100, NewTokenSmart:10000};
+    if(BlockNum >= UPDATE_CODE_SHARDING)
+        return {NewAccount:10, NewSmart:100, NewTokenSmart:1000, NewShard:10000};
+    else
+        return {NewAccount:10, NewSmart:100, NewTokenSmart:10000, NewShard:0};
 }
+
 if(global.LOCAL_RUN)
 {
     var Num = Date.now();
@@ -266,20 +268,13 @@ global.STANDART_PORT_NUMBER = 30000;
 InitParamsArg();
 require("./const-mode.js");
 
-
-
-
 global.START_CODE_VERSION_NUM = UPDATE_CODE_VERSION_NUM;
-global.DEF_CLIENT = "TERA-CORE";
-
 global.FIRST_TIME_BLOCK = START_NETWORK_DATE;
 global.START_BLOCK_RUN = 0;
 
 if(global.LISTEN_IP === undefined)
     global.LISTEN_IP = "0.0.0.0";
 
-if(global.START_PORT_NUMBER === undefined)
-    global.START_PORT_NUMBER = STANDART_PORT_NUMBER;
 
 if(global.HTTP_PORT_PASSWORD === undefined)
     global.HTTP_PORT_PASSWORD = "";
@@ -294,8 +289,6 @@ if(global.USE_PARAM_JS === undefined)
 
 if(global.DATA_PATH === undefined)
     global.DATA_PATH = "";
-if(global.CREATE_ON_START === undefined)
-    global.CREATE_ON_START = false;
 
 if(global.LOCAL_RUN === undefined)
     global.LOCAL_RUN = 0;
@@ -348,8 +341,7 @@ function InitParamsArg()
                     else
                         if(STR.substr(0, 5) == "PORT:")
                         {
-                            global.START_PORT_NUMBER = parseInt(str.substr(5));
-                            global.JINN_PORT = global.START_PORT_NUMBER;
+                            global.JINN_PORT = parseInt(str.substr(5));
                         }
                         else
                             if(STR.substr(0, 3) == "IP:")
@@ -369,8 +361,13 @@ function InitParamsArg()
                                     else
                                         if(STR.substr(0, 13) == "STARTNETWORK:")
                                         {
-                                            global.START_NETWORK_DATE = parseInt(str.substr(13));
-                                            ToLog("START_NETWORK_DATE: " + START_NETWORK_DATE);
+                                            var StartDate = str.substr(13);
+                                            if(StartDate === "CONTINUE")
+                                                global.START_NETWORK_DATE = FindBlockchainStartTime();
+                                            else
+                                                global.START_NETWORK_DATE = parseInt(StartDate);
+                                            
+                                            ToLog(STR);
                                         }
                                         else
                                             if(STR.substr(0, 5) == "MODE:")
@@ -386,9 +383,6 @@ function InitParamsArg()
                                                         break;
                                                     case "ADDRLIST":
                                                         global.ADDRLIST_MODE = true;
-                                                        break;
-                                                    case "CREATEONSTART":
-                                                        global.CREATE_ON_START = true;
                                                         break;
                                                     case "LOCALRUN":
                                                         global.LOCAL_RUN = 1;

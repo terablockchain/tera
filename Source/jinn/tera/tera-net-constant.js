@@ -31,7 +31,7 @@ const FORMAT_NET_CONSTANT = {NetConstVer:"uint", NetConstStartNum:"uint", PROTOC
     TX_FREE_COUNT:"uint16", TEST_MODE_1:"uint16", TEST_MODE_2:"uint16", TEST_MODE_3:"uint16", TX_FREE_BYTES_MAX:"uint32", TX_CHECK_OPERATION_ID:"byte",
     TX_CHECK_SIGN_ON_ADD:"uint16", TX_CHECK_SIGN_ON_TRANSFER:"uint16", MAX_ONE_NODE_TX:"uint32", MIN_TIME_SEND_TT_PERIOD:"uint16",
     MAX_TIME_SEND_TT_PERIOD:"uint16", DELTA_TIME_NEW_BLOCK:"uint16", MAX_CHILD_PROCESS_TIME:"uint16", BLOCK_CREATE_INTERVAL:"uint16",
-    RESERVE_DATA:"arr317", NET_SIGN:"arr64"};
+    MAX_CROSS_MSG_COUNT:"uint16", MAX_CROSS_RUN_COUNT:"uint16", RESERVE_DATA:"arr313", NET_SIGN:"arr64"};
 
 var FormatForSign = CopyNetConstant({}, FORMAT_NET_CONSTANT, 1);
 
@@ -135,7 +135,7 @@ function Init(Engine)
         if(JINN_NET_CONSTANT.TEST_COUNT_BLOCK && CountCreate > 0)
         {
             ToLog("*************CountBlockCreate: " + CountCreate + " witch TX=" + JINN_CONST.TEST_COUNT_TX, 2);
-            var Num = 10 + random(DApps.Accounts.GetMaxAccount() - 10);
+            var Num = 10 + random(ACCOUNTS.GetMaxAccount() - 10);
             global.SendTestCoin(Num, Num, 1, JINN_CONST.TEST_COUNT_TX, CountCreate, 1);
         }
         if(JINN_NET_CONSTANT.RUN_RESET && (JINN_NET_CONSTANT.NetConstStartNum + 1) >= Engine.CurrentBlockNum)
@@ -157,12 +157,6 @@ function Init(Engine)
                 ToLog("****Exit*****", 2);
                 if(!global.DEV_MODE)
                     global.RestartNode(1);
-            }
-            
-            if(JINN_NET_CONSTANT.RUN_RESET === 40)
-            {
-                ToLog("****Update to jinn*****", 2);
-                global.UpdateToJinn();
             }
         }
         

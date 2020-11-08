@@ -25,6 +25,8 @@ HEADER_FORMAT_CACHE.SumPow = "uint";
 
 HEADER_FORMAT_CACHE.DataHash = "hash";
 
+HEADER_FORMAT_CACHE.SysTreeHash = "hash";
+
 const WORKSTRUCT_CACHE = {};
 
 class CDBBlockCache extends global.CDBBodyCache
@@ -74,6 +76,7 @@ class CDBBlockCache extends global.CDBBodyCache
             this.CalcBlockHash(Block)
             this.AddBlockToCache(Block)
         }
+        
         return Block;
     }
     AddBlockToCache(Block)

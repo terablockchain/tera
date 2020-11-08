@@ -11,6 +11,7 @@
  * Dual connection protection algorithm
  *
 **/
+
 'use strict';
 global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Connect"});
 
@@ -117,8 +118,6 @@ function DoNode(Engine)
         }
     }
     Engine.DoConnectLevels();
-    
-    Engine.DoStatConnect();
 }
 
 
@@ -130,33 +129,6 @@ function InitClass(Engine)
     Engine.IndexChildLoop = 0;
     
     Engine.ConnectArray = [];
-    
-    Engine.DoStatConnect = function ()
-    {
-        var CountDel = 0;
-        var CountActive = 0;
-        var CountAll = 0;
-        var CountHot = 0;
-        for(var i = 0; i < Engine.ConnectArray.length; i++)
-        {
-            var Item = Engine.ConnectArray[i];
-            if(Item.Del)
-                CountDel++;
-            if(Item.Del)
-                continue;
-            
-            CountAll++;
-            if(Item.IsOpen())
-                CountActive++;
-        }
-        
-        for(var i = 0; i < Engine.LevelArr.length; i++)
-        {
-            var Child = Engine.LevelArr[i];
-            if(Child && Child.IsHot())
-                CountHot++;
-        }
-    };
     Engine.ConnectToNode = function (ip,port)
     {
         var Child = Engine.RetNewConnectByIPPort(ip, port);
@@ -245,7 +217,7 @@ function InitClass(Engine)
         Engine.RemoveConnect(Child);
     };
     
-    Engine.GetTransferArrByLevel = function (bConnect,bNotConnect)
+    Engine.GetTransferArrByLevel = function (ModeConnect,bNotConnect)
     {
         var LevelData;
         var ArrLevels = [];
@@ -253,10 +225,10 @@ function InitClass(Engine)
         glWorkConnect++;
         for(var L = 0; L < JINN_CONST.MAX_LEVEL_ALL(); L++)
         {
-            LevelData = {HotChild:Engine.LevelArr[L], Connect:[], NotConnect:[]};
+            LevelData = {HotChild:Engine.LevelArr[L], CrossChild:Engine.CrossLevelArr[L], Connect:[], NotConnect:[]};
             ArrLevels.push(LevelData);
         }
-        if(bConnect)
+        if(ModeConnect)
         {
             for(var i = 0; i < Engine.ConnectArray.length; i++)
             {
@@ -273,8 +245,11 @@ function InitClass(Engine)
                 if(Child.Level < JINN_CONST.MAX_LEVEL_CONNECTION)
                 {
                     LevelData = ArrLevels[Child.Level];
-                    if(LevelData.HotChild !== Child)
+                    if((ModeConnect & 1) && Engine.CanSetHot(Child) > 0 && LevelData.HotChild !== Child)
                         LevelData.Connect.push(Child);
+                    else
+                        if((ModeConnect & 2) && Child.IsCluster && LevelData.CrossChild !== Child && LevelData.HotChild !== Child)
+                            LevelData.Connect.push(Child);
                 }
             }
         }
@@ -353,7 +328,7 @@ function InitClass(Engine)
     };
     Engine.DoConnectLevels = function ()
     {
-        var ArrLevels = Engine.GetTransferArrByLevel(1, 1);
+        var ArrLevels = Engine.GetTransferArrByLevel(3, 1);
         
         var MinNodeCounts = 1;
         if(Engine.IsStartingTime)

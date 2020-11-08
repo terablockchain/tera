@@ -31,8 +31,6 @@ function InitClass(Engine)
         
         Engine.DB.OnSaveMainDB = Engine.OnSaveMainDB;
         Engine.DB.InvalidateBufferMainDB = Engine.InvalidateBufferMainDB;
-        
-        Engine.DBResult = new CDBResult(Engine.ID);
     };
     Engine.Close = function ()
     {

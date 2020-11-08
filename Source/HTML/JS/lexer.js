@@ -739,27 +739,36 @@ module.exports = function ()
     };
     this.ParseSmart = function ()
     {
-        var bPublic = 0;
+        var nPublic = 0;
         while(true)
         {
             var type = this.PosNextToken();
             if(type === this.enEndFile)
                 break;
             
-            if(type === this.enString && this.value === '"public"')
+            if(type === this.enString)
             {
-                bPublic = 1;
-                continue;
+                if(this.value === '"public"')
+                {
+                    nPublic = 1;
+                    continue;
+                }
+                else
+                    if(this.value === '"message"')
+                    {
+                        nPublic = 2;
+                        continue;
+                    }
             }
             
             if(this.value === "function")
             {
                 var FuncName = this.Parse_function(0, 1);
                 
-                if(bPublic)
-                    this.ExternMap[FuncName] = bPublic;
+                if(nPublic)
+                    this.ExternMap[FuncName] = nPublic;
                 
-                bPublic = 0;
+                nPublic = 0;
                 this.AddNewLineToStream(";\n");
             }
             else
@@ -1377,9 +1386,14 @@ module.exports = function ()
                 this.ExternMap[FuncName] = 1;
             }
             else
-            {
-                this.BackPos();
-            }
+                if(this.value === 'message')
+                {
+                    this.ExternMap[FuncName] = 2;
+                }
+                else
+                {
+                    this.BackPos();
+                }
         }
         
         this.RequireChar("{");

@@ -9,23 +9,32 @@
 
 "use strict";
 
-class CDBRow extends global.CDBFile
+class CDBRow extends global.CDBBase
 {
-    constructor(FileName, Format, bReadOnly, ColNumName, DeltaNum, EngineID)
+    constructor(FileName, Format, bReadOnly, ColNumName, DeltaNum, DataSize, EngineID)
     {
         super(FileName, bReadOnly, EngineID)
         
         if(typeof Format === "object")
             Format = SerializeLib.GetFormatFromObject(Format)
         
-        this.DeltaNum = DeltaNum
-        this.DataSize = SerializeLib.GetBufferFromObject({}, Format, {}).length
+        if(DeltaNum)
+            this.DeltaNum = DeltaNum
+        else
+            this.DeltaNum = 0
+        if(DataSize)
+            this.DataSize = DataSize
+        else
+            this.DataSize = SerializeLib.GetBufferFromObject({}, Format, {}).length
+        
         this.Format = Format
         this.WorkStruct = {}
         if(ColNumName)
             this.ColName = ColNumName
         else
             this.ColName = "Num"
+        
+        this.WasUpdate = 1
     }
     
     GetMaxNum()
@@ -43,23 +52,44 @@ class CDBRow extends global.CDBFile
             Data[this.ColName] = this.GetMaxNum() + 1
     }
     
-    Write(Data)
+    Write(Data, RetBuf)
     {
+        this.WasUpdate = 1
+        
+        var BufWrite;
         JINN_STAT.WriteRowsDB++
         
         this.CheckNewNum(Data)
         var Num = Math.floor(Data[this.ColName]);
         
-        var BufWrite = SerializeLib.GetBufferFromObject(Data, this.Format, this.WorkStruct, 1);
-        if(this.DataSize !== BufWrite.length)
+        var BufWrite0 = SerializeLib.GetBufferFromObject(Data, this.Format, this.WorkStruct, 0);
+        if(this.DataSize < BufWrite0.length)
         {
-            ToLogTrace("Error SerializeLib")
+            ToLogTrace("Error max size = " + this.DataSize + " current = " + BufWrite0.length)
+        }
+        if(global.Buffer)
+        {
+            BufWrite = Buffer.alloc(this.DataSize)
+            for(var i = 0; i < BufWrite0.length && i < this.DataSize; i++)
+                BufWrite[i] = BufWrite0[i]
+        }
+        else
+        {
+            BufWrite = BufWrite0
+            for(var i = BufWrite0.length; i < this.DataSize; i++)
+                BufWrite.push(0)
         }
         
         var Num2 = Num + this.DeltaNum;
         var Position = (Num2) * this.DataSize;
+        
         if(this.WriteInner(BufWrite, Position, 0) === false)
             return 0;
+        
+        if(RetBuf)
+        {
+            RetBuf.Buf = BufWrite
+        }
         
         return 1;
     }
@@ -75,15 +105,21 @@ class CDBRow extends global.CDBFile
         
         var Num2 = Num + this.DeltaNum;
         if(Num2 < 0 || Num > this.GetMaxNum())
+        {
             return undefined;
+        }
         
         var Position = (Num2) * this.DataSize;
         if(Position < 0)
+        {
             return undefined;
+        }
         
         var BufRead = this.ReadInner(Position, this.DataSize);
         if(!BufRead)
+        {
             return undefined;
+        }
         
         if(GetBufOnly)
         {
@@ -96,7 +132,8 @@ class CDBRow extends global.CDBFile
         }
         catch(e)
         {
-            ToLog("JINN DB-ROW: " + e)
+            ToLog("JINN DB-ROW:" + e)
+            console.log(e)
             return undefined;
         }
         
@@ -128,32 +165,38 @@ class CDBRow extends global.CDBFile
         {
             JINN_STAT.WriteRowsDB++
             super.Truncate(Position)
+            this.WasUpdate = 1
         }
     }
     
-    DeleteHistory(BlockNumFrom)
+    DeleteFromBlock(BlockNum)
     {
         
-        var MaxNum = this.GetMaxNum();
-        if(MaxNum ===  - 1)
+        var Item = this.FindItemFromMax(BlockNum);
+        if(!Item)
             return;
+        this.Truncate(Item[this.ColName] - 1)
+    }
+    
+    FindItemFromMax(BlockNum, Name)
+    {
+        if(!Name)
+            Name = "BlockNum"
         
+        var FindItem = undefined;
+        var MaxNum = this.GetMaxNum();
         for(var num = MaxNum; num >= 0; num--)
         {
             var ItemCheck = this.Read(num);
-            if(!ItemCheck)
-                break;
-            
-            if(ItemCheck.BlockNum < BlockNumFrom)
+            if(!ItemCheck || ItemCheck[Name] < BlockNum)
             {
-                if(num < MaxNum)
-                {
-                    this.Truncate(num)
-                }
-                return;
+                break;
             }
+            
+            FindItem = ItemCheck
         }
-        this.Truncate( - 1)
+        
+        return FindItem;
     }
     
     FastFindBlockNum(BlockNum)
@@ -196,8 +239,8 @@ class CDBRow extends global.CDBFile
             }
             else
             {
-                throw "Error read num";
-                return;
+                ToError("FastFindBlockNum: Error read num ob block find " + BlockNum)
+                return "NoPresent";
             }
         }
         var num = CurNum;
@@ -216,8 +259,8 @@ class CDBRow extends global.CDBFile
             }
             else
             {
-                throw "Error read num";
-                return;
+                ToError("FastFindBlockNum: Error #2 read num ob block find " + BlockNum)
+                return "NoPresent";
             }
         }
     }

@@ -21,6 +21,8 @@ module.exports = class CDBRow extends require("./db")
     constructor(FileName, DataSize, Format, bReadOnly, NumName)
     {
         super()
+        if(!Format)
+            throw "Error Format string";
         
         this.FileName = FileName
         this.DataSize = DataSize

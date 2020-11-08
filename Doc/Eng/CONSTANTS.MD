@@ -52,10 +52,11 @@
   "USE_API_V1": 1,                     //enabling API1
   "MAX_TX_FROM_WEB_IP": 20,            //limit the number of tx (every 10 minutes)
   "USE_HARD_API_V2": 0,                //enabling API2 node support is not recommended for public access
-
-  //parameters:
-  "HTTP_HOSTING_PORT": 80,             //web port number
-  "HTTPS_HOSTING_DOMAIN": "",          //domain name
+  //Protocol 
+  "HTTP_HOSTING_PORT": 80, 	       // web port number, when setting port 443, the https Protocol is enabled and therefore you need to set the parameters below (HTTPS_HOSTING_DOMAIN and HTTPS_HOSTING_EMAIL) 
+  "HTTPS_HOSTING_DOMAIN": "",          //domain name (required for the certificate to work) 
+  "HTTPS_HOSTING_EMAIL":"", 	       //email address of the domain owner (required for automatic certificate receipt) 
+  //Other parameters
   "HTTP_MAX_COUNT_ROWS": 20,           //limit on the number of rows of data requests
   "HTTP_START_PAGE": "",               //home page (default web wallet)
   "HTTP_CACHE_LONG": 10000,            //page cache time (sec)

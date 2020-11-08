@@ -93,3 +93,25 @@ if(!global.ToLog)
     {
         console.log(Str);
     };
+
+global.FindBlockchainStartTime = function ()
+{
+    try
+    {
+        var PathFile = global.DATA_PATH + "/DB/main-index";
+        var stat = fs.statSync(PathFile);
+        var MaxNum = Math.trunc(stat.size / 6) - 11;
+        if(!MaxNum)
+            MaxNum = 0;
+        
+        var Num = Math.trunc(Date.now() / CONSENSUS_PERIOD_TIME);
+        var StartTime = (Num - MaxNum - 8) * CONSENSUS_PERIOD_TIME;
+        console.log("****************************** RUN MODE IN CONTINUE_DB MaxNum:" + MaxNum + " TIME:" + StartTime);
+        return StartTime;
+    }
+    catch(e)
+    {
+        console.log("****************************** CANNT RUN MODE IN CONTINUE_DB: " + e.stack);
+        return 0;
+    }
+}

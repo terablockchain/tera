@@ -151,13 +151,78 @@ function Init(Engine)
         if(BlockNum < global.UPDATE_CODE_JINN)
             return CalcTreeHashFromArrBody(BlockNum, TxArr);
         else
-            return Engine.CalcTreeHashInner(BlockNum, TxArr);
+            if(BlockNum < global.UPDATE_CODE_SHARDING)
+                return Engine.CalcTreeHashInner(BlockNum, TxArr);
+            else
+                return Engine.CalcBaseSysTreeHash(BlockNum, TxArr);
+    };
+    
+    Engine.CalcBaseSysTreeHash = function (BlockNum,TxArr,bSysHashOnly)
+    {
+        
+        var Buf;
+        var SysBuf = [];
+        var BaseBuf = [];
+        var DoBase = 0;
+        for(var n = 0; TxArr && n < TxArr.length; n++)
+        {
+            var Tx = TxArr[n];
+            
+            if(!CheckTx("=CalcTreeHash=", Tx, BlockNum, 0))
+            {
+                return ZERO_ARR_32;
+            }
+            
+            if(!DoBase && !Engine.IsVirtualTypeTx(Tx.body[0]))
+            {
+                DoBase = 1;
+                if(bSysHashOnly)
+                    break;
+            }
+            
+            if(DoBase)
+                Buf = BaseBuf;
+            else
+                Buf = SysBuf;
+            
+            var Hash = Tx.HASH;
+            for(var h = 0; h < Hash.length; h++)
+                Buf.push(Hash[h]);
+        }
+        if(!SysBuf.length && !BaseBuf.length)
+            return ZERO_ARR_32;
+        
+        var SysHash;
+        if(SysBuf.length)
+            SysHash = sha3(SysBuf);
+        else
+        {
+            SysHash = ZERO_ARR_32;
+        }
+        if(bSysHashOnly)
+            return SysHash;
+        
+        var BaseHash;
+        if(BaseBuf.length)
+            BaseHash = sha3(BaseBuf);
+        else
+            BaseHash = ZERO_ARR_32;
+        if(!SysBuf.length)
+            return BaseHash;
+        if(!BaseBuf.length)
+            return SysHash;
+        Buf = SysHash;
+        for(var h = 0; h < BaseHash.length; h++)
+            Buf.push(BaseHash[h]);
+        
+        var arr = sha3(Buf);
+        return arr;
     };
     Engine.CalcHashMaxLiderInner = function (Data,BlockNum)
     {
         if(!Data.DataHash)
             ToLogTrace("NO DataHash on block:" + BlockNum);
-        CalcBlockHashJinn(Data, Data.DataHash, Data.MinerHash, BlockNum);
+        CalcBlockHashJinn(Data, Data.DataHash, Data.MinerHash, BlockNum, Data.LinkSumHash);
     };
     Engine.SetBlockDataFromDB = function (Block)
     {

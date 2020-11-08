@@ -26,9 +26,21 @@
 <script src="./JS/smart-vm.js"></script>
 <script src="./JS/smart-play.js"></script>
 
+<script>
+    // var DappList=[];
+    // var Arr=Object.getOwnPropertyNames(window);
+    // for (var key of Arr)
+    // {
+    //     if(key.substr(0,1)!=="$" && typeof window[key]==="function")
+    //         DappList.push(key);
+    // }
+</script>
+
+
 <script src="./Ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="./Ace/ext-settings_menu.js"></script>
 <script src="./Ace/ext-language_tools.js"></script>
+
 
 <script>
     window.RUN_CLIENT=1;
@@ -46,6 +58,8 @@
     var editCode;
     var editHTML;
     var CONFIG_DATA={}; CONFIG_DATA.CONSTANTS={};
+    global.UPDATE_CODE_1=0;
+    global.UPDATE_CODE_SHARDING=0;
 
 </script>
 <script>
@@ -175,8 +189,10 @@
         var Cur1=ArrTabs[0].Current;
         var Cur2=ArrTabs[1].Current;
 
-        if(!WasFirstUpdate || Cur1==="TabFile" || Cur1==="TabText" ||
-            Cur1==="TabProjects" && Cur2==="TabUpload"
+        if(!WasFirstUpdate
+            || Cur1==="TabFile"
+            || Cur1==="TabText"
+            || Cur1==="TabProjects" && Cur2==="TabUpload"
         || $("idIcon").value==="=wait=")
         {
             //ToLog("UpdateData")
@@ -294,17 +310,16 @@
         var TR=
             {
                 Type:111,
-                Version:3,
-                OperationSortID:OperationID,
-                FromID:FromID,
+                Version:4,
                 OperationID:OperationID,
+                FromID:FromID,
+                Old:0,
                 To:[{PubKey:[],ID:ToID,SumCOIN:Price,SumCENT:0}],
                 Description:Description,
                 Body:Body,
                 Sign:"",
             };
-        if(window.JINN_MODE)
-            TR.Version=4;
+
 
         GetSignTransaction(TR,"",function (TR)
         {
@@ -370,7 +385,12 @@
         WriteByte(Body,Smart.Category1);
         WriteByte(Body,Smart.Category2);
         WriteByte(Body,Smart.Category3);
-        for(var i=0;i<20;i++)Body[Body.length]=0;//Reserve
+
+        WriteByte(Body,Smart.Fixed);
+        WriteStr(Body,Smart.CentName,5);
+
+        WriteUint32(Body,Smart.CrossMsgConfirms);
+        for(var i=0;i<10;i++)Body[Body.length]=0;//Reserve
 
         var IconParam=ParseFileName($("idIcon").value);
         WriteUint(Body,Smart.IconBlockNum);
@@ -403,6 +423,7 @@
 
     function CheckCtrlEnter(e,F)
     {
+        //ToLog(""+(e.ctrlKey?"Ctrl+":"")+""+e.keyCode);
         if(e.keyCode===13)
         {
             if(glConfirmF)
@@ -812,6 +833,8 @@
             Smart.ID=Date.now()*1000+random(1000);
 
         Smart.ShortName=$("idShortName").value;
+        Smart.CentName=$("idCentName").value;
+        Smart.Fixed=$("idFixed").value;
         Smart.ISIN=$("idISIN").value;
 
         Smart.Name=$("idName").value;
@@ -839,6 +862,8 @@
         Smart.OwnerPubKey=$("idOwnerPubKey").checked;
 
 
+        //Smart.CrossMsgConfirms=$("idCrossMsgConfirms").value;
+
         SetVisibleTokenMode();
 
     }
@@ -847,7 +872,18 @@
     {
         $("idName").value=Smart.Name;
         $("idShortName").value=Smart.ShortName;
+        if(Smart.CentName)
+            $("idCentName").value=Smart.CentName;
+        else
+            $("idCentName").value="";
+
+        if(Smart.Fixed)
+            $("idFixed").value=Smart.Fixed;
+        else
+            $("idFixed").value="";
+
         $("idISIN").value=Smart.ISIN;
+
 
 
         $("idDescription").value=Smart.Description;
@@ -864,6 +900,8 @@
         }
         else
             $("idIcon").value="";
+
+
 
         if(window.ace)
         {
@@ -892,6 +930,7 @@
         $("idStartValue").value=Smart.StartValue;
         $("idOwnerPubKey").checked=Smart.OwnerPubKey;
 
+        //$("idCrossMsgConfirms").value=Smart.CrossMsgConfirms?Smart.CrossMsgConfirms:0;
 
 
         SetSampleByName();
@@ -931,7 +970,7 @@
     {
         var bDisabled=(CurProjectValue!=$("idProjectList").value);
 
-        var Arr=["idName","idShortName","idISIN","idCode","idHTML","idDescription","idTokenGenerate","idStartValue","idOwnerPubKey","idAccountLength","idStateFormat","idCategory1","idCategory2","idCategory3","idIcon","idBtIcon","idBtSendSmart","idBtSendHTML","!idStateHTML1","!idStateHTML2"];
+        var Arr=["idName","idShortName","idCentName","idFixed","idISIN","idCode","idHTML","idDescription","idTokenGenerate","idStartValue","idOwnerPubKey","idAccountLength","idStateFormat","idCategory1","idCategory2","idCategory3","idIcon","idBtIcon","idBtSendSmart","idBtSendHTML","!idStateHTML1","!idStateHTML2"];
         for(var i=0;i<Arr.length;i++)
         {
             var Name=Arr[i];
@@ -987,7 +1026,7 @@
                 StrSmartPath=Path;
                 LastBaseState=undefined;
 
-                GetData("DappSmartList",{StartNum:parseInt(Path),CountNum:1,GetAllData:1}, function (SetData)
+                GetData("DappSmartList",{StartNum:parseInt(Path),CountNum:1,GetAllData:1,AllRow:1}, function (SetData)
                 {
                     if(SetData && SetData.result && SetData.arr.length===1)
                     {
@@ -1112,8 +1151,9 @@
             StartNum=8;
         if(!Count)
             Count=100;
-        GetData("DappSmartList",{StartNum:StartNum,CountNum:Count}, function (SetData)
+        GetData("DappSmartList",{StartNum:StartNum,CountNum:Count,AllRow:1}, function (SetData)
         {
+            //ToLog(SetData);
             if(SetData && SetData.result)
             {
                 var Arr=AllDappArr;
@@ -1123,7 +1163,6 @@
                     if(AllDappMap[Smart.Num])
                         continue;
                     AllDappMap[Smart.Num]=1;
-                    //ToLog("List Smart.Num="+Smart.Num)
 
 
                     var img="";
@@ -1233,6 +1272,8 @@
         var Smart={};
         Smart.Name="";
         Smart.ShortName="";
+        Smart.CentName="";
+        Smart.Fixed=9;
         Smart.ISIN="";
         Smart.Description="";
         Smart.TokenGenerate=0;
@@ -1246,6 +1287,7 @@
         Smart.IconTrNum=0;
         Smart.Code="";
         Smart.HTML="";
+        Smart.CrossMsgConfirms=0;
         return Smart;
     }
     function NewProject()
@@ -1407,14 +1449,14 @@
         //editCode.setTheme("ace/theme/monokai");
         //editCode.setTheme("ace/theme/chrome");
 
-        // enable autocompletion and snippets
-        ace.require("ace/ext/language_tools");
+
+
 
         AddAceOptions(editCode);
         AddAceOptions(editHTML);
 
+        SetAutocomplete();
 
-        //editCode.getSession().setBreakpoint(10);
 
         editHTML.getSession().on('change', function(e)
         {
@@ -1432,6 +1474,147 @@
             editor.setTheme("ace/theme/chrome");
     }
 
+    function SetAutocomplete()
+    {
+        // enable autocompletion
+        const langTools=ace.require("ace/ext/language_tools");
+
+
+        window.context=GetSmartContext({BlockNum:100},200,undefined,{},2,{Num:300,Value:{SumCOIN:0,SumCENT:0}},7,1);
+        let SmartList1=[];
+        let SmartList2=["context"];
+        let DappList=["SendCall","Call","GetWalletAccounts","GetAccountList","GetSmartList","GetBlockList","GetTransactionList",
+            "DappSmartHTMLFile","DappBlockFile", "SetStatus", "SetError", "SetLocationPath", "CreateNewAccount", "OpenLink",
+            "SetMobileMode", "ComputeSecret", "CheckInstall", "ReloadDapp", "CurrencyName", "GetState", "GetDappBlock", "OpenRefFile",
+            "SetStorage","GetStorage","SetCommon","GetCommon","GetInfo"];
+
+
+
+
+        //список предопределенных событий
+        for(var i=0;i<CodeTemplate.length;i++)
+        {
+            var Item=CodeTemplate[i];
+            var Str=""+Item;
+            if(Str.substr(0,11)==="function On")
+            {
+                var Index=Str.indexOf("\n");
+                if(Index>0)
+                {
+                    var StrF=Str.substr(0,Index);
+                    var Name=StrF.substr(9);
+                    Name=Name.replace("//"," - ");
+
+                    SmartList1.push(StrF+"\n{\n    \n}\n")
+                }
+            }
+        }
+        //список глобальный методов доступных в смарт-контракте
+        for(var key in _ListF)
+        {
+            if(key.substr(0,1)==="$" && key.length>1)
+            {
+                var Name=key.substr(1);
+                var Value=_ListF[key];
+                SmartList2.push(''+Name+(typeof Value==="function"?'(':""));
+            }
+        }
+
+
+
+        var MyCompleter = {
+            getCompletions: function(editor, session, pos, prefix, callback)
+            {
+                var wordMeta;
+                if(editor===editCode)
+                    wordMeta="smart";
+                else
+                    wordMeta="dapp";
+
+                var pos = editor.selection.getCursor();
+                var session = editor.session;
+
+                var curLine = (session.getDocument().getLine(pos.row)).trim();
+                var curTokens = curLine.slice(0, pos.column).split(/\s+/);
+                var curCmd = curTokens[0];
+                if (!curCmd)
+                    return;
+
+                var lastToken = curTokens[curTokens.length - 1];
+                var wordList=[];
+
+                var Arr=lastToken.split('.');
+                if(Arr.length>1)
+                {
+                    var Obj = window;
+                    for(var i=0;i<Arr.length-1;i++)
+                    {
+                        Obj=Obj[Arr[i]];
+                    }
+                    if (Obj)
+                    {
+                        var Arr=Object.getOwnPropertyNames(Obj);
+                        for (var key of Arr)
+                        {
+                            wordList.push(key);
+                        }
+                        wordMeta=lastToken;
+                    }
+                }
+                else
+                if(editor===editCode)
+                {
+                    if(pos.column===1)
+                    {
+                        wordList = SmartList1;
+                        wordMeta="event";
+                    }
+                    else
+                    {
+                        wordList = SmartList2;
+                    }
+                }
+                else
+                {
+                    wordList = DappList;
+                }
+
+
+                callback(null, wordList.map(function(word) {
+                    return {
+                        caption: word,
+                        value: word,
+                        score:1000,
+                        meta: wordMeta
+                    };
+                }));
+
+            }
+        }
+
+        langTools.addCompleter(MyCompleter);
+
+        //Add custom snippets
+        // ace.config.loadModule('ace/snippets/snippets', function ()
+        // {
+        //     var snippetManager = ace.require('ace/snippets').snippetManager;
+        //     ace.config.loadModule('ace/snippets/javascript', function(m)
+        //     {
+        //         if (m && m.snippets)
+        //         {
+        //             m.snippets.push({
+        //                 //name: Name,
+        //                 content: '111${1}',
+        //                 tabTrigger: "111",
+        //             });
+        //
+        //             snippetManager.register(m.snippets, m.scope);
+        //         }
+        //     });
+        // });
+
+    }
+
     function AddAceOptions(editor)
     {
         SetTheme(editor);
@@ -1444,7 +1627,7 @@
 
         editor.setOptions({
             enableBasicAutocompletion: true,
-            enableSnippets: true,
+            enableSnippets: false,
             enableLiveAutocompletion: true
         });
 
@@ -1500,11 +1683,11 @@
         });
 
 
-        var sesion=editor.getSession();
+        //var sesion=editor.getSession();
         // add command to lazy-load keybinding_menu extension
         editor.commands.addCommand({
             name: "Set bookmark",
-            bindKey: {win: "Ctrl-F2", mac: "Ctrl-F2"},
+            bindKey: {win: "Ctrl-F2", mac: "Command-F2"},
             exec: function(editor)
             {
                 var sesion=editor.getSession();
@@ -1555,6 +1738,16 @@
             readOnly: false
         });
 
+
+        editor.commands.addCommand(
+            {
+                name: "togglecomment2",
+                bindKey: {win: "Ctrl-o", mac: "Command-o"},
+                exec: function(editor) {editor.toggleCommentLines(); },
+                multiSelectAction: "forEachLine",
+                scrollIntoView: "selectionPart",
+                readOnly: false
+            });
 
         editor.on("change",
             function(e)
@@ -1693,6 +1886,8 @@ context.FromNum - sender account num\n\
 context.ToNum - payee account num\n\
 context.Description - text\n\
 context.Value - {SumCOIN,SumCENT};\n\
+context.SmartMode - 1 if run from smartcontract\n\
+context.Tx - tx (not present in events)\n\
 */",
 
 function GetLib()
@@ -1708,25 +1903,25 @@ function CheckPermission()
 
 
 
-function OnCreate()//create new smart
+function OnCreate()//creating this smart
 {
 
 },
 
 
-function OnSetSmart()//link smart
+function OnSetSmart()//linking a account to this smart
 {
 
 },
 
 
-function OnDeleteSmart()//unlink smart
+function OnDeleteSmart()//unlinking this smart from account
 {
 
 },
 
 
-function OnGet()
+function OnGet()//getting coins
 {
     var lib=GetLib();
     if(lib.OnGet())
@@ -1736,14 +1931,14 @@ function OnGet()
 
 },
 
-function OnSend()
+function OnSend()//sending coins
 {
     Event("OnSend "+context.FromNum+"->"+context.ToNum+" Value:"+context.Value.SumCOIN);
 
 },
 
 "\"public\"",
-function Method1(Params)
+function Method1(Params,ParamsArr)
 {
     CheckPermission();
     Event(context.Smart.Name+" Run Method1 - OK");
@@ -1809,7 +2004,7 @@ function HTMLTemplate(){
     //Users methods
     //-------------
 
-    function SendMethod1()
+    function SendMethod(Name)
     {
         if(!USER_ACCOUNT.length)
         {
@@ -1818,7 +2013,7 @@ function HTMLTemplate(){
         }
         var UserAcc=+$("idTestAccount").value;
         var Params={Sum:10};
-        SendCall(UserAcc,"Method1",Params,UserAcc);
+        SendCall(UserAcc,Name,Params,[],UserAcc);
     }
 
 }
@@ -1866,7 +2061,7 @@ function HTMLTemplate(){
     <option value="0">Loading...</option>
 </select>
 <BR><BR>
-<BUTTON onclick="SendMethod1()">Method1</BUTTON>
+<BUTTON onclick="SendMethod('Method1')">Method1</BUTTON>
 </DIV>
 
 <style type="text/css">
@@ -2090,15 +2285,6 @@ function HTMLTemplate(){
         background-color: #8e8e8e;
     }
 
-    ::-webkit-scrollbar
-    {
-        width: 0px;
-    }
-    ::-webkit-scrollbar-track-piece
-    {
-        background-color: transparent;
-        -webkit-border-radius: 6px;
-    }
 
     input,select
     {
@@ -2251,6 +2437,11 @@ function DoLoadingConfig(Str,Meta)
                     <textarea id="idStateFormat"  style="width: 99.5%;height: 70px;" rows="2" cols="99" autofocus>
                     </textarea>
 
+                    <BR><BR>
+<!--                    Cross Msg confirms:-->
+<!--                    <INPUT type="string" id="idCrossMsgConfirms" class="radius" value="">-->
+<!--                    <BR>-->
+
                     <BR>
                     <DIV style="background-color: var(--color2); padding: 5px;">
                         <input type="checkbox" class="" id="idTokenGenerate" onchange = "SetPrice();SetVisibleTokenMode()"/>Token generate smart-contract
@@ -2259,8 +2450,18 @@ function DoLoadingConfig(Str,Meta)
                             <tr><td>
                                 Short name:
                             </td><td>
-                                <INPUT type="string" id="idShortName" class="radius" value="">
+                                <INPUT type="string" id="idShortName" maxlength="5" class="radius" value="">
                             </td></tr>
+                            <tr><td>
+                                Cent name:
+                            </td><td>
+                                <INPUT type="string" id="idCentName" maxlength="5" class="radius" value="">
+                            </td>
+                                <td>
+                                    <INPUT type="number" id="idFixed" maxlength="1" class="radius" value="">
+                                </td>
+                            </tr>
+
 
                             <tr><td>
                                 ISIN:
@@ -2516,15 +2717,15 @@ function DoLoadingConfig(Str,Meta)
     }
 
 
-    ::-webkit-scrollbar
-    {
-        width: 0px;
-    }
-    ::-webkit-scrollbar-track-piece
-    {
-        background-color: transparent;
-        -webkit-border-radius: 6px;
-    }
+    /*::-webkit-scrollbar*/
+    /*{*/
+    /*    width: 20px;*/
+    /*}*/
+    /*::-webkit-scrollbar-track-piece*/
+    /*{*/
+    /*    background-color: transparent;*/
+    /*    -webkit-border-radius: 6px;*/
+    /*}*/
 
 </style>
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>

@@ -2834,3 +2834,21 @@ iframe
     max-width: 400px;
     margin-left: 10px;
 }
+
+
+td.sum
+{
+    text-align: right;
+    width: 120px;
+}
+td.num
+{
+    text-align: right;
+    width: 50px;
+}
+.radius
+{
+    border-radius: 4px;
+    max-height: 34px;
+    height: 34px;
+}

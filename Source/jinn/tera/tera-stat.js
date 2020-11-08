@@ -99,18 +99,21 @@ function Init(Engine)
     
     function GetJinnNode(Node,bSimple)
     {
-        var IsOpen, IsHot;
+        var IsOpen, IsHot, CanHot = 0;
         if(Node.IsOpen)
             IsOpen = Node.IsOpen();
         if(Node.IsHot)
             IsHot = Node.IsHot();
+        if(Engine.CanSetHot(Node) > 0)
+            CanHot = 1;
         
         var AddrItem = Node.AddrItem;
         if(!AddrItem)
             AddrItem = {Score:Node.Score};
         
-        var Item = {ID:Node.ID, id:Node.ID, ip:Node.ip, port:Node.port, Active:IsOpen, Hot:IsHot, Level:Node.Level, BlockProcessCount:AddrItem.Score,
-            TransferCount:Node.TransferCount, DeltaTime:Node.RetDeltaTime, Debug:Node.Debug, Name:Node.Name, };
+        var Item = {ID:Node.ID, id:Node.ID, ip:Node.ip, port:Node.port, Active:IsOpen, CanHot:CanHot, Hot:IsHot, IsCluster:Node.IsCluster,
+            Cross:Node.Cross, Level:Node.Level, BlockProcessCount:AddrItem.Score, TransferCount:Node.TransferCount, DeltaTime:Node.RetDeltaTime,
+            Debug:Node.Debug, Name:Node.Name, CurrentShard:Node.ShardName === global.SHARD_NAME ? 1 : 0};
         
         if(bSimple)
         {
@@ -164,7 +167,7 @@ function Init(Engine)
     SERVER.GetTransferTree = function ()
     {
         var ArrRes = [];
-        var ArrLevels = Engine.GetTransferArrByLevel(1, 1);
+        var ArrLevels = Engine.GetTransferArrByLevel(3, 1);
         for(var L = 0; L < ArrLevels.length; L++)
         {
             var LevelData = ArrLevels[L];

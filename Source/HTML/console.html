@@ -150,11 +150,6 @@
     function OnSelectTypeCode()
     {
         var Type = $("idConsoleSend").value;
-        if(Type==="ECode")
-        {
-            $("idBtRun").value="Send eval";
-        }
-        else
         if(Type==="HEX")
         {
             $("idBtRun").value="Send transaction";
@@ -172,11 +167,6 @@
 
         var Value = $("idConsoleText").value;
         var Type = $("idConsoleSend").value;
-        if(Type==="ECode")
-        {
-            SendECode(Value);
-        }
-        else
         if(Type==="HEX")
         {
             SendHEXTransaction(Value);
@@ -234,66 +224,6 @@
         SendTransactionNew(Body);
     }
 
-    var AllSend=0;
-    var AllNoSend=0;
-    var MustSend=0;
-    var LastErr="";
-    var LastOK="";
-    function SendECode(Code)
-    {
-        var DeltaBlockNum = 0;
-
-
-//        if($("idSendAll").checked)
-//        {
-//            var Data={DeltaBlockNum:DeltaBlockNum,Code:Code,All:1};
-//            GetData("SendECode",Data, function (Data)
-//            {
-//                if(Data)
-//                {
-//                    ToResult(Data.text);
-//                }
-//            });
-//            return;
-//        }
-
-
-        var Addr = $("idNode").value;
-
-        AllSend=0;
-        AllNoSend=0;
-        MustSend=0;
-        LastErr="";
-        LastOK="";
-        var arr=Addr.split("\n");
-        for(var i=0;i<arr.length;i++)
-        {
-            var CurAddr=arr[i].trim();
-            if(CurAddr.length!==64)
-                continue;
-
-            MustSend++;
-            var Data={DeltaBlockNum:DeltaBlockNum,Code:Code,Addr:CurAddr};
-            GetData("SendECode",Data, function (Data)
-            {
-                if(Data && Data.result===1)
-                {
-                    AllSend++;
-                    LastOK=Data.text;
-                }
-                else
-                {
-                    AllNoSend++;
-                    LastErr=Data.text;
-                }
-                ToResult("OK:"+AllSend+" ("+LastOK+")   NO:"+AllNoSend+" ("+LastErr+")  OF:"+MustSend);
-            });
-        }
-
-        SetStatus("Must send="+MustSend);
-        ToResult("Must send="+MustSend);
-
-    }
 
     function ToResult(Str)
     {
@@ -386,26 +316,6 @@
 
     function CheckDevelop()
     {
-        GetData("GetWalletInfo",{}, function (Data)
-        {
-            if(Data && Data.result)
-            {
-                if(!Data.IsDevelopAccount)
-                {
-                    var Select = $("idConsoleSend");
-                    for(var i=0;i<Select.options.length;i++)
-                    {
-                        var item=Select.options[i];
-                        if(item.value==="ECode")
-                        {
-                            item.disabled=1;
-                            Select.options[i] = null;
-                            break;
-                        }
-                    }
-                }
-            }
-        });
     }
 
     window.onload=function()
@@ -513,7 +423,6 @@
     <select size="1" id="idConsoleSend" onkeyup="OnSelectTypeCode();SaveValues()" onchange="OnSelectTypeCode();SaveValues()">
         <option value="ServerCode">Server code</option>
         <option value="ClientCode">Client code</option>
-        <option value="ECode" style="color:red;">Eval code !!</option>
         <option value="HEX">HEX Transaction</option>
     </select>
 

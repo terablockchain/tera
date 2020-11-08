@@ -25,7 +25,7 @@
 'use strict';
 global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Addr"});
 
-global.GETNODES_VERSION = 7;
+global.GETNODES_VERSION = 8;
 
 const POW_MEMORY_BIT_SIZE = 18;
 const POW_MAX_ITEM_IN_MEMORRY = 1 << POW_MEMORY_BIT_SIZE;
@@ -54,7 +54,7 @@ function InitClass(Engine)
         
         Engine.Send("GETNODES", Child, {Iterator:Child.Iterator, Version:GETNODES_VERSION}, function (Child,Data)
         {
-            if(!Data || Data.Version !== GETNODES_VERSION)
+            if(!Data || Data.Version < GETNODES_VERSION)
                 return;
             
             var Count = 0;
@@ -84,10 +84,10 @@ function InitClass(Engine)
     };
     Engine.GETNODES_SEND = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}};
     Engine.GETNODES_RET = {Version:"byte", Iterator:{Level:"byte", Arr:["uint16"]}, Arr:[{ip:"str40", port:"uint16", BlockNum:"uint32",
-            Nonce:"uint"}]};
+            Nonce:"uint", portweb:"uint16", Reserv:"arr20"}]};
     Engine.GETNODES = function (Child,Data)
     {
-        if(!Data || Data.Version !== GETNODES_VERSION)
+        if(!Data || Data.Version < GETNODES_VERSION)
             return;
         
         var Arr = [];
@@ -105,7 +105,8 @@ function InitClass(Engine)
             var Item = Engine.GetNextNodeAddr(Data.Iterator, 0);
             if(Item && !Item.IsLocal)
             {
-                Arr.push(Item);
+                if(Child.IsCluster || Item.ShardName === JINN_CONST.SHARD_NAME)
+                    Arr.push(Item);
             }
         }
         
@@ -267,9 +268,12 @@ function InitClass(Engine)
             if(NewAddrPower > WasAddrPower)
             {
                 
+                WasItem.portweb = NewItem.portweb;
+                
                 WasItem.AddrHashPOW = NewItem.AddrHashPOW;
                 WasItem.BlockNum = NewItem.BlockNum;
                 WasItem.Nonce = NewItem.Nonce;
+                
                 return 1;
             }
         }
@@ -333,7 +337,8 @@ function InitClass(Engine)
         if(!Engine.AddrItem)
             Engine.AddrItem = {Nonce:0, BlockNum:0};
         
-        Engine.AddrItem = {IDArr:Engine.IDArr, ip:Engine.ip, port:Engine.port, Nonce:Engine.AddrItem.Nonce, NonceTest:0, BlockNum:Engine.AddrItem.BlockNum};
+        Engine.AddrItem = {IDArr:Engine.IDArr, ip:Engine.ip, port:Engine.port, Nonce:Engine.AddrItem.Nonce, NonceTest:0, BlockNum:Engine.AddrItem.BlockNum,
+            portweb:global.HTTP_HOSTING_PORT};
         Engine.CalcAddrHash(Engine.AddrItem);
         
         Engine.OnSetOwnIP(ip);
@@ -382,15 +387,20 @@ function InitClass(Engine)
             }
             for(var n = 0; n < JINN_CONST.MAX_LEVEL_CONNECTION; n++)
             {
-                var Child = Engine.LevelArr[n];
-                if(Child && Child.Level !== n)
+                ClearLevel(Engine.LevelArr[n]);
+                ClearLevel(Engine.CrossLevelArr[n]);
+                
+                function ClearLevel(Child)
                 {
-                    Engine.ToLogNet(Child, "---Delete from hot level: " + n);
-                    var CurLevel = Child.Level;
-                    Child.Level = n;
-                    Engine.DenyHotConnection(Child, 1);
-                    Child.Level = CurLevel;
-                }
+                    if(Child && Child.Level !== n)
+                    {
+                        Engine.ToLogNet(Child, "---Delete from hot level: " + n);
+                        var CurLevel = Child.Level;
+                        Child.Level = n;
+                        Engine.DenyHotConnection(Child, 1);
+                        Child.Level = CurLevel;
+                    }
+                };
             }
         }
     };

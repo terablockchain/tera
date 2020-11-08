@@ -77,6 +77,7 @@
                 CONFIG_DATA=SetData;
                 SMART=SetData.Smart;
                 BASE_ACCOUNT=SetData.Account;
+
                 SetBlockChainConstant(SetData);
                 document.title=SMART.Name;
 
@@ -159,17 +160,7 @@
         {
             if(CONFIG_DATA && CONFIG_DATA.ArrWallet && CONFIG_DATA.ArrWallet.length===0)
             {
-                var StrRef;
-                if(MainServer)
-                    StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
-                else
-                {
-                    if(Storage.getItem("BIGWALLET"))
-                        StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Config</A>'
-                    else
-                        StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
-                }
-
+                var StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
                 var Str='<DIV style="background-color: #c8ecff;">For install this app press: <button class="btcreate" onclick="InstallApp()">Create account</button><DIV>';
                 SetStatus(Str);
             }
@@ -177,6 +168,10 @@
         function OpenWalletPage()
         {
             OpenWindow(GetWalletLink());
+        }
+        function OpenSmartSrc()
+        {
+            OpenWindow("/smart/"+glSmart);
         }
 
         //LIB
@@ -266,7 +261,7 @@
                 return;
             CountCreateNewAccount++;
 
-            SetStatus("Calculate Tx, wait pls ...");
+
             var TR=GetTrCreateAcc(Currency,CONFIG_DATA.PubKey,SMART.Name,0,SMART.Num);
             var Body=GetBodyCreateAcc(TR);
             SendTransactionNew(Body,TR);
@@ -638,10 +633,11 @@
 <DIV id="idMenu" class="top close" onclick="OnClickMenu()">Options
     <div id="idMenuList" class="top open">
         <div class="item" onclick="OpenWalletPage();">Open wallet page</div>
-        <div class="item" onclick="RunDappFromFile();" id="idRunItem">Load from file...</div>
-        <div class="item" onclick="ReloadDapp();">F5: ReRun</div>
-        <div class="item" onclick="window.location.reload();">Reset</div>
-        <div class="item" onclick="InstallApp();" id="idCreateItem">Create account with DApp NNN</div>
+        <div class="item" onclick="OpenSmartSrc();">Smart src code</div>
+        <div class="item" onclick="RunDappFromFile();" id="idRunItem">Dapp from file...</div>
+        <div class="item" onclick="ReloadDapp();">F5: ReRun dapp</div>
+        <div class="item" onclick="window.location.reload();">Reset dapp</div>
+        <div class="item" onclick="InstallApp();" id="idCreateItem">Create account with Dapp NNN</div>
     </div>
 </DIV>
 <input type="file" id="idFile" style="display: none">

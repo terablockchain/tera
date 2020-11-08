@@ -10,42 +10,41 @@
 'use strict';
 
 module.exports.Init = Init;
+global.MAX_DELTA_TX = 5;
 
 function Init(Engine)
 {
     Engine.FillBodyFromTransferNext = function (Block)
     {
-        
-        var Tx0 = SERVER.GetDAppTransactions(Block.BlockNum);
-        if(Tx0)
+        var Arr = GET_DAPP_TRANSACTIONS(Block);
+        if(Arr.length)
         {
-            var TreeTTAll = Engine.GetTreeTicketAll(Block.BlockNum);
-            var Tx = Engine.GetTx(Tx0.body, Block.BlockNum, undefined, 8);
-            var TxAdd = Engine.AddToTreeWithAll(TreeTTAll, Tx);
-            if(TxAdd)
-                Block.TxData.unshift(TxAdd);
-            else
-                Block.TxData.unshift(Tx);
+            for(var i = 0; i < Arr.length; i++)
+                Block.TxData.unshift(undefined);
+            
+            for(var i = 0; i < Arr.length; i++)
+            {
+                var Tx = Engine.GetTx(Arr[i].body, Block.BlockNum, undefined, 8);
+                var TreeTTAll = Engine.GetTreeTicketAll(Block.BlockNum);
+                var TxAdd = Engine.AddToTreeWithAll(TreeTTAll, Tx);
+                if(!TxAdd)
+                    TxAdd = Tx;
+                Block.TxData[i] = TxAdd;
+            }
+            
+            Block.SysTreeHash = Engine.CalcBaseSysTreeHash(Block.BlockNum, Block.TxData, 1);
         }
-    };
-    
-    Engine.GetNewBlockNext = function (Block,PrevBlock)
-    {
-        if(Block.BlockNum < global.UPDATE_CODE_JINN)
-            return 0;
-        var PrevHashNum = ReadUint32FromArr(Block.PrevSumHash, 28);
-        Block.MinerHash = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        WriteUintToArrOnPos(Block.MinerHash, 0, 0);
-        WriteUint32ToArrOnPos(Block.MinerHash, PrevHashNum, 28);
-        
-        return 1;
+        else
+        {
+            Block.SysTreeHash = ZERO_ARR_32;
+        }
     };
     
     Engine.AddToMiningInner = function (Block)
     {
         
         var CurBlockNum = Engine.CurrentBlockNum;
-        if(global.USE_MINING)
+        if(global.USE_MINING && global.WasStartMiningProcess)
         {
             var Delta = CurBlockNum - Block.BlockNum;
             ToLog("Run mining BlockNum=" + Block.BlockNum + ", Delta=" + Delta, 5);
@@ -99,7 +98,7 @@ function Init(Engine)
                 
                 if(!IsEqArr(DataHash, MiningBlock.DataHash))
                 {
-                    
+                    ToLog("Bad DataHash after mining and recreate new block", 3);
                     return;
                 }
                 
@@ -151,5 +150,23 @@ function Init(Engine)
         }
         
         return bWas;
+    };
+    
+    Engine.PrepareSystemTx = function ()
+    {
+        var BlockNum = Engine.CurrentBlockNum - 1;
+        var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
+        if(TXBlockNum <= BlockNum - MAX_DELTA_TX)
+            return;
+        
+        if(Engine.WasPrepareSystemTxBlockNum === BlockNum)
+            return;
+        Engine.WasPrepareSystemTxBlockNum = BlockNum;
+        var TxAccHash = ACCOUNTS.GetAccountHashTx(BlockNum);
+        if(TxAccHash)
+        {
+            var Tx = Engine.GetTx(TxAccHash.body, BlockNum);
+            Engine.AddCurrentProcessingTx(BlockNum, [Tx], 1);
+        }
     };
 }

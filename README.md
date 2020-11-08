@@ -31,9 +31,8 @@ https://gitlab.com/terafoundation/terarun/raw/master/Bin/Full/tera_full_setup.ex
 
 Attention:
 * After the installation shown below, enter the address your server in the browser. Example: 12.34.56.78:8080
-* For mining You must have a static (public) IP address and an open port.
-* We recommend not storing private keys on remote servers.
 * We recommend putting an additional password on the private key ("Set password" button) - in this case the private key will be stored in file in encrypted form.
+* We recommend not storing private keys on remote servers.
 * If you do not specify the http password for full-node, you can only access from the local address 127.0.0.1:8080 and only within 10 minutes after the launch of the node
 * For remote access to the node only from the specified computer (white IP) set the HTTP_IP_CONNECT constant (for example: "HTTP_IP_CONNECT": "122.22.33.11")
 * When installing, pay attention to the **secp256k1** cryptographic library. There should be no errors when compiling it (with command: npm install)
@@ -236,7 +235,7 @@ pm2 start run-jinn.js
 * [API](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/API.md)
 * [API-2 for Exchanges](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/API2.md)
 * [CONSTANTS](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/CONSTANTS.MD)
-* [Relationship between command-line parameters and constants](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/COMMANDS.MD)
+
 
 
 

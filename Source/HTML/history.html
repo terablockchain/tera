@@ -7,7 +7,6 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!--<link rel="stylesheet" type="text/css" href="./CSS/history.css">-->
     <link rel="stylesheet" href="./CSS/mobile-wallet.css">
 
     <script>
@@ -166,22 +165,6 @@
         {
         }
 
-        var MaxBlockNum=0;
-        function ConfirmationFromBlock(BlockNum)
-        {
-            var Length=MaxBlockNum-BlockNum;
-            if(Length>0)
-            {
-                if(Length<=100)
-                    return Length;
-                else
-                {
-                    return ">"+Math.floor(Length/100)*100;
-                }
-            }
-            else
-                return "";
-        }
         function GetCorrID(Item,Direct)
         {
             var Str;
@@ -293,7 +276,7 @@
                             <th id="(GetCorrID(Item,'+'))" class="num">From</th>
                             <th id="(GetCorrID(Item,'-'))" class="num">To</th>
                             <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
-                            <th id="SUM_TO_STRING(Item)" class="sum smallbold">Amount</th>
+                            <th id="SUM_TO_STRING(Item)" class="smallbold sum">Amount</th>
                             <th id="CurrencyName(Item.Currency)" class="cur">Cur</th>
                             <th id="GetStr(Item.Description)" class="desc">Description</th>
                             <th id="ConfirmationFromBlock(Item.BlockNum)" class="num">Confirm</th>

@@ -9,7 +9,19 @@
 */
 
 
+
+
+require("./common-journal");
+require("./common-tr");
+require("./common-acts");
+require("./common-tx");
+
 require("./dapp");
 require("./accounts");
 require("./smart");
+require("./shard");
 require("./file");
+
+global.ACCOUNTS = DApps.Account;
+global.SMARTS = DApps.Smart;
+global.SHARDS = DApps.Shard;

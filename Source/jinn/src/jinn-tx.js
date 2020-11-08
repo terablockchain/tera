@@ -32,7 +32,7 @@ function InitClass(Engine)
         }
         return Arr;
     };
-    Engine.AddCurrentProcessingTx = function (BlockNum,TxArr)
+    Engine.AddCurrentProcessingTx = function (BlockNum,TxArr,bInnerAdd)
     {
         if(BlockNum < JINN_CONST.START_ADD_TX)
             return 0;
@@ -53,6 +53,7 @@ function InitClass(Engine)
             if(TxAdd)
             {
                 ArrTxAll.push(TxAdd);
+                Engine.RunVTX(TxAdd, BlockNum, bInnerAdd);
                 Count++;
             }
         }
@@ -251,6 +252,7 @@ function InitClass(Engine)
                         continue;
                     
                     ArrTxAll.push(Tx);
+                    Engine.RunVTX(Tx, BlockNum);
                 }
             }
             else
@@ -261,11 +263,14 @@ function InitClass(Engine)
                 
                 var TxAdd = Engine.AddToTreeWithAll(TreeTTAll, Tx);
                 if(TxAdd)
+                {
                     ArrTxAll.push(TxAdd);
+                    Engine.RunVTX(TxAdd, BlockNum);
+                }
             }
             
             if(!Engine.IsValidateTx(Tx, "TRANSFERTX", BlockNum))
-                return undefined;
+                continue;
             Tx.TXReceive = SetBit(Tx.TXReceive, Level);
             
             CountNew++;
@@ -296,6 +301,10 @@ function InitClass(Engine)
         
         Engine.DoTxFromTicket(Tx, TxRaw);
         return Tx;
+    };
+    
+    Engine.RunVTX = function (Tx,BlockNum,bInner)
+    {
     };
     
     Engine.CreateTx = function (Params)

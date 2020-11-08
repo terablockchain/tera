@@ -19,18 +19,10 @@ class DApp
     }
     Name()
     {
-        return "";
-    }
-    SendMessage(Body, ToAddr)
-    {
-        SERVER.SendMessage(Body, ToAddr)
-    }
-    AddTransaction(Tr)
-    {
-        SERVER.AddTransaction(Tr)
+        throw "Need method Name()";
     }
     
-    GetFormatTransaction()
+    GetFormatTransaction(Type)
     {
         return "";
     }
@@ -45,7 +37,7 @@ class DApp
         var TR;
         try
         {
-            TR = BufLib.GetObjectFromBuffer(Body, format, {})
+            TR = SerializeLib.GetObjectFromBuffer(Body, format, {})
         }
         catch(e)
         {
@@ -53,21 +45,21 @@ class DApp
         return TR;
     }
     
-    GetScriptTransaction(Body)
+    GetScriptTransaction(Body, BlockNum, TxNum)
     {
         var Type = Body[0];
         var format = GetFormatTransactionCommon(Type);
         if(!format)
             return GetHexFromArr(Body);
         
-        var TR = BufLib.GetObjectFromBuffer(Body, format, {});
+        var TR = SerializeLib.GetObjectFromBuffer(Body, format, {});
         
-        if(Type === 111 && TR.Body && TR.Body.length)
+        if(Type === TYPE_TRANSACTION_TRANSFER && TR.Body && TR.Body.length)
         {
             var App = DAppByType[TR.Body[0]];
             if(App)
             {
-                TR.Body = JSON.parse(App.GetScriptTransaction(TR.Body))
+                TR.Body = JSON.parse(App.GetScriptTransaction(TR.Body, BlockNum, TxNum))
             }
         }
         
@@ -75,12 +67,10 @@ class DApp
         return JSON.stringify(TR, "", 2);
     }
     
-    GetVerifyTransaction(Block, BlockNum, TrNum, Body)
-    {
-        return 1;
-    }
-    
     ClearDataBase()
+    {
+    }
+    Close()
     {
     }
     GetSenderNum(BlockNum, Body)
@@ -101,22 +91,13 @@ class DApp
         var FromNum = this.GetSenderNum(BlockNum, Body);
         if(!FromNum)
             return 0;
-        var AccountFrom = DApps.Accounts.ReadState(FromNum);
+        var AccountFrom = ACCOUNTS.ReadState(FromNum);
         if(!AccountFrom)
             return 0;
         
         var hash = Buffer.from(sha3(Body.slice(0, Body.length - 64)));
         var Sign = Buffer.from(Body.slice(Body.length - 64));
-        var Result = 0;
-        if(AccountFrom.PubKey[0] === 2 || AccountFrom.PubKey[0] === 3)
-            try
-            {
-                Result = secp256k1.verify(hash, Sign, AccountFrom.PubKey)
-            }
-            catch(e)
-            {
-                ToLog("" + e)
-            }
+        var Result = CheckSign(hash, Sign, AccountFrom.PubKey);
         
         return Result;
     }
@@ -126,11 +107,30 @@ class DApp
     OnProcessBlockFinish(Block)
     {
     }
-    OnDeleteBlock(Block)
+    OnDeleteBlock(BlockNum)
     {
     }
     OnProcessTransaction(Block, Body, BlockNum, TrNum)
     {
+    }
+    
+    GetScrollList(DB, start, count)
+    {
+        var arr = [];
+        for(var num = start; true; num++)
+        {
+            var Data = DB.Read(num);
+            if(!Data)
+                break;
+            
+            arr.push(Data)
+            
+            count--
+            if(count < 1)
+                break;
+        }
+        
+        return arr;
     }
 };
 module.exports = DApp;
@@ -163,3 +163,15 @@ function ReqDir(Path)
 global.DApps = {};
 global.DAppByType = {};
 
+global.REGISTER_SYS_DAPP = function (App,Type)
+{
+    var Name = App.Name();
+    
+    DApps[Name] = App;
+    if(DAppByType[Type])
+    {
+        throw "Error on registering app " + App.Name() + ": tx type = " + Type + " has already been registered in the app " + DAppByType[Type].Name();
+    }
+    
+    DAppByType[Type] = App;
+}

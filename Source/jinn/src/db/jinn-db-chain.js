@@ -17,7 +17,7 @@ const NUM_FOR_MAX_BLOCK =  - 1;
 
 
 global.DB_HEADER_FORMAT = {VersionDB:"byte", BlockNum:"uint", PrevPosition:"uint", TreeHash:"hash", MinerHash:"hash", PrevSumPow:"uint",
-    PrevSumHash:"hash", TxCount:"uint16", TxPosition:"uint", HeadPosH:"uint", HeadPosB:"uint", PrevBlockPosition:"uint", CreateMode:"byte",
+    PrevSumHash:"hash", TxCount:"uint16", TxPosition:"uint", HeadPosH:"uint", HeadPosB:"uint", PrevBlockPosition:"uint", Reserve:"byte",
     TestZero:"arr8", };
 
 if(global.Init_DB_HEADER_FORMAT)
@@ -32,8 +32,8 @@ class CDBChain
         this.EngineID = EngineID
         this.CalcBlockHash = FCalcBlockHash
         
-        this.DBMainIndex = new CDBRow("main-index", {MainPosition:"uint"}, !BWRITE_MODE, "BlockNum", 10, EngineID)
-        this.DBChainIndex = new CDBRow("chain-index", {LastPosition:"uint"}, !BWRITE_MODE, "BlockNum", 10, EngineID)
+        this.DBMainIndex = new CDBRow("main-index", {MainPosition:"uint"}, !BWRITE_MODE, "BlockNum", 10, 0, EngineID)
+        this.DBChainIndex = new CDBRow("chain-index", {LastPosition:"uint"}, !BWRITE_MODE, "BlockNum", 10, 0, EngineID)
         this.DBBlockHeader = new CDBItem("block-data", DB_HEADER_FORMAT, !BWRITE_MODE, EngineID, 1)
         this.DBBlockBody = new CDBItem("block-data", BODY_FORMAT, !BWRITE_MODE, EngineID)
         
@@ -43,6 +43,15 @@ class CDBChain
     DoNode()
     {
     }
+    
+    Clear()
+    {
+        this.DBChainIndex.Clear()
+        this.DBMainIndex.Clear()
+        this.DBBlockHeader.Clear()
+        this.DBBlockBody.Clear()
+    }
+    
     Close()
     {
         this.DBMainIndex.Close()
@@ -252,14 +261,6 @@ class CDBChain
         }
         
         return Item.MainPosition;
-    }
-    
-    Clear()
-    {
-        this.DBChainIndex.Truncate( - 1)
-        this.DBMainIndex.Truncate( - 1)
-        
-        this.DBBlockBody.Truncate(0)
     }
     LoadBlockTx(Block)
     {

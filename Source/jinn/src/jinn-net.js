@@ -367,6 +367,28 @@ function InitClass(Engine)
             Engine.Traffic = 0;
         }
     };
+    
+    Engine.ClearContextCallMap = function (LevelArr)
+    {
+        var TimeNow = Date.now();
+        for(var i = 0; i < LevelArr.length; i++)
+        {
+            var Child = LevelArr[i];
+            if(Child)
+            {
+                for(var Key in Child.ContextCallMap)
+                {
+                    var Item = Child.ContextCallMap[Key];
+                    var Delta = TimeNow - Item.StartTime;
+                    if(Delta > JINN_CONST.METHOD_ALIVE_TIME)
+                    {
+                        delete Child.ContextCallMap[Key];
+                        Child.ToError("Delete old key " + Item.Method + " " + Key, 5);
+                    }
+                }
+            }
+        }
+    };
 }
 
 function DoNode(Engine)
@@ -374,22 +396,6 @@ function DoNode(Engine)
     if(Engine.TickNum % 10 !== 0)
         return;
     
-    var TimeNow = Date.now();
-    for(var i = 0; i < Engine.LevelArr.length; i++)
-    {
-        var Child = Engine.LevelArr[i];
-        if(Child)
-        {
-            for(var Key in Child.ContextCallMap)
-            {
-                var Item = Child.ContextCallMap[Key];
-                var Delta = TimeNow - Item.StartTime;
-                if(Delta > JINN_CONST.METHOD_ALIVE_TIME)
-                {
-                    delete Child.ContextCallMap[Key];
-                    Child.ToError("Delete old key " + Item.Method + " " + Key, 5);
-                }
-            }
-        }
-    }
+    Engine.ClearContextCallMap(Engine.LevelArr);
+    Engine.ClearContextCallMap(Engine.CrossLevelArr);
 }

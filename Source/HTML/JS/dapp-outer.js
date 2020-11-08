@@ -186,7 +186,7 @@ function DappListener(event)
                 if(!Data.FromNum)
                     Data.FromNum = 0;
                 
-                SendCallMethod(Data.Account, Data.MethodName, Data.Params, Data.FromNum, glSmart);
+                SendCallMethod(Data.Account, Data.MethodName, Data.Params, Data.ParamsArr, Data.FromNum, glSmart);
                 
                 break;
             }

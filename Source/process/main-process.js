@@ -28,11 +28,11 @@ require("../core/library");
 require("../core/crypto-library");
 require("../core/upnp.js");
 
-require("../system");
-
 ToLog("==================================================================");
 ToLog(os.platform() + " (" + os.arch() + ") " + os.release());
 ToLog("==================================================================");
+
+global.CURRENT_OS_IS_LINUX = (os.platform() === "linux");
 
 var VerArr = process.versions.node.split('.');
 
@@ -72,6 +72,7 @@ process.on('uncaughtException', function (err)
     }
     else
     {
+        
         if(global.PROCESS_NAME !== "MAIN")
         {
             process.send({cmd:"log", message:err});
@@ -79,8 +80,11 @@ process.on('uncaughtException', function (err)
         
         if(err)
         {
-            ToLog(err.stack);
-            ToError(err.stack);
+            var Str = err.stack;
+            if(!Str)
+                Str = err;
+            ToLog(Str);
+            ToError(Str);
         }
         
         TO_ERROR_LOG("APP", 666, err);
@@ -93,8 +97,12 @@ process.on('error', function (err)
 {
     console.log("--------------------error--------------------");
     
-    ToError(err.stack);
-    ToLog(err.stack);
+    var stack = err.stack;
+    if(!stack)
+        stack = "" + err;
+    
+    ToError(stack);
+    ToLog(stack);
 }
 );
 process.on('unhandledRejection', function (reason,p)
@@ -108,8 +116,11 @@ process.on('unhandledRejection', function (reason,p)
 
 
 require("../core/mining");
-
 require("../core/html-server");
+
+var JinnLib = require("../jinn/tera");
+require("../system");
+
 RunServer();
 require("./childs-run");
 
@@ -134,9 +145,6 @@ function StartJinn()
     if(global.AUTODETECT_IP)
         global.JINN_IP = "";
     
-    global.START_PORT_NUMBER = global.JINN_PORT;
-    
-    var JinnLib = require("../jinn/tera");
     if(!global.JINN_IP)
         global.JINN_IP = "0.0.0.0";
     StartPortMapping(global.JINN_IP, global.JINN_PORT, function (ip)
@@ -192,6 +200,7 @@ function RunFork(Path,ArrArgs)
     {
         ArrArgs.push("LOCALRUN");
         ArrArgs.push("STARTNETWORK:" + global.START_NETWORK_DATE);
+        ArrArgs.push("SHARD_NAME=" + global.SHARD_NAME);
     }
     else
         if(global.TEST_NETWORK)
@@ -199,8 +208,6 @@ function RunFork(Path,ArrArgs)
     
     if(global.TEST_JINN)
         ArrArgs.push("TESTJINN");
-    if(global.JINN_MODE)
-        ArrArgs.push("JINNMODE");
     
     ArrArgs.push("PATH:" + global.DATA_PATH);
     ArrArgs.push("HOSTING:" + global.HTTP_HOSTING_PORT);

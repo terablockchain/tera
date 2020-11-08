@@ -8,14 +8,17 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
 "use strict";
+
+//Smart contract engine
+
 
 require("../HTML/JS/lexer.js");
 require("../HTML/JS/smart-vm.js");
 
-const DBRow = require("../core/db/db-row");
 const TYPE_TRANSACTION_SMART_CREATE = 130;
-global.TYPE_TRANSACTION_SMART_RUN = 135;
+const TYPE_TRANSACTION_SMART_RUN = 135;
 const TYPE_TRANSACTION_SMART_CHANGE = 140;
 
 global.FORMAT_SMART_CREATE = "{\
@@ -32,7 +35,8 @@ global.FORMAT_SMART_CREATE = "{\
     Category3:byte,\
     Fixed:byte,\
     CentName:str5,\
-    Reserve:arr14,\
+    CrossMsgConfirms:uint32,\
+    Reserve:arr10,\
     IconBlockNum:uint,\
     IconTrNum:uint16,\
     ShortName:str5,\
@@ -41,7 +45,7 @@ global.FORMAT_SMART_CREATE = "{\
     Code:str,\
     HTML:str,\
     }";
-const WorkStructCreate = {};
+global.WorkStructCreate = {};
 
 global.FORMAT_SMART_RUN = "{\
     Type:byte,\
@@ -51,10 +55,11 @@ global.FORMAT_SMART_RUN = "{\
     FromNum:uint,\
     OperationID:uint,\
     Version:byte,\
-    Reserve:arr9,\
+    ParamsArr: tr,\
+    Reserve:arr7,\
     Sign:arr64,\
     }";
-const WorkStructRun = {};
+global.WorkStructSmartRun = {};
 
 global.FORMAT_SMART_CHANGE = "{\
     Type:byte,\
@@ -66,15 +71,15 @@ global.FORMAT_SMART_CHANGE = "{\
     OperationID:uint,\
     Sign:arr64,\
     }";
-const WorkStructChange = {};
+global.WorkStructChange = {};
 
 
-class SmartApp extends require("./dapp")
+class SmartApp extends require("./smart-tr")
 {
     constructor()
     {
-        super()
         var bReadOnly = (global.PROCESS_NAME !== "TX");
+        super(bReadOnly)
         
         this.FORMAT_ROW = "{\
             Version:byte,\
@@ -95,7 +100,8 @@ class SmartApp extends require("./dapp")
             Owner:uint,\
             Fixed:byte,\
             CentName:str5,\
-            Reserve:arr14,\
+            CrossMsgConfirms:uint32,\
+            Reserve:arr10,\
             StateFormat:str,\
             Description:str,\
             Code:str,\
@@ -104,11 +110,16 @@ class SmartApp extends require("./dapp")
             }"
         
         this.ROW_SIZE = 2 * (1 << 13)
-        this.DBSmart = new DBRow("smart", this.ROW_SIZE, this.FORMAT_ROW, bReadOnly)
-        this.InitHole()
+        this.DBSmart = new CDBRow("smart", this.FORMAT_ROW, bReadOnly, "Num", 0, this.ROW_SIZE)
+        REGISTER_TR_DB(this.DBSmart, 30)
         
         if(!bReadOnly)
             this.Start()
+    }
+    
+    Name()
+    {
+        return "Smart";
     }
     
     SaveAllToFile()
@@ -128,20 +139,85 @@ class SmartApp extends require("./dapp")
         if(this.GetMaxNum() + 1 >= 7)
             return;
         
-        this.DBSmartWrite({Num:0, ShortName:"TERA", Name:"TERA", Description:"TERA", BlockNum:0, TokenGenerate:1, Account:0, Category1:0})
-        for(var i = 1; i < 8; i++)
-            this.DBSmartWrite({Num:i, ShortName:"", Name:"", Description:"", BlockNum:0, TokenGenerate:1, Account:i, Category1:0})
+        COMMON_ACTS.ClearDataBase()
     }
     
     Close()
     {
+        this.SmartMap = {}
         this.DBSmart.Close()
     }
     
     ClearDataBase()
     {
-        this.DBSmart.Truncate( - 1)
-        this.Start()
+        this.SmartMap = {}
+        
+        this.DBSmart.Clear()
+        
+        this.DBSmartWrite({Num:0, ShortName:SHARD_NAME, Name:SHARD_NAME, Description:SHARD_NAME, BlockNum:0, TokenGenerate:1, Account:0,
+            Category1:0})
+        for(var i = 1; i < 8; i++)
+            this.DBSmartWrite({Num:i, ShortName:"", Name:"", Description:"", BlockNum:0, TokenGenerate:1, Account:i, Category1:0})
+    }
+    
+    OnDeleteBlock(BlockNum)
+    {
+        if(BlockNum > 0)
+        {
+            this.DBSmart.DeleteFromBlock(BlockNum)
+        }
+    }
+    
+    OnProcessBlockStart(Block)
+    {
+    }
+    
+    OnProcessBlockFinish(Block)
+    {
+    }
+    
+    OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
+    {
+        var Type = Body[0];
+        
+        var Result = false;
+        switch(Type)
+        {
+            case TYPE_TRANSACTION_SMART_CREATE:
+                Result = this.TRCreateSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+            case TYPE_TRANSACTION_SMART_RUN:
+                Result = this.TRRunSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+            case TYPE_TRANSACTION_SMART_CHANGE:
+                Result = this.TRChangeSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+        }
+        
+        return Result;
+    }
+    
+    GetFormatTransaction(Type)
+    {
+        var format;
+        switch(Type)
+        {
+            case TYPE_TRANSACTION_SMART_CREATE:
+                format = FORMAT_SMART_CREATE
+                break;
+                
+            case TYPE_TRANSACTION_SMART_RUN:
+                format = FORMAT_SMART_RUN
+                break;
+                
+            case TYPE_TRANSACTION_SMART_CHANGE:
+                format = FORMAT_SMART_CHANGE
+                break;
+                
+            default:
+                format = ""
+        }
+        return format;
     }
     GetSenderNum(BlockNum, Body)
     {
@@ -200,406 +276,6 @@ class SmartApp extends require("./dapp")
     {
         return this.CheckSignAccountTx(BlockNum, Body);
     }
-    
-    OnDeleteBlock(Block)
-    {
-        if(Block.BlockNum < 1)
-            return;
-        this.DBSmart.DeleteHistory(Block.BlockNum)
-    }
-    
-    OnProcessBlockStart(Block)
-    {
-        if(Block.BlockNum < 1)
-            return;
-        this.OnDeleteBlock(Block)
-    }
-    
-    OnProcessBlockFinish(Block)
-    {
-    }
-    
-    OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
-    {
-        var Type = Body[0];
-        
-        if(!ContextFrom)
-        {
-            DApps.Accounts.BeginTransaction()
-        }
-        
-        var Result;
-        try
-        {
-            switch(Type)
-            {
-                case TYPE_TRANSACTION_SMART_CREATE:
-                    Result = this.TRCreateSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-                    break;
-                case TYPE_TRANSACTION_SMART_RUN:
-                    Result = this.TRRunSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-                    break;
-                case TYPE_TRANSACTION_SMART_CHANGE:
-                    Result = this.TRChangeSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-                    break;
-            }
-        }
-        catch(e)
-        {
-            Result = "" + e
-            if(global.WATCHDOG_DEV)
-                ToLogTx("BlockNum :" + BlockNum + ":" + e)
-        }
-        
-        return Result;
-    }
-    
-    GetFormatTransaction(Type)
-    {
-        var format;
-        if(Type === TYPE_TRANSACTION_SMART_CREATE)
-            format = FORMAT_SMART_CREATE
-        else
-            if(Type === TYPE_TRANSACTION_SMART_RUN)
-                format = FORMAT_SMART_RUN
-            else
-                if(Type === TYPE_TRANSACTION_SMART_CHANGE)
-                    format = FORMAT_SMART_CHANGE
-                else
-                    format = ""
-        return format;
-    }
-    GetVerifyTransaction(Block, BlockNum, TrNum, Body)
-    {
-        Engine.DBResult.CheckLoadResult(Block)
-        
-        if(Block.VersionBody === 1)
-        {
-            var Result = Block.arrContentResult[TrNum];
-            if(!Result)
-                return  - 1;
-            else
-                return Result;
-        }
-        return 1;
-    }
-    
-    TRCreateSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-    {
-        if(!ContextFrom)
-            return "Pay context required";
-        
-        if(Body.length < 31)
-            return "Error length transaction (min size)";
-        
-        if(Body.length > 16000)
-            return "Error length transaction (max size)";
-        
-        if(BlockNum < SMART_BLOCKNUM_START)
-            return "Error block num";
-        
-        var TR = BufLib.GetObjectFromBuffer(Body, FORMAT_SMART_CREATE, WorkStructCreate);
-        if(!TR.Name.trim())
-            return "Name required";
-        if(TR.AccountLength > 50)
-            return "Error AccountLength=" + TR.AccountLength;
-        if(TR.AccountLength < 1)
-            TR.AccountLength = 1
-        
-        var AddAccount = TR.AccountLength - 1;
-        
-        var Price;
-        if(TR.TokenGenerate)
-            Price = PRICE_DAO(BlockNum).NewTokenSmart
-        else
-            Price = PRICE_DAO(BlockNum).NewSmart
-        Price += AddAccount * PRICE_DAO(BlockNum).NewAccount
-        
-        if(!(ContextFrom && ContextFrom.To.length === 1 && ContextFrom.To[0].ID === 0 && ContextFrom.To[0].SumCOIN >= Price))
-        {
-            return "Not money in the transaction";
-        }
-        
-        ContextFrom.ToID = ContextFrom.To[0].ID
-        var Smart = TR;
-        Smart.Version = 0
-        Smart.Zip = 0
-        Smart.BlockNum = BlockNum
-        Smart.TrNum = TrNum
-        Smart.Num = undefined
-        Smart.Owner = ContextFrom.FromID
-        this.DBSmart.CheckNewNum(Smart)
-        var Account = DApps.Accounts.NewAccountTR(BlockNum, TrNum);
-        Account.Value.Smart = Smart.Num
-        Account.Name = TR.Name
-        if(Smart.TokenGenerate)
-        {
-            Account.Currency = Smart.Num
-            
-            Account.Value.SumCOIN = TR.StartValue
-        }
-        if(TR.OwnerPubKey)
-            Account.PubKey = ContextFrom.FromPubKey
-        
-        DApps.Accounts.WriteStateTR(Account, TrNum)
-        for(var i = 0; i < AddAccount; i++)
-        {
-            var CurAccount = DApps.Accounts.NewAccountTR(BlockNum, TrNum);
-            CurAccount.Value.Smart = Smart.Num
-            CurAccount.Name = TR.Name
-            if(Smart.TokenGenerate)
-                CurAccount.Currency = Smart.Num
-            if(TR.OwnerPubKey)
-                CurAccount.PubKey = ContextFrom.FromPubKey
-            
-            DApps.Accounts.WriteStateTR(CurAccount, TrNum)
-        }
-        
-        Smart.Account = Account.Num
-        
-        this.DBSmart.DeleteMap("EVAL" + Smart.Num)
-        try
-        {
-            RunSmartMethod(Block, Smart, Account, BlockNum, TrNum, ContextFrom, "OnCreate")
-        }
-        catch(e)
-        {
-            this.DBSmart.DeleteMap("EVAL" + Smart.Num)
-            return e;
-        }
-        if(BlockNum < global.UPDATE_CODE_2)
-        {
-            Smart.Reserve = []
-        }
-        
-        this.DBSmartWrite(Smart)
-        
-        return true;
-    }
-    
-    CheckSignFrom(Body, TR, BlockNum, TrNum)
-    {
-        var ContextFrom = {FromID:TR.FromNum};
-        
-        var AccountFrom = DApps.Accounts.ReadStateTR(TR.FromNum);
-        if(!AccountFrom)
-            return "Error account FromNum: " + TR.FromNum;
-        if(TR.OperationID < AccountFrom.Value.OperationID)
-            return "Error OperationID (expected: " + AccountFrom.Value.OperationID + " for ID: " + TR.FromNum + ")";
-        var MaxCountOperationID = 100;
-        if(BlockNum >= global.BLOCKNUM_TICKET_ALGO)
-            MaxCountOperationID = 1000000
-        if(TR.OperationID > AccountFrom.Value.OperationID + MaxCountOperationID)
-            return "Error too much OperationID (expected max: " + (AccountFrom.Value.OperationID + MaxCountOperationID) + " for ID: " + TR.FromNum + ")";
-        var hash;
-        if(TR.Version === 4 && BlockNum >= global.UPDATE_CODE_6)
-            hash = SHA3BUF(Body.slice(0, Body.length - 64), BlockNum)
-        else
-            hash = SHA3BUF(Body.slice(0, Body.length - 64 - 12), BlockNum)
-        
-        var Result = 0;
-        if(AccountFrom.PubKey[0] === 2 || AccountFrom.PubKey[0] === 3)
-            try
-            {
-                Result = secp256k1.verify(hash, TR.Sign, AccountFrom.PubKey)
-            }
-            catch(e)
-            {
-            }
-        if(!Result)
-        {
-            return "Error sign transaction";
-        }
-        
-        if(BlockNum >= 13000000)
-        {
-            AccountFrom.Value.OperationID = TR.OperationID + 1
-            DApps.Accounts.WriteStateTR(AccountFrom, TrNum)
-        }
-        else
-            if(AccountFrom.Value.OperationID !== TR.OperationID)
-            {
-                AccountFrom.Value.OperationID = TR.OperationID
-                DApps.Accounts.WriteStateTR(AccountFrom, TrNum)
-            }
-        
-        return ContextFrom;
-    }
-    
-    TRRunSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-    {
-        if(Body.length < 100)
-            return "Error length transaction (min size)";
-        if(BlockNum < SMART_BLOCKNUM_START)
-            return "Error block num";
-        
-        var TR = BufLib.GetObjectFromBuffer(Body, FORMAT_SMART_RUN, WorkStructRun);
-        
-        var Account = DApps.Accounts.ReadStateTR(TR.Account);
-        if(!Account)
-            return "RunSmart: Error account Num: " + TR.Account;
-        
-        if(!ContextFrom && TR.FromNum)
-        {
-            var ResultCheck = this.CheckSignFrom(Body, TR, BlockNum, TrNum);
-            if(typeof ResultCheck === "string")
-                return ResultCheck;
-            ContextFrom = ResultCheck
-        }
-        
-        try
-        {
-            var Params = JSON.parse(TR.Params);
-            RunSmartMethod(Block, Account.Value.Smart, Account, BlockNum, TrNum, ContextFrom, TR.MethodName, Params, 1)
-        }
-        catch(e)
-        {
-            return e;
-        }
-        return true;
-    }
-    
-    TRChangeSmart(Block, Body, BlockNum, TrNum, ContextFrom)
-    {
-        
-        if(Body.length < 21)
-            return "Error length transaction (min size)";
-        
-        if(BlockNum < SMART_BLOCKNUM_START)
-            return "Error block num";
-        
-        var TR = BufLib.GetObjectFromBuffer(Body, FORMAT_SMART_CHANGE, WorkStructChange);
-        
-        if(!ContextFrom)
-        {
-            var ResultCheck = this.CheckSignFrom(Body, TR, BlockNum, TrNum);
-            if(typeof ResultCheck === "string")
-                return ResultCheck;
-            ContextFrom = ResultCheck
-        }
-        
-        if(TR.Smart > this.GetMaxNum())
-            TR.Smart = 0
-        
-        if(ContextFrom.FromID !== TR.Account)
-            return "ChangeSmart: Error account FromNum: " + TR.Account;
-        var Account = DApps.Accounts.ReadStateTR(TR.Account);
-        if(!Account)
-            return "Error read account Num: " + TR.Account;
-        
-        if(BlockNum >= 13000000)
-        {
-            if(Account.Value.Smart === TR.Smart)
-                return "The value has not changed";
-        }
-        
-        if(Account.Value.Smart)
-        {
-            var Smart = this.ReadSmart(Account.Value.Smart);
-            if(Smart.Account === TR.Account)
-                return "Can't change base account";
-            
-            try
-            {
-                RunSmartMethod(Block, Account.Value.Smart, Account, BlockNum, TrNum, ContextFrom, "OnDeleteSmart")
-            }
-            catch(e)
-            {
-                return e;
-            }
-        }
-        
-        Account.Value.Smart = TR.Smart
-        Account.Value.Data = []
-        DApps.Accounts.WriteStateTR(Account, TrNum)
-        
-        if(Account.Value.Smart)
-        {
-            try
-            {
-                RunSmartMethod(Block, Account.Value.Smart, Account, BlockNum, TrNum, ContextFrom, "OnSetSmart")
-            }
-            catch(e)
-            {
-                return e;
-            }
-        }
-        
-        return true;
-    }
-    GetRows(start, count, Filter, Category, GetAllData, bTokenGenerate)
-    {
-        
-        if(Filter)
-        {
-            Filter = Filter.trim()
-            Filter = Filter.toUpperCase()
-        }
-        if(Category)
-            Category = ParseNum(Category)
-        
-        var WasError = 0;
-        var arr = [];
-        var Data;
-        for(var num = start; true; num++)
-        {
-            if(this.IsHole(num))
-                continue;
-            
-            if(GetAllData)
-                Data = this.ReadSmart(num)
-            else
-                Data = this.ReadSimple(num)
-            
-            if(!Data)
-                break;
-            
-            if(bTokenGenerate && !Data.TokenGenerate)
-                continue;
-            
-            if(Category)
-            {
-                if(Data.Category1 !== Category && Data.Category2 !== Category && Data.Category3 !== Category)
-                    continue;
-            }
-            
-            if(Filter)
-            {
-                var Str = "" + Data.ShortName.toUpperCase() + Data.ISIN.toUpperCase() + Data.Name.toUpperCase() + Data.Description.toUpperCase();
-                if(Data.TokenGenerate)
-                    Str += "TOKEN GENERATE"
-                
-                if(Str.indexOf(Filter) < 0)
-                    continue;
-            }
-            
-            var CanAdd = 1;
-            var DataState = DApps.Accounts.ReadState(Data.Account);
-            if(DataState)
-            {
-                Data.BaseState = DApps.Accounts.GetSmartState(DataState, Data.StateFormat)
-                if(!global.ALL_VIEW_ROWS)
-                    if(typeof Data.BaseState === "object" && Data.BaseState.HTMLBlock === 404)
-                        CanAdd = 0
-            }
-            
-            if(CanAdd)
-            {
-                arr.push(Data)
-            }
-            
-            count--
-            if(count < 1)
-                break;
-        }
-        
-        return arr;
-    }
-    
-    GetMaxNum()
-    {
-        return this.DBSmart.GetMaxNum();
-    }
     DBSmartWrite(Item)
     {
         var PrevNum;
@@ -613,7 +289,9 @@ class SmartApp extends require("./dapp")
         var Hash = sha3(Buf);
         
         if(PrevNum < 0)
+        {
             Item.SumHash = Hash
+        }
         else
         {
             var PrevItem = this.DBSmart.Read(PrevNum);
@@ -626,22 +304,34 @@ class SmartApp extends require("./dapp")
         
         this.DBSmart.Write(Item)
     }
+    GetSmartMap()
+    {
+        if(this.DBSmart.WasUpdate)
+        {
+            this.DBSmart.WasUpdate = 0
+            this.SmartMap = {}
+        }
+        
+        return this.SmartMap;
+    }
     ReadSmart(Num)
     {
         Num = ParseNum(Num)
-        var Smart = this.DBSmart.GetMap("ITEM" + Num);
+        var Map = this.GetSmartMap();
+        var Smart = Map["ITEM" + Num];
         if(!Smart)
         {
             Smart = this.DBSmart.Read(Num)
             if(Smart)
             {
+                
                 if(!Smart.WorkStruct)
                     Smart.WorkStruct = {}
                 
                 Smart.CodeLength = Smart.Code.length
                 Smart.HTMLLength = Smart.HTML.length
                 
-                this.DBSmart.SetMap("ITEM" + Num, Smart)
+                Map["ITEM" + Num] = Smart
             }
         }
         
@@ -649,12 +339,14 @@ class SmartApp extends require("./dapp")
     }
     ReadSimple(Num, bTokenDescription)
     {
-        var Smart = this.DBSmart.GetMap("SIMPLE" + Num);
+        var Map = this.GetSmartMap();
+        var Smart = Map["SIMPLE" + Num];
         if(!Smart)
         {
             Smart = this.DBSmart.Read(Num)
             if(Smart)
             {
+                
                 Smart.CodeLength = Smart.Code.length
                 Smart.HTMLLength = Smart.HTML.length
                 
@@ -663,11 +355,11 @@ class SmartApp extends require("./dapp")
                 Object.defineProperties(Smart, {HTML:{configurable:true, enumerable:false}})
                 Object.defineProperties(Smart, {Description:{configurable:true, enumerable:false}})
                 
-                this.DBSmart.SetMap("SIMPLE" + Num, Smart)
+                Map["SIMPLE" + Num] = Smart
             }
         }
         
-        if(bTokenDescription)
+        if(Smart && bTokenDescription)
             this.AddCurrencyTokenDescription(Smart)
         
         return Smart;
@@ -690,33 +382,9 @@ class SmartApp extends require("./dapp")
         if(Time - Item.Time > 5 * 1000)
         {
             Item.Time = Time
-            
-            var Params = undefined;
-            var BlockNum = GetCurrentBlockNumByTime();
-            if(BlockNum < UPDATE_CODE_2)
-            {
-                try
-                {
-                    var Account = DApps.Accounts.ReadState(Smart.Account);
-                    if(Smart.StateFormat)
-                    {
-                        var State = BufLib.GetObjectFromBuffer(Account.Value.Data, Smart.StateFormat, {}, 1);
-                        Params = {State:State, PayCur:GET_SMART(DApps.Smart.ReadSmart(State.PayCurrency)), OpnCur:GET_SMART(DApps.Smart.ReadSmart(State.Currency)),
-                        }
-                    }
-                }
-                catch(e)
-                {
-                }
-            }
-            else
-            {
-                Params = {}
-            }
-            
             var Result;
-            if(Params)
-                Result = RunStaticSmartMethod(Smart.Account, "GetTokenDescription", Params)
+            var Params = {};
+            Result = RunStaticSmartMethod(Smart.Account, "GetTokenDescription", Params)
             if(Result && Result.result)
             {
                 Item.TokenDescription = Result.RetValue
@@ -729,30 +397,13 @@ class SmartApp extends require("./dapp")
         }
         Smart.TokenDescription = Item.TokenDescription
     }
-    
-    InitHole()
-    {
-        if(global.LOCAL_RUN || global.TEST_NETWORK || global.FORK_MODE)
-            this.RowHole = {}
-        else
-            this.RowHole = {"10":1, "19":1, "22":1, "23":1, "24":1, "26":1, "27":1, "29":1, "30":1, "34":1, "56":1, "57":1}
-        
-        for(var Num = 0; Num < 8; Num++)
-            this.RowHole[Num] = 1
-    }
-    IsHole(num)
-    {
-        if(global.ALL_VIEW_ROWS)
-            return 0;
-        return this.RowHole[num];
-    }
 }
-module.exports = SmartApp;
+
 var App = new SmartApp;
-DApps["Smart"] = App;
-DAppByType[TYPE_TRANSACTION_SMART_CREATE] = App;
-DAppByType[TYPE_TRANSACTION_SMART_RUN] = App;
-DAppByType[TYPE_TRANSACTION_SMART_CHANGE] = App;
+
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CREATE);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_RUN);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CHANGE);
 
 const VM = require('vm');
 global.RunSmartEvalContext = RunSmartEvalContext;
@@ -760,8 +411,10 @@ function RunSmartEvalContext(CodeLex,EvalContext,InnerRun)
 {
     
     var publist = {};
+    var messagelist = {};
     var funclist = {};
     EvalContext.publist = publist;
+    EvalContext.messagelist = messagelist;
     EvalContext.funclist = funclist;
     VM.createContext(EvalContext, {codeGeneration:{strings:false, wasm:false}});
     

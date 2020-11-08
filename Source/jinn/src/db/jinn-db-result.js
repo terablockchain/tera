@@ -18,7 +18,7 @@ class CDBResult
     constructor(EngineID)
     {
         this.EngineID = EngineID
-        this.DBResultIndex = new CDBRow("result-index", {Position:"uint"}, !BWRITE_MODE_TX, "BlockNum", 10, EngineID)
+        this.DBResultIndex = new CDBRow("result-index", {Position:"uint"}, !BWRITE_MODE_TX, "BlockNum", 10, 0, EngineID)
         this.DBResultData = new CDBItem("result-data", RESULT_FORMAT, !BWRITE_MODE_TX, EngineID)
     }
     DoNode()

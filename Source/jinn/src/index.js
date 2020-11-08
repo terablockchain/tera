@@ -36,16 +36,16 @@ if(typeof window !== "object" || global.NWMODE)
     require("./jinn-stat.js");
     
     require("./cache-block.js");
-    if(global.EMULATE_FILE)
-        require("./db/jinn-db-file.js");
+    if(global.EMULATE_FILE)//set global.CDBBase (not use for TERA)
+        require("./db/jinn-db-base.js");
     require("./db/jinn-db-row.js");
     require("./db/jinn-db-item.js");
+    require("./db/jinn-db-item-fixed.js");
     require("./db/jinn-db-chain.js");
     require("./db/cache-db.js");
     require("./db/jinn-db-cache-body.js");
     require("./db/jinn-db-cache-block.js");
     
-    require("./db/jinn-db-result.js");
     require("./jinn-block-db.js");
     
     require("./jinn-connect-score.js");
@@ -78,6 +78,8 @@ if(typeof window !== "object" || global.NWMODE)
     require("./jinn-net-socket.js");
     
     require("./jinn-timing.js");
+    require("./jinn-time-sync.js");
+    require("./jinn-sharding.js");
 }
 
 global.JINN_WARNING = 0;
@@ -98,7 +100,7 @@ global.JINN_NET_CONSTANT = {NetConstVer:0};
 global.CODE_VERSION = {VersionNum:0};
 
 
-
+global.SHARD_STR_TYPE = "str8";
 global.JINN_CONST = {};
 
 JINN_CONST.MULT_TIME_PERIOD = 1;
@@ -121,7 +123,6 @@ JINN_CONST.CONSENSUS_PERIOD_TIME = 1000;
 JINN_CONST.MAX_BLOCK_SIZE = 230 * 1024;
 JINN_CONST.BLOCK_GENESIS_COUNT = 16;
 JINN_CONST.START_BLOCK_NUM = JINN_CONST.BLOCK_GENESIS_COUNT + 4;
-JINN_CONST.DELTA_BLOCKS_FOR_LOAD_ONLY = JINN_CONST.START_BLOCK_NUM + 10;
 JINN_CONST.DELTA_BLOCKS_FOR_CREATE = 5;
 JINN_CONST.NETWORK_NAME = "JINN";
 JINN_CONST.PROTOCOL_MODE = 0;
@@ -236,6 +237,10 @@ JINN_CONST.DELTA_TIME_NEW_BLOCK = 500;
 JINN_CONST.MAX_CHILD_PROCESS_TIME = 10;
 
 JINN_CONST.BLOCK_CREATE_INTERVAL = 5;
+
+
+JINN_CONST.MAX_CROSS_MSG_COUNT = 300;
+JINN_CONST.MAX_CROSS_RUN_COUNT = 300;
 
 
 

@@ -17,7 +17,6 @@ var BLOCKNUM_TICKET_ALGO;
 if(typeof global === "object")
 {
     global.GetHashFromSeqAddr = GetHashFromSeqAddr;
-    global.CalcHashBlockFromSeqAddr = CalcHashBlockFromSeqAddr;
     global.GetHashFromNum2 = GetHashFromNum2;
     global.GetHashFromNum3 = GetHashFromNum3;
     global.GetHashFromArrNum2 = GetHashFromArrNum2;
@@ -52,6 +51,8 @@ function GetHashFromSeqAddr(SeqHash,AddrHash,BlockNum,PrevHash)
         var Hash = shaarrblock2(SeqHash, AddrHash, BlockNum);
         return {Hash:Hash, PowHash:Hash, Hash1:Hash, Hash2:Hash};
     }
+    if(!PrevHash)
+        ToLogTrace("Not set PrevHash");
     
     var MinerID = ReadUintFromArr(AddrHash, 0);
     var Nonce0 = ReadUintFromArr(AddrHash, 6);
@@ -60,15 +61,7 @@ function GetHashFromSeqAddr(SeqHash,AddrHash,BlockNum,PrevHash)
     
     var DeltaNum1 = ReadUint16FromArr(AddrHash, 24);
     var DeltaNum2 = ReadUint16FromArr(AddrHash, 26);
-    var PrevHashNum;
-    if(PrevHash)
-    {
-        PrevHashNum = ReadUint32FromArr(PrevHash, 28);
-    }
-    else
-    {
-        PrevHashNum = ReadUint32FromArr(AddrHash, 28);
-    }
+    var PrevHashNum = ReadUint32FromArr(PrevHash, 28);
     
     var Data = GetHash(SeqHash, PrevHashNum, BlockNum, MinerID, Nonce0, Nonce1, Nonce2, DeltaNum1, DeltaNum2);
     return Data;
@@ -106,13 +99,6 @@ function GetHash(BlockHash,PrevHashNum,BlockNum,Miner,Nonce0,Nonce1,Nonce2,Delta
     }
     
     return Ret;
-}
-
-function CalcHashBlockFromSeqAddr(Block,PrevHash)
-{
-    var Value = GetHashFromSeqAddr(Block.SeqHash, Block.AddrHash, Block.BlockNum, PrevHash);
-    Block.Hash = Value.Hash;
-    Block.PowHash = Value.PowHash;
 }
 
 function CalcBlockHashJinn(Block,SeqHash,AddrHash,BlockNum,PrevHash)
@@ -300,7 +286,12 @@ function ConvertBufferToStr(Data)
         }
         else
             if(typeof item === "object")
-                ConvertBufferToStr(item);
+            {
+                if(item.length > 2 && typeof item[0] === "number" && typeof item[1] === "number")
+                    Data[key] = GetHexFromArr(item);
+                else
+                    ConvertBufferToStr(item);
+            }
     }
 }
 

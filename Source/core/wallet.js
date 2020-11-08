@@ -17,7 +17,7 @@ require("./library");
 require("./crypto-library");
 
 const WalletPath = "WALLET";
-const DBRow = require("./db/db-row");
+
 const CONFIG_NAME = GetDataPath(WalletPath + "/config.lst");
 global.HIDDEN_ACC_PATH = GetDataPath(WalletPath + "/hidden.lst");
 
@@ -255,7 +255,7 @@ class CApp
         
         if(bClean)
             this.AccountMap = {}
-        return DApps.Accounts.FindAccounts([this.PubKeyArr], this.AccountMap, HiddenMap, 0);
+        return ACCOUNTS.FindAccounts([this.PubKeyArr], this.AccountMap, HiddenMap, 0);
     }
     
     GetAccountKey(Num)
@@ -301,7 +301,7 @@ class CApp
         try
         {
             var PrivKey = this.GetPrivateKey(this.AccountMap[TR.FromID]);
-            var Arr = DApps.Accounts.GetSignTransferTx(TR, PrivKey);
+            var Arr = ACCOUNTS.GetSignTransferTx(TR, PrivKey);
             return GetHexFromArr(Arr);
         }
         catch(e)

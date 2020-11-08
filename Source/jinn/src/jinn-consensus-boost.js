@@ -74,7 +74,7 @@ function InitClass(Engine)
             var NodeStatus = Store.LiderArr[n];
             
             var Element = {BlockNum:BlockNum, Mode:0, DataHash:NodeStatus.DataHash, LinkSumHash:NodeStatus.LinkSumHash, TreeHash:NodeStatus.TreeHash,
-                MinerHash:NodeStatus.MinerHash, Hash:NodeStatus.Hash};
+                SysTreeHash:NodeStatus.SysTreeHash, MinerHash:NodeStatus.MinerHash, Hash:NodeStatus.Hash};
             var DeltaBlockNum;
             if(NodeStatus.LoadNum)
             {
@@ -176,11 +176,14 @@ function InitClass(Engine)
         
         let SendTransferTime = Date.now();
         Engine.Send("MAXHASH", Child, {BlockNum:BlockNum, Receive:Engine.MaxHashReceiveCount, CodeVersionNum:CODE_VERSION.VersionNum,
-            NetConstVer:JINN_NET_CONSTANT.NetConstVer, Arr:Arr, ArrRepeat:ArrRepeat, Debug:global.TEST_CONNECTOR}, function (Child,Data)
+            NetConstVer:JINN_NET_CONSTANT.NetConstVer, DepricatedArr:Arr, ArrRepeat:ArrRepeat, Debug:global.TEST_CONNECTOR, Arr:Arr, CurTime:Engine.GetTransferTime(Child),
+        }, function (Child,Data)
         {
             Context.WaitIteration = 3;
             if(!Data)
                 return;
+            
+            Engine.SetTransferTime(Child, Data.CurTime);
             
             JINN_STAT.MaxLoadAll += Data.HeaderArr.length + Data.BodyArr.length;
             
@@ -194,6 +197,10 @@ function InitClass(Engine)
             var Store = Engine.GetLiderArrAtNum(BlockNum);
             if(!Store)
                 return;
+            if(!Data.HeaderArr.length && Data.DepricatedHeaderArr.length)
+            {
+                Data.HeaderArr = Data.DepricatedHeaderArr;
+            }
             
             var LiderID = 0;
             var bWas = 0;
@@ -322,13 +329,15 @@ function InitClass(Engine)
         return "T:" + Engine.TickNum + " ID=" + Context.ID + " LID=" + Context.LiderID + "  TreeNum=" + Context.BodyTreeNum + " Iter:" + Context.IterationNum + " From:" + Context.BodyFromID;
     };
     
-    Engine.MAXHASH_SEND = {Receive:"uint", BlockNum:"uint32", NetConstVer:"uint32", CodeVersionNum:"uint32", Arr:[{Mode:"byte",
+    Engine.MAXHASH_SEND = {Receive:"uint", BlockNum:"uint32", NetConstVer:"uint32", CodeVersionNum:"uint32", DepricatedArr:[{Mode:"byte",
             DataHashNum:"byte", DataHash:"zhash", MinerHash:"hash", CountItem:"uint16", LoadN:"uint", LoadH:"zhash"}], Debug:"byte", ArrRepeat:["byte"],
-    };
-    Engine.MAXHASH_RET = {result:"byte", errnum:"byte", result2:"byte", Reserve:"uint32", Mode:"byte", HeaderArr:[{BlockNum:"uint32",
-            PrevSumPow:"uint", LinkSumHash:"hash", TreeHash:"zhash", MinerHash:"hash", OldPrevHash8:"zhash"}], Reserv01:"uint32", BodyArr:[{BlockNum:"uint32",
+        Arr:[{Mode:"byte", DataHashNum:"byte", LinkSumHash:"hash", SysTreeHash:"zhash", TreeHash:"zhash", DataHash:"hash", MinerHash:"hash",
+            CountItem:"uint16", LoadN:"uint", LoadH:"zhash", Reserve:"uint16"}], CurTime:"uint32", };
+    Engine.MAXHASH_RET = {result:"byte", errnum:"byte", result2:"byte", Reserve:"uint32", Mode:"byte", DepricatedHeaderArr:[{BlockNum:"uint32",
+            PrevSumPow:"uint", LinkSumHash:"hash", TreeHash:"zhash", MinerHash:"hash", OldPrevHash8:"zhash"}], Reserve2:"uint32", BodyArr:[{BlockNum:"uint32",
             TreeHash:"hash", ArrFull:[{body:"tr"}], ArrTtTx:[{HashTicket:"arr" + JINN_CONST.TX_TICKET_HASH_LENGTH, body:"tr"}], }], BodyTreeNum:"uint32",
-        BodyTreeHash:"zhash", };
+        BodyTreeHash:"zhash", HeaderArr:[{BlockNum:"uint32", PrevSumPow:"uint", LinkSumHash:"hash", SysTreeHash:"zhash", TreeHash:"zhash",
+            MinerHash:"hash", OldPrevHash8:"zhash", Reserve:"uint32"}], CurTime:"uint32", };
     Engine.MAXHASH = function (Child,Data)
     {
         var Ret = Engine.DoMaxHash(Child, Data);
@@ -347,6 +356,8 @@ function InitClass(Engine)
         if(!Data)
             return {result:0, errnum:1};
         
+        Engine.SetTransferTime(Child, Data.CurTime);
+        
         var BlockNum = Data.BlockNum;
         
         if(!Engine.UnpackMaxHashOnReceive(Child, BlockNum, Data.Arr, Data.ArrRepeat))
@@ -357,6 +368,15 @@ function InitClass(Engine)
         
         if(Data.CodeVersionNum < global.MIN_JINN_VERSION_NUM)
             return {result:0, errnum:3};
+        if(!Data.Arr.length && Data.DepricatedArr.length)
+        {
+            Data.Arr = Data.DepricatedArr;
+            for(var i = 0; i < Data.Arr.length; i++)
+            {
+                var Item = Data.Arr[i];
+                Item.LinkSumHash = Item.MinerHash;
+            }
+        }
         
         if(Data.Arr.length)
             Engine.AddMaxHashToTimeStat(Data.Arr[0], BlockNum);
@@ -458,7 +478,10 @@ function InitClass(Engine)
         
         Engine.MaxHashReceiveCount++;
         
-        return {result:1, Mode:RetMode, HeaderArr:HeaderArr, BodyArr:BodyArr, BodyTreeNum:BodyTreeNum, BodyTreeHash:BodyTreeHash};
+        var CurTime = Engine.GetTransferTime(Child);
+        
+        return {result:1, Mode:RetMode, DepricatedHeaderArr:HeaderArr, BodyArr:BodyArr, BodyTreeNum:BodyTreeNum, BodyTreeHash:BodyTreeHash,
+            CurTime:CurTime, HeaderArr:HeaderArr};
     };
     
     Engine.SendMaxHashNextTime = function (Context,BlockNum,Child,IterationNum,bNext)

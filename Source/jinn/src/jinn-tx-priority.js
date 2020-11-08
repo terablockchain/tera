@@ -175,7 +175,7 @@ function InitClass(Engine)
         return 0;
     };
     
-    Engine.GetAccountBaseValue = function (Num)
+    Engine.GetAccountBaseValue = function (AccNum,BlockNum)
     {
         return 0;
     };

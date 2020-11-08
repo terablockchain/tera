@@ -82,6 +82,7 @@ function InitClass(Engine)
         BlockNew.PrevSumPow = Block.PrevSumPow;
         BlockNew.PrevSumHash = Block.PrevSumHash;
         BlockNew.PrevBlockPosition = Block.PrevBlockPosition;
+        BlockNew.SysTreeHash = Block.SysTreeHash;
         
         return BlockNew;
     };
@@ -92,6 +93,9 @@ function InitClass(Engine)
         BlockDst.TxData = BlockSrc.TxData;
         BlockDst.TxCount = BlockSrc.TxCount;
         BlockDst.TxPosition = BlockSrc.TxPosition;
+        BlockDst.SysTreeHash = BlockSrc.SysTreeHash;
+        
+        return 1;
     };
     
     Engine.GetNewBlock = function (PrevBlock)
@@ -101,23 +105,14 @@ function InitClass(Engine)
         
         var Block = {};
         Block.BlockNum = PrevBlock.BlockNum + 1;
-        Engine.FillBodyFromTransfer(Block);
-        
-        Block.MinerHash = ZERO_ARR_32;
         Block.PrevSumHash = PrevBlock.SumHash;
         Block.PrevSumPow = PrevBlock.SumPow;
-        
-        if(!Engine.GetNewBlockNext(Block, PrevBlock))
-            return undefined;
+        Engine.FillBodyFromTransfer(Block);
+        Block.MinerHash = ZERO_ARR_32;
         
         Engine.CalcBlockData(Block);
         
         return Block;
-    };
-    
-    Engine.GetNewBlockNext = function (Block,PrevBlock)
-    {
-        return 1;
     };
     
     // Serylizing...
@@ -130,7 +125,7 @@ function InitClass(Engine)
         if(Block.BlockNum >= JINN_CONST.BLOCK_GENESIS_COUNT && IsZeroArr(Block.PrevSumHash))
             ToLog("ZeroArr PrevSumHash on BlockNum=" + Block.BlockNum);
         var Data = {BlockNum:Block.BlockNum, LinkSumHash:Block.PrevSumHash, TreeHash:Block.TreeHash, MinerHash:Block.MinerHash, PrevSumPow:Block.PrevSumPow,
-            PrevSumHash:Block.PrevSumHash, OldPrevHash8:Block.OldPrevHash8, Size:4 * 33 + 4 + 6, };
+            PrevSumHash:Block.PrevSumHash, OldPrevHash8:Block.OldPrevHash8, SysTreeHash:Block.SysTreeHash, Size:5 * 33 + 4 + 6, };
         
         return Data;
     };
@@ -163,7 +158,7 @@ function InitClass(Engine)
     {
         
         var Buf = [];
-        for(var n = 0; n < TxArr.length; n++)
+        for(var n = 0; TxArr && n < TxArr.length; n++)
         {
             var Tx = TxArr[n];
             
@@ -176,8 +171,9 @@ function InitClass(Engine)
             for(var h = 0; h < Hash.length; h++)
                 Buf.push(Hash[h]);
         }
+        
         if(!Buf.length)
-            throw "Error Buf CalcTreeHash";
+            return ZERO_ARR_32;
         
         var arr = sha3(Buf, 4);
         return arr;
@@ -202,7 +198,9 @@ function InitClass(Engine)
                 if(JINN_CONST.TX_PRIORITY_MODE || JINN_CONST.TX_CHECK_SIGN_ON_TRANSFER)
                     Tx.SenderNum = Engine.GetTxSenderNum(Tx, BlockNum);
                 if(JINN_CONST.TX_BASE_VALUE)
-                    Tx.BaseValue = Engine.GetAccountBaseValue(Tx.SenderNum);
+                {
+                    Tx.BaseValue = Engine.GetAccountBaseValue(Tx.SenderNum, BlockNum);
+                }
                 if(JINN_CONST.TX_PRIORITY_MODE)
                     Tx.CountTX = Engine.GetTxSenderCount(Tx.SenderNum);
             }
@@ -319,11 +317,11 @@ function InitClass(Engine)
         }
     };
     
-    Engine.DoTxFromTicket = function (Tt,Tx)
+    Engine.DoTxFromTicket = function (Tt,Item)
     {
-        Tt.IsTx = Tx.IsTx;
-        Tt.HASH = Tx.HASH;
-        Tt.body = Tx.body;
+        Tt.IsTx = Item.IsTx;
+        Tt.HASH = Item.HASH;
+        Tt.body = Item.body;
     };
     
     Engine.GetTicket = function (HashTicket)
@@ -394,7 +392,12 @@ global.NeedLoadBodyFromDB = NeedLoadBodyFromDB;
 global.BlockInfo = function (Block)
 {
     if(!Block)
-        return "<undefined>";
+        return "{}";
     
-    return "" + Block.BlockNum + " SumPow=" + Block.SumPow;
+    if(!Block.MinerHash)
+        Block.MinerHash = ZERO_ARR_32;
+    if(!Block.Power)
+        Block.Power = 0;
+    Block.Miner = ReadUintFromArr(Block.MinerHash, 0);
+    return "{" + Block.BlockNum + " M:" + Block.Miner + " Tx:" + (Block.TxData ? Block.TxData.length : 0) + " Pow:" + Block.Power + "}";
 }

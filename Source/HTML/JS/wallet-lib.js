@@ -100,7 +100,7 @@ function CurTransactionToForm(bForce)
 function CheckNameAccTo()
 {
     MaxBlockNum = GetCurrentBlockNumByTime();
-    var ToID = ParseNum($("idTo").value);
+    var ToID = GetSendAccTo();
     if(!MapAccounts[ToID] || (MapAccounts[ToID].MustUpdate && MapAccounts[ToID].MustUpdate >= MaxBlockNum))
     {
         
@@ -121,7 +121,7 @@ function CheckNameAccTo()
 function SetNameAccTo()
 {
     var Str = "";
-    var ToID = $("idTo").value.trim();
+    var ToID = GetSendAccTo();
     var Item = MapAccounts[ToID];
     var StrTo = GetAccountText(Item, ToID, 1);
     
@@ -132,7 +132,7 @@ function SetNameAccTo()
     }
     else
     {
-        StrTo = "To: " + StrTo;
+        StrTo = "To " + StrTo;
     }
     
     if(!ToID || ToID === "0")
@@ -159,21 +159,18 @@ function GetAccountText(Item,Num,bGetSum)
         if(!text || text.length === 0)
             text = Num;
         else
-            text = "" + Num + ". " + text;
+            text = "" + Num + " " + text;
         if(bGetSum)
         {
             var StrSum = SUM_TO_STRING(Item.Value, Item.Currency, 1);
-            text += " : " + StrSum;
+            text += " (" + StrSum + ")";
         }
         
         return text;
     }
     else
     {
-        if(IsPublicAddr(Num))
-            return Num;
-        else
-            return "<Error address>";
+        return "<Error address>";
     }
 }
 
@@ -224,26 +221,10 @@ function CreateTransaction(F,CheckErr,Run)
         return;
     }
     
-    var StrTo = $("idTo").value.trim();
+    var StrTo = GetSendAccTo();
     var bFindAcc = 0;
     var ToPubKey = "";
     var ToID = ParseNum(StrTo);
-    if(StrTo !== "" + ToID)
-    {
-        if(IsPublicAddr(StrTo))
-        {
-            ToID = 0;
-            ToPubKey = StrTo;
-            if(ToPubKey === window.PubKeyStr)
-                bFindAcc = 1;
-        }
-        else
-        {
-            if(CheckErr)
-                SetError("Valid 'Pay to' - required!");
-            return;
-        }
-    }
     
     if(CheckErr && ToID <= 0 && ToPubKey === "" && !AttachItem)
     {
@@ -252,6 +233,17 @@ function CreateTransaction(F,CheckErr,Run)
     }
     
     var Description = $("idDescription").value.substr(0, 200);
+    
+    var StrToAll = GetSendAccTo(1);
+    var Index = StrToAll.indexOf(":");
+    if(Index > 0)
+    {
+        var ToNext = StrToAll.substr(Index + 1);
+        if(Description)
+            Description = ToNext + ":" + Description;
+        else
+            Description = ToNext;
+    }
     
     var StrSum = $("idSumSend").value;
     
@@ -270,7 +262,7 @@ function CreateTransaction(F,CheckErr,Run)
     var Coin = {SumCOIN:ParseNum(StrTER), SumCENT:ParseNum(StrCENT.substr(0, 9))};
     
     var Item = MapAccounts[FromID];
-    var OperationID = GetOperationIDFromItem(Item);
+    var OperationID = GetOperationIDFromItem(Item, CheckErr);
     
     var AttachBody = [];
     if(AttachItem)
@@ -283,8 +275,8 @@ function CreateTransaction(F,CheckErr,Run)
     if(ToPubKey)
         ToPubKeyArr = GetArrFromHex(ToPubKey);
     
-    var TR = {Type:111, Version:3, OperationSortID:OperationID, FromID:FromID, OperationID:OperationID, To:[{PubKey:ToPubKeyArr,
-            ID:ToID, SumCOIN:Coin.SumCOIN, SumCENT:Coin.SumCENT}], Description:Description, Body:AttachBody, Sign:CurrentTR.Sign, };
+    var TR = {Type:111, Version:3, OperationID:OperationID, FromID:FromID, Old:0, To:[{PubKey:ToPubKeyArr, ID:ToID, SumCOIN:Coin.SumCOIN,
+            SumCENT:Coin.SumCENT}], Description:Description, Body:AttachBody, Sign:CurrentTR.Sign, };
     TR.Version = 4;
     
     Object.defineProperties(TR, {bFindAcc:{configurable:true, writable:true, enumerable:false, value:bFindAcc}});
@@ -345,34 +337,66 @@ function CheckSending(bToStatus)
     return CanSend;
 }
 
+function GetSendAccTo(bAllPath)
+{
+    
+    var Str = $("idTo").value;
+    var StrAll = Str.trim();
+    var Str = StrAll;
+    var Index = Str.indexOf(":");
+    if(Index > 0)
+    {
+        Str = Str.substr(0, Index);
+    }
+    
+    if(ParseNum(Str) == Str)
+    {
+        if(bAllPath)
+            return StrAll;
+        else
+            return Str;
+    }
+    
+    return "";
+}
+
 function AddWhiteList()
 {
-    var ToID = ParseNum($("idTo").value);
-    if(ToID && $("idWhiteOnSend").checked)
-        Storage.setItem("White:" + ToID, 1);
+    var StrWhite = GetSendAccTo(1);
+    if(StrWhite && $("idWhiteOnSend").checked)
+        Storage.setItem("White:" + NETWORK + ":" + StrWhite, 1);
 }
+
+function SendMoneyTest()
+{
+    SendMoney();
+    $("idAccount").value =  + $("idAccount").value + 1;
+}
+
 function SendMoneyBefore()
 {
     if($("idSendButton").disabled)
         return;
     
-    var ToID = ParseNum($("idTo").value);
-    var Item = MapAccounts[ToID];
-    if(Storage.getItem("White:" + ToID) || !$("idSumSend").value || Item && Item.MyAccount)
+    var StrToID = GetSendAccTo();
+    var StrWhite = GetSendAccTo(1);
+    var Item = MapAccounts[StrToID];
+    if(Storage.getItem("White:" + NETWORK + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
     {
         SendMoney();
     }
     else
     {
         var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
-        var StrTo = " to " + GetAccountText(Item, ToID);
+        var StrTo = " to " + GetAccountText(Item, StrWhite);
         $("idWhiteOnSend").checked = 0;
-        $("idOnSendText").innerHTML = "<B style='color:#ff4534'>" + STRING_FROM_COIN(CoinAmount) + "</B> " + $("idCoinName").innerText + StrTo;
         
-        if($("idSumSend").value >= 100000)
-        {
-            $("idOnSendText").innerHTML += "<BR><DIV style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>";
-        }
+        $("idOnSendSum").innerText = STRING_FROM_COIN(CoinAmount);
+        $("idOnSendCoinName").innerText = $("idCoinName").innerText;
+        $("idOnSendToName").innerText = StrTo;
+        
+        SetVisibleBlock("idOnSendWarning", ($("idSumSend").value >= 100000));
+        SetVisibleBlock("idBtOnSend", Item ? "inline-block" : "none");
         
         SetVisibleBlock("idBlockOnSend", 1);
         SetImg(this, 'idBlockOnSend');
@@ -706,7 +730,6 @@ function SendTrCreateAcc(Currency,PubKey,Description,Adviser,Smart,bFindAcc,bAdd
     }
     else
     {
-        
         SendTransactionNew(Body, TR);
     }
     

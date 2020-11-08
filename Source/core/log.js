@@ -106,23 +106,24 @@ global.SmallAddr = function (Str)
 }
 
 
-global.ToLogTrace = function (Str)
+global.ToLogStack = function (StrError,Data,LogLevel)
 {
-    var Data = new Error().stack;
     var index = Data.indexOf("\n");
     index = Data.indexOf("\n", index + 1);
     Data = Data.substr(index);
-    
-    ToError("" + Str + ":" + Data);
+    ToLog("" + StrError + ":" + Data, LogLevel);
 }
-global.ToLogTraceOne = function (Str)
+
+global.ToLogTrace = function (Str,LogLevel)
 {
-    var Data = new Error().stack;
-    var index = Data.indexOf("\n");
-    index = Data.indexOf("\n", index + 1);
-    Data = Data.substr(index);
+    ToLogStack(Str, new Error().stack, LogLevel);
+}
+
+global.StopAndExit = function (Str)
+{
+    ToLogStack(Str, new Error().stack, 0);
     
-    ToLogOne("" + Str + ":" + Data);
+    throw "STOP AND EXIT";
 }
 
 var MapLogOne = {};
@@ -153,10 +154,14 @@ global.ToInfo = function (Str)
 {
     ToLogFile(file_name_info, Str, 1);
 }
-global.ToError = function (Str)
+global.ToError = function (Str,LogLevel)
 {
+    if(!LogLevel)
+        LogLevel = 1;
+    if(LogLevel < global.LOG_LEVEL)
+        return;
     ToLogFile(file_name_error, Str);
-    ToLog(Str, 3);
+    ToLog(Str, LogLevel);
 }
 
 global.ToLogTx = function (Str,LogLevel)
@@ -178,7 +183,7 @@ function ToLogFile(file_name,Str,bNoFile)
         SaveToLogFileSync(file_name, Str);
     
     if(global.PROCESS_NAME)
-        console.log("" + START_PORT_NUMBER + ": " + GetStrOnlyTime() + ": " + Str);
+        console.log("" + JINN_PORT + ": " + GetStrOnlyTime() + ": " + Str);
     else
         console.log(Str);
     

@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+"use strict";
 
 global.PROCESS_NAME = "TX";
 
@@ -19,12 +20,28 @@ global.DATA_PATH = GetNormalPathString(global.DATA_PATH);
 global.CODE_PATH = GetNormalPathString(global.CODE_PATH);
 require("../core/library");
 
-
-
 global.READ_ONLY_DB = 0;
-require("../system");
 
+global.TEST_ACC_HASH_MODE = 0;
+var PathTestHash3 = GetDataPath("DB/accounts-hash3-test");
+if(fs.existsSync(PathTestHash3))
+{
+    global.TEST_ACC_HASH_MODE = 1;
+    ToLog("--------------------------");
+    ToLog("===TEST_ACC_HASH_MOD ON===");
+    ToLog("--------------------------");
+}
+
+var JinnLib = require("../jinn/tera");
+var Map = {"Block":1, "BlockDB":1, "Log":1, };
+JinnLib.Create(Map);
+
+require("../system");
 require("./child-process");
+
+require("./tx-process-util");
+
+global.TreeFindTX = new STreeBuffer(30 * 1000, CompareItemHashSimple, "string");
 
 process.on('message', function (msg)
 {
@@ -51,13 +68,7 @@ global.SetStatMode = function (Val)
     return global.STAT_MODE;
 }
 
-global.TreeFindTX = new STreeBuffer(30 * 1000, CompareItemHashSimple, "string");
 
-
-
-var JinnLib = require("../jinn/tera");
-var Map = {"Block":1, "BlockDB":1, "Log":1, };
-JinnLib.Create(Map);
 
 global.bShowDetail = 0;
 global.StopTxProcess = 0;
@@ -66,14 +77,10 @@ global.StopTxProcess = 0;
 global.ClearDataBase = ClearDataBase;
 function ClearDataBase()
 {
-    for(var key in DApps)
-    {
-        DApps[key].ClearDataBase();
-    }
+    ToLogTx("=Dapps ClearDataBase=", 2);
     
-    if(global.Engine)
-        global.Engine.DBResult.Clear();
-    ToLogTx("Start num = 0", 2);
+    CLEAR_ALL_TR_BUFFER();
+    COMMON_ACTS.ClearDataBase();
 }
 
 global.RewriteAllTransactions = RewriteAllTransactions;
@@ -90,62 +97,75 @@ global.ReWriteDAppTransactions = ReWriteDAppTransactions;
 function ReWriteDAppTransactions(Params,bSilent)
 {
     StopTxProcess = 0;
-    
     var StartNum = Params.StartNum;
-    if(!bSilent)
-    {
-        ToLogTx("ReWriteDAppTransactions from: " + StartNum);
-    }
-    else
-    {
-        ToLogTx("ReWriteDAppTransactions from: " + StartNum, 5);
-    }
+    
+    ToLogTx("ReWriteDAppTransactions from: " + StartNum, bSilent ? 5 : 0);
+    
+    ACCOUNTS.BadBlockNumChecked = SERVER.GetMaxNumBlockDB() - 1;
+    ACCOUNTS.BadBlockNumHash = 0;
+    
+    CLEAR_ALL_TR_BUFFER();
+    
+    global.TR_DATABUF_COUNTER = 0;
     
     while(1)
     {
-        var LastBlockNum = DApps.Accounts.GetLastBlockNumAct();
+        var LastBlockNum = JOURNAL_DB.GetLastBlockNumAct();
+        if(LastBlockNum < StartNum)
+            break;
         if(LastBlockNum <= 0)
         {
-            ToLogTx("Find LastBlockNum=" + LastBlockNum);
+            ToLogTrace("STOP ReWriteDAppTransactions. Find LastBlockNum=" + LastBlockNum);
             RewriteAllTransactions(1);
-            return;
         }
-        if(LastBlockNum >= StartNum)
-        {
-            BlockDeleteTX(LastBlockNum);
-        }
-        else
-        {
-            break;
-        }
+        
+        DeleteLastBlockTx();
+    }
+}
+
+function DeleteLastBlockTx()
+{
+    var LastBlockNum = JOURNAL_DB.GetLastBlockNumAct();
+    if(LastBlockNum > 0)
+    {
+        BLOCK_DELETE_TX(LastBlockNum);
     }
 }
 
 
 
-
-
+var ErrorInitCount = 0;
 class CTXProcess
 {
     constructor()
     {
         
-        var LastBlockNum = DApps.Accounts.GetLastBlockNumAct();
-        
-        var AccountLastNum = DApps.Accounts.DBState.GetMaxNum();
-        if(LastBlockNum <= 0 && AccountLastNum > 16)
+        var LastItem = JOURNAL_DB.GetLastBlockNumItem();
+        var AccountLastNum = ACCOUNTS.DBState.GetMaxNum();
+        if(!LastItem && AccountLastNum > 16)
         {
-            ToLogTx("Error Init CTXProcess: " + LastBlockNum + "  AccountLastNum=" + AccountLastNum)
-            this.ErrorInit = 1
-            
-            this.RepairActRow()
+            ToLogTx("Error Init CTXProcess  AccountLastNum=" + AccountLastNum)
+            ErrorInitCount++
             
             return;
         }
+        var LastBlockNum = 0;
+        if(LastItem)
+            LastBlockNum = LastItem.BlockNum
+        
+        if(JOURNAL_DB.GetMaxNum() > 10000)
+        {
+            if(COMMON_ACTS.GetActsMaxNum() > 0)
+            {
+                ToLog("************** CAN DELETE OLD ACT FILES ****************")
+            }
+        }
+        
+        ErrorInitCount = 0
         
         ToLogTx("Init CTXProcess: " + LastBlockNum)
         
-        if(LastBlockNum)
+        if(LastBlockNum > 0)
             ReWriteDAppTransactions({StartNum:LastBlockNum - 10}, 1)
         
         this.ErrorAccHash = 0
@@ -164,32 +184,56 @@ class CTXProcess
                 return;
         }
         this.TimeWait = 0
-        if(this.ErrorAccHash >= 100)
+        if(this.ErrorAccHash >= 1000)
         {
             ToLogTx("FORCE CalcMerkleTree")
-            DApps.Accounts.CalcMerkleTree(1)
+            ACCOUNTS.CalcMerkleTree(1)
             this.ErrorAccHash = 0
             return;
         }
         
-        for(var i = 0; i < 500; i++)
+        global.TR_DATABUF_COUNTER = 0
+        
+        for(var i = 0; i < 1000; i++)
         {
-            var Result = this.RunItem();
-            if(!Result)
+            BeginTransactionDB("Chain")
+            var ResultBlock = this.RunItem();
+            
+            if(!ResultBlock || typeof ResultBlock === "number")
             {
+                RollbackTransactionDB("Chain")
                 this.TimeWait = Date.now()
-                return;
+                
+                if(!ResultBlock)
+                {
+                }
+                else
+                    if(ResultBlock < 0)
+                    {
+                        DeleteLastBlockTx()
+                    }
+                
+                if(ResultBlock ===  - 2)
+                {
+                    continue;
+                }
+                
+                break;
             }
             
+            CommitTransactionDB("Chain", {BlockNumStart:ResultBlock.BlockNum, BlockFinish:ResultBlock})
+            
             if(Date.now() - StartTime > 1000)
-                return;
+                break;
+            
+            if(global.TR_DATABUF_COUNTER >= 20 * 1e6)
+                break;
         }
     }
     
     RunItem()
     {
-        
-        var LastItem = DApps.Accounts.GetLastBlockNumItem();
+        var LastItem = JOURNAL_DB.GetLastBlockNumItem();
         if(!LastItem)
         {
             if(SERVER.GetMaxNumBlockDB() < BLOCK_PROCESSING_LENGTH2)
@@ -204,7 +248,7 @@ class CTXProcess
         if(!Block)
             return 0;
         
-        return this.DoBlock(NextBlockNum, Block.PrevSumHash, LastItem.HashData);
+        return this.DoBlock(NextBlockNum, Block.PrevSumHash, LastItem);
     }
     
     DoBlock(BlockNum, CheckSumHash, LastHashData)
@@ -222,31 +266,28 @@ class CTXProcess
         {
             if(!LastHashData)
             {
-                ToLogTx("SumHash:!LastHashData : DeleteTX on Block=" + PrevBlockNum, 5)
+                ToLogTx("SumHash:!LastHashData : DeleteTX on Block=" + PrevBlockNum, 3)
                 
-                BlockDeleteTX(PrevBlockNum)
-                return 0;
+                return  - 1;
             }
             
             if(!IsEqArr(LastHashData.SumHash, CheckSumHash))
             {
-                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 5)
+                ToLogTx("SumHash:DeleteTX on Block=" + PrevBlockNum, 4)
                 
-                BlockDeleteTX(PrevBlockNum)
-                return 0;
+                return  - 2;
             }
             
-            var AccHash = DApps.Accounts.GetCalcHash();
+            var AccHash = ACCOUNTS.GetCalcHash();
             if(!IsEqArr(LastHashData.AccHash, AccHash))
             {
-                if(this.ErrorAccHash < 10)
-                    ToLogTx("AccHash:DeleteTX on Block=" + PrevBlockNum + " GOT:" + GetHexFromArr(LastHashData.AccHash) + " NEED:" + GetHexFromArr(AccHash),
-                    3)
+                if(this.ErrorAccHash < 5)
+                    ToLogTx("AccHash:DeleteTX on Block=" + PrevBlockNum + " GOT:" + GetHexFromArr(LastHashData.AccHash).substr(0, 8) + " NEED:" + GetHexFromArr(AccHash).substr(0,
+                    8), 3)
                 
                 this.ErrorAccHash++
-                BlockDeleteTX(PrevBlockNum)
                 
-                return  - 1;
+                return  - 3;
             }
         }
         
@@ -271,47 +312,26 @@ class CTXProcess
         if(BlockNum % 100000 === 0 || bShowDetail)
             ToLogTx("CALC: " + BlockNum)
         
-        SERVER.BlockProcessTX(Block)
+        BLOCK_PROCESS_TX(Block)
         
-        return 1;
-    }
-    
-    RepairActRow()
-    {
-        var DBAct;
-        var MaxNum = DApps.Accounts.DBAct.GetMaxNum();
-        if(MaxNum ===  - 1)
-            DBAct = DApps.Accounts.DBActPrev
-        else
-            DBAct = DApps.Accounts.DBAct
+        RunTestAccHash(BlockNum)
         
-        var MaxNum = DBAct.GetMaxNum();
-        if(MaxNum ===  - 1)
-            return;
-        
-        var Item = DBAct.Read(MaxNum);
-        if(Item && !Item.BlockNum)
-        {
-            ToLogTx("Delete row at: " + MaxNum)
-            DBAct.Truncate(MaxNum - 1)
-        }
+        return Block;
     }
 };
-
-function BlockDeleteTX(BlockNum)
-{
-    SERVER.BlockDeleteTX({BlockNum:BlockNum});
-}
 
 function CheckActDB()
 {
     if(!SERVER)
         return;
     
-    SERVER.Close();
+    if(global.JOURNAL_NEW_MODE)
+        return;
+    
+    SERVER.UpdateAllDB();
     
     var MaxBlockNumDB = SERVER.GetMaxNumBlockDB();
-    var DBAct = DApps.Accounts.DBAct;
+    var DBAct = COMMON_ACTS.DBAct;
     var MaxNum = DBAct.GetMaxNum();
     var Num = MaxNum - 100;
     if(Num < 0)
@@ -328,7 +348,7 @@ function CheckActDB()
         
         if(Item.Mode === 200)
         {
-            Item.HashData = DApps.Accounts.GetActHashesFromBuffer(Item.PrevValue.Data);
+            Item.HashData = COMMON_ACTS.GetActHashesFromBuffer(Item.PrevValue.Data);
             if(Item)
             {
                 if(Item.BlockNum > MaxBlockNumDB - 5)
@@ -339,7 +359,7 @@ function CheckActDB()
                     return;
                 if(!IsEqArr(Block.SumHash, Item.HashData.SumHash))
                 {
-                    ToLogTx("---CheckActDB: Error SumHash on BlockNum=" + Item.BlockNum, 4);
+                    ToLogTx("---CheckActDB: Error SumHash on BlockNum=" + Item.BlockNum, 3);
                     ReWriteDAppTransactions({StartNum:Item.BlockNum}, 1);
                     
                     return;
@@ -358,16 +378,16 @@ global.OnBadAccountHash = function (BlockNum,BlockNumHash)
     var MinBlockNum = SERVER.GetMaxNumBlockDB() - 10000;
     if(MinBlockNum < 0)
         MinBlockNum = 0;
-    if(DApps.Accounts.BadBlockNumChecked < MinBlockNum)
-        DApps.Accounts.BadBlockNumChecked = MinBlockNum;
+    if(ACCOUNTS.BadBlockNumChecked < MinBlockNum)
+        ACCOUNTS.BadBlockNumChecked = MinBlockNum;
     
-    if(BlockNum > DApps.Accounts.BadBlockNumChecked)
+    if(BlockNum > ACCOUNTS.BadBlockNumChecked)
     {
-        if(DApps.Accounts.BadBlockNum < BlockNum)
-            DApps.Accounts.BadBlockNum = BlockNum;
-        if(!DApps.Accounts.BadBlockNumHash || BlockNumHash < DApps.Accounts.BadBlockNumHash)
+        if(ACCOUNTS.BadBlockNum < BlockNum)
+            ACCOUNTS.BadBlockNum = BlockNum;
+        if(!ACCOUNTS.BadBlockNumHash || BlockNumHash < ACCOUNTS.BadBlockNumHash)
         {
-            DApps.Accounts.BadBlockNumHash = BlockNumHash;
+            ACCOUNTS.BadBlockNumHash = BlockNumHash;
             
             ToLog("****FIND BAD ACCOUNT HASH IN BLOCK: " + BlockNumHash + " DO BLOCK=" + BlockNum, 3);
         }
@@ -376,43 +396,44 @@ global.OnBadAccountHash = function (BlockNum,BlockNumHash)
 
 function CheckBadsBlock()
 {
-    if(DApps.Accounts.BadBlockNumHash)
+    if(ACCOUNTS.BadBlockNumHash)
     {
-        var StartRewrite = DApps.Accounts.BadBlockNumHash - global.PERIOD_ACCOUNT_HASH - 1;
+        var StartRewrite = ACCOUNTS.BadBlockNumHash - 2 * global.PERIOD_ACCOUNT_HASH - 1;
+        
         if(StartRewrite < 0)
             StartRewrite = 0;
         ToLogTx("---CheckBadsBlock: Rewrite tx from BlockNum=" + StartRewrite, 3);
         
-        DApps.Accounts.BadBlockNumChecked = DApps.Accounts.BadBlockNum;
-        DApps.Accounts.BadBlockNumHash = 0;
-        
-        DApps.Accounts.CalcMerkleTree(1);
+        ACCOUNTS.CalcMerkleTree(1);
         
         ReWriteDAppTransactions({StartNum:StartRewrite}, 1);
     }
 }
 
 var TxProcess = undefined;
-setInterval(function ()
+var TX_RUN_PERIOD = 50;
+function DoRunTXProcess(bNoFirst)
 {
     if(!TxProcess)
     {
         TxProcess = new CTXProcess();
-        if(TxProcess.ErrorInit)
+        if(ErrorInitCount)
         {
             TxProcess = undefined;
-            return;
         }
     }
     
     if(SERVER)
     {
-        SERVER.Close();
+        SERVER.UpdateAllDB();
     }
     
-    TxProcess.Run();
+    if(TxProcess && !bNoFirst)
+        TxProcess.Run();
+    
+    setTimeout(DoRunTXProcess, TX_RUN_PERIOD * (1 + 10 * ErrorInitCount));
 }
-, 50);
+DoRunTXProcess(1);
 
 setInterval(function ()
 {
@@ -420,3 +441,23 @@ setInterval(function ()
     CheckBadsBlock();
 }
 , 60 * 1000);
+
+function RunTestAccHash(BlockNum)
+{
+    if(global.TEST_ACC_HASH_MODE && BlockNum % PERIOD_ACCOUNT_HASH === 0)
+    {
+        var Item = ACCOUNTS.GetAccountHashItem(BlockNum);
+        var ItemTest = ACCOUNTS.GetAccountHashItemTest(BlockNum);
+        if(ItemTest)
+        {
+            if(!Item || CompareArr(Item.AccHash, ItemTest.AccHash) !== 0)
+            {
+                ToLog("======BADS COMPARE TEST ACCHASH TABLE on Block:" + BlockNum);
+                
+                if(!global.glStopTxProcessNum)
+                    global.glStopTxProcessNum = BlockNum;
+            }
+        }
+    }
+}
+

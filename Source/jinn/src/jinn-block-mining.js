@@ -8,17 +8,30 @@
 
 
 'use strict';
-global.JINN_MODULES.push({InitClass:InitClass, Name:"Mining"});
+global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Mining"});
 
-const MAX_BLOCK_RECALC_DEPTH = 10;
+global.MAX_BLOCK_RECALC_DEPTH = 10;
+
+//Engine context
+function DoNode(Engine)
+{
+    if(Engine.ROOT_NODE)
+        return 0;
+    
+    Engine.PrepareAndSendSysTx();
+}
 
 function InitClass(Engine)
 {
     Engine.MiningBlockArr = {};
     Engine.LastPrevMiningBlock = undefined;
-    Engine.CurrentBodyTx = new CBlockCache(function (a,b)
+    Engine.TransferArrTree = new CBlockCache(function (a,b)
     {
         return a.BlockNum - b.BlockNum;
+    });
+    Engine.BlockPrevHashTree = new CBlockCache(function (a,b)
+    {
+        return CompareArr(a.PrevSumHash, b.PrevSumHash);
     });
     
     Engine.FillBodyFromTransfer = function (Block)
@@ -27,39 +40,52 @@ function InitClass(Engine)
         var BlockNumLast = CurBlockNum - JINN_CONST.STEP_LAST;
         var BlockNumNew = CurBlockNum - JINN_CONST.STEP_NEW_BLOCK;
         
-        var Find = Engine.CurrentBodyTx.FindItemInCache(Block);
+        var Find = Engine.BlockPrevHashTree.FindItemInCache(Block);
         if(Find)
         {
-            Engine.CopyBodyTx(Block, Find);
+            return Engine.CopyBodyTx(Block, Find);
         }
-        else
+        
+        Find = Engine.TransferArrTree.FindItemInCache(Block);
+        if(!Find)
         {
             if(Block.BlockNum < BlockNumLast || Block.BlockNum > BlockNumNew)
             {
+                Block.TxData = [];
+                Block.SysTreeHash = ZERO_ARR_32;
                 Block.TreeHash = ZERO_ARR_32;
                 Block.TxCount = 0;
+                Block.TxPosition = 0;
                 return 0;
             }
             var Arr = Engine.GetArrTx(Block.BlockNum);
-            Block.TxData = Arr.slice(0);
-            Engine.SortBlockPriority(Block);
-            Engine.CheckSizeBlockTXArray(Block.TxData);
+            Find = {BlockNum:Block.BlockNum, TxData:Arr.slice(0)};
+            Engine.SortBlockPriority(Find);
+            Engine.FilterAndCheckSizeBlockTXArray(Find);
             
-            if(Engine.FillBodyFromTransferNext)
-                Engine.FillBodyFromTransferNext(Block);
-            
-            Block.TreeHash = Engine.CalcTreeHash(Block.BlockNum, Block.TxData);
-            
-            Block.TxCount = Block.TxData.length;
-            Engine.CurrentBodyTx.AddItemToCache(Block);
+            Engine.TransferArrTree.AddItemToCache(Find);
         }
+        
+        Block.TxData = Find.TxData.slice(0);
+        Block.TxPosition = 0;
+        Engine.FillBodyFromTransferNext(Block);
+        Block.TxCount = Block.TxData.length;
+        Block.TreeHash = Engine.CalcTreeHash(Block.BlockNum, Block.TxData);
+        if(Block.PostProcessingVBlock)
+            Block.PostProcessingVBlock(Block);
+        
+        Engine.BlockPrevHashTree.AddItemToCache(Block);
         
         return 1;
     };
     
+    Engine.FillBodyFromTransferNext = function (Block)
+    {
+    };
+    
     Engine.AddToMining = function (BlockNew)
     {
-        if(!global.USE_MINING)
+        if(!global.USE_MINING || !global.WasStartMiningProcess)
             return;
         
         Engine.AddToMiningInner(BlockNew);
@@ -93,16 +119,19 @@ function InitClass(Engine)
                 var BlockNew = Engine.GetNewBlock(PrevBlock);
                 if(!BlockNew)
                     return;
-                BlockNew.CreateMode = 1;
-                var Block = Engine.GetMaxBlockFromDBChain(BlockNum, undefined, BlockNew.TreeHash);
+                
+                var Block = Engine.GetMaxBlockFromDBChain(BlockNew);
                 if(Block)
                 {
-                    Engine.CopyBodyTx(Block, BlockNew);
+                    if(IsEqArr(Block.TreeHash, BlockNew.TreeHash))
+                    {
+                        Engine.CopyBodyTx(Block, BlockNew);
+                    }
                 }
                 else
                     if(!Block)
                     {
-                        if(!global.USE_MINING)
+                        if(!global.USE_MINING || !global.WasStartMiningProcess)
                             return;
                         
                         Block = BlockNew;
@@ -115,35 +144,26 @@ function InitClass(Engine)
         }
     };
     
-    Engine.GetMaxBlockFromDBChain00 = function (BlockNum,MaxBlock,TreeHash,PrevSumHash)
+    Engine.GetMaxBlockFromDBChain = function (BlockNew)
     {
+        var BlockNum = BlockNew.BlockNum;
+        var TreeHash = BlockNew.TreeHash;
+        var MaxBlock = undefined;
         var ArrBlock = Engine.DB.GetChainArrByNum(BlockNum);
         for(var n = 0; n < ArrBlock.length; n++)
         {
             var CurBlock = ArrBlock[n];
-            if(IsEqArr(CurBlock.PrevSumHash, PrevSumHash) && IsEqArr(CurBlock.TreeHash, TreeHash))
-            {
-                if(!MaxBlock || (MaxBlock.SumPow < CurBlock.SumPow || (MaxBlock.SumPow === CurBlock.SumPow && CompareArr(CurBlock.PowHash,
-                MaxBlock.PowHash) < 0)))
-                    MaxBlock = CurBlock;
-            }
-        }
-        return MaxBlock;
-    };
-    
-    Engine.GetMaxBlockFromDBChain = function (BlockNum,MaxBlock,TreeHash)
-    {
-        var ArrBlock = Engine.DB.GetChainArrByNum(BlockNum);
-        for(var n = 0; n < ArrBlock.length; n++)
-        {
-            var CurBlock = ArrBlock[n];
-            if(!IsEqArr(CurBlock.TreeHash, TreeHash))
-                continue;
-            if(!Engine.IsFullLoadedBlock(CurBlock, MAX_BLOCK_RECALC_DEPTH))
-                continue;
+            
             if(!MaxBlock || (MaxBlock.SumPow < CurBlock.SumPow || (MaxBlock.SumPow === CurBlock.SumPow && CompareArr(CurBlock.PowHash,
             MaxBlock.PowHash) < 0)))
+            {
+                if(!IsEqArr(CurBlock.TreeHash, TreeHash))
+                    continue;
+                if(!Engine.IsFullLoadedBlock(CurBlock, MAX_BLOCK_RECALC_DEPTH))
+                    continue;
+                
                 MaxBlock = CurBlock;
+            }
         }
         return MaxBlock;
     };
@@ -185,19 +205,27 @@ function InitClass(Engine)
         var Result = Engine.SaveToDBWithPrevs(Engine.GetPrevBlock(Block), MaxIteration - 1);
         if(Result)
         {
-            
             Result = Engine.SaveToDB(Block);
             var Miner = ReadUintFromArr(Block.MinerHash, 0);
-            Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### Miner=" + Miner + " Result=" + Result, 4);
+            JINN_WARNING >= 5 && Engine.ToLog("SAVE BLOCK=" + BlockInfo(Block) + " ### Miner=" + Miner + " Result=" + Result, 4);
         }
         
         return Result;
     };
     
+    Engine.CanCreateNewBlock = function (BlockNumNew)
+    {
+        return 1;
+    };
+    
     Engine.DoCreateNewBlock = function ()
     {
         var BlockNumNew = Engine.CurrentBlockNum - JINN_CONST.STEP_NEW_BLOCK;
+        if(!Engine.CanCreateNewBlock(BlockNumNew))
+            return;
+        
         var PrevBlockNum = BlockNumNew - 1;
+        
         var PrevBlock = Engine.GetBlockHeaderDB(PrevBlockNum);
         if(!PrevBlock)
             return;
@@ -207,7 +235,7 @@ function InitClass(Engine)
         
         if(Engine.LastPrevMiningBlock)
         {
-            if(!global.USE_MINING)
+            if(!global.USE_MINING || !global.WasStartMiningProcess)
                 return;
             
             var WasBlock = Engine.LastPrevMiningBlock;
@@ -223,11 +251,9 @@ function InitClass(Engine)
         var Block = Engine.GetNewBlock(PrevBlock);
         if(!Block)
         {
-            Engine.ToLog("---Cannt create block=" + BlockNumNew);
+            Engine.ToLog("---Cannt create block=" + BlockNumNew, 3);
             return;
         }
-        
-        Block.CreateMode = 2;
         Block.StepNum = (Engine.LastPrevMiningBlock ? 2 : 1);
         Engine.AddToMining(Block);
         Engine.AddBlockToChain(Block);
@@ -300,7 +326,8 @@ function InitClass(Engine)
         
         if(Engine.AddBlockToChain(Block, bAddOnlyMax))
         {
-            Engine.ToLog("AddBlockToChain Block = " + BlockInfo(Block) + " Power=" + Block.Power, 4);
+            
+            JINN_WARNING >= 5 && Engine.ToLog("AddFromMining Block = " + BlockInfo(Block) + " Power=" + Block.Power, 4);
             
             Engine.StepTaskMax[Block.BlockNum] = 1;
         }
@@ -325,7 +352,10 @@ function InitClass(Engine)
         {
             return 1;
         }
-        Engine.DB.WriteBlock(Block);
-        return 1;
+        return Engine.DB.WriteBlock(Block);
+    };
+    
+    Engine.PrepareAndSendSysTx = function ()
+    {
     };
 }

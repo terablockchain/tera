@@ -11,8 +11,8 @@ global.NWMODE=1;
 //global.NWVERSION="0.37.4";
 
 
-global.START_PORT_NUMBER = 30000;
-global.CREATE_ON_START=0;
+// global.START_PORT_NUMBER = 30000;
+
 
 global.LOCAL_RUN=0;
 

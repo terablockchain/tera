@@ -24,9 +24,8 @@ function Init(Engine)
     
     function GetBlockNumTx(arr)
     {
-        var Delta_Time = 0;
         
-        var BlockNum = GetCurrentBlockNumByTime(Delta_Time);
+        var BlockNum = GetCurrentBlockNumByTime(0);
         if(arr[0] === TYPE_TRANSACTION_CREATE && JINN_CONST.BLOCK_CREATE_INTERVAL > 1)
         {
             var BlockNum2 = Math.floor(BlockNum / JINN_CONST.BLOCK_CREATE_INTERVAL) * JINN_CONST.BLOCK_CREATE_INTERVAL;
@@ -38,12 +37,25 @@ function Init(Engine)
         return BlockNum;
     };
     
+    SERVER.AddTransactionOwn = function (Tr)
+    {
+        var Result = SERVER.AddTransaction(Tr, 1);
+        if(Result > 0 && global.TX_PROCESS.Worker)
+        {
+            var StrHex = GetHexFromArr(sha3(Tr.body, 38));
+            global.TX_PROCESS.Worker.send({cmd:"FindTX", TX:StrHex});
+        }
+        
+        return Result;
+    };
+    
     SERVER.AddTransaction = function (Tx0)
     {
-        if(!SERVER.GetHotNodesCount())
+        if(!global.LOCAL_RUN && !SERVER.GetHotNodesCount())
             return TX_RESULT_NOCONNECT;
         var Body = Tx0.body;
         var BlockNum = GetBlockNumTx(Body);
+        
         var Tx = Engine.GetTx(Body, BlockNum, undefined, 6);
         
         if(JINN_CONST.TX_CHECK_OPERATION_ID)
@@ -138,7 +150,11 @@ function Init(Engine)
     
     SERVER.TruncateBlockDB = function (LastNum)
     {
+        var MaxNum = Engine.GetMaxNumBlockDB();
         var Result = Engine.TruncateChain(LastNum);
+        
+        var MaxNum2 = Engine.GetMaxNumBlockDB();
+        REWRITE_DAPP_TRANSACTIONS(MaxNum - MaxNum2);
         
         return Result;
     };
@@ -187,6 +203,7 @@ function Init(Engine)
         {
             BlockNum--;
             ToLog("******************************** SET NEW BlockNumDB = " + BlockNum + "/" + SERVER.BlockNumDB);
+            
             if(1 && global.DEV_MODE)
             {
                 throw "STOP AND EXIT!";
@@ -210,6 +227,9 @@ function Init(Engine)
                 return 1;
             }
         }
+        
+        SERVER.UpdateAllDB();
+        
         return 0;
     };
     SERVER.GetRows = function (start,count,Filter,bMinerName,ChainMode)
@@ -220,7 +240,7 @@ function Init(Engine)
             Filter = Filter.toUpperCase();
         }
         
-        var MaxAccount = DApps.Accounts.GetMaxAccount();
+        var MaxAccount = ACCOUNTS.GetMaxAccount();
         var WasError = 0;
         var arr = [];
         
@@ -242,14 +262,14 @@ function Init(Engine)
                     
                     if(Block.BlockNum >= global.UPDATE_CODE_5 && Block.Miner >= 1e9)
                     {
-                        var CurMiner = DApps.Accounts.GetIDByAMID(Block.Miner);
+                        var CurMiner = ACCOUNTS.GetIDByAMID(Block.Miner);
                         if(CurMiner)
                             Block.Miner = CurMiner;
                     }
                     
                     if(Block.Miner)
                     {
-                        var Item = DApps.Accounts.ReadState(Block.Miner);
+                        var Item = ACCOUNTS.ReadState(Block.Miner);
                         if(Item && Item.Name && typeof Item.Name === "string")
                             Block.MinerName = Item.Name.substr(0, 8);
                     }
@@ -317,14 +337,10 @@ function Init(Engine)
                 var App = DAppByType[Tr.Type];
                 if(App)
                 {
-                    Tr.Script = App.GetScriptTransaction(Tr.body);
+                    Tr.Script = App.GetScriptTransaction(Tr.body, BlockNum, Tr.Num);
+                    Tr.Verify = GetVerifyTransaction(Block, Tr.Num);
                     
-                    if(BlockNum >= SERVER.BlockNumDBMin)
-                        Tr.Verify = App.GetVerifyTransaction(Block, BlockNum, Tr.Num, Tr.body);
-                    else
-                        Tr.Verify = 0;
-                    
-                    if(Tr.Verify >= 1)
+                    if(Tr.Verify > 0)
                     {
                         Tr.VerifyHTML = "<B style='color:green'>✔</B>";
                         if(Tr.Verify > 1)
@@ -333,7 +349,7 @@ function Init(Engine)
                         }
                     }
                     else
-                        if(Tr.Verify ==  - 1)
+                        if(Tr.Verify === 0)
                             Tr.VerifyHTML = "<B style='color:red'>✘</B>";
                         else
                             Tr.VerifyHTML = "";
@@ -593,16 +609,7 @@ function Init(Engine)
             
             if(bCheckBody)
             {
-                var TreeHash;
-                if(!global.JINN_MODE)
-                {
-                    TreeHash = CalcTreeHashFromArrBody(Block.BlockNum, Block.arrContent);
-                }
-                else
-                {
-                    
-                    TreeHash = Engine.CalcTreeHash(Block.BlockNum, Block.TxData);
-                }
+                var TreeHash = Engine.CalcTreeHash(Block.BlockNum, Block.TxData);
                 if(CompareArr(Block.TreeHash, TreeHash) !== 0)
                 {
                     ToLog("BAD TreeHash block=" + Block.BlockNum);
@@ -615,7 +622,7 @@ function Init(Engine)
                 if(Block.BlockNum < global.UPDATE_CODE_JINN)
                     return num;
                 
-                if(Block > 16 && CompareArr(Block.PrevHash, PrevBlock.Hash) !== 0)
+                if(Block.BlockNum > 16 && CompareArr(Block.PrevHash, PrevBlock.Hash) !== 0)
                 {
                     ToLog("=================== FIND ERR PrevHash in " + Block.BlockNum + "  bCheckBody=" + bCheckBody + " WAS=" + GetHexFromArr(Block.PrevHash) + " NEED=" + GetHexFromArr(PrevBlock.Hash));
                     return num > 0 ? num - 1 : 0;
@@ -627,6 +634,9 @@ function Init(Engine)
                     var Value = GetHashFromSeqAddr(SeqHash, Block.AddrHash, Block.BlockNum, Block.PrevHash);
                     if(CompareArr(Value.Hash, Block.Hash) !== 0)
                     {
+                        ToLog("PrevHash=" + GetHexFromArr(Block.PrevHash));
+                        ToLog("TreeHash=" + GetHexFromArr(Block.TreeHash));
+                        ToLog("AddrHash=" + GetHexFromArr(Block.AddrHash));
                         ToLog("=================== FIND ERR Hash in " + Block.BlockNum + "  bCheckBody=" + bCheckBody + " WAS=" + GetHexFromArr(Block.Hash) + " NEED=" + GetHexFromArr(Value.Hash));
                         return num > 0 ? num - 1 : 0;
                     }
@@ -642,15 +652,6 @@ function Init(Engine)
             PrevBlock = Block;
         }
         return num > 0 ? num - 1 : 0;
-    };
-    SERVER.BlockDeleteTX = function (Block)
-    {
-        SERVER.BufHashTree.LastAddNum = 0;
-        
-        for(var key in DApps)
-        {
-            DApps[key].OnDeleteBlock(Block);
-        }
     };
     SERVER.GetHashGenesis = function (Num)
     {
@@ -706,32 +707,27 @@ function Init(Engine)
     {
         global.StopNetwork = true;
     };
-    SERVER.Close = function ()
-    {
-        Engine.Close();
-    };
     
-    SERVER.CloseDappDB = function ()
+    SERVER.GetTXDelta = function ()
     {
-        Engine.DBResult.Close();
-        
-        if(global.DApps)
-        {
-            DApps.Accounts.Close();
-            DApps.Smart.Close();
-        }
+        var BlockNum = GetCurrentBlockNumByTime();
+        var BlockNumTX = COMMON_ACTS.GetLastBlockNumActWithReopen();
+        return BlockNum - BlockNumTX;
     };
     
     SERVER.UpdateAllDB = function ()
     {
         if(global.PROCESS_NAME !== "TX")
         {
-            SERVER.CloseDappDB();
+            if(global.COMMON_ACTS)
+            {
+                COMMON_ACTS.Close();
+            }
         }
         
         if(global.PROCESS_NAME !== "MAIN")
         {
-            SERVER.Close();
+            Engine.Close();
         }
     };
 }

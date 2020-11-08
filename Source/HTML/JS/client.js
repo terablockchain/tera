@@ -10,6 +10,9 @@
 
 
 window.CLIENT_VERSION = 20;
+window.SHARD_NAME = "TERA";
+
+var MaxBlockNum = 0;
 var MAX_CLIENT_LOG_SIZE = 64000;
 
 function $(id)
@@ -184,37 +187,23 @@ else
             }
         }
         
-        var StrPost;
         var serv = new XMLHttpRequest();
-        if(ObjPost !== undefined)
+        
+        if(ObjPost === undefined)
         {
-            StrPost = JSON.stringify(ObjPost);
-            serv.open("POST", Method, true);
+            serv.open("GET", Method, 0);
             CheckTokenHash(serv);
-        }
-        else
-        {
-            if(!Func)
-            {
-                serv.open("GET", Method, 0);
-                CheckTokenHash(serv);
-                
-                serv.send();
-                if(serv.status != 200)
-                {
-                    ToLog("ERROR:\n" + serv.status + ': ' + serv.statusText);
-                    return "";
-                }
-                else
-                {
-                    return serv.responseText;
-                }
-            }
             
-            var STACK = "" + new Error().stack;
-            console.log(STACK);
-            throw "ERROR GET-TYPE";
+            serv.send();
+            if(serv.status != 200)
+            {
+                ToLog("ERROR:\n" + serv.status + ': ' + serv.statusText);
+            }
+            return serv.responseText;
         }
+        var StrPost = JSON.stringify(ObjPost);
+        serv.open("POST", Method, true);
+        CheckTokenHash(serv);
         
         var STACK = "" + new Error().stack;
         serv.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -233,6 +222,7 @@ else
                         }
                         catch(e)
                         {
+                            console.log(Method);
                             console.log("Error parsing: " + e);
                             if(serv.responseText)
                                 console.log(serv.responseText.substr(0, 200));
@@ -445,39 +435,7 @@ function toUTF8Array(str)
 
 function Utf8ArrayToStr(array)
 {
-    var out, i, len, c;
-    var char2, char3;
-    
-    out = "";
-    len = array.length;
-    i = 0;
-    while(i < len)
-    {
-        c = array[i++];
-        switch(c >> 4)
-        {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                out += String.fromCharCode(c);
-                break;
-            case 12:
-            case 13:
-                char2 = array[i++];
-                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
-                break;
-            case 14:
-                char2 = array[i++];
-                char3 = array[i++];
-                out += String.fromCharCode(((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
-                break;
-        }
-    }
+    var out = utf8ArrayToStr(array);
     
     for(var i = 0; i < out.length; i++)
     {
@@ -489,6 +447,55 @@ function Utf8ArrayToStr(array)
     }
     return out;
 }
+var utf8ArrayToStr = (function ()
+{
+    var charCache = new Array(128);
+    var charFromCodePt = String.fromCodePoint || String.fromCharCode;
+    var result = [];
+    
+    return function (array)
+    {
+        var codePt, byte1;
+        var buffLen = array.length;
+        
+        result.length = 0;
+        
+        for(var i = 0; i < buffLen; )
+        {
+            byte1 = array[i++];
+            
+            if(byte1 <= 0x7F)
+            {
+                codePt = byte1;
+            }
+            else
+                if(byte1 <= 0xDF)
+                {
+                    codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
+                }
+                else
+                    if(byte1 <= 0xEF)
+                    {
+                        codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                    }
+                    else
+                        if(String.fromCodePoint)
+                        {
+                            codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                        }
+                        else
+                        {
+                            codePt = 63;
+                            i += 3;
+                        }
+            
+            result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+        }
+        
+        return result.join('');
+    };
+}
+)();
 
 function GetArr32FromStr(Str)
 {
@@ -577,7 +584,7 @@ function WriteArr(arr,arr2,ConstLength)
 
 function WriteTr(arr,arr2)
 {
-    var len2 = arr2.length;
+    var len2 = arr2 ? arr2.length : 0;
     var len = arr.length;
     arr[len] = len2 & 0xFF;
     arr[len + 1] = (len2 >>> 8) & 0xFF;
@@ -776,6 +783,17 @@ function MoveUp(elem)
         }
     }
 }
+function UnVisibleChilds(parent)
+{
+    for(var i = 0; i < parent.children.length; i++)
+    {
+        var item = parent.children[i];
+        if(item.id && item.id !== undefined)
+        {
+            SetVisibleBlock(item.id, 0);
+        }
+    }
+}
 
 function ViewGrid(APIName,Params,nameid,bClear,TotalSum,F)
 {
@@ -798,6 +816,16 @@ function CheckNewSearch(Def)
     }
 }
 
+function SetDownImgButton(This,bVisible)
+{
+    if(This && This.className)
+    {
+        This.className = This.className.replace("btpress", "");
+        if(bVisible)
+            This.className += " btpress";
+    }
+}
+
 function ViewCurrent(Def,flag,This)
 {
     if(Def.BlockName)
@@ -806,25 +834,23 @@ function ViewCurrent(Def,flag,This)
         if(flag)
         {
             var bVisible = IsVisibleBlock(Def.BlockName);
-            if(!bVisible)
-                MoveUp(element);
+            UnVisibleChilds(element.parentNode);
             SetVisibleBlock(Def.BlockName, !bVisible);
         }
         else
         {
             SetVisibleBlock(Def.BlockName, true);
         }
+        
         var ResVisible = IsVisibleBlock(Def.BlockName);
-        if(This && This.className)
-        {
-            This.className = This.className.replace("btpress", "");
-            if(ResVisible)
-                This.className += " btpress";
-        }
+        SetDownImgButton(This, ResVisible);
         
         if(!ResVisible)
             return;
     }
+    
+    if(!Def.APIName)
+        return;
     
     var item = $(Def.NumName);
     var Filter = "", Filter2 = "";
@@ -957,6 +983,11 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
     var row0 = htmlTable.rows[0];
     var row0cells = row0.cells;
     var colcount = row0cells.length;
+    
+    if(!htmlTable.ColumnArr)
+        htmlTable.ColumnArr = CompileColumnArr(row0.cells);
+    var ColumnArr = htmlTable.ColumnArr;
+    
     for(var i = 0; arr && i < arr.length; i++)
     {
         var Item = arr[i];
@@ -974,40 +1005,36 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
             map[ID] = row;
             for(var n = 0; n < colcount; n++)
             {
-                var cell0 = row0cells[n];
-                if(cell0.innerText == "")
+                var ColItem = ColumnArr[n];
+                if(!ColItem)
                     continue;
-                
-                cell0.F = CreateEval(cell0.id, "Item");
-                if(cell0.id.substr(0, 1) === "(")
-                    cell0.H = 1;
-                
                 var cell = row.insertCell();
-                cell.className = cell0.className;
+                cell.className = ColItem.C;
             }
         }
         row.Work = glWorkNum;
         CUR_ROW = row;
         
+        var n2 =  - 1;
         for(var n = 0; n < colcount; n++)
         {
-            var cell = row.cells[n];
-            if(!cell)
+            var ColItem = ColumnArr[n];
+            if(!ColItem)
                 continue;
+            n2++;
+            var cell = row.cells[n2];
             
-            var cell0 = row0cells[n];
-            
-            if(cell0.H)
+            if(ColItem.H)
             {
-                var text = "" + cell0.F(Item);
+                var text = "" + ColItem.F(Item);
                 text = toStaticHTML(text.trim());
                 if(cell.innerHTML !== text)
                     cell.innerHTML = text;
             }
             else
-                if(cell0.F)
+                if(ColItem.F)
                 {
-                    var text = "" + cell0.F(Item);
+                    var text = "" + ColItem.F(Item);
                     text.trim();
                     if(cell.innerText !== text)
                         cell.innerText = text;
@@ -1040,6 +1067,27 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
     
     DoStableScroll();
 }
+function CompileColumnArr(row0cells)
+{
+    var Arr = [];
+    for(var n = 0; n < row0cells.length; n++)
+    {
+        var cell0 = row0cells[n];
+        if(cell0.innerText == "")
+        {
+            Arr.push(null);
+        }
+        else
+        {
+            var F = CreateEval(cell0.id, "Item");
+            var H = 0;
+            if(cell0.id.substr(0, 1) === "(")
+                H = 1;
+            Arr.push({F:F, H:H, C:cell0.className});
+        }
+    }
+    return Arr;
+}
 
 function ClearTable(htmlTable)
 {
@@ -1054,21 +1102,26 @@ function RetRepeatTx(BlockNum,TrNum)
     return String(TrNum);
 }
 
-function RetOpenBlock(BlockNum,bTrDataLen)
+function RetOpenBlock(BlockNum,bTrDataLen,Str)
 {
+    if(!Str)
+        Str = BlockNum;
+    
     if(BlockNum && bTrDataLen)
     {
         if(bTrDataLen ===  - 1)
         {
-            return '<a target="_blank" onclick="ViewTransaction(' + BlockNum + ')">' + BlockNum + '</a>';
+            return '<a target="_blank" onclick="ViewTransaction(' + BlockNum + ')">' + Str + '</a>';
         }
         else
         {
-            return '<button onclick="ViewTransaction(' + BlockNum + ')" class="openblock">' + BlockNum + '</button>';
+            return '<button onclick="ViewTransaction(' + BlockNum + ')" class="openblock">' + Str + '</button>';
         }
     }
     else
-        return '<B>' + BlockNum + '</B>';
+    {
+        return '<B>' + Str + '</B>';
+    }
 }
 function PrevValueToString(Item)
 {
@@ -1078,7 +1131,7 @@ function PrevValueToString(Item)
         
         if(Item.HashData.ErrorSumHash)
             Str += "<span class='red'>";
-        Str += "Sum:<BR>" + GetHexFromArr(Item.HashData.SumHash);
+        Str += "Block:<BR>" + GetHexFromArr(Item.HashData.SumHash);
         if(Item.HashData.ErrorSumHash)
             Str += "</span>";
         
@@ -1095,6 +1148,18 @@ function RetBool(Value)
         return "✔";
     else
         return "";
+}
+function RetVerify(Value)
+{
+    if(Value > 0)
+    {
+        return "<B style='color:green'>✔</B>";
+    }
+    else
+        if(Value < 0)
+            return "<B style='color:red'>✘</B>";
+        else
+            return "";
 }
 
 function RetNumDapp(Item)
@@ -1265,7 +1330,7 @@ function formatDate(now)
 function DateFromBlock(BlockNum)
 {
     if(!window.CONSENSUS_PERIOD_TIME)
-        window.CONSENSUS_PERIOD_TIME = 1000;
+        window.CONSENSUS_PERIOD_TIME = 3000;
     if(window.UPDATE_CODE_JINN === undefined)
         window.UPDATE_CODE_JINN = 0;
     
@@ -1433,31 +1498,47 @@ function SaveValuesByArr(Arr,DopStr)
 
 
 var MapCurrency = {};
-MapCurrency[0] = "TERA";
-MapCurrency[16] = "BTC";
 
 var bWasCodeSys = 0;
 var MapCurrencyCodeSys = {};
 var MapCurrencyIcon = {};
 
-MapCurrencyIcon[0] = "./PIC/T.svg";
-MapCurrencyIcon[16] = "./PIC/B.svg";
-
 function InitMapCurrency()
 {
-    if(window.NETWORK_NAME === "TEST-JINN")
+    
+    MapCurrency = {};
+    MapCurrency[0] = window.SHARD_NAME;
+    MapCurrencyIcon[0] = "./PIC/T.svg";
+    if(window.NETWORK_NAME === "MAIN-JINN")
     {
-        MapCurrency = {};
-        MapCurrency[0] = "TERA";
-        MapCurrency[9] = "BTC";
-        MapCurrency[10] = "USD";
-        MapCurrencyIcon[9] = "./PIC/B.svg";
+        MapCurrency[16] = "BTC";
+        MapCurrencyIcon[16] = "./PIC/B.svg";
     }
+    else
+        if(window.NETWORK_NAME === "TEST-JINN")
+        {
+            MapCurrency[9] = "BTC";
+            MapCurrency[10] = "USD";
+            MapCurrencyIcon[9] = "./PIC/B.svg";
+        }
+        else
+            if(window.NETWORK_NAME === "LOCAL-JINN")
+            {
+                MapCurrency[9] = "BTC";
+                MapCurrency[10] = "USD";
+                MapCurrencyIcon[9] = "./PIC/B.svg";
+            }
+            else
+            {
+                return;
+            }
+    
     if(!bWasCodeSys)
         for(var key in MapCurrency)
             MapCurrencyCodeSys[MapCurrency[key]] = ParseNum(key);
     bWasCodeSys = 1;
 }
+InitMapCurrency();
 
 var MapCategory = {};
 MapCategory[0] = "-";
@@ -1567,12 +1648,12 @@ function FillCurrencyAsync(IdName,StartNum)
     
     if(!StartNum)
         StartNum = 8;
-    FillCurrencyNext(IdName, StartNum);
+    FillDataList(IdName, MapCurrency);
 }
 
 function FillCurrencyNext(IdName,StartNum)
 {
-    var MaxCountViewRows = 10;
+    var MaxCountViewRows = 6;
     GetData("DappSmartList", {StartNum:StartNum, CountNum:MaxCountViewRows, TokenGenerate:1}, function (Data)
     {
         if(Data && Data.result && Data.arr)
@@ -1624,8 +1705,6 @@ function ValidateCurrency(Element)
     var Name = MapCurrency[Num];
     if(Name)
         Element.value = Name;
-    else
-        Element.value = "";
 }
 function GetCurrencyByName(Value)
 {
@@ -1756,9 +1835,8 @@ function OpenWindow(StrPath,bCheck)
 {
     if(bCheck)
     {
-        "With thanks to GeekHack Team";
         var c = StrPath.substr(0, 1);
-        if(c == "?" && c == "/" && StrPath.substr(0, 4) !== "http")
+        if(c !== "?" && c !== "/" && StrPath.substr(0, 4) !== "http")
         {
             SetError("Error link!");
             ToLog("Error path:\n" + StrPath);
@@ -1804,6 +1882,7 @@ function SendTransactionNew(Body,TR,SumPow,F)
     {
         if(Data)
         {
+            
             var key = GetHexFromArr(sha3(Body));
             if(Data.ResultSend <= 0)
             {
@@ -1828,11 +1907,11 @@ function SendTransactionNew(Body,TR,SumPow,F)
 }
 
 var MapSendID = {};
-function GetOperationIDFromItem(Item)
+function GetOperationIDFromItem(Item,CheckErr)
 {
     if(!Item || !Item.Num)
     {
-        if(window.SetError)
+        if(CheckErr && window.SetError)
             SetError("Error read account From");
         return 0;
     }
@@ -1863,7 +1942,7 @@ function GetOperationIDFromItem(Item)
     return OperationID;
 }
 
-function SendCallMethod(Account,MethodName,Params,FromNum,FromSmartNum)
+function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum)
 {
     
     var TR = {Type:135};
@@ -1905,11 +1984,13 @@ function SendCallMethod(Account,MethodName,Params,FromNum,FromSmartNum)
                     return;
                 }
                 
-                var OperationID = GetOperationIDFromItem(Data.Item);
+                var OperationID = GetOperationIDFromItem(Data.Item, 1);
                 
                 WriteUint(Body, OperationID);
                 Body.push(4);
-                Body.length += 9;
+                WriteTr(Body, ParamsArr);
+                for(var i = 0; i < 7; i++)
+                    Body.push(0);
                 
                 SendTrArrayWithSign(Body, FromNum, TR);
             });
@@ -1919,7 +2000,9 @@ function SendCallMethod(Account,MethodName,Params,FromNum,FromSmartNum)
     {
         WriteUint(Body, 0);
         Body.push(4);
-        Body.length += 9;
+        WriteTr(Body, ParamsArr);
+        for(var i = 0; i < 7; i++)
+            Body.push(0);
         Body.length += 64;
         SendTransactionNew(Body, TR);
     }
@@ -1975,7 +2058,7 @@ function GetArrFromTR(TR)
     var Body = [];
     WriteByte(Body, TR.Type);
     WriteByte(Body, TR.Version);
-    WriteUint(Body, TR.OperationSortID);
+    WriteUint(Body, TR.OperationID);
     WriteUint(Body, TR.FromID);
     WriteUint32(Body, TR.To.length);
     for(var i = 0; i < TR.To.length; i++)
@@ -1988,11 +2071,11 @@ function GetArrFromTR(TR)
         WriteUint32(Body, Item.SumCENT);
         
         if(window.MapAccounts && MapAccounts[Item.ID])
-            MapAccounts[Item.ID].MustUpdate = MaxBlockNum + 5;
+            MapAccounts[Item.ID].MustUpdate = MaxBlockNum + 4;
     }
     
     WriteStr(Body, TR.Description);
-    WriteUint(Body, TR.OperationID);
+    WriteUint(Body, 0);
     if(TR.Version >= 3)
     {
         if(TR.Body)
@@ -2201,7 +2284,7 @@ function GetPrivKey()
         Key = sessionStorage[WALLET_KEY_NAME];
     if(!Key)
         Key = Storage.getItem(WALLET_KEY_NAME);
-    if(Key && typeof Key === "string" && Key.length >= 64)
+    if(Key && typeof Key === "string" && Key.length >= 64 && Key !== "0000000000000000000000000000000000000000000000000000000000000000")
         return Key;
     else
         return "";
@@ -2489,6 +2572,22 @@ function SetLogToElement()
     id.value = PrevServerStr;
 }
 
+function ConfirmationFromBlock(BlockNum)
+{
+    var Length = MaxBlockNum - BlockNum;
+    if(Length > 0)
+    {
+        if(Length <= 100)
+            return Length;
+        else
+        {
+            return ">" + Math.floor(Length / 100) * 100;
+        }
+    }
+    else
+        return "";
+}
+
 function RunServerCode(Code)
 {
     GetData("SendDirectCode", {Code:Code}, function (Data)
@@ -2554,4 +2653,42 @@ function OnFindTx(idname)
     
     OpenBlockViewerPage(TxID);
     $(idname).value = "";
+}
+
+function MyXMLHttpRequest()
+{
+    this.status = 0;
+    this.readyState = 0;
+    this.Headers = {};
+    this.open = function (Type,Method)
+    {
+        if(Type !== "POST")
+            throw "Error type = " + Type;
+        
+        this.Method = Method;
+    };
+    
+    this.setRequestHeader = function (Name,Value)
+    {
+        this.Headers[Name] = Value;
+    };
+    
+    this.send = function (StrPost)
+    {
+        let SELF = this;
+        fetch(SELF.Method, {method:'post', cache:'no-cache', mode:'cors', credentials2:'include', headers:this.Headers, body:StrPost}).then(function (response)
+        {
+            response.text().then(function (text)
+            {
+                SELF.status = response.status;
+                SELF.statusText = response.statusText;
+                SELF.readyState = 4;
+                SELF.responseText = text;
+                SELF.onreadystatechange();
+            });
+        }).catch(function (err)
+        {
+            SELF.onreadystatechange();
+        });
+    };
 }

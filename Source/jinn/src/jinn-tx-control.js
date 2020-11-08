@@ -45,8 +45,21 @@ function InitClass(Engine)
         }
         return arr;
     };
-    Engine.CheckSizeBlockTXArray = function (Arr)
+    Engine.FilterAndCheckSizeBlockTXArray = function (Block)
     {
+        var Arr = [];
+        for(var i = 0; i < Block.TxData.length; i++)
+        {
+            var Item = Block.TxData[i];
+            var body = Item.body;
+            if(body && body.length > 0)
+            {
+                var Type = body[0];
+                if(!Engine.IsVirtualTypeTx(Type))
+                    Arr.push(Item);
+            }
+        }
+        
         if(Arr.length > JINN_CONST.MAX_TRANSACTION_COUNT)
             Arr.length = JINN_CONST.MAX_TRANSACTION_COUNT;
         
@@ -54,16 +67,15 @@ function InitClass(Engine)
         for(var i = 0; i < Arr.length; i++)
         {
             var Item = Arr[i];
-            if(Item.body)
+            BufLength += Item.body.length;
+            if(BufLength > JINN_CONST.MAX_BLOCK_SIZE)
             {
-                BufLength += Item.body.length;
-                if(BufLength > JINN_CONST.MAX_BLOCK_SIZE)
-                {
-                    Arr.length = i + 1;
-                    break;
-                }
+                Arr.length = i + 1;
+                break;
             }
         }
+        
+        Block.TxData = Arr;
     };
     Engine.CheckSizeTransferTXArray = function (Child,Arr,MaxSize)
     {
@@ -74,14 +86,25 @@ function InitClass(Engine)
             Arr.length = MaxSize;
         }
     };
-    Engine.IsValidateTx = function (Tx,StrCheckName,BlockNum)
+    Engine.IsValidateTx = function (Tx,StrCheckName,BlockNum,IsBlockTx)
     {
-        if(!Tx || !Tx.IsTx || !Tx.body || Tx.body.length < 32 || Tx.body.length > 32000)
+        if(!Tx || !Tx.IsTx || !Tx.body || Tx.body.length < 8 || Tx.body.length > 32000)
             return 0;
         
         var Result = CheckTx(StrCheckName, Tx, BlockNum, 1);
         if(!Result)
             JINN_STAT.NoValidateTx++;
+        
+        return Engine.IsValidateTxNext(Tx, StrCheckName, BlockNum, IsBlockTx);
+    };
+    
+    Engine.IsValidateTxNext = function (Tx,StrCheckName,BlockNum,IsBlockTx)
+    {
         return 1;
+    };
+    
+    Engine.IsVirtualTypeTx = function (Type)
+    {
+        return 0;
     };
 }

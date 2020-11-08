@@ -141,7 +141,14 @@ table.form_input
 
 
 
+td.bool
+{
+    width: 20px;
+    font-family: Cambria,sans-serif;
+    align-content: center;
+    text-align: center;
 
+}
 td.code
 {
     width: 240px;
@@ -176,6 +183,15 @@ td.code2
     min-width: 100px;
     font-family: "courier new", "times new roman", monospace;
     font-size: 90%;
+    align-content: left;
+    text-align: left;
+    word-break: break-all;
+}
+.hex
+{
+    min-width: 200px;
+    font-family: "courier new", "times new roman", monospace;
+    font-size: 80%;
     align-content: left;
     text-align: left;
     word-break: break-all;
@@ -450,7 +466,7 @@ table.keys
 }
 
 
-#idPaginationHistory, #idPaginationBlock, #idPaginationAccount, #idPaginationAct, #idPaginationHash, #idUtilView, #idPaginationDapps
+#idPaginationHistory, #idPaginationBlock, #idPaginationAccount, #idPaginationAct, #idPaginationHash, #idUtilView, #idPaginationDapps, #idPaginationCrossIn, #idPaginationShard, #idPaginationCrossOut, #idPaginationCrossRun,#idPaginationJournal
 {
     width: 800px;
     align-content: center;
@@ -567,3 +583,4 @@ button.radius
     max-width: 400px;
     margin-left: 10px;
 }
+

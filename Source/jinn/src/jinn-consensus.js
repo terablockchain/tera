@@ -377,18 +377,19 @@ function InitClass(Engine)
         if(Data.WasHashLider)
             return;
         Data.BlockNum = BlockNum;
-        Data.TimeNum = BlockNum;
         Data.Miner = ReadUintFromArr(Data.MinerHash, 0);
         if(!Engine.MaxLiderTimeCache)
         {
-            Engine.MaxLiderTimeCache = new CTimeCache(function (Val1,Val2)
+            Engine.MaxLiderTimeCache = new CBlockCache(function (Val1,Val2)
             {
-                var Comp1 = CompareArr(Val1.DataHash, Val2.DataHash);
-                if(Comp1)
-                    return Comp1;
-                var Comp2 = CompareArr(Val1.MinerHash, Val2.MinerHash);
-                if(Comp2)
-                    return Comp2;
+                var Comp;
+                Comp = CompareArr(Val1.DataHash, Val2.DataHash);
+                if(Comp)
+                    return Comp;
+                Comp = CompareArr(Val1.MinerHash, Val2.MinerHash);
+                if(Comp)
+                    return Comp;
+                
                 return Val1.BlockNum - Val2.BlockNum;
             });
         }
@@ -595,8 +596,12 @@ function InitClass(Engine)
         var Count = BlockSeed.BlockNum - BlockHead.BlockNum;
         var Delta = Engine.CurrentBlockNum - BlockSeed.BlockNum;
         var Miner = ReadUintFromArr(BlockSeed.MinerHash, 0);
-        if(BlockSeed.BlockNum > 25)
-            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + "  ### Miner=" + Miner + " COUNT=" + Count + StrCheckSum, 3);
+        if(BlockSeed.BlockNum > 25 && JINN_WARNING >= 3)
+        {
+            var BlockSeedDB = Engine.GetBlockHeaderDB(BlockSeed.BlockNum);
+            Engine.ToLog("SaveChainToDB: " + BlockInfo(BlockSeed) + " Was Pow=" + (BlockSeedDB ? BlockSeedDB.Power : 0) + "  COUNT=" + Count + StrCheckSum,
+            3);
+        }
         
         var BlockHeadDB = Engine.GetBlockHeaderDB(BlockHead.BlockNum);
         var Res = Engine.DB.SaveChainToDB(BlockHeadDB, BlockSeed);

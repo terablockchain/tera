@@ -242,13 +242,23 @@ function StartChildProcess(Item)
                             ToLogClient(msg.Str, msg.StrKey, msg.bFinal);
                             break;
                         case "RetFindTX":
-                            
-                            if(WebProcess && WebProcess.Worker)
+                            if(msg.WebID >= 1e9)
                             {
-                                WebProcess.Worker.send(msg);
-                                if(msg.Web)
+                                var F = global.GlobalRunMap[msg.WebID];
+                                if(F)
+                                {
+                                    delete global.GlobalRunMap[msg.WebID];
+                                    F(msg.Result, msg.ResultStr);
                                     break;
+                                }
                             }
+                            else
+                                if(WebProcess && WebProcess.Worker)
+                                {
+                                    WebProcess.Worker.send(msg);
+                                    if(msg.Web)
+                                        break;
+                                }
                             
                             ToLogClient(msg.ResultStr, msg.TX, msg.bFinal);
                             
@@ -256,14 +266,6 @@ function StartChildProcess(Item)
                         case "online":
                             if(ITEM.Worker)
                                 ToLog("RUNNING " + ITEM.Name + " : " + msg.message + " pid: " + ITEM.Worker.pid);
-                            break;
-                        case "WriteBodyResult":
-                            var Block = SERVER.ReadBlockDB(msg.BlockNum);
-                            if(Block)
-                            {
-                                Block.arrContentResult = msg.arrContentResult;
-                                SERVER.WriteBodyResultDB(Block);
-                            }
                             break;
                         default:
                             if(ITEM.OnMessage)

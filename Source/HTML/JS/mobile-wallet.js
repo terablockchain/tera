@@ -415,6 +415,7 @@ function UpdatesAccountsData(bGetData)
 
 function ViewAddAccount(Visible)
 {
+    $("idAccountName").value = "";
     SetVisibleClass(".accounts-info__add", Visible);
     SetVisibleClass(".accounts-info__acc-list", !Visible);
     SetVisibleClass(".accounts-info__empty", 0);
@@ -448,7 +449,7 @@ function OnAddAccount()
     }
     var Smart = 0;
     var Currency = GetCurrencyByName($("idCurrency").value);
-    SetStatus("Calculate Tx, wait pls ...");
+    
     SendTrCreateAccWait(Currency, GetPubKey(), Name, Smart);
     SetVisibleClass(".accounts-info__add", 0);
     SetVisibleClass(".accounts-info__add2", 1);

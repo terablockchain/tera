@@ -18,22 +18,6 @@ require('../HTML/JS/terahashlib.js');
 
 var DELTA_NONCE = Math.pow(2, 40) * global.MINING_VERSION_NUM;
 
-function CreateHashMinimal(Block,MinerID)
-{
-    
-    var PrevHashNum = ReadUint32FromArr(Block.PrevHash, 28);
-    
-    var Ret = GetHash(Block.SeqHash, PrevHashNum, Block.BlockNum, MinerID, 0, 0, 0, 0, 0);
-    Block.Hash = Ret.Hash;
-    Block.PowHash = Ret.PowHash;
-    Block.Power = GetPowPower(Block.PowHash);
-    Block.AddrHash = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    WriteUintToArrOnPos(Block.AddrHash, MinerID, 0);
-    WriteUint32ToArrOnPos(Block.AddrHash, PrevHashNum, 28);
-    
-    return true;
-}
-
 var MAX_MEMORY3 = 0, SHIFT_MASKA3;
 var BufferNonce3, BufferBlockNum3;
 var bWasInitVer3, bWasInitVerOK3;
@@ -83,7 +67,9 @@ function InitMiningMemory(Block)
 function CheckMiningBlock(Block)
 {
     if(!bWasInitVer3)
+    {
         InitMiningMemory(Block);
+    }
     if(!bWasInitVerOK3)
         return 0;
     
@@ -201,7 +187,6 @@ function FindMiningPOW(Block,bHashPump)
         WriteUintToArrOnPos(Block.AddrHash, MaxLider.Nonce2, 18);
         WriteUint16ToArrOnPos(Block.AddrHash, MaxLider.DeltaNum1, 24);
         WriteUint16ToArrOnPos(Block.AddrHash, MaxLider.DeltaNum2, 26);
-        WriteUint32ToArrOnPos(Block.AddrHash, PrevHashNum, 28);
         
         Block.Hash = MaxLider.Hash2;
         if(CompareArr(MaxLider.Hash1, MaxLider.Hash2) > 0)
@@ -267,7 +252,6 @@ global.GetNonceHashArr = function (BlockNum,Miner,StartNonceRnd,CountNonce)
 }
 
 
-global.CreateHashMinimal = CreateHashMinimal;
 global.DoPumpMemoryHash = DoPumpMemoryHash;
 global.FindMiningPOW = FindMiningPOW;
 global.CreatePOWVersionX = FindMiningPOW;

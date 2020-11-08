@@ -28,6 +28,8 @@ VM_VALUE.PrivKey = GetHexFromArr([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 1, 1]);
 var DefPubKeyArr = {data:DefPubKeyArr0};
 
+var _ListF = window.ListF;
+
 var UPDATE_CODE_1 = 0;
 var UPDATE_CODE_2 = 0;
 
@@ -94,6 +96,7 @@ function RunFrame(Code,Parent,bRecreate)
         BASE_ACCOUNT = VM_VALUE.BaseAccount;
         
         InitStorageEmulate();
+        InitEvalMap();
     }
     VM_VALUE.PrevStateFormat = SMART.StateFormat;
     VM_VALUE.PrevName = SMART.Name;
@@ -203,6 +206,7 @@ function AddHash(Block)
 function GetVMAccount(Num)
 {
     var Item = VM_ACCOUNTS[Num];
+    
     if(!Item)
         throw "Error account num=" + Num;
     else
@@ -251,7 +255,7 @@ function DoTranslate(Data)
 {
 }
 
-function SendCallMethod(ToNum,MethodName,Params,FromNum,FromSmartNum,bStatic)
+function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,bStatic)
 {
     SetStatus("");
     if(bStatic)
@@ -271,7 +275,8 @@ function SendCallMethod(ToNum,MethodName,Params,FromNum,FromSmartNum,bStatic)
     
     try
     {
-        return RunSmartMethod(Block, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params, 1, StrCode);
+        return RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params, ParamsArr,
+        1, StrCode);
     }
     catch(e)
     {
@@ -282,6 +287,7 @@ function SendCallMethod(ToNum,MethodName,Params,FromNum,FromSmartNum,bStatic)
         Data.MethodName = undefined;
         
         SendMessageError("" + e);
+        console.log(e);
     }
 }
 
@@ -290,7 +296,8 @@ function RunPublicMethod(MethodName,Block,Account,PayContext)
     var StrCode = GetSmartCode();
     ToLogDebug("RunPublicMethod " + MethodName);
     
-    RunSmartMethod(Block, VM_VALUE.Smart, Account, Block.BlockNum, 0, PayContext, MethodName, undefined, 0, StrCode);
+    RunSmartMethod(Block, undefined, VM_VALUE.Smart, Account, Block.BlockNum, 0, PayContext, MethodName, undefined, undefined,
+    0, StrCode);
 }
 
 function CreateNewBlock(Data)
@@ -347,7 +354,7 @@ function DoGetData(Name,Params,Func)
             }
             else
             {
-                SetData.RetValue = SendCallMethod(Params.Account, Params.MethodName, Params.Params, 0, glSmart, 1);
+                SetData.RetValue = SendCallMethod(Params.Account, Params.MethodName, Params.Params, Params.ParamsArr, 0, glSmart, 1);
             }
             SetData.result = 1;
             break;
@@ -600,6 +607,11 @@ window.$require = function (SmartNum)
     return EvalContext.publist;
 }
 
+ListF.$SendMessage = function ()
+{
+    DO(20000);
+}
+
 
 function ToLogDebug(Str)
 {
@@ -725,7 +737,10 @@ function RunSmartEvalContext(CodeLex,EvalContext)
 {
     var publist = {};
     var funclist = {};
+    var messagelist = {};
+    
     EvalContext.publist = publist;
+    EvalContext.messagelist = messagelist;
     EvalContext.funclist = funclist;
     
     eval(CodeLex);
@@ -748,3 +763,24 @@ function SetFreezeListF()
 SetFreezeListF();
 ListF = {};
 ChangePrototype();
+
+global.EvalMap = {};
+function GetEval(Smart,SmartCode)
+{
+    var Map = global.EvalMap;
+    var EvalContext = Map["EVAL" + Smart.Num];
+    
+    if(!EvalContext)
+    {
+        EvalContext = CreateSmartEvalContext(SmartCode);
+        Map["EVAL" + Smart.Num] = EvalContext;
+    }
+    return EvalContext;
+}
+function InitEvalMap()
+{
+    global.EvalMap = {};
+}
+
+
+global.UPDATE_CODE_SHARDING = 0;

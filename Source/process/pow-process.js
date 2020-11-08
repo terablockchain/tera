@@ -27,7 +27,9 @@ else
 }
 
 var LastAlive = Date.now();
-setInterval(CheckAlive, 1000);
+setInterval(CheckAlive, 3000);
+
+var StartModuleTime = Date.now();
 
 PROCESS.on('message', function (msg)
 {

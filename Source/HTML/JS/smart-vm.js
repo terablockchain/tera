@@ -8,9 +8,10 @@
  * Telegram:  https://t.me/terafoundation
 */
 
-
 "use strict";
 
+
+//Smart contract code execution environment library
 
 var LOC_ADD_NAME = "$";
 
@@ -361,7 +362,7 @@ function InitJSONObject()
     {
         DO(1000);
         var Str = JSON.stringify(Obj);
-        if(Str.length > MAX_LENGTH_STRING)
+        if(Str && Str.length > MAX_LENGTH_STRING)
             return "";
         return Str;
     };
@@ -508,7 +509,7 @@ ListF.$SetValue = function (ID,CoinSum)
         throw "The smart-contract is not token generate, access to change values is denied";
     }
     
-    var ToData = DApps.Accounts.ReadStateTR(ID);
+    var ToData = ACCOUNTS.ReadStateTR(ID);
     if(!ToData)
     {
         throw "Account does not exist.Error id number: " + ID;
@@ -537,7 +538,7 @@ ListF.$SetValue = function (ID,CoinSum)
     
     ToData.Value.SumCOIN = Math.trunc(CoinSum.SumCOIN);
     ToData.Value.SumCENT = Math.trunc(CoinSum.SumCENT);
-    DApps.Accounts.WriteStateTR(ToData, RunContext.TrNum);
+    ACCOUNTS.WriteStateTR(ToData, RunContext.BlockNum, RunContext.TrNum);
     
     return true;
 }
@@ -561,7 +562,7 @@ ListF.$Send = function (ToID,CoinSum,Description)
         throw "ERROR Sum<0";
     }
     
-    var ToData = DApps.Accounts.ReadStateTR(ToID);
+    var ToData = ACCOUNTS.ReadStateTR(ToID);
     if(!ToData)
     {
         throw "Error ToID - the account number does not exist.";
@@ -571,8 +572,8 @@ ListF.$Send = function (ToID,CoinSum,Description)
         throw "Different currencies. Accounts: " + RunContext.Account.Num + " and " + ToID;
     }
     
-    DApps.Accounts.SendMoneyTR(RunContext.Block, RunContext.Account.Num, ToID, CoinSum, RunContext.BlockNum, RunContext.TrNum,
-    Description, Description, 1, 1);
+    ACCOUNTS.SendMoneyTR(RunContext.Block, RunContext.Account.Num, ToID, CoinSum, RunContext.BlockNum, RunContext.TrNum, Description,
+    Description, 1, 1);
 }
 
 ListF.$Move = function (FromID,ToID,CoinSum,Description)
@@ -581,12 +582,12 @@ ListF.$Move = function (FromID,ToID,CoinSum,Description)
     FromID = ParseNum(FromID);
     ToID = ParseNum(ToID);
     
-    var FromData = DApps.Accounts.ReadStateTR(FromID);
+    var FromData = ACCOUNTS.ReadStateTR(FromID);
     if(!FromData)
     {
         throw "Error FromID - the account number does not exist.";
     }
-    var ToData = DApps.Accounts.ReadStateTR(ToID);
+    var ToData = ACCOUNTS.ReadStateTR(ToID);
     if(!ToData)
     {
         throw "Error ToID - the account number does not exist.";
@@ -620,15 +621,16 @@ ListF.$Move = function (FromID,ToID,CoinSum,Description)
     CoinSum.SumCOIN = Math.trunc(CoinSum.SumCOIN);
     CoinSum.SumCENT = Math.trunc(CoinSum.SumCENT);
     
-    DApps.Accounts.SendMoneyTR(RunContext.Block, FromID, ToID, CoinSum, RunContext.BlockNum, RunContext.TrNum, Description, Description,
+    ACCOUNTS.SendMoneyTR(RunContext.Block, FromID, ToID, CoinSum, RunContext.BlockNum, RunContext.TrNum, Description, Description,
     1, 1);
 }
 
 ListF.$Event = function (Description)
 {
     DO(50);
-    DApps.Accounts.DBChanges.TREvent.push({Description:Description, Smart:RunContext.Smart.Num, Account:RunContext.Account.Num,
-        BlockNum:RunContext.BlockNum, TrNum:RunContext.TrNum});
+    
+    SMARTS.SendSmartEvent({Description:Description, Smart:RunContext.Smart.Num, Account:RunContext.Account.Num, BlockNum:RunContext.BlockNum,
+        TrNum:RunContext.TrNum});
     
     ToLogTx("Block: " + RunContext.BlockNum + " TxNum:" + RunContext.TrNum + " Event: " + JSON.stringify(Description), 4);
     
@@ -637,7 +639,7 @@ ListF.$Event = function (Description)
     
     if(global.CurTrItem)
     {
-        ToLogClient(Description, global.CurTrItem, false);
+        ToLogClient(JSON.stringify(Description), global.CurTrItem, false);
     }
 }
 
@@ -645,7 +647,7 @@ ListF.$ReadAccount = function (ID)
 {
     DO(900);
     ID = ParseNum(ID);
-    var Account = DApps.Accounts.ReadStateTR(ID);
+    var Account = ACCOUNTS.ReadStateTR(ID);
     if(!Account)
         throw "Error read account Num: " + ID;
     return GET_ACCOUNT(Account);
@@ -661,7 +663,7 @@ ListF.$ReadSmart = function (ID)
     
     DO(900);
     ID = ParseNum(ID);
-    var Smart = DApps.Smart.ReadSmart(ID);
+    var Smart = SMARTS.ReadSmart(ID);
     if(!Smart)
         throw "Error smart ID: " + ID;
     
@@ -672,7 +674,7 @@ ListF.$ReadState = function (ID)
 {
     DO(900);
     ID = ParseNum(ID);
-    var Account = DApps.Accounts.ReadStateTR(ID);
+    var Account = ACCOUNTS.ReadStateTR(ID);
     if(!Account)
         throw "Error read state account Num: " + ID;
     
@@ -684,7 +686,7 @@ ListF.$ReadState = function (ID)
     else
     {
         DO(100);
-        var Smart = DApps.Smart.ReadSmart(Account.Value.Smart);
+        var Smart = SMARTS.ReadSmart(Account.Value.Smart);
         if(!Smart)
         {
             throw "Error smart ID: " + Account.Value.Smart;
@@ -709,7 +711,7 @@ ListF.$WriteState = function (Obj,ID)
         ID = Obj.Num;
     ID = ParseNum(ID);
     
-    var Account = DApps.Accounts.ReadStateTR(ID);
+    var Account = ACCOUNTS.ReadStateTR(ID);
     if(!Account)
         throw "Error write account Num: " + ID;
     
@@ -720,13 +722,14 @@ ListF.$WriteState = function (Obj,ID)
     }
     
     Account.Value.Data = BufLib.GetBufferFromObject(Obj, Smart.StateFormat, 80, Smart.WorkStruct, 1);
-    DApps.Accounts.WriteStateTR(Account, RunContext.TrNum);
+    ACCOUNTS.WriteStateTR(Account, RunContext.BlockNum, RunContext.TrNum);
 }
 
 ListF.$GetMaxAccount = function ()
 {
     DO(20);
-    return DApps.Accounts.DBChanges.TRMaxAccount;
+    var DBChanges = GET_TR_CHANGES();
+    return DBChanges.TRMaxAccount;
 }
 
 ListF.$ADD = function (Coin,Value2)
@@ -770,7 +773,7 @@ ListF.$require = function (SmartNum)
     DO(2000);
     SmartNum = ParseNum(SmartNum);
     
-    var Smart = DApps.Smart.ReadSmart(SmartNum);
+    var Smart = SMARTS.ReadSmart(SmartNum);
     if(!Smart)
     {
         throw "Smart does not exist. Error id number: " + SmartNum;
@@ -799,6 +802,38 @@ ListF.$sha = function (Str)
 {
     DO(1000);
     return shaarr(Str);
+}
+ListF.$sha256 = function (Str)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method sha256");
+    
+    DO(250);
+    return sha256(Str);
+}
+ListF.$sha3 = function (Str)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method sha3");
+    
+    DO(500);
+    return sha3(Str);
+}
+ListF.$keccak256 = function (Str)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method keccak256");
+    
+    DO(500);
+    return keccak256(Str);
+}
+ListF.$CheckSign = function (HashArr,SignArr,PubKeyArr)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method CheckSign");
+    
+    DO(10000);
+    return CheckSign(HashArr, SignArr, PubKeyArr);
 }
 
 ListF.$isFinite = function (a)
@@ -854,6 +889,18 @@ ListF.$Boolean = function (a)
     return Boolean(a);
 }
 
+ListF.$SendMessage = function (ShardPath,Confirms,Method,Params,ParamsArr)
+{
+    
+    DO(20000 + RunContext.Iteration * 5000);
+    
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method SendMessage");
+    
+    SHARDS.AddCrossMsg(RunContext.BlockNum, RunContext.TrNum, RunContext.Account.Num, RunContext.Iteration + 1, 1, ShardPath, Confirms,
+    Method, Params, ParamsArr);
+}
+
 function GetParsing(Str)
 {
     LexerJS.ParseCode(Str);
@@ -864,7 +911,12 @@ function GetParsing(Str)
     }
     for(var key in LexerJS.ExternMap)
     {
-        Code += ";\npublist." + key + "=" + LOC_ADD_NAME + key;
+        var nType = LexerJS.ExternMap[key];
+        if(nType === 1)
+            Code += ";\npublist." + key + "=" + LOC_ADD_NAME + key;
+        else
+            if(nType === 2)
+                Code += ";\nmessagelist." + key + "=" + LOC_ADD_NAME + key;
     }
     
     Code += "\n\
@@ -874,21 +926,29 @@ function GetParsing(Str)
     return Code;
 }
 
+function GetEval(Smart,SmartCode)
+{
+    if(typeof SmartCode === "string")
+        return CreateSmartEvalContext(SmartCode);
+    else
+        return GetSmartEvalContext(Smart);
+}
+
 function GetSmartEvalContext(Smart)
 {
-    var EvalContext = DApps.Smart.DBSmart.GetMap("EVAL" + Smart.Num);
+    var Map = SMARTS.GetSmartMap();
+    var EvalContext = Map["EVAL" + Smart.Num];
     
     if(!EvalContext)
     {
         EvalContext = CreateSmartEvalContext(Smart.Code);
-        DApps.Smart.DBSmart.SetMap("EVAL" + Smart.Num, EvalContext);
+        Map["EVAL" + Smart.Num] = EvalContext;
     }
     return EvalContext;
 }
 function CreateSmartEvalContext(Code)
 {
     var CodeLex = GetParsing(Code);
-    
     var EvalContext = {};
     RunSmartEvalContext(CodeLex, EvalContext, global.CodeInnerChangeObjects);
     for(var key in ListF)
@@ -906,6 +966,7 @@ function CreateSmartEvalContext(Code)
     }
     Object.freeze(EvalContext.funclist);
     Object.freeze(EvalContext.publist);
+    Object.freeze(EvalContext.messagelist);
     
     return EvalContext;
 }
@@ -919,35 +980,63 @@ function SetRunContext(Set)
 global.SetRunContext = SetRunContext;
 
 global.RunSmartMethod = RunSmartMethod;
-function RunSmartMethod(Block,SmartOrSmartID,Account,BlockNum,TrNum,PayContext,MethodName,Params,bPublic,SmartCode)
+function RunSmartMethod(Block,TR,SmartOrSmartID,Account,BlockNum,TrNum,PayContext,MethodName,Params,ParamsArr,nPublic,SmartCode)
 {
-    
     var Smart = SmartOrSmartID;
     if(typeof SmartOrSmartID === "number")
     {
-        Smart = DApps.Smart.ReadSmart(SmartOrSmartID);
+        Smart = SMARTS.ReadSmart(SmartOrSmartID);
         if(!Smart)
         {
-            if(bPublic)
+            if(nPublic)
                 throw "Smart does not exist. Error id number: " + SmartOrSmartID;
             else
                 return;
         }
     }
     
-    var EvalContext;
-    if(typeof SmartCode === "string")
-        EvalContext = CreateSmartEvalContext(SmartCode);
-    else
-        EvalContext = GetSmartEvalContext(Smart);
+    var EvalContext = GetEval(Smart, SmartCode);
     
-    if(!EvalContext.funclist[MethodName] || (bPublic && !EvalContext.publist[MethodName]))
+    if(!EvalContext.funclist[MethodName] || (nPublic === 1 && !EvalContext.publist[MethodName]) || (nPublic === 2 && !EvalContext.messagelist[MethodName]))
     {
-        if(bPublic)
-            throw "Method '" + MethodName + "' not found in smart contract";
+        if(nPublic)
+            throw "Method '" + MethodName + "' not found in smart contract " + Smart.Num;
         else
             return;
     }
+    
+    var context = GetSmartContext(Block, BlockNum, PayContext, TR, TrNum, Account, Smart, nPublic);
+    
+    var LocalRunContext = {Block:Block, Smart:Smart, Account:Account, BlockNum:BlockNum, TrNum:TrNum, Iteration:TR ? TR.Iteration : 0,
+        context:context, };
+    
+    if(!LocalRunContext.Iteration)
+        LocalRunContext.Iteration = 0;
+    var _RunContext = RunContext;
+    RunContext = LocalRunContext;
+    EvalContext.funclist.SetContext(RunContext.context);
+    
+    var RetValue;
+    try
+    {
+        RetValue = EvalContext.funclist[MethodName](Params, ParamsArr);
+    }
+    catch(e)
+    {
+        throw e;
+    }
+    finally
+    {
+        RunContext = _RunContext;
+        if(Block.BlockNum >= global.UPDATE_CODE_SHARDING && RunContext)
+            EvalContext.funclist.SetContext(RunContext.context);
+    }
+    
+    return RetValue;
+}
+
+function GetSmartContext(Block,BlockNum,PayContext,TR,TrNum,Account,Smart,nPublic)
+{
     
     var context = {};
     if(BlockNum >= global.UPDATE_CODE_1 && !PayContext)
@@ -982,45 +1071,31 @@ function RunSmartMethod(Block,SmartOrSmartID,Account,BlockNum,TrNum,PayContext,M
         context.GetMaxAccountNum = StaticGetMaxAccountNum;
     }
     
-    var LocalRunContext = {Block:Block, Smart:Smart, Account:Account, BlockNum:BlockNum, TrNum:TrNum, context:context};
-    
-    var RetValue;
-    var _RunContext = RunContext;
-    RunContext = LocalRunContext;
-    
-    EvalContext.funclist.SetContext(RunContext.context);
-    
-    try
+    if(Block.BlockNum >= global.UPDATE_CODE_SHARDING && nPublic)
     {
-        RetValue = EvalContext.funclist[MethodName](Params);
+        context.Tx = TR;
+        context.SmartMode = 1;
     }
-    catch(e)
-    {
-        throw e;
-    }
-    finally
-    {
-        RunContext = _RunContext;
-    }
-    
-    return RetValue;
+    return context;
 }
 
 
 var glBlock0;
 global.RunStaticSmartMethod = RunStaticSmartMethod;
-function RunStaticSmartMethod(AccountNum,MethodName,Params)
+function RunStaticSmartMethod(AccountNum,MethodName,Params,ParamsArr)
 {
     
-    DApps.Accounts.BeginBlock();
-    DApps.Accounts.BeginTransaction();
-    SetTickCounter(100000);
+    START_BLOCK();
+    BEGIN_TRANSACTION();
     
-    var Account = DApps.Accounts.ReadStateTR(AccountNum);
+    var Account = ACCOUNTS.ReadStateTR(AccountNum);
     if(!Account)
     {
+        CLEAR_ALL_TR_BUFFER();
         return {result:0, RetValue:"Error account Num: " + AccountNum};
     }
+    
+    SetTickCounter(100000);
     
     if(!glBlock0)
         glBlock0 = SERVER.ReadBlockHeaderDB(0);
@@ -1028,12 +1103,17 @@ function RunStaticSmartMethod(AccountNum,MethodName,Params)
     try
     {
         var BlockNum = GetCurrentBlockNumByTime();
-        var RetValue = RunSmartMethod(glBlock0, Account.Value.Smart, Account, BlockNum, 0, undefined, MethodName, Params, 1);
+        var RetValue = RunSmartMethod(glBlock0, undefined, Account.Value.Smart, Account, BlockNum, 0, undefined, MethodName, Params,
+        ParamsArr, 1);
         return {result:1, RetValue:RetValue};
     }
     catch(e)
     {
         return {result:0, RetValue:"" + e};
+    }
+    finally
+    {
+        CLEAR_ALL_TR_BUFFER();
     }
 }
 
@@ -1050,13 +1130,13 @@ function StaticGetBlockNumDB()
 function StaticGetSmart(Num)
 {
     DO(100);
-    var Smart = DApps.Smart.ReadSmart(Num);
+    var Smart = SMARTS.ReadSmart(Num);
     return GET_SMART(Smart);
 }
 function StaticGetMaxAccountNum()
 {
     DO(100);
-    return DApps.Accounts.GetMaxAccount();
+    return ACCOUNTS.GetMaxAccount();
 }
 
 InitEval();

@@ -22,15 +22,14 @@ global.Init_DB_HEADER_FORMAT = function (Obj)
 }
 
 
-global.CDBFile = require("../../core/db/db-file");
+global.CDBParentBase = require("./db/tera-db-base");
+//set global.CDBParentBase
+global.CDBBase = require("./db/tera-db-journal");
+//set global.CDBBase
 require("../src");
 
 
-
-
 global.JINN_WARNING = 3;
-
-
 
 JINN_CONST.LINK_HASH_PREV_HASHSUM = JINN_CONST.BLOCK_GENESIS_COUNT;
 
@@ -40,7 +39,7 @@ JINN_CONST.CONSENSUS_PERIOD_TIME = CONSENSUS_PERIOD_TIME;
 JINN_CONST.START_CHECK_BLOCKNUM = 50;
 
 
-JINN_CONST.SHARD_NAME = "TERA";
+JINN_CONST.SHARD_NAME = SHARD_NAME;
 JINN_CONST.NETWORK_NAME = global.NETWORK;
 
 JINN_CONST.MAX_PACKET_SIZE = 1200000;
@@ -49,7 +48,6 @@ JINN_CONST.MAX_PACKET_SIZE_RET_DATA = Math.floor(JINN_CONST.MAX_PACKET_SIZE / 2)
 
 
 JINN_CONST.BLOCK_GENESIS_COUNT = global.BLOCK_GENESIS_COUNT;
-JINN_CONST.DELTA_BLOCKS_FOR_LOAD_ONLY = JINN_CONST.BLOCK_GENESIS_COUNT + 10;
 
 
 JINN_CONST.MAX_ITEMS_FOR_LOAD = 500;
@@ -95,7 +93,7 @@ function GetEngine(MapName)
     require("./tera-hash").Init(Engine);
     
     require("./tera-link-server").Init(Engine);
-    require("./tera-link-process-tx").Init(Engine);
+    
     require("./tera-link").Init(Engine);
     require("./tera-link-code").Init(Engine);
     
@@ -108,6 +106,12 @@ function GetEngine(MapName)
     require("./tera-tests").Init(Engine);
     
     require("./tera-addr").Init(Engine);
+    
+    require("./tera-sharding-transfer").Init(Engine);
+    require("./tera-sharding-run").Init(Engine);
+    require("./tera-sharding-lib").Init(Engine);
+    
+    require("./tera-virtual-tx").Init(Engine);
     
     return Engine;
 }
@@ -125,7 +129,9 @@ function Create(MapName)
         JINN_CONST.CORRECT_TIME_TRIGGER = 5;
         
         JINN_CONST.MAX_LEVEL_CONNECTION = 3;
-        JINN_CONST.EXTRA_SLOTS_COUNT = 0;
+        JINN_CONST.EXTRA_SLOTS_COUNT = 1;
+        
+        JINN_CONST.RECONNECT_MIN_TIME = 30;
     }
     
     var Engine = GetEngine(MapName);
@@ -168,10 +174,14 @@ function Create(MapName)
 }
 
 const PERIOD_FOR_RUN = 100;
-
+var RunNum = 0;
 function StartRun()
 {
-    SERVER.UpdateAllDB();
+    RunNum++;
+    if(RunNum % 10 === 0)
+    {
+        SERVER.UpdateAllDB();
+    }
     SERVER.NodeSyncStatus = {Header1:Engine.Header1, Header2:Engine.Header2, Block1:Engine.Block1, Block2:Engine.Block2, };
     
     if(Engine.CanRunStat)

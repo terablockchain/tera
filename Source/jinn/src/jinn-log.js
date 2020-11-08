@@ -270,14 +270,14 @@ function InitClass(Engine)
 }
 
 if(!global.ToLogTrace)
-    global.ToLogTrace = function (Str)
+    global.ToLogTrace = function (Str,LogLevel)
     {
         var Data = new Error().stack;
         var index = Data.indexOf("\n");
         index = Data.indexOf("\n", index + 1);
         Data = Data.substr(index);
         
-        ToLog("" + Str + ":" + Data);
+        ToLog("" + Str + ":" + Data, LogLevel);
     };
 
 global.GetNodeWarningID = function (Child)

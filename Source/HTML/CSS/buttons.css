@@ -11,6 +11,8 @@
     padding: 0;
     height: 34px;
     vertical-align: middle;
+
+
 }
 .bttab
 {
@@ -39,17 +41,40 @@
     margin: 10px;
     cursor: pointer;
     font-family: monospace;
+
+}
+
+#idDown[disabled]
+{
+    cursor: not-allowed;
 }
 
 
-.btdoitm
+
+/* scroll*/
+.btscroll
 {
-    width: 40px;
-    height: 32px;
+    width: 90px;
+    height: 26px;
+    border-radius: 5px;
     line-height: 20px;
     margin: 10px;
     cursor: pointer;
     font-family: monospace;
+
+    filter: brightness(140%);
+}
+.btscrollm
+{
+    width: 40px;
+    height: 26px;
+    border-radius: 5px;
+    line-height: 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-family: monospace;
+
+    filter: brightness(140%);
 }
 
 

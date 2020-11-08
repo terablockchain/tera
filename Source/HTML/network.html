@@ -24,7 +24,14 @@
 
 <script>
     var JINN_MODE=1;
-    var MaxChildCount=1;
+
+
+
+    var COLNUM_HOT=1;
+    var COLNUM_SHARD=2;
+    var COLNUM_CONNECTED=3;
+    var COLNUM_DISCONNECTED=4;
+
     var SaveIdArr=[];
     //var NodesArr=[];
     var CurNodeID;
@@ -85,11 +92,6 @@
     {
         var htmlTable=$("grid_hot");
 
-        for(var col=1;col<=7;col++)
-            if(col<=MaxChildCount)
-                SetVisibleBlock("idCol"+col,"inline-column");
-            else
-                SetVisibleBlock("idCol"+col,"none");
 
 
         if(!htmlTable.ItemsMap)
@@ -101,7 +103,7 @@
 
 
         //Hot
-        htmlTable.RowCounts=Math.max(htmlTable.RowCounts,ArrTree.length);
+        htmlTable.RowCounts=Math.max(htmlTable.RowCounts,ArrTree.length,4);
         for(var Level=0;Level<htmlTable.RowCounts;Level++)
         {
             var arr=ArrTree[Level];
@@ -115,167 +117,55 @@
                 row=htmlTable.insertRow(-1);
                 map[Level]=row;
 
-                for(var n=0;n<MaxChildCount+3;n++)
+                for(var n=0;n<=COLNUM_DISCONNECTED;n++)
                 {
                     row.insertCell(n);
                 }
                 row.MaxRows=2;
             }
             row.cells[0].innerText=Level;//1+
-            var StrConnect="";
-            var StrActive="";
 
 
-            var CountNodesA=0;
-            var CountNodesC=0;
-            var length=Math.max(MaxChildCount,arr.length)
-            for(var n=0;n<length;n++)
+
+            var StrHot="";
+            var StrShard="";
+            var StrConnected="";
+            var StrDisconnected="";
+
+
+            for(var n=0;n<arr.length;n++)
             {
-                var Node=undefined;
-                var Str="";
-                var Name="";
-                if(n<arr.length)
+                var Node=arr[n];
+                if(!Node)
+                    continue;
+
+                var Str=GetNodeInfo(Node);
+
+                if(Node.Hot && Node.CurrentShard)
+                    StrHot+=GetTransferStat(Node)+Str;
+                if(Node.Hot && !Node.CurrentShard)
+                    StrShard+=GetTransferStat(Node)+Str;
+
+
+
+                if(!Node.Hot && Node.Active)
                 {
-                    Node=arr[n];
-
-
-                    //NodesArr[Node.ID]=Node;
-                    if(Node.Name)
-                        Name=Node.Name;
-                    else
-                        Name=Node.ip;//Node.addrStr.substr(0,6);
-                    Str+=Name;
-
-                    Str+="   ";
-                    if(Node.Active && (Node.BlockProcessCount || Node.Hot))
-                    {
-                        Node.BlockProcessCount=Math.floor(10*Node.BlockProcessCount)/10;
-                        Str += "<BR>"+Node.BlockProcessCount;
-                        Str += ":";
-                    }
-
-                    if(Node.DeltaTime)
-                        Str+=Node.DeltaTime+"ms";
-                    if(Node.Name)
-                        strClass="mnode";
-                    else
-                        strClass="node";
-
-                    if(Node.Active)
-                        strClass+=" open";
-                    else
-                        strClass+=" close";
-
-                    strClass+=" jinnnode";
-
-                    // if(CurNodeID===Node.ID)
-                    //     strClass=strClass+" current";
-
-                    Str='<BUTTON id="N'+Node.ID+'" class="'+strClass+'" onmousedown="ViewInfo('+Node.ID+',1)">'+Str+'</BUTTON>';
-
-                    if(Node.Hot)
-                        Str+="<BR>";
-
-
-
-                    if(Node.Active)
-                    {
-                        Str+="<DIV style='float: left'>"
-                        if(!Node.Hot)
-                            Str+='<INPUT type="button" class="edit" onclick="AddHot('+Node.ID+')" value="Add"><BR>';
-                        if(!Node.Name)
-                            Str+='<INPUT type="button" class="edit" onclick="AddBan('+Node.ID+')" value="Ban">';
-                        Str+="</DIV>"
-                    }
-                    else
-                    {
-                        Str+='<INPUT type="button" class="connect" onclick="AddConnect('+Node.ID+')" value="Con...">';
-                    }
-
-                    Str += '<input type="checkbox" class="checkbox" id="D' + Node.ID + '" '+(Node.Debug?' checked':'')+' onchange = "SetDebug(' + Node.ID + ')"/>';
-
-                    if(Node.Hot)
-                        Str+='<INPUT type="button" class="edit" onclick="DeleteNode('+Node.ID+')" value="Del">';
-                    Str+="<BR>";
-
+                    StrConnected+=Str;
                 }
 
-                if(n<MaxChildCount)
+                if(!Node.Active)
                 {
-                    var cell=row.cells[n+1];
-                    if(Node && Node.Hot)
-                    {
-                        var id=$("S"+Node.ID);
-                        //if(!id || cell.NodeID!==Node.ID)
-                        {
-                            var Stat="<DIV id='S"+Node.ID+"'></DIV>";
-                            cell.innerHTML=Stat+Str;
-                            cell.NodeID=Node.ID;
-                            id=$("S"+Node.ID);
-                        }
-                        var StrTransfer,StrDelta;
-                        if(Node.TransferCount>1000)
-                        {
-                            StrTransfer="<B>"+Node.TransferCount+"</B>";
-                        }
-                        else
-                        {
-                            StrTransfer=Node.TransferCount;
-                        }
-                        if(Node.DeltaTime>1000)
-                            StrDelta="<B style='color:red'>"+Node.DeltaTime+"</B>";
-                        else
-                        if(Node.DeltaTime>500)
-                            StrDelta="<B style='color:#df7a59'>"+Node.DeltaTime+"</B>";
-                        else
-                            StrDelta="<B style='color:#1727ff'>"+Node.DeltaTime+"</B>";
-
-                        var Str=
-                            "Transfer:"+StrTransfer+"<BR>"+
-                            "Process:"+Node.BlockProcessCount+"<BR>"+
-                            "Delta:"+StrDelta;
-
-                        id.innerHTML=Str;
-                    }
-                    else
-                    {
-                        cell.innerHTML="";
-                    }
-                }
-
-                if(Node && !Node.Active)
-                {
-                    CountNodesC++;
-                    StrConnect+=Str;
-                }
-                if(Node && !Node.Hot && Node.Active)
-                {
-                    CountNodesA++;
-                    StrActive+=Str;
+                    StrDisconnected+=Str;
                 }
             }
 
-            // row.MaxRows=Math.max(row.MaxRows,CountNodesA,CountNodesC);
-            // for(var i=CountNodesC;i<row.MaxRows;i++)
-            // {
-            //     StrConnect+="<DIV class='node'></DIV>"
-            // }
-
-            if(row.StrActive!==StrActive)
-            {
-                var cell=row.cells[MaxChildCount+1];
-                row.StrActive=StrActive;
-                cell.innerHTML=GetLayer(StrActive);
-            }
 
 
-            if(row.StrConnect!==StrConnect)
-            {
-                var cell=row.cells[MaxChildCount+2];
-                row.StrConnect=StrConnect;
-                cell.innerHTML=GetLayer(StrConnect);
-            }
 
+            SetCell(row,COLNUM_HOT,StrHot);
+            SetCell(row,COLNUM_SHARD,StrShard);
+            SetCell(row,COLNUM_CONNECTED,StrConnected);
+            SetCell(row,COLNUM_DISCONNECTED,StrDisconnected);
 
 
 
@@ -287,6 +177,118 @@
     function GetLayer(Str)
     {
         return '<DIV class="layer">'+Str+'</DIV>'
+    }
+    function SetCell(row,num,str)
+    {
+        if(row.StrValue!==str)
+        {
+            var cell=row.cells[num];
+            row.StrValue=str;
+            // if(num>COLNUM_SHARD)
+                cell.innerHTML=GetLayer(str);
+            // else
+            //     cell.innerHTML=str;
+        }
+    }
+
+    function GetNodeInfo(Node)
+    {
+        var Str="";
+        if(Node.Name)
+            Str=Node.Name;
+        else
+            Str=Node.ip;//Node.addrStr.substr(0,6);
+
+
+        Str+="   ";
+        if(Node.Active && (Node.BlockProcessCount || Node.Hot || Node.Cross))
+        {
+            Node.BlockProcessCount=Math.floor(10*Node.BlockProcessCount)/10;
+            Str += "<BR>"+Node.BlockProcessCount;
+            Str += ":";
+        }
+
+        if(Node.DeltaTime)
+            Str+=Node.DeltaTime+"ms";
+        if(Node.Name)
+            strClass="mnode";
+        else
+            strClass="node";
+
+        if(Node.Active)
+            strClass+=" open";
+        else
+            strClass+=" close";
+
+        strClass+=" jinnnode";
+
+
+
+        Str='<BUTTON id="N'+Node.ID+'" class="'+strClass+'" onmousedown="ViewInfo('+Node.ID+',1)">'+Str+'</BUTTON>';
+
+        if(Node.Hot ||  Node.Cross)
+            Str+="<BR>";
+
+
+
+        if(Node.Active)
+        {
+            Str+="<DIV style='float: left'>"
+            if(!Node.Hot)
+                Str+='<INPUT type="button" class="edit" onclick="AddHot('+Node.ID+')" value="Add"><BR>';
+
+            if(!Node.Name)
+                Str+='<INPUT type="button" class="edit" onclick="AddBan('+Node.ID+')" value="Ban">';
+            Str+="</DIV>"
+        }
+        else
+        {
+            Str+='<INPUT type="button" class="connect" onclick="AddConnect('+Node.ID+')" value="Con...">';
+        }
+
+        Str += '<input type="checkbox" class="checkbox" id="D' + Node.ID + '" '+(Node.Debug?' checked':'')+' onchange = "SetDebug(' + Node.ID + ')"/>';
+
+        if(Node.Hot || Node.Cross)
+            Str+='<INPUT type="button" class="edit" onclick="DeleteNode('+Node.ID+')" value="Del">';
+        Str+="<BR>";
+
+        return Str;
+    }
+
+    function GetTransferStat(Node)
+    {
+        var StrTransfer,StrDelta;
+        if(!Node.TransferCount)
+            Node.TransferCount=0;
+        if(Node.TransferCount>1000)
+        {
+            StrTransfer="<B>"+Node.TransferCount+"</B>";
+        }
+        else
+        {
+            StrTransfer=Node.TransferCount;
+        }
+
+        if(!Node.DeltaTime)
+            Node.DeltaTime=0;
+        if(Node.DeltaTime>1000)
+            StrDelta="<B style='color:red'>"+Node.DeltaTime+"</B>";
+        else
+        if(Node.DeltaTime>500)
+            StrDelta="<B style='color:#df7a59'>"+Node.DeltaTime+"</B>";
+        else
+            StrDelta="<B style='color:#1727ff'>"+Node.DeltaTime+"</B>";
+
+        if(!Node.BlockProcessCount)
+            Node.BlockProcessCount=0;
+
+        var Str=
+            "Transfer:"+StrTransfer+"<BR>"+
+            "Process:"+Node.BlockProcessCount+"<BR>"+
+            "Delta:"+StrDelta;
+
+        return "<DIV>"+Str+"</DIV>";
+
     }
 
 
@@ -366,6 +368,11 @@
         RunServerCode('SERVER.NetAddHot('+ID+')');
         ViewInfo(ID,1);
     }
+    function AddCross(ID)
+    {
+        RunServerCode('SERVER.NetAddCross('+ID+')');
+        ViewInfo(ID,1);
+    }
     function DeleteNode(ID)
     {
         RunServerCode('SERVER.NetDeleteNode('+ID+')');
@@ -376,6 +383,7 @@
     {
 
     }
+
 
 
 
@@ -424,10 +432,17 @@
     }
     .hot_nodes td
     {
-        width: 100px;
+        width: 160px;
         text-align: left;
         padding: 1px;
 
+    }
+
+
+    .hot_nodes td:nth-child(1)
+    {
+        width: 20px;
+        text-align: center;
     }
 
     .layer
@@ -437,21 +452,6 @@
 
     }
 
-    .hot_nodes td:nth-child(1)
-    {
-        width: 20px;
-        text-align: center;
-    }
-
-
-    .hot_nodes td:nth-child(9)
-    {
-        width: 140px;
-    }
-    .hot_nodes td:nth-child(10)
-    {
-        width: 160px;
-    }
 
     .mnode
     {
@@ -476,12 +476,12 @@
 
     .jinnnode
     {
-        width: 200px;
+        width: 120px;
     }
     .edit
     {
         float: left;
-        width: 35px;
+        width: 55px;
         font-size: 9pt;
     }
     .connect
@@ -489,36 +489,50 @@
         width: 60px;
         font-size: 9pt;
     }
-    #idNodeBlock
-    {
-        position: fixed;
-        top: 10px;
-        left: 1200px;
-        width: 650px;
-        height: 920px;
-        font-size: 11pt;
-    }
+
     #idNodeName
     {
         height: 20px;
         width: 100%;
         text-align: center;
     }
+
+
+    #idNodeGrid
+    {
+        width: 590px;
+        height: 870px;
+        float: left;
+    }
+    #idNodeInfo
+    {
+        margin-top: -20px;
+        margin-left: -1px;
+        width: 460px;
+        font-size: 11pt;
+
+        float: left;
+        border: 0px solid #bfc1c0;
+        text-align: left
+    }
+
     #idNodeProperty
     {
-        height: 500px;
+        height: 426px;
         width: 100%;
     }
     #idNodeLog
     {
-        height: 380px;
+        margin-top: -5px;
+        height: 401px;
         width: 100%;
     }
-    #idLogClear
+
+    #idBtLogClear
     {
-        position: absolute;
-        bottom: 25px;
-        right: 25px;
+        position: relative;
+        bottom: 30px;
+        right: -400px;
         width: 50px;
         height: 20px;
     }
@@ -539,38 +553,31 @@
 
 <body>
 
-<DIV align='center'>
+<DIV align="center">
+    <DIV style="width: 1050px">
     <B>NETWORK</B><BR>
-<!--    <INPUT type="number" id="idCountBlock" style="width:80px" value="4">-->
 
     <DIV id="idStatus" style="height: 20px;"></DIV><BR>
 
-    <DIV align='left' style="width: 1190px;height: 870px; float: left">
-
+    <DIV id="idNodeGrid" style="float: left;" align='left'>
         <table id="grid_hot" class="hot_nodes">
             <tr>
                 <th>L</th>
-                <th class="mnode" id="idCol1">Node1</th>
-                <th class="mnode" id="idCol2">Node2</th>
-                <th class="mnode" id="idCol3">Node3</th>
-                <th class="mnode" id="idCol4">Node4</th>
-                <th class="mnode" id="idCol5">Node5</th>
-                <th class="mnode" id="idCol6">Node6</th>
-                <th class="mnode" id="idCol7">Node7</th>
+                <th>Hot levels</th>
+                <th>Hot shards</th>
                 <th>Connected</th>
                 <th>Not connected</th>
             </tr>
         </table>
-
-
     </DIV>
-    <DIV id="idNodeBlock" style="float: left; border: 0px solid #bfc1c0; text-align: left">
+    <DIV id="idNodeInfo">
         <DIV id="idNodeName"></DIV>
-        <textarea wrap="off"  rows="25" cols="250"  id="idNodeProperty" class="focusnowrite" style="width: 99%;">
+        <textarea wrap="off"  rows="20" cols="150"  id="idNodeProperty" class="focusnowrite" style="width: 99%;">
         </textarea>
         <textarea wrap="off"  rows="5" cols="1000"  id="idNodeLog" class="focusnowrite" style="width: 99%;">
         </textarea>
-        <button id="idLogClear" onclick="ClearChildLog()">Clear</button>
+        <button id="idBtLogClear" onclick="ClearChildLog()">Clear</button>
+    </DIV>
     </DIV>
 </DIV>
 

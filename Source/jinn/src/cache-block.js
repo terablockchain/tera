@@ -49,7 +49,7 @@ class CTimeCache
             this.TimeTree.remove(Item)
             
             if(this.DataTree.size !== this.TimeTree.size)
-                ToLogTrace("#1 Error trees size")
+                ToLog("#1 Error trees size: " + this.DataTree.size + "/" + this.TimeTree.size + " Item=" + JSON.stringify(Item), 3)
         }
     }
     
@@ -62,22 +62,17 @@ class CTimeCache
         {
             this.DataTree.remove(Find)
             this.TimeTree.remove(Find)
-            if(this.DataTree.size !== this.TimeTree.size)
-                ToLogTrace("#2 Error trees size")
         }
         else
         {
             var Find2 = this.TimeTree.find(Item);
             if(Find2)
             {
-                ToLogTrace("Error TimeTree find TimeTree tree")
+                ToLog("Error TimeTree find TimeTree tree")
             }
         }
         this.DataTree.insert(Item)
         this.TimeTree.insert(Item)
-        
-        if(this.DataTree.size !== this.TimeTree.size)
-            ToLogTrace("#3 Error trees size")
     }
     
     FindItemInCache(Item)

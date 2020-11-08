@@ -11,7 +11,7 @@
 
 var fs = require("fs");
 
-require("../../core/update-code");
+require("../../core/update-net");
 
 module.exports.Init = Init;
 

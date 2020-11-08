@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+"use strict";
 
 global.RunOnUpdate = RunOnUpdate;
 function RunOnUpdate()
@@ -56,14 +57,16 @@ function RunOnUpdate()
                             }
                 }
             }
+            if(CurNum < 2422)
+            {
+            }
         }
         
         if(global.NETWORK === "TEST-JINN")
         {
-            if(CurNum < 2360)
+            if(CurNum < 2388)
             {
-                
-                if(!IsValidAccHash(1138800, "DC55EC6EF12B8AEF08BDA66B66DCBB26A07C2F48D12BAFA519B9AAEDD723AB61", 0))
+                if(!IsValidAccHash(3160150, "21E175D821F8C038355291F311555F61EA3CAF5441A403CF3CC5D12CF5D6F692", 0))
                 {
                     SendRewrteAllTx();
                 }
@@ -71,6 +74,17 @@ function RunOnUpdate()
         }
         ToLog("UPDATER Finish");
     }
+}
+function DeleteOldDBFiles()
+{
+    setTimeout(function ()
+    {
+        ToLog("---------- UPD: START DeleteOldDBFiles");
+        if(global.TX_PROCESS && global.TX_PROCESS.RunRPC)
+        {
+            global.TX_PROCESS.RunRPC("RunDeleteOldDBFiles", {});
+        }
+    }, 20 * 1000);
 }
 
 function SendRewrteAllTx()
@@ -94,7 +108,7 @@ function SendRewrteTx(StartNum)
 
 function IsValidAccHash(BlockNum,StrHash,bMust)
 {
-    var AccountsHash = DApps.Accounts.GetHashOrUndefined(BlockNum);
+    var AccountsHash = ACCOUNTS.GetHashOrUndefined(BlockNum);
     if(!AccountsHash)
     {
         if(bMust)
@@ -119,7 +133,7 @@ global.CheckSumHashInActs = function ()
 
 function CheckActDB(Name)
 {
-    var DBAct = DApps.Accounts[Name];
+    var DBAct = ACCOUNTS[Name];
     
     var Num = 0;
     while(1)
@@ -130,7 +144,7 @@ function CheckActDB(Name)
         
         if(Item.Mode === 200)
         {
-            Item.HashData = DApps.Accounts.GetActHashesFromBuffer(Item.PrevValue.Data);
+            Item.HashData = COMMON_ACTS.GetActHashesFromBuffer(Item.PrevValue.Data);
             if(Item)
             {
                 var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);

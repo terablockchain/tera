@@ -120,7 +120,6 @@ var bWasRun = 0;
 
 if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
 {
-    var file_sert = GetDataPath("sertif.lst");
     
     CheckCreateDir(GetDataPath("tmp"));
     
@@ -135,43 +134,16 @@ if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
     });
     RedirectServer.listen(80);
     
-    var GetNewSert = 1;
-    if(fs.existsSync(file_sert))
-    {
-        
-        var certs = LoadParams(file_sert, {});
-        
-        var Delta = certs.expiresAt - Date.now();
-        if(Delta >= 20 * 24 * 3600 * 1000)
-        {
-            ToLog("*************** USE EXIST SERT. ExpiresAt: " + new Date(certs.expiresAt));
-            
-            GetNewSert = 0;
-            var tlsOptions = {key:certs.privkey, cert:certs.cert + '\r\n' + certs.chain};
-            HostingServer = require('https').createServer(tlsOptions, MainHTTPFunction);
-            RunListenServer();
-        }
-    }
+    const CSertificate = require("./web-sert");
+    var Sert = new CSertificate(greenlock);
     
-    if(GetNewSert)
+    Sert.StartCheck();
+    
+    if(Sert.HasValidSertificate(0))
     {
-        ToLog("*************** START GET NEW SERT", 0);
-        
-        var opts = {domains:[global.HTTPS_HOSTING_DOMAIN], email:'progr76@gmail.com', agreeTos:true, communityMember:true, };
-        
-        greenlock.register(opts).then(function (certs)
-        {
-            SaveParams(file_sert, certs);
-            
-            var tlsOptions = {key:certs.privkey, cert:certs.cert + '\r\n' + certs.chain};
-            HostingServer = require('https').createServer(tlsOptions, MainHTTPFunction);
-            
-            if(!bWasRun)
-                RunListenServer();
-        }, function (err)
-        {
-            ToError(err);
-        });
+        ToLog("*************** USE EXIST SERT. ExpiresAt: " + new Date(Sert.certs.expiresAt));
+        HostingServer = require('https').createServer(Sert.tlsOptions, MainHTTPFunction);
+        RunListenServer();
     }
 }
 else
@@ -383,6 +355,9 @@ if(!global.WebApi1)
 global.HostingCaller = {};
 function DoCommandNew(request,response,Type,Path,Params)
 {
+    if(global.HTTP_START_PAGE === "WWW")
+        return DoCommandWWW(request, response, Type, Path, Params);
+    
     if(Path.substring(0, 1) === "/")
         Path = Path.substring(1);
     
@@ -516,7 +491,7 @@ function DoCommandNew(request,response,Type,Path,Params)
                     PrefixPath = "../FILES";
                     Name = "";
                     for(var i = 1; i < ArrPath.length; i++)
-                        if(ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
+                        if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
                             Name += "/" + ArrPath[i];
                     Name = PrefixPath + Name;
                     SendWebFile(request, response, Name, "", 0, 1000);
@@ -528,7 +503,7 @@ function DoCommandNew(request,response,Type,Path,Params)
                         PrefixPath = global.DATA_PATH + "Update";
                         Name = "";
                         for(var i = 1; i < ArrPath.length; i++)
-                            if(ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
+                            if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
                                 Name += "/" + ArrPath[i];
                         Name = PrefixPath + Name;
                         SendWebFile(request, response, Name, "", 0, 1000);
@@ -600,6 +575,28 @@ function DoCommandNew(request,response,Type,Path,Params)
     }
 }
 
+function DoCommandWWW(request,response,Type,Path,Params,ArrPath)
+{
+    if(!Path || Path.substring(Path.length - 1) === "/")
+        Path += "index.html";
+    
+    var ArrPath = Path.split('/', 7);
+    if(global.AddonCommand)
+    {
+        if(!global.AddonCommand(request, response, Type, Path, Params, ArrPath))
+            return;
+    }
+    
+    var Name = "../WWW";
+    for(var i = 1; i < ArrPath.length; i++)
+        if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
+            Name += "/" + ArrPath[i];
+    
+    global.WEB_LOG && ToLogWeb("Name: " + Name);
+    
+    SendWebFile(request, response, Name, "", 0, 1000);
+}
+
 
 
 HostingCaller.GetCurrentInfo = function (Params)
@@ -610,13 +607,13 @@ HostingCaller.GetCurrentInfo = function (Params)
             return {result:0};
     }
     var MaxNumBlockDB = SERVER.GetMaxNumBlockDB();
-    var TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
+    var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     
     var Ret = {result:1, VersionNum:global.START_CODE_VERSION_NUM, VersionUpd:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK,
-        MaxNumBlockDB:MaxNumBlockDB, CurBlockNum:GetCurrentBlockNumByTime(), MaxAccID:DApps.Accounts.GetMaxAccount(), MaxDappsID:DApps.Smart.GetMaxNum(),
+        MaxNumBlockDB:MaxNumBlockDB, CurBlockNum:GetCurrentBlockNumByTime(), MaxAccID:ACCOUNTS.GetMaxAccount(), MaxDappsID:SMARTS.GetMaxNum(),
         TXBlockNum:TXBlockNum, CurTime:Date.now(), DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:MIN_POWER_POW_TR, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
         UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME, PRICE_DAO:PRICE_DAO(MaxNumBlockDB),
-        GrayConnect:global.CLIENT_MODE, JINN_MODE:global.JINN_MODE, sessionid:sessionid, };
+        GrayConnect:global.CLIENT_MODE, JINN_MODE:1, sessionid:sessionid, };
     
     if(typeof Params === "object" && Params.Diagram == 1)
     {
@@ -657,7 +654,7 @@ HostingCaller.GetAccountList = function (Params)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = DApps.Accounts.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum));
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum));
     return {result:1, arr:arr};
 }
 
@@ -665,7 +662,7 @@ HostingCaller.GetAccount = function (id)
 {
     
     id = ParseNum(id);
-    var arr = DApps.Accounts.GetRowsAccounts(id, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(id, 1);
     return {Item:arr[0], result:1};
 }
 
@@ -717,7 +714,7 @@ HostingCaller.GetDappList = function (Params)
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = DApps.Smart.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, Params.Filter, 1);
+    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, Params.Filter, 1);
     return {result:1, arr:arr};
 }
 
@@ -754,9 +751,10 @@ HostingCaller.GetNodeList = function (Params)
         UseRandom = 1;
         len = MaxNodes;
     }
-    var Geo = 0;
+    
+    var bGeo = 0;
     if(typeof Params === "object" && Params.Geo)
-        Geo = 1;
+        bGeo = 1;
     
     var mapWasAdd = {};
     for(var i = 0; i < len; i++)
@@ -777,7 +775,8 @@ HostingCaller.GetNodeList = function (Params)
             Item = List[i];
         }
         var Value = {ip:Item.ip, port:Item.portweb, };
-        if(Geo)
+        
+        if(bGeo)
         {
             if(!Item.Geo)
                 SetGeoLocation(Item);
@@ -805,7 +804,7 @@ HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
     if(!global.USE_API_WALLET)
         return {result:0};
     
-    var Accounts = DApps.Accounts;
+    var Accounts = ACCOUNTS;
     for(var num = LastMaxNum; true; num++)
     {
         if(Accounts.IsHole(num))
@@ -832,10 +831,10 @@ HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
             Data.PubKeyStr = GetHexFromArr(Data.PubKey);
         
         if(Data.Currency)
-            Data.CurrencyObj = DApps.Smart.ReadSimple(Data.Currency, 1);
+            Data.CurrencyObj = SMARTS.ReadSimple(Data.Currency, 1);
         if(Data.Value.Smart)
         {
-            Data.SmartObj = DApps.Smart.ReadSimple(Data.Value.Smart);
+            Data.SmartObj = SMARTS.ReadSimple(Data.Value.Smart);
             try
             {
                 Data.SmartState = BufLib.GetObjectFromBuffer(Data.Value.Data, Data.SmartObj.StateFormat, {});
@@ -885,12 +884,12 @@ HostingCaller.GetDappCategory = function (Params,response)
 }
 function CheckDappCategoryMap()
 {
-    var MaxNumNow = DApps.Smart.GetMaxNum();
+    var MaxNumNow = SMARTS.GetMaxNum();
     if(MaxNumNow !== CategoryDappMaxNumWas)
     {
         for(var Num = CategoryDappMaxNumWas; Num <= MaxNumNow; Num++)
         {
-            var Item = DApps.Smart.ReadSimple(Num);
+            var Item = SMARTS.ReadSimple(Num);
             for(var n = 1; n <= 3; n++)
             {
                 var Name = "Category" + n;
@@ -1007,8 +1006,8 @@ HostingCaller.DappInfo = function (Params)
     Ret.NumDappInfo = Context.NumDappInfo;
     Ret.CurTime = Date.now();
     Ret.CurBlockNum = GetCurrentBlockNumByTime();
-    Ret.MaxAccID = DApps.Accounts.GetMaxAccount();
-    Ret.MaxDappsID = DApps.Smart.GetMaxNum();
+    Ret.MaxAccID = ACCOUNTS.GetMaxAccount();
+    Ret.MaxDappsID = SMARTS.GetMaxNum();
     
     return Ret;
 }
@@ -1047,7 +1046,7 @@ HostingCaller.DappAccountList = function (Params)
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = DApps.Accounts.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, 1);
     return {arr:arr, result:1};
 }
 HostingCaller.DappSmartList = function (Params)
@@ -1060,8 +1059,8 @@ HostingCaller.DappSmartList = function (Params)
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = DApps.Smart.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, undefined, Params.GetAllData,
-    Params.TokenGenerate);
+    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, undefined, Params.GetAllData, Params.TokenGenerate,
+    Params.AllRow);
     return {arr:arr, result:1};
 }
 
@@ -1129,7 +1128,7 @@ HostingCaller.GetSupply = function (Params)
         return HostingCaller.GetSupplyCalc(Params);
     }
     
-    var Data = DApps.Accounts.ReadState(0);
+    var Data = ACCOUNTS.ReadState(0);
     if(!Data)
         return "";
     else

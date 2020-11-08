@@ -36,23 +36,20 @@ function Init(Engine)
         return OperationID;
     };
     
-    Engine.GetAccountBaseValue = function (SenderNum)
+    Engine.GetAccountBaseValue = function (AccNum,BlockNum)
     {
-        if(!SenderNum)
+        if(!AccNum)
             return 0;
         
-        var AccData = DApps.Accounts.ReadState(SenderNum);
-        if(!AccData || AccData.Currency !== 0)
-            return 0;
-        
-        var RestData = DApps.Accounts.ReadRest(SenderNum);
-        if(RestData)
+        var Value = ACCOUNTS.GetPrevAccountValue(AccNum, BlockNum);
+        if(Value)
         {
-            var Value = RestData.Arr[1].Value;
             return Value.SumCOIN * 1e9 + Value.SumCENT;
         }
         else
+        {
             return 0;
+        }
     };
     
     Engine.GetAccountOperationID = function (SenderNum,BlockNum)
@@ -60,7 +57,7 @@ function Init(Engine)
         if(!SenderNum)
             return 0;
         
-        var AccData = DApps.Accounts.ReadState(SenderNum);
+        var AccData = ACCOUNTS.ReadState(SenderNum);
         if(AccData)
             return AccData.Value.OperationID;
         else
@@ -112,12 +109,16 @@ function Init(Engine)
         var Str = Engine.ValueFromEncrypt(Child, NameArr);
         if(Str.substr(0, 8) === "CLUSTER:")
         {
+            Child.IsCluster = 1;
             Child.Name = Str.substr(8);
             if(Child.AddrItem && Child.AddrItem.Score < 5 * 1e6)
                 Child.AddrItem.Score = 10 * 1e6;
         }
         else
+        {
+            Child.IsCluster = 0;
             Child.Name = "";
+        }
     };
     
     Engine.OnSeNodeName = function ()

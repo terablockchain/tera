@@ -28,6 +28,7 @@
  str - the variable-length string
  strxx - string with fixed length of xx long
  arrxx - byte array with fixed-length of xx long
+ data - byte array
 
  Example:
  {Name:"str10", Value:"uint", PubKey:"arr33"}
@@ -49,6 +50,9 @@ exports.GetFormatFromObject = GetFormatFromObject;
 
 var glError = global.DEV_MODE;
 
+const TEMP_BUFFER8 = new ArrayBuffer(8);
+const DATA_VIEW8 = new DataView(TEMP_BUFFER8);
+
 function Write(buf,data,StringFormat,ParamValue,WorkStruct)
 {
     
@@ -64,7 +68,7 @@ function Write(buf,data,StringFormat,ParamValue,WorkStruct)
         if(format.substr(0, 6) === "buffer" && format.length > 6)
         {
             ParamValue = parseInt(format.substr(6));
-            format = "buffer";
+            format = "arr";
         }
         else
             if(format.substr(0, 3) === "arr" && format.length > 3)
@@ -94,6 +98,16 @@ function Write(buf,data,StringFormat,ParamValue,WorkStruct)
                 {
                     WriteByte(buf, data);
                     
+                    break;
+                }
+            case "double":
+                {
+                    DATA_VIEW8.setFloat64(0, data);
+                    
+                    for(var i = 0; i < 8; i++)
+                    {
+                        buf[buf.length] = DATA_VIEW8.getUint8(i);
+                    }
                     break;
                 }
             case "uint":
@@ -249,6 +263,8 @@ function Write(buf,data,StringFormat,ParamValue,WorkStruct)
                         else
                             if(CurFormat === "{")
                             {
+                                if(!data)
+                                    data = {};
                                 
                                 var attrs = WorkStruct[format];
                                 if(!attrs)
@@ -289,7 +305,7 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
             if(format.length > 6)
             {
                 ParamValue = parseInt(format.substr(6));
-                format = "buffer";
+                format = "arr";
             }
             else
             {
@@ -336,6 +352,24 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                     ret = ReadByte(buf);
                     break;
                 }
+            case "double":
+                {
+                    if(buf.len + 8 <= buf.length)
+                    {
+                        for(var i = 0; i < 8; i++)
+                        {
+                            DATA_VIEW8.setUint8(i, buf[buf.len + i]);
+                        }
+                        
+                        ret = DATA_VIEW8.getFloat64(0);
+                    }
+                    else
+                    {
+                        ret = 0;
+                    }
+                    buf.len += 8;
+                    break;
+                }
             case "uint":
                 {
                     ret = ReadUintFromArr(buf);
@@ -377,7 +411,10 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                         throw "Error format " + format + " needs number of length";
                     
                     if(buf.len + ParamValue <= buf.length)
-                        ret = buf.slice(buf.len, buf.len + ParamValue);
+                    {
+                        ret = ReadArr(buf, ParamValue);
+                        break;
+                    }
                     else
                     {
                         ret = [];
@@ -398,8 +435,8 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                     
                     var length = buf[buf.len] + buf[buf.len + 1] * 256;
                     buf.len += 2;
-                    ret = buf.slice(buf.len, buf.len + length);
-                    buf.len += length;
+                    
+                    ret = ReadArr(buf, length);
                     break;
                 }
             case "data":
@@ -439,6 +476,12 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                         ret = [];
                         var formatNext = GetMiddleString(format);
                         var length = Read(buf, "uint32");
+                        
+                        if(!CheckLength(buf, length))
+                        {
+                            break;
+                        }
+                        
                         for(var i = 0; i < length; i++)
                         {
                             if(buf.len <= buf.length)
@@ -472,6 +515,7 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                             for(var i = 0; i < attrs.length; i++)
                             {
                                 var type = attrs[i];
+                                
                                 ret[type.Key] = Read(buf, type.Value, undefined, WorkStruct);
                             }
                         }
@@ -501,18 +545,16 @@ function GetObjectFromBuffer(buffer,format,WorkStruct,bNoSizeControl)
     
     var Data = Read(Arr, format, undefined, WorkStruct);
     
-    if(!bNoSizeControl && glError && Arr.len !== Arr.length)
-    {
-        if(global.DEV_MODE)
+    if(global.DEV_MODE)
+        if(!bNoSizeControl && glError && Arr.len > Arr.length)
         {
             ToLogOne("**********Find error size on format: " + format, " " + Arr.len + "/" + Arr.length);
         }
-    }
     
     return Data;
 }
 
-function GetBufferFromObject(data,format,WorkStruct,bGetAsBuffer)
+function GetBufferFromObject(data,format,WorkStruct,bGetAsBuffer,Arr)
 {
     if(typeof format === "object")
     {
@@ -521,8 +563,9 @@ function GetBufferFromObject(data,format,WorkStruct,bGetAsBuffer)
         format = WorkStruct.FromObject;
     }
     
-    var Arr = [];
-    Arr.len = 0;
+    if(!Arr)
+        Arr = [];
+    Arr.len = Arr.length;
     Write(Arr, data, format, undefined, WorkStruct);
     
     if(bGetAsBuffer && global.Buffer)
@@ -708,41 +751,9 @@ function toUTF8Array(str)
     return utf8;
 }
 
-function Utf8ArrayToStr(array)
+function Utf8ArrayToStrNew(array)
 {
-    var out, i, len, c;
-    var char2, char3;
-    
-    out = "";
-    len = array.length;
-    i = 0;
-    while(i < len)
-    {
-        c = array[i++];
-        switch(c >> 4)
-        {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                out += String.fromCharCode(c);
-                break;
-            case 12:
-            case 13:
-                char2 = array[i++];
-                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
-                break;
-            case 14:
-                char2 = array[i++];
-                char3 = array[i++];
-                out += String.fromCharCode(((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
-                break;
-        }
-    }
+    var out = Utf8ArrayToStrInner(array);
     
     for(var i = 0; i < out.length; i++)
     {
@@ -754,6 +765,56 @@ function Utf8ArrayToStr(array)
     }
     return out;
 }
+
+var Utf8ArrayToStrInner = (function ()
+{
+    var charCache = new Array(128);
+    var charFromCodePt = String.fromCodePoint || String.fromCharCode;
+    var result = [];
+    
+    return function (array)
+    {
+        var codePt, byte1;
+        var buffLen = array.length;
+        
+        result.length = 0;
+        
+        for(var i = 0; i < buffLen; )
+        {
+            byte1 = array[i++];
+            
+            if(byte1 <= 0x7F)
+            {
+                codePt = byte1;
+            }
+            else
+                if(byte1 <= 0xDF)
+                {
+                    codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
+                }
+                else
+                    if(byte1 <= 0xEF)
+                    {
+                        codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                    }
+                    else
+                        if(String.fromCodePoint)
+                        {
+                            codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                        }
+                        else
+                        {
+                            codePt = 63;
+                            i += 3;
+                        }
+            
+            result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+        }
+        
+        return result.join('');
+    };
+}
+)();
 
 function GetArr32FromStr(Str)
 {
@@ -940,6 +1001,9 @@ function ReadByte(arr,len)
 function ReadArr(arr,length)
 {
     var Ret = [];
+    if(!CheckLength(arr, length))
+        return Ret;
+    
     var len = arr.len;
     for(var i = 0; i < length; i++)
     {
@@ -951,6 +1015,8 @@ function ReadArr(arr,length)
 function ReadStr(arr)
 {
     var length = arr[arr.len] + arr[arr.len + 1] * 256;
+    if(!CheckLength(arr, length))
+        return "";
     arr.len += 2;
     return ReadStrConstL(arr, length);
 }
@@ -958,9 +1024,19 @@ function ReadStr(arr)
 function ReadStrConstL(arr,length)
 {
     var arr2 = arr.slice(arr.len, arr.len + length);
-    var Str = Utf8ArrayToStr(arr2);
+    var Str = Utf8ArrayToStrNew(arr2);
     arr.len += length;
     return Str;
+}
+
+function CheckLength(Arr,length)
+{
+    if(isNaN(length) || length > Arr.length)
+    {
+        Arr.len = Arr.length;
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -995,8 +1071,8 @@ function TestValue(Value,Format,bLog)
     if(Str1 !== Str2)
     {
         ToLog("Error format: " + Format + " <--------------------------------------------------");
-        ToLog(Value);
-        ToLog(Value2);
+        ToLog(JSON.stringify(Value));
+        ToLog(JSON.stringify(Value2));
         ToLog(Buf);
         ErrorCount++;
         return 0;
@@ -1006,8 +1082,8 @@ function TestValue(Value,Format,bLog)
         if(bLog)
         {
             ToLog("Completed: " + Format);
-            ToLog(Value);
-            ToLog(Value2);
+            ToLog(JSON.stringify(Value));
+            ToLog(JSON.stringify(Value2));
         }
         
         glTestCount++;
@@ -1028,4 +1104,4 @@ if(!global.ToLog)
     global.ToLog = function (Str)
     {
         console.log(Str);
-    };
+    }

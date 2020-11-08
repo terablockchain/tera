@@ -104,8 +104,8 @@ function InitClass(Engine)
         {
             if(Child)
                 Engine.AddCheckErrCount(Child, 1, "ERRORS:" + err, 1);
-            else
-                ToError("ERRORS:" + err, 4);
+            
+            ToError("NET_ERROR:" + err, 4);
         });
     };
     

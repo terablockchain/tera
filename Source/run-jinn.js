@@ -11,7 +11,7 @@ global.JINN_MODE=1;
 global.LOCAL_RUN=0;
 global.TEST_NETWORK=1;
 
-global.START_PORT_NUMBER = 33000;
+//global.START_PORT_NUMBER = 33000;
 
 //new
 global.JINN_PORT=30000;

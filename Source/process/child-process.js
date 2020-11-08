@@ -62,7 +62,7 @@ process.on('message', function (msg)
             break;
             
         case "call":
-            var Err = 0;
+            var Err = 0, Stack;
             var Ret;
             try
             {
@@ -72,10 +72,20 @@ process.on('message', function (msg)
             {
                 Err = 1;
                 Ret = "" + e;
+                Stack = e.stack;
             }
             
             if(msg.id)
+            {
+                if(Err)
+                    Ret += "\n" + Stack;
                 process.send({cmd:"retcall", id:msg.id, Err:Err, Params:Ret});
+            }
+            else
+                if(Err)
+                {
+                    ToLogStack(Ret, "\n" + Stack, 1);
+                }
             break;
             
         case "retcall":
@@ -106,7 +116,7 @@ process.on('message', function (msg)
 }
 );
 
-function Exit()
+global.Exit = function ()
 {
     if(global.OnExit)
         global.OnExit();
@@ -156,18 +166,23 @@ global.WasEnterChildProcessErr = 0;
 
 process.on('uncaughtException', function (err)
 {
+    var stack = err.stack;
+    if(!stack)
+        stack = "" + err;
     if(global.WasEnterChildProcessErr)
     {
         console.log("===============WasEnterChildProcessErr===============");
-        console.log(err.stack);
+        console.log(stack);
         Exit();
         return;
     }
     global.WasEnterChildProcessErr = 1;
     
     console.log("===============child uncaughtException===============");
-    ToLog(err.stack);
-    ToError(err.stack);
+    
+    ToLog(stack);
+    ToError(stack);
+    
     TO_ERROR_LOG(global.PROCESS_NAME, 777, err);
     ToLog("-----------------" + global.PROCESS_NAME + " EXIT------------------");
     process.exit();
@@ -178,10 +193,14 @@ process.on('uncaughtException', function (err)
 global.WasEnterChildProcessErr2 = 0;
 process.on('error', function (err)
 {
+    var stack = err.stack;
+    if(!stack)
+        stack = "" + err;
+    
     if(err.code === 'ERR_IPC_CHANNEL_CLOSED')
     {
         console.log("===============ERR_IPC_CHANNEL_CLOSED===============");
-        console.log(err.stack);
+        console.log(stack);
         Exit();
         return;
     }
@@ -189,7 +208,7 @@ process.on('error', function (err)
     if(global.WasEnterChildProcessErr2)
     {
         console.log("===============child WasEnterChildProcessErr2===============");
-        console.log(err.stack);
+        console.log(stack);
         Exit();
         return;
     }
@@ -197,8 +216,8 @@ process.on('error', function (err)
     
     console.log("===============code: " + err.code + "===============");
     
-    ToLog(err.stack);
-    ToError(global.PROCESS_NAME + ":\n" + err.stack);
+    ToLog(stack);
+    ToError(global.PROCESS_NAME + ":\n" + stack);
     global.WasEnterChildProcessErr2 = 0;
 }
 );

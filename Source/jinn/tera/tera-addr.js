@@ -44,7 +44,7 @@ function Init(Engine)
             if(Power < global.MIN_POW_ADDRES)
                 continue;
             
-            var Item2 = {ip:Item.ip, port:Item.port, Score:Item.Score, System:Item.System};
+            var Item2 = {ip:Item.ip, port:Item.port, Score:Item.Score, System:Item.System, portweb:Item.portweb, ShardName:Item.ShardName};
             
             Arr.push(Item2);
             
@@ -59,8 +59,6 @@ function Init(Engine)
     
     Engine.LoadAddrOnStart = function ()
     {
-        if(global.LOCAL_RUN)
-            return;
         var AddrData = LoadParams(GetDataPath("jinn-nodes-" + global.GETNODES_VERSION + ".lst"), {});
         
         if(AddrData.AddrItem && AddrData.AddrItem.ip)

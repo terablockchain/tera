@@ -226,9 +226,9 @@ global.DappTemplateFile = DappTemplateFile;
 function DappTemplateFile(request,response,StrNum)
 {
     var Num = parseInt(StrNum);
-    if(Num && Num <= DApps.Smart.GetMaxNum())
+    if(Num && Num <= SMARTS.GetMaxNum())
     {
-        var Data = DApps.Smart.ReadSmart(Num);
+        var Data = SMARTS.ReadSmart(Num);
         if(Data)
         {
             var Headers = {'Content-Type':'text/html', "X-Frame-Options":"sameorigin"};
@@ -249,9 +249,9 @@ global.DappSmartCodeFile = DappSmartCodeFile;
 function DappSmartCodeFile(response,StrNum)
 {
     var Num = parseInt(StrNum);
-    if(Num && Num <= DApps.Smart.GetMaxNum())
+    if(Num && Num <= SMARTS.GetMaxNum())
     {
-        var Data = DApps.Smart.ReadSmart(Num);
+        var Data = SMARTS.ReadSmart(Num);
         if(Data)
         {
             response.writeHead(200, {'Content-Type':'application/javascript', "Access-Control-Allow-Origin":"*"});
@@ -267,9 +267,9 @@ global.DappClientCodeFile = DappClientCodeFile;
 function DappClientCodeFile(response,StrNum)
 {
     var Num = parseInt(StrNum);
-    if(Num && Num <= DApps.Smart.GetMaxNum())
+    if(Num && Num <= SMARTS.GetMaxNum())
     {
-        var Data = DApps.Smart.ReadSmart(Num);
+        var Data = SMARTS.ReadSmart(Num);
         if(Data)
         {
             response.writeHead(200, {'Content-Type':"text/plain", "X-Content-Type-Options":"nosniff"});
@@ -284,7 +284,7 @@ function DappClientCodeFile(response,StrNum)
 
 HTTPCaller.DappSmartHTMLFile = function (Params)
 {
-    var Data = DApps.Smart.ReadSmart(ParseNum(Params.Smart));
+    var Data = SMARTS.ReadSmart(ParseNum(Params.Smart));
     if(Data)
     {
         if(global.DEV_MODE && Params.DebugPath)
@@ -310,22 +310,6 @@ function SendBlockFile(request,response,BlockNum,TrNum)
             SendToResponceFile(request, response, Block, TrNum);
             return;
         }
-        else
-            if(!Block || !Block.TrDataPos)
-            {
-                LoadBlockFromNetwork({BlockNum:BlockNum}, function (Err,Block)
-                {
-                    if(Err)
-                    {
-                        SendToResponce404(response);
-                    }
-                    else
-                    {
-                        SendToResponceFile(request, response, Block, TrNum);
-                    }
-                });
-                return;
-            }
     }
     SendToResponce404(response);
 }
@@ -376,22 +360,6 @@ HTTPCaller.DappBlockFile = function (Params,response)
             SendToResponceDappFile(response, Block, Params.TrNum);
             return null;
         }
-        else
-            if(!Block || !Block.TrDataPos)
-            {
-                LoadBlockFromNetwork(Params, function (Err,Block)
-                {
-                    if(Err)
-                    {
-                        SendToResponceResult0(response);
-                    }
-                    else
-                    {
-                        SendToResponceDappFile(response, Block, Params.TrNum);
-                    }
-                });
-                return null;
-            }
     }
     return {result:0};
 }
@@ -406,14 +374,16 @@ function SendToResponceDappFile(response,Block,TrNum)
         if(Type === global.TYPE_TRANSACTION_FILE)
         {
             var TR = DApps.File.GetObjectTransaction(Body);
-            Result = {result:1, Type:Type, ContentType:TR.ContentType, Name:TR.Name, Body:TR.Data.toString('utf8')};
+            var Str = Buffer.from(TR.Data).toString('utf8');
+            
+            Result = {result:1, Type:Type, ContentType:TR.ContentType, Name:TR.Name, Body:Str};
         }
         else
         {
             var App = DAppByType[Type];
             if(App)
             {
-                Body = JSON.parse(App.GetScriptTransaction(Body));
+                Body = JSON.parse(App.GetScriptTransaction(Body, Block.BlockNum, TrNum));
             }
             
             Result = {result:1, Type:Type, Body:Body};
@@ -431,42 +401,8 @@ function SendToResponceResult0(response)
 var glBlock0;
 HTTPCaller.DappStaticCall = function (Params,response)
 {
-    var Result = RunStaticSmartMethod(ParseNum(Params.Account), Params.MethodName, Params.Params);
+    var Result = RunStaticSmartMethod(ParseNum(Params.Account), Params.MethodName, Params.Params, Params.ParamsArr);
     var Str = JSON.stringify(Result);
-    if(Str.length > 16000)
-    {
-        return {result:0, RetValue:"Error result length (more 16000)"};
-    }
-    
-    response.end(Str);
-    return null;
-    
-    DApps.Accounts.BeginBlock();
-    DApps.Accounts.BeginTransaction();
-    SetTickCounter(100000);
-    
-    var Account = DApps.Accounts.ReadStateTR(ParseNum(Params.Account));
-    if(!Account)
-    {
-        return {result:0, RetValue:"Error account Num: " + Params.Account};
-    }
-    
-    if(!glBlock0)
-        glBlock0 = SERVER.ReadBlockHeaderDB(0);
-    
-    var RetValue;
-    try
-    {
-        var BlockNum = GetCurrentBlockNumByTime();
-        RetValue = RunSmartMethod(glBlock0, Account.Value.Smart, Account, BlockNum, 0, undefined, Params.MethodName, Params.Params,
-        1);
-    }
-    catch(e)
-    {
-        return {result:0, RetValue:"" + e};
-    }
-    
-    var Str = JSON.stringify({result:1, RetValue:RetValue});
     if(Str.length > 16000)
     {
         return {result:0, RetValue:"Error result length (more 16000)"};
@@ -483,13 +419,13 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
         global.TX_PROCESS.Worker.send({cmd:"SetSmartEvent", Smart:SmartNum});
     
     var Account;
-    var Smart = DApps.Smart.ReadSimple(SmartNum);
+    var Smart = SMARTS.ReadSimple(SmartNum);
     if(Smart)
     {
         delete Smart.HTML;
         delete Smart.Code;
         
-        Account = DApps.Accounts.ReadState(Smart.Account);
+        Account = ACCOUNTS.ReadState(Smart.Account);
         try
         {
             Account.SmartState = BufLib.GetObjectFromBuffer(Account.Value.Data, Smart.StateFormat, {});
@@ -520,8 +456,7 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
     
     var Ret = {result:1, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:MIN_POWER_POW_TR, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
         UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NEW_SIGN_TIME:NEW_SIGN_TIME,
-        Smart:Smart, Account:Account, NETWORK:global.NETWORK, JINN_MODE:global.JINN_MODE, ArrWallet:WLData.arr, ArrEvent:EArr, ArrLog:ArrLog,
-    };
+        Smart:Smart, Account:Account, NETWORK:global.NETWORK, JINN_MODE:1, ArrWallet:WLData.arr, ArrEvent:EArr, ArrLog:ArrLog, };
     
     if(global.WALLET)
     {
@@ -534,8 +469,8 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
     {
         Ret.CurTime = Date.now();
         Ret.CurBlockNum = GetCurrentBlockNumByTime();
-        Ret.MaxAccID = DApps.Accounts.GetMaxAccount();
-        Ret.MaxDappsID = DApps.Smart.GetMaxNum();
+        Ret.MaxAccID = ACCOUNTS.GetMaxAccount();
+        Ret.MaxDappsID = SMARTS.GetMaxNum();
     }
     
     return Ret;
@@ -543,7 +478,7 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
 
 HTTPCaller.DappWalletList = function (Params)
 {
-    var arr0 = DApps.Accounts.GetWalletAccountsByMap(WALLET.AccountMap);
+    var arr0 = ACCOUNTS.GetWalletAccountsByMap(WALLET.AccountMap);
     var arr = [];
     for(var i = 0; i < arr0.length; i++)
     {
@@ -557,12 +492,12 @@ HTTPCaller.DappWalletList = function (Params)
 }
 HTTPCaller.DappAccountList = function (Params)
 {
-    var arr = DApps.Accounts.GetRowsAccounts(Params.StartNum, Params.CountNum, undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum, Params.CountNum, undefined, 1);
     return {arr:arr, result:1};
 }
 HTTPCaller.DappSmartList = function (Params)
 {
-    var arr = DApps.Smart.GetRows(Params.StartNum, Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate);
+    var arr = SMARTS.GetRows(Params.StartNum, Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate, Params.AllRow);
     return {arr:arr, result:1};
 }
 HTTPCaller.DappBlockList = function (Params,response)
@@ -596,7 +531,7 @@ HTTPCaller.FindMyAccounts = function (Params)
 HTTPCaller.GetAccount = function (id)
 {
     id = parseInt(id);
-    var arr = DApps.Accounts.GetRowsAccounts(id, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(id, 1);
     return {Item:arr[0], result:1};
 }
 
@@ -604,14 +539,15 @@ HTTPCaller.GetAccountList = function (Params)
 {
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = DApps.Accounts.GetRowsAccounts(Params.StartNum, Params.CountNum, Params.Filter, Params.GetState);
+    
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum, Params.CountNum, Params.Filter, Params.GetState);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetDappList = function (Params)
 {
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = DApps.Smart.GetRows(Params.StartNum, Params.CountNum, Params.Filter, Params.Filter2, 1);
+    var arr = SMARTS.GetRows(Params.StartNum, Params.CountNum, Params.Filter, Params.Filter2, 1);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetBlockList = function (Params,response,bOnlyNum)
@@ -635,35 +571,102 @@ HTTPCaller.GetTransactionAll = function (Params,response)
 
 HTTPCaller.GetActList = function (Params)
 {
-    var arr = DApps.Accounts.GetActList(Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = COMMON_ACTS.GetActList(Params.StartNum, Params.CountNum);
+    return {arr:arr, result:1};
+}
+HTTPCaller.GetJournalList = function (Params)
+{
+    var arr = JOURNAL_DB.GetScrollList(Params.StartNum, Params.CountNum);
+    return {arr:arr, result:1};
+}
+
+HTTPCaller.FindJournalByBlockNum = function (Params)
+{
+    var Num = JOURNAL_DB.FindByBlockNum(Params.BlockNum);
+    if(typeof Num === "number")
+    {
+        return {result:1, Num:Num};
+    }
+    else
+    {
+        return {result:0};
+    }
+}
+
+HTTPCaller.GetCrossOutList = function (Params)
+{
+    var arr = SHARDS.GetCrossOutList(Params.StartNum, Params.CountNum);
+    return {arr:arr, result:1};
+}
+HTTPCaller.GetCrossInList = function (Params)
+{
+    var arr = SHARDS.GetCrossInList(Params.StartNum, Params.CountNum);
+    return {arr:arr, result:1};
+}
+
+HTTPCaller.GetShardList = function (Params)
+{
+    var arr = SHARDS.GetShardList(Params.StartNum, Params.CountNum);
     return {arr:arr, result:1};
 }
 
 HTTPCaller.FindActByBlockNum = function (Params)
 {
-    var Num = DApps.Accounts.FindActByBlockNum(Params.BlockNum);
+    var Num = COMMON_ACTS.FindActByBlockNum(Params.BlockNum);
     return {Num:Num, result:1};
+}
+
+function FindCrossByBlockNum(FName,Params)
+{
+    var Item = SHARDS[FName](Params.BlockNum);
+    if(Item)
+    {
+        Item.result = 1;
+        return Item;
+    }
+    else
+    {
+        return {result:0};
+    }
+}
+HTTPCaller.FindCrossOutByBlockNum = function (Params)
+{
+    return FindCrossByBlockNum("FindCrossOutByBlockNum", Params);
+}
+HTTPCaller.FindCrossInByBlockNum = function (Params)
+{
+    return FindCrossByBlockNum("FindCrossInByBlockNum", Params);
+}
+
+HTTPCaller.FindCrossRunByBlockNum = function (Params)
+{
+    return FindCrossByBlockNum("FindCrossRunByBlockNum", Params);
 }
 
 HTTPCaller.GetHashList = function (Params)
 {
-    var arr = DApps.Accounts.DBAccountsHash.GetRows(Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = ACCOUNTS.DBAccountsHash.GetRows(Params.StartNum, Params.CountNum, Params.Filter);
     for(var i = 0; i < arr.length; i++)
     {
         var item = arr[i];
+        item.VerifyHTML = "";
         item.BlockNum = item.Num * PERIOD_ACCOUNT_HASH;
         var Block = SERVER.ReadBlockHeaderDB(item.BlockNum);
-        if(Block.MinerHash)
+        if(Block && Block.MinerHash)
         {
             item.Miner = ReadUintFromArr(Block.MinerHash, 0);
         }
         
-        var Arr = SERVER.GetTrRows(item.BlockNum, 0, 1, 0);
-        var Tx = Arr[0];
-        if(Tx && Tx.Type === global.TYPE_TRANSACTION_ACC_HASH)
-            item.VerifyHTML = Tx.VerifyHTML;
-        else
-            item.VerifyHTML = "";
+        var Arr = SERVER.GetTrRows(item.BlockNum, 0, 65535, 0);
+        for(var TxNum = 0; TxNum < Arr.length; TxNum++)
+        {
+            var Tx = Arr[TxNum];
+            if(Tx && Tx.Type === global.TYPE_TRANSACTION_ACC_HASH || Tx.Type === TYPE_TRANSACTION_ACC_HASH_OLD)
+            {
+                item.VerifyHTML = Tx.VerifyHTML;
+                break;
+            }
+        }
     }
     return {arr:arr, result:1};
 }
@@ -693,35 +696,31 @@ HTTPCaller.GetWalletInfo = function (Params)
     var MaxHistory = 0;
     
     var Delta = Date.now() - LastTimeGetHashRate;
-    if(Delta >= 1000)
+    if(Delta >= CONSENSUS_PERIOD_TIME)
     {
-        if(Delta < 1100)
+        if(Delta < CONSENSUS_PERIOD_TIME + 100)
             HashRateOneSec = global.HASH_RATE - LastHashRate;
         LastHashRate = global.HASH_RATE;
         LastTimeGetHashRate = Date.now();
     }
     
-    var TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
-    if(TXBlockNum <= 0)
-    {
-        SERVER.UpdateAllDB();
-        TXBlockNum = DApps.Accounts.GetLastBlockNumAct();
-    }
+    var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     
     var Ret = {result:1, WalletOpen:WALLET.WalletOpen, WalletIsOpen:(WALLET.WalletOpen !== false), WalletCanSign:(WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit),
         CODE_VERSION:CODE_VERSION, MAX_TRANSACTION_LIMIT:MAX_TRANSACTION_LIMIT, PROTOCOL_VER:PROTOCOL_VER, PROTOCOL_MODE:PROTOCOL_MODE,
         MAX_LEVEL:MAX_LEVEL, VersionNum:global.UPDATE_CODE_VERSION_NUM, RelayMode:SERVER.RelayMode, NodeSyncStatus:SERVER.NodeSyncStatus,
         BlockNumDB:SERVER.BlockNumDB, BlockNumDBMin:SERVER.BlockNumDBMin, CurBlockNum:GetCurrentBlockNumByTime(), CurTime:Date.now(),
-        IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), AccountMap:WALLET.AccountMap, ArrLog:ArrLogClient, MaxAccID:DApps.Accounts.GetMaxAccount(),
-        MaxActNum:DApps.Accounts.GetActsMaxNum(), MaxDappsID:DApps.Smart.GetMaxNum(), NeedRestart:global.NeedRestart, ip:SERVER.ip,
+        IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), AccountMap:WALLET.AccountMap, ArrLog:ArrLogClient, MaxAccID:ACCOUNTS.GetMaxAccount(),
+        MaxActNum:COMMON_ACTS.GetActsMaxNum(), MaxJournalNum:JOURNAL_DB.GetMaxNum(), MaxDappsID:SMARTS.GetMaxNum(), MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
+        MaxCrossInNum:SHARDS.GetMaxCrossInNum(), MaxShardNum:SHARDS.GetMaxShardNum(), NeedRestart:global.NeedRestart, ip:SERVER.ip,
         port:SERVER.port, INTERNET_IP_FROM_STUN:global.INTERNET_IP_FROM_STUN, HistoryMaxNum:MaxHistory, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME,
         FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME,
         DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)), NodeAddrStr:SERVER.addrStr,
         STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD, CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum,
         MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(), CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused,
         HashRate:HashRateOneSec, MIN_POWER_POW_TR:MIN_POWER_POW_TR, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
-        MAX_ACCOUNT_HASH:DApps.Accounts.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum, SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK,
-        MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:global.JINN_MODE, sessionid:sessionid,
+        MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum, SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK,
+        SHARD_NAME:global.SHARD_NAME, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:1, sessionid:sessionid,
     };
     
     if(Params.Account)
@@ -741,7 +740,7 @@ HTTPCaller.TestSignLib = function ()
 
 HTTPCaller.GetWalletAccounts = function ()
 {
-    var Ret = {result:1, arr:DApps.Accounts.GetWalletAccountsByMap(WALLET.AccountMap), };
+    var Ret = {result:1, arr:ACCOUNTS.GetWalletAccountsByMap(WALLET.AccountMap), };
     
     Ret.PrivateKey = WALLET.KeyPair.PrivKeyStr;
     Ret.PublicKey = WALLET.KeyPair.PubKeyStr;
@@ -806,8 +805,12 @@ HTTPCaller.SendTransactionHex = function (Params)
     var Res = SERVER.AddTransactionOwn(Tx);
     Result.sessionid = sessionid;
     Result.TxID = Tx._TxID;
+    Result.BlockNum = Tx._BlockNum;
     Result.text = TR_MAP_RESULT[Res];
     Result.ResultSend = Res;
+    
+    if(Res === 1)
+        Result.text = TR_MAP_RESULT[Res] + " on Block " + Result.BlockNum;
     
     var final = false;
     if(Res <= 0 && Res !==  - 3)
@@ -887,35 +890,7 @@ function CheckCorrectDevKey()
     return true;
 }
 
-HTTPCaller.SendECode = function (Param)
-{
-    var Ret = CheckCorrectDevKey();
-    if(Ret !== true)
-        return Ret;
-    
-    if(Param.All)
-    {
-        SERVER.ConnectToAll();
-        
-        var arr = SERVER.GetActualNodes();
-        for(var i = 0; i < arr.length; i++)
-        {
-            var Node = arr[i];
-            SERVER.SendECode(Param, Node);
-        }
-        
-        return {result:1, text:"Sent to " + arr.length + " nodes"};
-    }
-    
-    var Node = FindNodeByAddr(Param.Addr, 1);
-    if(Node === undefined)
-        return {result:0, text:"Node not found"};
-    if(Node === false)
-        return {result:0, text:"Node not active - reconnect"};
-    
-    SERVER.SendECode(Param, Node);
-    return {result:1, text:"Send"};
-}
+
 
 HTTPCaller.SetCheckPoint = function (BlockNum)
 {
@@ -1243,8 +1218,9 @@ function GetCopyNode(Node,bSimple)
     
     if(bSimple)
     {
-        var Item = {ID:Node.id, ip:Node.ip, Active:Node.Active, Hot:Node.Hot, Level:Node.Level, BlockProcessCount:Node.BlockProcessCount,
-            TransferCount:Node.TransferCount, DeltaTime:Node.DeltaTime, Name:Node.Name, Debug:Node.Debug, };
+        var Item = {ID:Node.id, ip:Node.ip, Active:Node.Active, CanHot:Node.CanHot, Hot:Node.Hot, IsCluster:Node.IsCluster, Cross:Node.Cross,
+            Level:Node.Level, BlockProcessCount:Node.BlockProcessCount, TransferCount:Node.TransferCount, DeltaTime:Node.DeltaTime, Name:Node.Name,
+            Debug:Node.Debug, CurrentShard:Node.CurrentShard, };
         return Item;
     }
     
@@ -1371,18 +1347,14 @@ HTTPCaller.RewriteAllTransactions = function (Param)
 
 HTTPCaller.RewriteTransactions = function (Param)
 {
-    var Ret = SERVER.ReWriteDAppTransactions(Param.BlockCount);
+    var Ret = REWRITE_DAPP_TRANSACTIONS(Param.BlockCount);
     return {result:Ret, sessionid:sessionid};
 }
 HTTPCaller.TruncateBlockChain = function (Param)
 {
     var StartNum = SERVER.BlockNumDB - Param.BlockCount;
-    var MinBlock = DApps.Accounts.GetMinBlockAct();
-    if(MinBlock > StartNum)
-    {
-        ToLog("Cant Truncate BlockChain. Very long length. Max length=" + (SERVER.BlockNumDB - MinBlock), 0);
-        return {result:0, sessionid:sessionid};
-    }
+    if(StartNum < 15)
+        StartNum = 15;
     
     SERVER.TruncateBlockDB(StartNum);
     return {result:1, sessionid:sessionid};
@@ -1532,13 +1504,13 @@ HTTPCaller.GetHistoryTransactions = function (Params)
 {
     if(typeof Params === "object" && Params.AccountID)
     {
-        var Account = DApps.Accounts.ReadState(Params.AccountID);
+        var Account = ACCOUNTS.ReadState(Params.AccountID);
         if(!Account)
             return {result:0};
         
         if(!Params.Count)
             Params.Count = 100;
-        var arr = DApps.Accounts.GetHistory(Params.AccountID, Params.Count, Params.NextPos);
+        var arr = ACCOUNTS.GetHistory(Params.AccountID, Params.Count, Params.NextPos);
         if(Params.GetTxID || Params.GetDescription)
         {
             for(var i = 0; i < arr.length; i++)
@@ -1558,7 +1530,7 @@ HTTPCaller.GetHistoryTransactions = function (Params)
                 if(Params.GetDescription && Item.Description === undefined)
                 {
                     
-                    var TR = DApps.Accounts.GetObjectTransaction(Body);
+                    var TR = ACCOUNTS.GetObjectTransaction(Body);
                     if(TR)
                         Item.Description = TR.Description;
                 }
@@ -1619,7 +1591,7 @@ function CopyBlockDraw(Block,MainChains)
         MinerID = Num;
         if(Num)
         {
-            var Item = DApps.Accounts.ReadState(Num);
+            var Item = ACCOUNTS.ReadState(Num);
             if(Item && typeof Item.Name === "string")
             {
                 MinerName = Item.Name.substr(0, 8);
@@ -1869,8 +1841,12 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
             }
 }
 
-function SendGZipData(request,response,Headers,data)
+function SendGZipData(request,response,Headers,data0)
 {
+    if(!data0)
+        data0 = [];
+    var data = Buffer.from(data0);
+    
     let acceptEncoding = request.headers['accept-encoding'];
     if(!global.HTTP_USE_ZIP || !acceptEncoding)
     {
@@ -2105,8 +2081,16 @@ function SetSafeResponce(response)
         response._end = response.end;
         response._writeHead = response.writeHead;
         
+        if(response.socket._events && response.socket._events.error.length < 2)
+            response.socket.on("error", function (err)
+            {
+                console.log("Responce socket.error code=" + err.code);
+                ToLog(err.stack, 3);
+            });
+        
         response.end = function ()
         {
+            
             try
             {
                 if(global.STAT_MODE === 2 && arguments && arguments[0] && arguments[0].length)
@@ -2179,6 +2163,7 @@ if(global.HTTP_PORT_NUMBER)
         
         var fromURL = url.parse(request.url);
         var Path = querystring.unescape(fromURL.path);
+        
         if(!ClientIPMap[remoteAddress])
         {
             ClientIPMap[remoteAddress] = 1;
@@ -2643,19 +2628,13 @@ function GetTransactionByID(Params)
 global.GetTransactionFromBody = GetTransactionFromBody;
 function GetTransactionFromBody(Params,Block,TrNum,Body)
 {
-    var TR = DApps.Accounts.GetObjectTransaction(Body);
+    var TR = ACCOUNTS.GetObjectTransaction(Body);
     if(TR)
     {
         ConvertBufferToStr(TR);
         TR.result = 1;
         TR.Meta = Params.Meta;
-        
-        Engine.DBResult.CheckLoadResult(Block);
-        
-        if(Block.VersionBody === 1 && Block.arrContentResult)
-        {
-            TR.result = Block.arrContentResult[TrNum];
-        }
+        TR.result = GetVerifyTransaction(Block, TrNum);
         TR.BlockNum = Block.BlockNum;
         TR.TrNum = TrNum;
         return TR;

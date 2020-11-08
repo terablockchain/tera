@@ -151,9 +151,15 @@ function InitClass(Engine)
         Child.LastGetNetConstant = 0;
         Child.LastGetCodeVersion = 0;
         Child.LastGetCode = 0;
-        
         Child.StartHotTransferNum = 0;
         
+        Object.defineProperty(Child, "portweb", {get:function ()
+            {
+                if(this.AddrItem)
+                    return this.AddrItem.portweb;
+                else
+                    return 0;
+            }});
         Object.defineProperty(Child, "Score", {get:function ()
             {
                 if(this.AddrItem)
@@ -186,7 +192,8 @@ function InitClass(Engine)
         };
         Child.IsHot = function ()
         {
-            var ChildWas = Engine.LevelArr[this.Level];
+            var LevelArr = Engine.GetLevelArr(Child);
+            var ChildWas = LevelArr[this.Level];
             if(ChildWas && ChildWas === this && !Engine.InHotStart(this))
             {
                 return 1;

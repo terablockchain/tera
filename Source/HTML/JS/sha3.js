@@ -151,13 +151,14 @@
 
     //var OUTPUT_TYPES = ['hex', 'buffer', 'arrayBuffer', 'array'];
     var algorithms = [
-    {name: 'keccak', padding: KECCAK_PADDING, bits: BITS, createMethod: createMethod},
+    {name: 'keccak', padding: KECCAK_PADDING, bits: BITS, createMethod: createMethod, outputs:'array'},
     {name: 'sha3', padding: PADDING, bits: BITS, createMethod: createMethod, outputs:'hex'},
     {name: 'sha3_array', padding: PADDING, bits: BITS, createMethod: createMethod, outputs:'array'},
     {name: 'sha3_buf', padding: PADDING, bits: BITS, createMethod: createMethod, outputs:'buffer'},
     {name: 'shake', padding: SHAKE_PADDING, bits: SHAKE_BITS, createMethod: createShakeMethod},
     {name: 'cshake', padding: CSHAKE_PADDING, bits: SHAKE_BITS, createMethod: createCshakeMethod},
-    {name: 'kmac', padding: CSHAKE_PADDING, bits: SHAKE_BITS, createMethod: createKmacMethod}
+    {name: 'kmac', padding: CSHAKE_PADDING, bits: SHAKE_BITS, createMethod: createKmacMethod},
+    //{name: 'keccak3', padding: KECCAK_PADDING, bits: BITS, createMethod: createMethod, outputs:'array'},
   ];
 
   var methods = {}, methodNames = [];
@@ -166,11 +167,13 @@
   {
     var algorithm = algorithms[i];
     var bits  = algorithm.bits;
-    for (var j = 0; j < bits.length; ++j) {
+    for (var j = 0; j < bits.length; ++j)
+    {
       var methodName = algorithm.name + '_' + bits[j];
       methodNames.push(methodName);
       methods[methodName] = algorithm.createMethod(bits[j], algorithm.padding, algorithm.outputs);
-      if (algorithm.name !== 'sha3') {
+      if (algorithm.name !== 'sha3')
+      {
         var newMethodName = algorithm.name + bits[j];
         methodNames.push(newMethodName);
         methods[newMethodName] = methods[methodName];
@@ -673,13 +676,14 @@
     root.sha3_array_256  = methods.sha3_array_256;
     root.sha3  = methods.sha3_array_256;
 
+    root.keccak256  = methods.keccak_256;
+
 
     // root.sha  = methods.sha3_256;
     // root.shaarr = methods.sha3_array_256;
     root.sha  = function(data){return meshhash(methods.sha3_256(data))};
     root.shaarr = function(data){return meshhash(methods.sha3_array_256(data))};
     root.shabuf=function (data){ return Buffer.from(shaarr(data)) };
-
     root.shabuf=function (data){ return Buffer.from(shaarr(data)) };
 
     //new

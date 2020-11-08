@@ -13,9 +13,6 @@
 switch(global.MODE_RUN)
 {
     case "FORK":
-        
-        if(global.FORK_MODE || global.LOCAL_RUN === 1)
-            global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
         global.PERIOD_ACCOUNT_HASH = 10;
         global.START_BLOCK_ACCOUNT_HASH = 1;
@@ -65,7 +62,6 @@ switch(global.MODE_RUN)
         global.START_NETWORK_DATE = 1593818071532;
         global.CONSENSUS_PERIOD_TIME = 3000;
         
-        global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
         global.PERIOD_ACCOUNT_HASH = 10;
         global.START_BLOCK_ACCOUNT_HASH = 0;
@@ -110,6 +106,10 @@ switch(global.MODE_RUN)
         
         global.STAT_MODE = 1;
         
+        global.UPDATE_CODE_SHARDING = 3160000;
+        
+        global.SHARD_NAME = "TEST";
+        
         break;
         
     case "LOCAL_JINN":
@@ -120,9 +120,8 @@ switch(global.MODE_RUN)
         
         global.CONSENSUS_PERIOD_TIME = 3000;
         
-        global.RESYNC_CONDITION = 0;
         global.REST_BLOCK_SCALE = 100;
-        global.PERIOD_ACCOUNT_HASH = 10;
+        global.PERIOD_ACCOUNT_HASH = 50;
         global.START_BLOCK_ACCOUNT_HASH = 1;
         global.START_BLOCK_ACCOUNT_HASH3 = 1;
         
@@ -164,7 +163,7 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_JINN_KTERA = global.UPDATE_CODE_JINN;
         global.NEW_FORMULA_JINN_KTERA = 3 * 3;
         
-        global.UPDATE_CODE_SHARDING = 100;
+        global.UPDATE_CODE_SHARDING = 0;
         
         break;
         

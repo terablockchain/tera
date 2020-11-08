@@ -73,10 +73,7 @@ String.prototype.right = function (count)
         return this.substr(0, this.length);
 }
 
-if(fs.existsSync("./lib/bintrees"))
-    global.RBTree = require("../lib/bintrees").RBTree;
-else
-    global.RBTree = require('bintrees').RBTree;
+require("../jinn/tera/db/BinTreeExt");
 
 global.Stun = require('stun');
 global.ZIP = require("zip");
@@ -597,6 +594,8 @@ function ResetBit(Sum,BitNum)
 
 function GetBit(Sum,BitNum)
 {
+    if(!Sum)
+        return 0;
     return (Sum >>> 0) & (1 << BitNum);
 }
 

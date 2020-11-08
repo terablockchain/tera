@@ -8,13 +8,14 @@
  * Telegram:  https://t.me/terafoundation
 */
 
-
 "use strict";
+
+// Support module for storing files on the blockchain
+
 
 global.TYPE_TRANSACTION_FILE = 5;
 
 global.FORMAT_FILE_CREATE = "{Type:byte,Name:str,ContentType:str,Reserve:arr10,Data:tr}";
-const WorkStructRun = {};
 
 
 class FileApp extends require("./dapp")
@@ -33,13 +34,7 @@ class FileApp extends require("./dapp")
     {
         return FORMAT_FILE_CREATE;
     }
-    
-    GetVerifyTransaction(Block, BlockNum, TrNum, Body)
-    {
-        return 1;
-    }
 }
-module.exports = FileApp;
 var App = new FileApp;
 DApps["File"] = App;
 DAppByType[TYPE_TRANSACTION_FILE] = App;

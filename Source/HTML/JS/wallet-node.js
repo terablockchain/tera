@@ -198,6 +198,19 @@ function UseMining()
         }
     });
 }
+
+function UseMiningShards()
+{
+    var Data = {USE_MINING_SHARDS:$("idUseMiningShards").checked};
+    
+    GetData("SaveConstant", Data, function (Data)
+    {
+        if(Data && Data.result)
+        {
+            SetStatus("Save mining cross-tx: " + $("idUseMiningShards").checked);
+        }
+    });
+}
 function SetPercentMining()
 {
     var Data = {POW_MAX_PERCENT:$("idPercentMining").value};
@@ -539,19 +552,19 @@ function DoBlockChainProcess(FuncName,Text,LastBlock)
         Params.BlockCount = ParseNum($("idBlockCount").value);
         Text = Text.replace("%1", Params.BlockCount);
     }
-    var result = confirm(Text + "?");
-    if(!result)
-        return;
     
-    SetVisibleBlock("idServerBlock", 1);
-    SetStatus("START: " + Text);
-    
-    GetData(FuncName, Params, function (Data)
+    DoConfirm(Text + "?", " ", function ()
     {
-        if(Data)
+        SetVisibleBlock("idServerBlock", 1);
+        SetStatus("START: " + Text);
+        
+        GetData(FuncName, Params, function (Data)
         {
-            SetStatus("FINISH: " + Text, !Data.result);
-        }
+            if(Data)
+            {
+                SetStatus("FINISH: " + Text, !Data.result);
+            }
+        });
     });
 }
 
@@ -563,7 +576,6 @@ function SetNewActSearch(DefActs)
     
     GetData("FindActByBlockNum", {BlockNum:BlockNum}, function (Data)
     {
-        ToLog(Data);
         if(Data && Data.Num)
         {
             $("idViewActNum").value = Data.Num;
@@ -579,10 +591,34 @@ function SetNewAccHashSearch(Def)
     if(!BlockNum)
         return;
     
-    var Period = CONFIG_DATA.CONSTANTS.PERIOD_ACCOUNT_HASH;
+    var Period = CONFIG_DATA.PERIOD_ACCOUNT_HASH;
     if(!Period)
         Period = 50;
     
     $("idViewHashNum").value = Math.floor(BlockNum / Period);
     ViewCurrent(Def);
+}
+
+function SetRowByBlockNum(Def)
+{
+    let BlockNum =  + $(Def.FBlockName).value;
+    if(!BlockNum)
+    {
+        SetStatus("");
+        return;
+    }
+    
+    GetData(Def.FindBlock, {BlockNum:BlockNum}, function (Data)
+    {
+        if(Data && Data.Num)
+        {
+            SetStatus("");
+            $(Def.NumName).value = Data.Num;
+            ViewCurrent(Def);
+        }
+        else
+        {
+            SetError("Not found block: " + BlockNum);
+        }
+    });
 }

@@ -15,6 +15,12 @@ require("./library.js");
 
 const crypto = require('crypto');
 
+function sha256(Str,encode)
+{
+    return new crypto.createHash('sha256').update(Str).digest(encode);
+}
+global.sha256 = sha256;
+
 global.MAX_SUPER_VALUE_POW = (1 << 30) * 2;
 
 var BuferForStr = Buffer.alloc(32);
@@ -53,6 +59,11 @@ global.GetHexFromArr = function (arr)
     else
         return Buffer.from(arr).toString('hex').toUpperCase();
 }
+global.GetHexFromArr8 = function (arr)
+{
+    return GetHexFromArr(arr).substr(0, 8);
+}
+
 function GetArrFromHex(Str)
 {
     var array = [];
@@ -103,11 +114,34 @@ global.CheckDevelopSign = function (SignArr,Sign)
     
     for(var i = 0; i < DEVELOP_PUB_KEY_ARR.length; i++)
     {
-        var Result = secp256k1.verify(hash, Buffer.from(Sign), DEVELOP_PUB_KEY_ARR[i]);
+        var Result = CheckSign(hash, Sign, DEVELOP_PUB_KEY_ARR[i]);
         if(Result)
             return 1;
     }
     
+    return 0;
+}
+
+global.CheckSign = function (Hash,Sign,PubKey)
+{
+    if(PubKey[0] === 2 || PubKey[0] === 3)
+    {
+        if(!(Hash instanceof Buffer))
+            Hash = Buffer.from(Hash);
+        if(!(Sign instanceof Buffer))
+            Sign = Buffer.from(Sign);
+        if(!(PubKey instanceof Buffer))
+            PubKey = Buffer.from(PubKey);
+        
+        try
+        {
+            return secp256k1.verify(Hash, Sign, PubKey);
+        }
+        catch(e)
+        {
+            ToLogTx("" + e, 3);
+        }
+    }
     return 0;
 }
 
@@ -124,36 +158,6 @@ global.CheckContextSecret = function (Context,ContextAddrTo)
     }
 }
 
-global.GetSignHash = function (Context,ContextAddrTo,Msg)
-{
-    
-    CheckContextSecret(Context, ContextAddrTo);
-    
-    if(typeof Msg === "string")
-        Msg = Buffer.from(Msg);
-    
-    var Buf = Buffer.concat([Msg, ContextAddrTo.Secret], Msg.length + ContextAddrTo.Secret.length);
-    var Arr = shaarr(Buf);
-    return Arr;
-}
-
-global.GetVerifyHash = function (Context,ContextAddr,Msg,Sign1)
-{
-    try
-    {
-        var Sign2 = GetSignHash(Context, ContextAddr, Msg);
-        
-        for(var i = 0; i < Sign1.length; i++)
-            if(Sign1[i] !== Sign2[i])
-                return false;
-        
-        return true;
-    }
-    catch(e)
-    {
-        return false;
-    }
-}
 
 
 global.GetKeyPair = function (password,secret,startnonce1,startnonce2)
@@ -1022,6 +1026,72 @@ function toUTF8Array(str)
     return utf8;
 }
 
+function Utf8ArrayToStrNew(array)
+{
+    var out = Utf8ArrayToStrInner(array);
+    
+    for(var i = 0; i < out.length; i++)
+    {
+        if(out.charCodeAt(i) === 0)
+        {
+            out = out.substr(0, i);
+            break;
+        }
+    }
+    return out;
+}
+
+var Utf8ArrayToStrInner = (function ()
+{
+    var charCache = new Array(128);
+    var charFromCodePt = String.fromCodePoint || String.fromCharCode;
+    var result = [];
+    
+    return function (array)
+    {
+        var codePt, byte1;
+        var buffLen = array.length;
+        
+        result.length = 0;
+        
+        for(var i = 0; i < buffLen; )
+        {
+            byte1 = array[i++];
+            
+            if(byte1 <= 0x7F)
+            {
+                codePt = byte1;
+            }
+            else
+                if(byte1 <= 0xDF)
+                {
+                    codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
+                }
+                else
+                    if(byte1 <= 0xEF)
+                    {
+                        codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                    }
+                    else
+                        if(String.fromCodePoint)
+                        {
+                            codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                        }
+                        else
+                        {
+                            codePt = 63;
+                            i += 3;
+                        }
+            
+            result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+        }
+        
+        return result.join('');
+    };
+}
+)();
+
+//Old version
 function Utf8ArrayToStr(array)
 {
     var out, i, len, c;

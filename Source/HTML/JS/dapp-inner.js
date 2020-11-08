@@ -23,6 +23,7 @@ function SetStorage(Key,Value)
     var Data = {cmd:"setstorage", Key:Key, Value:Value};
     SendData(Data);
 }
+
 function GetStorage(Key,F)
 {
     var Data = {cmd:"getstorage", Key:Key};
@@ -46,12 +47,23 @@ function GetInfo(F)
     SendData(Data, F);
 }
 
-function Call(Account,MethodName,Params,F)
+function Call(Account,MethodName,Params,A,B)
 {
-    var Data = {cmd:"DappStaticCall", MethodName:MethodName, Params:Params, Account:Account};
+    var F, ParamsArr;
+    if(typeof A === "function")
+    {
+        F = A;
+        ParamsArr = B;
+    }
+    else
+    {
+        F = B;
+        ParamsArr = A;
+    }
+    var Data = {cmd:"DappStaticCall", MethodName:MethodName, Params:Params, ParamsArr:ParamsArr, Account:Account};
     SendData(Data, F);
 }
-function SendCall(Account,MethodName,Params,FromNum)
+function SendCall(Account,MethodName,Params,A,B)
 {
     if(!INFO.WalletCanSign)
     {
@@ -59,7 +71,19 @@ function SendCall(Account,MethodName,Params,FromNum)
         return 0;
     }
     
-    var Data = {cmd:"DappSendCall", MethodName:MethodName, Params:Params, Account:Account, FromNum:FromNum};
+    var FromNum, ParamsArr;
+    if(typeof A === "number")
+    {
+        FromNum = A;
+        ParamsArr = B;
+    }
+    else
+    {
+        FromNum = B;
+        ParamsArr = A;
+    }
+    
+    var Data = {cmd:"DappSendCall", MethodName:MethodName, Params:Params, ParamsArr:ParamsArr, Account:Account, FromNum:FromNum};
     SendData(Data);
     return 1;
 }

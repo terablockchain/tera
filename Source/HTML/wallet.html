@@ -62,9 +62,9 @@
 
     var CurTabName;
 
-    var TabArr=[{name:"TabAccounts",log:1},{name:"TabSend",log:1},{name:"TabDapps"},{name:"TabExplorer"}];
+    var TabArr=[{name:"TabAccounts",log:1},{name:"TabSend",log:1},{name:"TabDapps"},{name:"TabSharding"},{name:"TabExplorer"}];
     var SaveIdArr=["idAccount","idTo","idSumSend","idDescription","idSelStyle",
-        "idViewAccountNum","idViewBlockNum","idViewActNum","idViewHashNum","idViewDappNum",
+        "idViewAccountNum","idViewBlockNum","idViewActNum","idViewJournNum","idViewCrossOutNum","idViewCrossInNum","idViewHashNum","idViewDappNum","idViewShardNum",
         "idRunText","idViewAccountFilter",
         "idBlockCount"];
 
@@ -72,7 +72,12 @@
     var MaxAccID=0;
     var MaxDappsID=0;
     var MaxActNum=0;
+    var MaxJournalNum=0;
     var HistoryMaxNum=0;
+    var MaxCrossOutNum=0;
+    var MaxCrossInNum=0;
+    //var MaxCrossRunNum=0;
+    var MaxShardNum=0;
 
     var idPercentItem;
 
@@ -208,8 +213,8 @@
     }
     function SetViewWN()
     {
-            $("Item.WN").innerText="";
-            SetVisibleBlock("Item.WN","none");
+        $("Item.WN").innerText="";
+        SetVisibleBlock("Item.WN","none");
     }
     function CancelCreateAccount()
     {
@@ -263,6 +268,76 @@
         {
             SendTrCreateAcc(Currency,PubKeyStr,Description,AMinerID,Smart,0,bAddToPay);
         }
+    }
+
+    function SendRunRun()
+    {
+        SetStatus("");
+        GetData("SendDirectCode",{Code:"RunRun()",TX:1}, function (Data)
+        {
+            if(Data)
+            {
+                SetStatus("Run ok");
+                //ViewCurrent(DefShard);
+            }
+        });
+    }
+
+    function IsCorrectShardName(Name)
+    {
+        if(!Name || Name.length<3)
+            return "Error shard name: "+Name+" Length must be min 3 letters";
+        const SHARD_LETTER="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        for(var i=0;i<Name.length;i++)
+        {
+            var Index=SHARD_LETTER.indexOf(Name.substr(i,1));
+            if(Index<0)
+                return "Error shard name: "+Name+" Letters must be between A-Z or 0-9";
+            if(i===0 && Index<10)
+                return "Error shard name: "+Name+" First letters must be between A-Z";
+        }
+
+        return 1;
+    }
+
+    function CreateNewShard()
+    {
+        var Name=$("idShardName").value;
+        var Confirms=$("idShardConfirms").value;
+        Name=Name.toUpperCase().trim();
+        var Result=IsCorrectShardName(Name);
+        if(Result!==1)
+            return SetError(Result);
+
+
+
+        var TR=
+            {
+                Type:TYPE_TRANSACTION_NEW_SHARD,
+                ShardName:Name,
+                Confirms:Confirms,
+                Description:$("idShardDescription").value,
+            };
+
+        var Body=[];
+        WriteByte(Body,TR.Type);
+        WriteStr(Body,TR.ShardName,8);
+        WriteStr(Body,TR.Description,40);
+        WriteUint32(Body,TR.Confirms);
+        Body.length+=6;//Reserve
+
+        var Item=
+            {
+                name:Name,
+                To:0,
+                Amount:CONFIG_DATA.PRICE_DAO.NewShard,
+                Description:"Shard "+Name+":"+Confirms,
+                Body:Body,
+            };
+        AddToInvoiceList(Item,1);
+
+        SetVisibleShardCreate();
     }
 
 
@@ -351,10 +426,15 @@
 
     var DefHistory={BlockName:"idPaginationHistory", NumName:"idViewHistoryNum", TabName:"grid_history",APIName:"GetHistoryAct",Param3:"",FilterName:"idViewHistoryFilter",TotalSum:"idTotalSumH"};
     var DefActs={BlockName:"idPaginationAct", NumName:"idViewActNum", TabName:"grid_acts_all",APIName:"GetActList",Param3:""};
+    var DefJournal={BlockName:"idPaginationJournal", NumName:"idViewJournNum", TabName:"grid_journal",APIName:"GetJournalList",Param3:"", FBlockName:"idViewJournalRunBlockNum",FindBlock:"FindJournalByBlockNum"};
     var DefHash={BlockName:"idPaginationHash", NumName:"idViewHashNum", TabName:"grid_hash_all",APIName:"GetHashList",Param3:""};
 
     var DefDapps={BlockName:"idPaginationDapps", NumName:"idViewDappNum", TabName:"grid_dapps_all",APIName:"GetDappList",Param3:"",FilterName:"idViewDappsFilter",FilterName2:"idCategory",CountViewRows:10};
 
+    var DefCrossOut={BlockName:"idPaginationCrossSend", NumName:"idViewCrossOutNum", TabName:"grid_cross_send",APIName:"GetCrossOutList",Param3:"", FBlockName:"idViewCrossOutBlockNum",FindBlock:"FindCrossOutByBlockNum"};
+    var DefCrossIn={BlockName:"idPaginationCrossReceive", NumName:"idViewCrossInNum", TabName:"grid_cross_receive",APIName:"GetCrossInList",Param3:"", FBlockName:"idViewCrossInBlockNum",FindBlock:"FindCrossInByBlockNum"};
+
+    var DefShard={BlockName:"idPaginationShard", NumName:"idViewShardNum", TabName:"grid_shard",APIName:"GetShardList",Param3:""};
 
 
     function ViewHistory()
@@ -470,7 +550,7 @@
         ServerTime=Data.CurTime;
         var DeltaTime=Data.DELTA_CURRENT_TIME/1000;
 
-        var Name="TERA";
+        var Name=Data.SHARD_NAME;
         if(CONFIG_DATA.CONSTANTS.WALLET_NAME)
             Name=CONFIG_DATA.CONSTANTS.WALLET_NAME;
 
@@ -483,6 +563,7 @@
 
 
         window.NETWORK_NAME=CONFIG_DATA.NETWORK;
+        window.SHARD_NAME=CONFIG_DATA.SHARD_NAME;
         if(!WasInitCurrency)
         {
 
@@ -521,7 +602,8 @@
                     }
 
                     var Loaded=(LoadedH+LoadedB)/2;
-                    Percent=100*(Data.BlockNumDB+Loaded*0.95)/MaxNum;
+                    //Percent=100*(Data.BlockNumDB+Loaded*0.95)/MaxNum;
+                    Percent=100*(Loaded*0.95)/DeltaDB;
                     if(Percent>=100)
                         Percent=99.99;
                     StrMode = "(H:"+(JinnStat.Header2-JinnStat.Header1)+" B:"+(JinnStat.Block2-JinnStat.Block1)+")";
@@ -582,11 +664,22 @@
         MaxAccID=Data.MaxAccID;
         MaxDappsID=Data.MaxDappsID;
         MaxActNum=Data.MaxActNum;
+        MaxJournalNum=Data.MaxJournalNum;
+        MaxCrossOutNum=Data.MaxCrossOutNum;
+        MaxCrossInNum=Data.MaxCrossInNum;
+        //MaxCrossRunNum=Data.MaxCrossRunNum;
+        MaxShardNum=Data.MaxShardNum;
 
 
 
         PubKeyStr=Data.PublicKey;
         PrivKeyStr=Data.PrivateKey;
+        sessionStorage[WALLET_KEY_NAME]=PrivKeyStr;
+        Storage.setItem(WALLET_KEY_NAME,"");
+
+
+
+
 
         WalletOpen=Data.WalletOpen;
         SetVisibleBtOpenWallet();
@@ -631,8 +724,9 @@
 
         SetVisibleBlock("idChainMode",Data.IsDevelopAccount);
 
+        var bDevService=!!CONFIG_DATA.CONSTANTS.WALLET_DESCRIPTION;
         SetVisibleBlock("idDevelopService",Data.IsDevelopAccount);
-        SetVisibleBlock("idDevelopService2",CONFIG_DATA.CONSTANTS.WALLET_DESCRIPTION);
+        SetVisibleBlock("idDevelopService2",bDevService);
         //SetVisibleBlock("idTimeDelta",CONFIG_DATA.CONSTANTS.COMMON_KEY?"inline-block":0);
 
 
@@ -656,6 +750,7 @@
         //Mining
         MiningAccount=Data.MiningAccount;
         $("idUseMining").checked=CONFIG_DATA.CONSTANTS.USE_MINING;
+        $("idUseMiningShards").checked=CONFIG_DATA.CONSTANTS.USE_MINING_SHARDS;
         if(!idPercentItem || document.activeElement!==idPercentItem)
         {
             idPercentItem=$("idPercentMining");
@@ -713,6 +808,11 @@
             $("GetStateItem2(Item)").innerText="";
         }
 
+        if(bDevService)
+        {
+            sessionStorage[WALLET_KEY_NAME]="";
+        }
+
     }
     
     function ChangeLog()
@@ -759,28 +859,6 @@
 
 
     //LIB
-    function ConfirmationFromBlock(BlockNum)
-    {
-        var Length=MaxBlockNum-BlockNum;
-        if(Length>0)
-        {
-            if(Length<=100)
-                return Length;
-            else
-            {
-                return ">"+Math.floor(Length/100)*100;
-            }
-        }
-        else
-            return "";
-    }
-
-
-
-
-
-
-
     var bMainCanClear=true;
     var StrMainStatus="";
     var StrNormalStatus="";
@@ -805,7 +883,8 @@
 
     function ViewStatus()
     {
-        var Str=StrMainStatus+StrNormalStatus;
+        var Str="<B>Shard: "+window.SHARD_NAME+" </B>"+StrNormalStatus+StrMainStatus;
+
         var id = $("idStatus");
         id.innerHTML=Str;
     }
@@ -813,7 +892,7 @@
     {
         if(!bNoSound)
             $("sound_err").play();
-        SetStatus("<DIV  align='left' style='color:red'><B>"+Str+"</B></DIV>");
+        SetStatus("<span  align='center' style='color:red;align-content: center'><B>"+Str+"</B></span>");
     }
     function SetStatusMining(Str)
     {
@@ -867,6 +946,11 @@
         {
             ViewDapps();
         }
+        // else
+        // if(name==="TabSharding")
+        // {
+        //     ViewEnd(DefCrossOut,MaxCrossOutNum);
+        // }
     }
 
     function SelectTab(name,bNoHistory)
@@ -891,6 +975,21 @@
 
     function CheckCtrlEnterAndESC(e,F)
     {
+        if(IsVisibleBlock("idOverlay"))
+        {
+            if(e.keyCode===27)
+            {
+                closeModal();
+            }
+            else
+            if(e.keyCode===13)
+            {
+                setTimeout(OnConfirmOK,100);
+            }
+            return;
+        }
+
+
         SaveValues();
 
         if(e.ctrlKey && e.keyCode===13)
@@ -1089,6 +1188,7 @@
 
     function ViewOpenWallet()
     {
+
         if(WalletOpen!==false)
         {
             SetStatus("Wallet not close");
@@ -1314,9 +1414,10 @@
 
         <table id="TabHeader" class="tabheader">
             <tr>
-                <th><DIV id="MTabAccounts" onclick="SelectTab('TabAccounts')" class="bttab">CONFIG</DIV></th>
+                <th><DIV id="MTabAccounts" onclick="SelectTab('TabAccounts')" class="bttab">ACCOUNTS</DIV></th>
                 <th><DIV id="MTabSend" onclick="SelectTab('TabSend')" class="bttab">SEND</DIV></th>
                 <th><DIV id="MTabDapps" onclick="SelectTab('TabDapps')" class="bttab">DApps</DIV></th>
+                <th><DIV id="MTabSharding" onclick="SelectTab('TabSharding')" class="bttab">SHARDING</DIV></th>
                 <th><DIV id="MTabExplorer" onclick="SelectTab('TabExplorer')" class="bttab">EXPLORER</DIV></th>
             </tr>
         </table>
@@ -1456,13 +1557,13 @@
                             <td>
                                 <INPUT type="string" maxlength="40" style="width: 260px;text-align: left" autocomplete="off" id="idAccountName" onkeyup="CheckLengthAccDesription('idAccountName',40)">
                                 Currency:
-                                <input list="idCurrencyList" id="idCurrency" style="width: 100px;" onchange="ValidateCurrency(this)"/>
+                                <input type="search" list="idCurrencyList" id="idCurrency" style="width: 130px;text-align: left; height: 22px;padding-right: 20px;" onchange="ValidateCurrency(this)"/>
                                 <datalist id="idCurrencyList" style="width: 80px;">
                                     <option value="Loading"></option>
                                 </datalist>
 
                                 Smart:
-                                <INPUT type="number" id="idSmart" min=0 max=100000000 value="0" style="width: 90px;">
+                                <INPUT type="number" id="idSmart" min=0 max=100000000 value="0" style="width: 70px;">
                             </td>
                         </tr>
 
@@ -1594,7 +1695,7 @@
                 <tr>
                     <td>Pay to</td>
                     <td>
-                        <INPUT list="idToList" style="float: left" type="string" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Payee (required)" >
+                        <INPUT list="idToList" style="float: left" type="string" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Payee (required)" >
                         <datalist id="idToList" style2="width: 80px;">
                             <option value="Loading"></option>
                         </datalist>
@@ -1629,6 +1730,7 @@
                 <BR>
                 <INPUT type="button" onclick="SignJSON()" class="btdoit bt" value="Sign JSON" id="idSignJSON">
                 <INPUT type="button" onclick="SendMoneyJSON()" class="btdoit bt" value="Send from JSON">
+                <INPUT type="button" onclick="SendMoneyTest()" class="btdoit bt" value="Send TEST">
             </DIV>
 
             <script>
@@ -1661,11 +1763,11 @@
                 </select>
                 <BR>
 
-                <INPUT type="button" onclick="ViewBegin(DefDapps)" class="btdoitm bt" value="|&lt;-">
-                <INPUT type="button" onclick="ViewPrev(DefDapps)" class="btdoit bt" value="&lt;&lt; Prev">
+                <INPUT type="button" onclick="ViewBegin(DefDapps)" class="btscrollm bt" value="|&lt;-">
+                <INPUT type="button" onclick="ViewPrev(DefDapps)" class="btscroll bt" value="&lt;&lt; Prev">
                 <INPUT type="number" id="idViewDappNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefDapps)">
-                <INPUT type="button" onclick="ViewNext(DefDapps,MaxDappsID)" class="btdoit bt" value="Next &gt;&gt;">
-                <INPUT type="button" onclick="ViewEnd(DefDapps,MaxDappsID)" class="btdoitm bt" value="-&gt;|">
+                <INPUT type="button" onclick="ViewNext(DefDapps,MaxDappsID)" class="btscroll bt" value="Next &gt;&gt;">
+                <INPUT type="button" onclick="ViewEnd(DefDapps,MaxDappsID)" class="btscrollm bt" value="-&gt;|">
 
                 <table id="grid_dapps_all" class="grid">
                     <tr>
@@ -1679,6 +1781,8 @@
                         <th id="(RetHistoryAccount(Item,'Owner'))" class="num">Owner</th>
 
                         <th id="RetBool(Item.TokenGenerate)" class="bool">Token generate</th>
+<!--                        <th id="Item.CrossMsgConfirms" class="num">Cross confirms</th>-->
+
                         <!--<th id="Item.ISIN" class="num">ISIN</th>-->
                         <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block Num</th>
 
@@ -1688,8 +1792,8 @@
                 </table>
 
 
-                <INPUT type="button" onclick="ViewPrev(DefDapps)" class="btdoit bt" value="&lt;&lt; Prev">
-                <INPUT type="button" onclick="ViewNext(DefDapps,MaxDappsID)" class="btdoit bt" value="Next &gt;&gt;">
+                <INPUT type="button" onclick="ViewPrev(DefDapps)" class="btscroll bt" value="&lt;&lt; Prev">
+                <INPUT type="button" onclick="ViewNext(DefDapps,MaxDappsID)" class="btscroll bt" value="Next &gt;&gt;">
 
             </DIV>
 
@@ -1699,30 +1803,24 @@
 
         <DIV id="TabExplorer" style="display: none">
 
-            <div class="findtxid">Find Tx: <INPUT type="search" id="idFindTx" placeholder="Type TxID"><button onclick="OnFindTx('idFindTx')">Find</button></div>
+            <div class="findtxid"><span style="padding-top: 8px">Find Tx: </span><INPUT type="search" class="radius" id="idFindTx" placeholder="Type TxID..."><button style="margin-left: 5px" onclick="OnFindTx('idFindTx')">Find</button></div>
 
-            <INPUT type="button" onclick="RestartNode()"  class="btdoit btopen bt" value="Restart node">
             <INPUT type="button" onclick="window.Open('./HTML/stat.html','counters',920)" class="btdoit btopen bt" id="idCounters" value="Counters">
             <INPUT type="button" onclick="window.Open('./HTML/console.html','console',1240)" class="btdoit btopen bt" id="idConsole" value="Console">
             <INPUT type="button" onclick="window.Open('./HTML/monitor.html','monitor',1200)" class="btdoit btopen bt" id="idMonitor" value="Monitor">
             <INPUT type="button" onclick="window.Open('./HTML/network.html','network',1200)" class="btdoit btopen bt" id="idNetwork" value="Network">
+            <INPUT type="button" onclick="ViewCurrent({BlockName:'idUtilView'},1,this);SetImg(this,'idUtilView');" class="btdoit bt btexlporer" id="idDown" value="Utilites">
+
 
 
             <BR>
             <INPUT type="button" onclick="ViewCurrent(DefAccounts,1,this);" class="btdoit bt btexlporer" id="idDown" value="Accounts">
             <INPUT type="button" onclick="ViewCurrent(DefBlock,1,this)" class="btdoit bt btexlporer" id="idDown" value="Blocks & Tx">
             <INPUT type="button" onclick="ViewCurrent(DefActs,1,this)" class="btdoit bt btexlporer" id="idDown" value="Accounts acts">
+<!--            <INPUT type="button" disabled=1" class="btdoit btexlporer" style="background-color: transparent;border-color: transparent" value=" ">-->
+            <INPUT type="button" onclick="ViewCurrent(DefJournal,1,this)" class="btdoit bt btexlporer" id="idDown" value="Journal">
             <INPUT type="button" onclick="ViewCurrent(DefHash,1,this)" class="btdoit bt btexlporer" id="idDown" value="Accounts hash">
-            <INPUT type="button" onclick="SetVisibleUtil(this)" class="btdoit bt btexlporer" id="idDown" value="Utilites">
 
-            <script>
-                function SetVisibleUtil(This)
-                {
-                    MoveUp($("idUtilView"));
-                    SetVisibleBlock('idUtilView',!IsVisibleBlock('idUtilView'));
-                    SetImg(This,'idUtilView');
-                }
-            </script>
 
 
             <BR>
@@ -1731,11 +1829,11 @@
                     <HR>
                     <DIV id="view_header" >Accounts</DIV><BR>
                     Search:<INPUT type="search" id="idViewAccountFilter" value="" onchange="CheckNewSearch(DefAccounts); ViewCurrent(DefAccounts)">
-                    <INPUT type="button" onclick="ViewBegin(DefAccounts)" class="btdoitm bt" value="|&lt;-">
-                    <INPUT type="button" onclick="ViewPrev(DefAccounts)" class="btdoit bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewBegin(DefAccounts)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefAccounts)" class="btscroll bt" value="&lt;&lt; Prev">
                     <INPUT type="number" id="idViewAccountNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefAccounts)">
-                    <INPUT type="button" onclick="ViewNext(DefAccounts,MaxAccID)" class="btdoit bt" value="Next &gt;&gt;">
-                    <INPUT type="button" onclick="ViewEnd(DefAccounts,MaxAccID)" class="btdoitm bt" value="-&gt;|">
+                    <INPUT type="button" onclick="ViewNext(DefAccounts,MaxAccID)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefAccounts,MaxAccID)" class="btscrollm bt" value="-&gt;|">
 
                     <table id="grid_accounts_all" class="grid">
                         <tr>
@@ -1745,15 +1843,15 @@
                             <th id="Item.Name" class="accname">Name</th>
                             <th id="Item.PubKeyStr" class="pubkey">PubKey</th>
                             <th id="Item.Value.OperationID" class="num">Operation</th>
-                            <th id="(RetHistoryAccount(Item,'Adviser'))" class="num">Adv</th>
+                            <th id="Item.Adviser" class="num">Adv</th>
                             <th id="Item.Value.Smart" class="num">Smart</th>
                             <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="num">Block Num</th>
                             <th id="GetStateItem2(Item)" class="hash2">State</th>
                         </tr>
                     </table>
 
-                    <INPUT type="button" onclick="ViewPrev(DefAccounts)" class="btdoit bt" value="&lt;&lt; Prev">
-                    <INPUT type="button" onclick="ViewNext(DefAccounts,MaxAccID)" class="btdoit bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewPrev(DefAccounts)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefAccounts,MaxAccID)" class="btscroll bt" value="Next &gt;&gt;">
 
                     <BR>
                     <B><DIV id="idTotalSum"></DIV></B>
@@ -1764,11 +1862,11 @@
                     <HR>
                     <DIV id="view_header" >Blocks<BR></DIV>
                     <!--<DIV id="idFilterB">JS:<INPUT type="search" id="idViewBlockFilter"  value="" onchange="ViewCurrent(DefBlock)"></DIV>-->
-                    <INPUT type="button" onclick="ViewBegin(DefBlock)" class="btdoitm bt" value="|&lt;-">
-                    <INPUT type="button" onclick="ViewPrev(DefBlock)" class="btdoit bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewBegin(DefBlock)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefBlock)" class="btscroll bt" value="&lt;&lt; Prev">
                     <INPUT type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefBlock)">
-                    <INPUT type="button" onclick="ViewNext(DefBlock,ServerBlockNumDB)" class="btdoit bt" value="Next &gt;&gt;">
-                    <INPUT type="button" onclick="ViewEnd(DefBlock,ServerBlockNumDB)" class="btdoitm bt" value="-&gt;|">
+                    <INPUT type="button" onclick="ViewNext(DefBlock,ServerBlockNumDB)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefBlock,ServerBlockNumDB)" class="btscrollm bt" value="-&gt;|">
 
                     <table id="grid_block_all" class="grid">
                         <tr>
@@ -1779,7 +1877,7 @@
                             <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
                             <th id="GetHexFromArr(Item.Hash)" class="hash">Hash</th>
 
-                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>
+<!--                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>-->
 <!--                            <th id="GetHexFromArr(Item.SeqHash)" class="hash">SeqHash</th>-->
 <!--                            <th id="GetHexFromArr(Item.SumHash)" class="hash">SumHash</th>-->
 <!--                            <th id="GetHexFromArr(Item.AddrHash)" class="hash">AddrHash</th>-->
@@ -1805,21 +1903,50 @@
                         </tr>
                     </table>
 
-                    <INPUT type="button" onclick="ViewPrev(DefBlock)" class="btdoit bt" value="&lt;&lt; Prev">
-                    <INPUT type="button" onclick="ViewNext(DefBlock,ServerBlockNumDB)" class="btdoit bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewPrev(DefBlock)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefBlock,ServerBlockNumDB)" class="btscroll bt" value="Next &gt;&gt;">
 
                 </DIV>
 
+
+                <DIV id="idPaginationJournal" style="display: none">
+                    <HR>
+                    <DIV id="view_header" >Journal rows<BR></DIV>
+                    Block:<INPUT type="search" id="idViewJournalRunBlockNum" value="" onchange="SetRowByBlockNum(DefJournal);">
+                    <INPUT type="button" onclick="ViewBegin(DefJournal)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefJournal)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="number" id="idViewJournNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefJournal)">
+                    <INPUT type="button" onclick="ViewNext(DefJournal,MaxJournalNum)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefJournal,MaxJournalNum)" class="btscrollm bt" value="-&gt;|">
+
+
+                    <table id="grid_journal" class="grid">
+                        <tr>
+                            <th id="Item.Num" class="num">Num</th>
+                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                            <th id="GetHexFromArr(Item.SumHash)" class="hash">Sum Hash</th>
+                            <th id="(RetVerify(Item.VerifySumHash))" class="bool">S</th>
+                            <th id="GetHexFromArr(Item.AccHash)" class="hash">Acc Hash</th>
+                            <th id="(RetVerify(Item.VerifyAccHash))" class="bool">A</th>
+                            <th id="Item.Tables" class="name">Tables</th>
+<!--                            <th id="Item.TableArr.length" class="num">Tables</th>-->
+                            <th id="Item.DataSize" class="num">Bytes</th>
+                        </tr>
+                    </table>
+                    <INPUT type="button" onclick="ViewPrev(DefJournal)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefJournal,MaxJournalNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+                </DIV>
 
                 <DIV id="idPaginationAct" style="display: none">
                     <HR>
                     <DIV id="view_header" >Accounts acts<BR></DIV>
                     Block:<INPUT type="search" id="idViewActBlockNum" value="" onchange="SetNewActSearch(DefActs);">
-                    <INPUT type="button" onclick="ViewBegin(DefActs)" class="btdoitm bt" value="|&lt;-">
-                    <INPUT type="button" onclick="ViewPrev(DefActs)" class="btdoit bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewBegin(DefActs)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefActs)" class="btscroll bt" value="&lt;&lt; Prev">
                     <INPUT type="number" id="idViewActNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefActs)">
-                    <INPUT type="button" onclick="ViewNext(DefActs,MaxActNum)" class="btdoit bt" value="Next &gt;&gt;">
-                    <INPUT type="button" onclick="ViewEnd(DefActs,MaxActNum)" class="btdoitm bt" value="-&gt;|">
+                    <INPUT type="button" onclick="ViewNext(DefActs,MaxActNum)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefActs,MaxActNum)" class="btscrollm bt" value="-&gt;|">
 
 
                     <table id="grid_acts_all" class="grid">
@@ -1837,8 +1964,8 @@
                             <th id="Item.PrevValue.NextPos" class="num">Prev. History</th>
                         </tr>
                     </table>
-                    <INPUT type="button" onclick="ViewPrev(DefActs)" class="btdoit bt" value="&lt;&lt; Prev">
-                    <INPUT type="button" onclick="ViewNext(DefActs,MaxActNum)" class="btdoit bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewPrev(DefActs)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefActs,MaxActNum)" class="btscroll bt" value="Next &gt;&gt;">
 
                 </DIV>
 
@@ -1846,11 +1973,11 @@
                     <HR>
                     <DIV id="view_header" >Accounts hash<BR></DIV>
                     Block:<INPUT type="search" id="idViewAccHashBlockNum" value="" onchange="SetNewAccHashSearch(DefHash);">
-                    <INPUT type="button" onclick="ViewBegin(DefHash)" class="btdoitm bt" value="|&lt;-">
-                    <INPUT type="button" onclick="ViewPrev(DefHash)" class="btdoit bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewBegin(DefHash)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefHash)" class="btscroll bt" value="&lt;&lt; Prev">
                     <INPUT type="number" id="idViewHashNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefHash)">
-                    <INPUT type="button" onclick="ViewNext(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btdoit bt" value="Next &gt;&gt;">
-                    <INPUT type="button" onclick="ViewEnd(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btdoitm bt" value="-&gt;|">
+                    <INPUT type="button" onclick="ViewNext(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btscrollm bt" value="-&gt;|">
 
                     <table id="grid_hash_all" class="grid">
                         <tr>
@@ -1866,8 +1993,8 @@
                             <th id="(Item.VerifyHTML)" class="verify">Verify</th>
                         </tr>
                     </table>
-                    <INPUT type="button" onclick="ViewPrev(DefHash)" class="btdoit bt" value="&lt;&lt; Prev">
-                    <INPUT type="button" onclick="ViewNext(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btdoit bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewPrev(DefHash)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefHash,CONFIG_DATA.MAX_ACCOUNT_HASH)" class="btscroll bt" value="Next &gt;&gt;">
                 </DIV>
 
                 <DIV id="idUtilView" style="display: none">
@@ -1886,6 +2013,7 @@
                     <INPUT type="button" onclick="RewriteAllTransactions()"  class="bt btdoit btutil" value="Rewrite All tx">
                     <INPUT type="button" onclick="TruncateBlockChain()" class="btdoit btutil bt" value="Truncate chain">
                     <INPUT type="button" onclick="ClearDataBase();InitArrInfo();" class="btdoit btutil bt" value="Clear DataBase">
+                    <INPUT type="button" onclick="RestartNode()"  class="btdoit btopen bt" value="Restart node">
 
 
 
@@ -1904,7 +2032,157 @@
 
         </DIV>
 
+        <DIV id="TabSharding" style="display: none">
 
+            <DIV style="float: left;padding-top: 18px;">
+                <input type="checkbox" class="checkbox" id="idUseMiningShards" onchange = "UseMiningShards()"/>
+                <label for="idUseMiningShards">Mining cross-tx</label>
+            </DIV>
+
+            <INPUT type="button" onclick="ViewCurrent(DefShard,1,this)" class="btdoit bt btexlporer" id="idDown" value="Shards">
+            <INPUT type="button" onclick="ViewCurrent(DefCrossOut,1,this)" class="btdoit bt btexlporer" id="idDown" value="Msg send">
+            <INPUT type="button" onclick="ViewCurrent(DefCrossIn,1,this)" class="btdoit bt btexlporer" id="idDown" value="Msg receive">
+
+
+
+
+            <BR>
+            <DIV>
+                <DIV id="idPaginationCrossSend" style="display: none">
+                    <HR>
+                    <DIV id="view_header" >Msg Send<BR></DIV>
+<!--                    Block:<INPUT type="search" id="idViewCrossOutBlockNum" value="" onchange="SetRowByBlockNum(DefCrossOut);">-->
+                    <INPUT type="button" onclick="ViewBegin(DefCrossOut)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefCrossOut)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="number" id="idViewCrossOutNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefCrossOut)">
+                    <INPUT type="button" onclick="ViewNext(DefCrossOut,MaxCrossOutNum)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefCrossOut,MaxCrossOutNum)" class="btscrollm bt" value="-&gt;|">
+
+
+                    <table id="grid_cross_send" class="grid">
+                        <tr>
+<!--                            <th id="Item.Num" class="num">Num</th>-->
+                            <th id="Item.RowNum" class="num">Row</th>
+<!--                            <th id="Item.Position" class="num">Position</th>-->
+                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                            <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
+
+<!--                            <th id="Item.Mode" class="num">Mode</th>-->
+                            <th id="Item.Msg.Iteration" class="num">Iter</th>
+                            <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
+                            <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
+                            <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                            <th id="Item.Msg.MethodName" class="hash2">Method</th>
+                            <th id="Item.Msg.Params" class="hex">Params</th>
+                            <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
+<!--                            <th id="Item.Confirms" class="num">confirms</th>-->
+
+<!--                            <th id="Item.Position" class="num">Position</th>-->
+                        </tr>
+                    </table>
+                    <BR>
+                    <INPUT type="button" onclick="ViewPrev(DefCrossOut)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefCrossOut,MaxCrossOutNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+                </DIV>
+
+                <DIV id="idPaginationCrossReceive" style="display: none">
+                    <HR>
+                    <DIV id="view_header" >Msg Receive<BR></DIV>
+                    <!--                    Block:<INPUT type="search" id="idViewCrossInBlockNum" value="" onchange="SetRowByBlockNum(DefCrossIn);">-->
+                    <INPUT type="button" onclick="ViewBegin(DefCrossIn)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefCrossIn)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="number" id="idViewCrossInNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefCrossIn)">
+                    <INPUT type="button" onclick="ViewNext(DefCrossIn,MaxCrossInNum)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefCrossIn,MaxCrossInNum)" class="btscrollm bt" value="-&gt;|">
+
+
+                    <table id="grid_cross_receive" class="grid">
+                        <tr>
+                            <!--                            <th id="Item.Num" class="num">Num</th>-->
+                            <th id="(RetOpenBlock(Item.BlockNumAdd,1,Item.RowNum))" class="num">Row</th>
+                            <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
+                            <th id="Item.Msg.Iteration" class="num">Iter</th>
+                            <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
+                            <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
+                            <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                            <th id="Item.Msg.MethodName" class="hash2">Method</th>
+                            <th id="Item.Msg.Params" class="hex">Params</th>
+
+                            <th id="Item.StatusStr" class="num">Status</th>
+                            <th id="(RetOpenBlock(Item.BlockNumVote,1,Item.ConfirmsStr))" class="num">C</th>
+                            <th id="Item.Height" class="num">Height</th>
+                            <th id="Item.HeightStart" class="num">HeightStart</th>
+<!--                            <th id="(RetOpenBlock(Item.BlockNumVote,1))" class="num">Last vote</th>-->
+
+                            <th id="(RetOpenBlock(Item.BlockNumRun,1))" class="num">Run</th>
+
+<!--                            <th id="Item.HeightStart" class="num">Start</th>-->
+                            <th id="Item.BlockNumRun?Item.BlockNumRun-Math.min(Item.BlockNum,Item.BlockNumAdd):''" class="num">Delta</th>
+
+                            <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
+
+
+<!--                            <th id="GetHexFromArr(Item.DataHash)" class="hash">DHash</th>-->
+
+                            <!--                            <th id="Item.Position" class="num">Position</th>-->
+                        </tr>
+                    </table>
+                    <BR>
+                    <INPUT type="button" onclick="ViewPrev(DefCrossIn)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefCrossIn,MaxCrossInNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+                </DIV>
+
+
+
+                <DIV id="idPaginationShard" style="display: none">
+                    <HR>
+                    <DIV id="view_header" >Shards<BR></DIV>
+                    <INPUT type="button" onclick="ViewBegin(DefShard)" class="btscrollm bt" value="|&lt;-">
+                    <INPUT type="button" onclick="ViewPrev(DefShard)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="number" id="idViewShardNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefShard)">
+                    <INPUT type="button" onclick="ViewNext(DefShard,MaxShardNum)" class="btscroll bt" value="Next &gt;&gt;">
+                    <INPUT type="button" onclick="ViewEnd(DefShard,MaxShardNum)" class="btscrollm bt" value="-&gt;|">
+
+
+                    <table id="grid_shard" class="grid">
+                        <tr>
+                            <th id="Item.Num" class="num">Num</th>
+                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                            <th id="Item.ChannelName" class="name">Name:confirms</th>
+                            <th id="Item.Description" class="name">Description</th>
+
+                            <th id="(RetOpenBlock(Item.MaxVBlock.BlockNum,1,Item.MaxVBlock.Height))" class="num">MaxHeight</th>
+                            <th id="GetHexFromArr(Item.MaxVBlock.Hash)" class="hash">Hash</th>
+<!--                            <th id="Item.MaxVBlock.RowNum" class="num">MaxRow</th>-->
+                            <th id="GetHexFromArr(Item.MaxVBlock.RowHash)" class="hash">RowHash</th>
+
+
+<!--                            <th id="Item.System" class="num">System</th>-->
+
+<!--                            <th id="GetHexFromArr(Item.LastHash)" class="hash">Hash</th>-->
+
+<!--                            <th id="Item.Pos" class="num">Pos</th>-->
+                        </tr>
+                    </table>
+                    <BR>
+                    <INPUT type="button" onclick="ViewPrev(DefShard)" class="btscroll bt" value="&lt;&lt; Prev">
+                    <INPUT type="button" onclick="ViewNext(DefShard,MaxShardNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+                    <HR>
+                    New shard: <INPUT maxlength="6" id="idShardName" style="width: 80px;">
+                    Confirms: <INPUT  type="number" min=0 max=100000 id="idShardConfirms" value="10" style="width: 60px;">
+                    Description: <INPUT class="" maxlength="40" id="idShardDescription" style="width: 200px;">
+                    <BUTTON onclick="CreateNewShard()" class="btdoit btutil bt">Send to pay</BUTTON>
+
+                </DIV>
+
+
+            </DIV>
+
+
+        </DIV>
 
         <BR>
         <DIV id="idServerBlock" style="width: 99.5%">
@@ -1959,7 +2237,17 @@
 
         <DIV id="idBlockOnSend" style="display: none">
             <DIV align="center">
-                Send <B id="idOnSendText"></B><BR>
+                Send
+                <B id="idOnSendText"></B>
+                <B id="idOnSendSum" style='color:#ff4534'></B> <span id="idOnSendCoinName"></span> <span id="idOnSendToName"></span>
+
+
+                <BR><DIV id="idOnSendWarning" style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>
+
+
+
+
+                <BR>
                 <button onclick="SendMoney2()" id="idBtOnSend" class="radius">Send</button>
                 <button onclick='SetVisibleBlock("idBlockOnSend",0);' class="radius">Cancel</button>
 
@@ -1982,6 +2270,67 @@
 </DIV>
 
 
+<!--modal support for dapp-->
+<style id="idModalCSS">
+    /*modal support*/
+    #idOverlay
+    {
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        top: 0;
+        left:0;
+        display: none;
+        background: rgba(68, 83, 104, 0.65);
+    }
+    .ModalDlg
+    {
+        z-index: 1000;
+        background: #fff;
+        border-radius: 5px;
+        border: 1px solid #727473;
+        box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+        color: #000;
+        position: fixed;
+        padding: 20px;
+        margin: 0 auto;
+        width: 90%;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 250px;
+    }
+
+    .bt-confirm
+    {
+        border-radius: 4px;
+        min-height: 14px;
+        margin: 5px;
+        width: 100px;
+        height: 36px;
+
+        color:white;
+        background-color: #53687e;
+        border-color: #445368;
+    }
+
+    .bt-confirm:hover
+    {
+        color: #cb763a;
+        cursor: pointer;
+    }
+</style>
+<div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
+<section id="idConfirm" class="ModalDlg" style="display: none;">
+    <DIV align='center'>
+        <h2 id="idConfirmTitle">Confirm</h2>
+        <p id="idConfirmText">A you sure?</p>
+        <button class="bt-confirm"  onclick="OnConfirmOK()">OK</button>
+        <button class="bt-confirm"  onclick="closeModal()">Cancel</button>
+    </DIV>
+</section>
+
+
 </body>
 </html>
 
@@ -1992,7 +2341,18 @@
     <A href="https://t.me/terafoundation">Telegram</A>
     <A href="https://discord.gg/CvwrbeG">Discord</A>
     <A href="https://jq.qq.com/?_wv=1027&k=5KpN5fw">QQ</A>
-    <A href="http://127.0.0.1/web-wallet">Wallet</A>
+    <A href="javascript:OpenOwnWebWallet()">Wallet</A>
     <!--progr76@gmail.com-->
 </DIV>
+
+
+<script>
+    function OpenOwnWebWallet()
+    {
+        if(!CONFIG_DATA.CONSTANTS.HTTP_HOSTING_PORT)
+            return;
+
+        window.Open(window.location.protocol+'//'+window.location.hostname+":"+CONFIG_DATA.CONSTANTS.HTTP_HOSTING_PORT+'/web-wallet.html')
+    }
+</script>
 

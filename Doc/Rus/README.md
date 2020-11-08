@@ -27,9 +27,8 @@ https://gitlab.com/terafoundation/terarun/raw/master/Bin/Full/tera_full_setup.ex
 
 Внимание:
 * После установки, указанной ниже, введите в браузере публичный адрес вашего сервера, например: 195.11.22.33:8080
-* Для майнинга Вам нужно иметь статический публичный IP-адрес и открытый порт.
-* Не храните приватные ключи на удаленных серверах.
 * Рекомендуем поставить дополнительный пароль на приватный ключ (кнопка "Set password")  - в этом случае приватный ключ будет храниться в файле кошелька в зашифрованном виде.
+* Не храните приватные ключи на удаленных серверах.
 * Если вы не указали http пароль для полной ноды, то возможен только доступ с локального адреса 127.0.0.1:8080 и только в течении 10 минут после запуска ноды
 * Установите удаленный доступ к ноде только из списка белых IP через константу HTTP_IP_CONNECT (например: "HTTP_IP_CONNECT":"122.22.33.11, 122.22.33.12")
 * При установке обратите внимание на криптографическую библиотеку **secp256k1**. При ее компиляции (командной npm install) не должно быть ошибок.
@@ -248,7 +247,6 @@ node update.js
 * [Руководство по созданию ордеров на Tera DEX](https://docs.google.com/document/d/1rWGOrx9gabsu866zqJ2so6Mp0WUGh9t0BIWjz4kAIBw/edit?usp=sharing)
 * [Токен BTC для торговли на Tera DEX](https://docs.google.com/document/d/1ERPdSizarqYzwb5AA4R8mfUVFnSc-Amm7xCg3q4zUhA/edit?usp=sharing)
 * [Техническое WP - черновик](https://docs.google.com/document/d/1B6_qlAp2xs4aHkqOwyvRMCDJTjgeNiOJiGpIeT0VAzY/edit?usp=sharing)
-* [Торрент блокчейна (каталог DATA/DB)](https://sourceforge.net/p/tera/code/ci/master/tree/Torrent/Tera-folder-DB.torrent?format=raw)
 * [API](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/API.md)
 * [API-2](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/API2.md)
 * [CONSTANTS](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/CONSTANTS.MD)
