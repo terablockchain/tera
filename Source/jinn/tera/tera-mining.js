@@ -44,7 +44,7 @@ function Init(Engine)
     {
         
         var CurBlockNum = Engine.CurrentBlockNum;
-        if(global.USE_MINING && global.WasStartMiningProcess)
+        if(global.USE_MINING)
         {
             var Delta = CurBlockNum - Block.BlockNum;
             ToLog("Run mining BlockNum=" + Block.BlockNum + ", Delta=" + Delta, 5);

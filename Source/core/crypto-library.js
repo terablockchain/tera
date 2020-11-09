@@ -145,6 +145,25 @@ global.CheckSign = function (Hash,Sign,PubKey)
     return 0;
 }
 
+global.ecrecover = function (hash,v,r,s)
+{
+    v -= 27;
+    var signature = [];
+    for(var i = 0; i < 32; i++)
+    {
+        signature[i] = r[i];
+        signature[i + 32] = s[i];
+    }
+    if(!(hash instanceof Buffer))
+        hash = Buffer.from(hash);
+    if(!(signature instanceof Buffer))
+        signature = Buffer.from(signature);
+    
+    var PubKey = secp256k1.recover(hash, signature, v, false);
+    var Addr = keccak256(PubKey.slice(1)).slice(12);
+    return Addr;
+}
+
 
 global.CheckContextSecret = function (Context,ContextAddrTo)
 {
@@ -1217,4 +1236,5 @@ if(global.TEST_NETWORK || LOCAL_RUN)
     global.DEVELOP_PUB_KEY_ARR = [DEVELOP_PUB_KEY0];
     global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
 }
+
 

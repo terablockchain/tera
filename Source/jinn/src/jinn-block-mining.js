@@ -85,7 +85,7 @@ function InitClass(Engine)
     
     Engine.AddToMining = function (BlockNew)
     {
-        if(!global.USE_MINING || !global.WasStartMiningProcess)
+        if(!global.USE_MINING)
             return;
         
         Engine.AddToMiningInner(BlockNew);
@@ -131,7 +131,7 @@ function InitClass(Engine)
                 else
                     if(!Block)
                     {
-                        if(!global.USE_MINING || !global.WasStartMiningProcess)
+                        if(!global.USE_MINING)
                             return;
                         
                         Block = BlockNew;
@@ -235,7 +235,7 @@ function InitClass(Engine)
         
         if(Engine.LastPrevMiningBlock)
         {
-            if(!global.USE_MINING || !global.WasStartMiningProcess)
+            if(!global.USE_MINING)
                 return;
             
             var WasBlock = Engine.LastPrevMiningBlock;

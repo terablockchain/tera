@@ -125,7 +125,7 @@ function Init(Engine)
     };
     Engine.DoSendingCrossArr = function (BlockNum)
     {
-        if(!global.USE_MINING || !global.WasStartMiningProcess || !global.USE_MINING_SHARDS)
+        if(!global.USE_MINING || !global.USE_MINING_SHARDS)
             return [];
         if(SERVER.CrossReceive.Ready === 100)
             return [];

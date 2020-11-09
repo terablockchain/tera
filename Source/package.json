@@ -4,7 +4,7 @@
   "description": "Tera wallet",
   "main": "run-nw.js",
   "main2": "run-electron.js",
-  "repository": "https://gitlab.com/terafoundation/tera",
+  "repository": "https://gitlab.com/terafoundation/tera2",
   "keywords": [
     "wallet",
     "cryptowallet",

@@ -153,11 +153,13 @@ class CTXProcess
         if(LastItem)
             LastBlockNum = LastItem.BlockNum
         
-        if(JOURNAL_DB.GetMaxNum() > 10000)
+        if(JOURNAL_DB.GetMaxNum() > 1000)
         {
             if(COMMON_ACTS.GetActsMaxNum() > 0)
             {
-                ToLog("************** CAN DELETE OLD ACT FILES ****************")
+                ToLog("************** DELETE OLD ACT FILES ****************")
+                COMMON_ACTS.DBAct.Truncate( - 1)
+                COMMON_ACTS.DBActPrev.Truncate( - 1)
             }
         }
         

@@ -31,14 +31,14 @@ class ShardCrossDB extends require("./shard-cross-lib")
             return CompareArr(a.RowHash, b.RowHash);
         };
         
-        this.CrossRowHashBlock = new CDBTree("cross-rowhash", FormatRowHash, bReadOnly, FCompareRowHash, "Fixed", "Bin")
+        this.CrossRowHashBlock = new CDBTree("cross-rowhash", FormatRowHash, bReadOnly, FCompareRowHash, "nFixed", "Bin")
         const FormatDataHash = {DataHash:"hash", BlockNumRun:"uint32", TxNumRun:"uint16", Reserve:"arr12"};
         function FCompareDataHash(a,b)
         {
             return CompareArr(a.DataHash, b.DataHash);
         };
         
-        this.CrossDataHashRun = new CDBTree("cross-work-hash", FormatDataHash, bReadOnly, FCompareDataHash, "Fixed", "Bin")
+        this.CrossDataHashRun = new CDBTree("cross-work-hash", FormatDataHash, bReadOnly, FCompareDataHash, "nFixed", "Bin")
         
         this.CrossSend.RegisterTrDB(52)
         

@@ -835,6 +835,14 @@ ListF.$CheckSign = function (HashArr,SignArr,PubKeyArr)
     DO(10000);
     return CheckSign(HashArr, SignArr, PubKeyArr);
 }
+ListF.$ecrecover = function (hash,v,r,s)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method ecrecover");
+    
+    DO(10000);
+    return ecrecover(hash, v, r, s);
+}
 
 ListF.$isFinite = function (a)
 {
