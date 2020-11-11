@@ -143,7 +143,8 @@ function InitClass(Engine)
         Child.ReceivePacketCount = 0;
         
         Child.ReceiveDataArr = [];
-        Child.Node = Engine;
+        if(global.MODELING)
+            Child.Node = Engine;
         
         Child.ConnectStart = Date.now();
         

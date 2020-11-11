@@ -138,7 +138,7 @@ class AccountScroll extends require("./dapp")
     }
     GetHole()
     {
-        if(global.NETWORK === "MAIN-JINN")
+        if(global.NETWORK_ID === "MAIN-JINN.TERA")
             return [{s:8300, f:186478}];
         
         return [];

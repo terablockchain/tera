@@ -177,7 +177,7 @@ function InitClass(Engine)
             Engine.StepTaskTx[BlockNum] = 0;
     };
     
-    Engine.TRANSFERTX_SEND = {Reserve:"uint", BlockNum:"uint32", TxArr:[{HashTicket:"arr" + JINN_CONST.TX_TICKET_HASH_LENGTH, body:"tr"}]};
+    Engine.TRANSFERTX_SEND = {Reserve:"uint", BlockNum:"uint32", TxArr:[{HashTicket:"arr" + JINN_CONST.TT_TICKET_HASH_LENGTH, body:"tr"}]};
     Engine.TRANSFERTX_RET = {result:"byte", ReqForLoad:["uint16"]};
     Engine.TRANSFERTX = function (Child,Data)
     {

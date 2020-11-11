@@ -367,6 +367,62 @@ function CopyObjKeys(dest,src)
 
 global.CopyObjKeys = CopyObjKeys;
 
+function PrepareToJSON(Data,MaxLevel,MaxChilds,JobMap)
+{
+    
+    if(typeof Data !== "object")
+        return Data;
+    if(MaxLevel === undefined)
+        MaxLevel = 5;
+    if(MaxLevel <= 0)
+        return "=level=";
+    if(!MaxChilds)
+        MaxChilds = 10;
+    
+    if(MaxChilds > 1)
+    {
+        if(!JobMap)
+            JobMap = new Set();
+        if(JobMap.has(Data))
+            return "WAS ITEM: " + JSON.stringify(PrepareToJSON(Data, 1, MaxChilds));
+        JobMap.add(Data);
+    }
+    
+    var Ret = {};
+    var Count = 0;
+    for(var key in Data)
+    {
+        Count++;
+        if(Count > MaxChilds)
+        {
+            Ret["=more items="] = "...";
+            break;
+        }
+        
+        var item = Data[key];
+        if(item instanceof Buffer)
+        {
+            Ret[key] = GetHexFromArr(item).substr(0, 64);
+        }
+        else
+            if(item && typeof item === "object")
+            {
+                if(item.length > 2 && typeof item[0] === "number" && typeof item[1] === "number")
+                    Ret[key] = GetHexFromArr(item).substr(0, 64);
+                else
+                    Ret[key] = PrepareToJSON(item, MaxLevel - 1, MaxChilds, JobMap);
+            }
+            else
+            {
+                Ret[key] = item;
+            }
+    }
+    
+    return Ret;
+}
+
+global.PrepareToJSON = PrepareToJSON;
+
 global.LOAD_CONST = function ()
 {
     var Count = 0;

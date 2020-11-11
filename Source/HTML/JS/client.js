@@ -376,27 +376,6 @@ function GetStrFromAddr(arr)
     return GetHexFromArr(arr);
 }
 
-function GetHexFromArrBlock(Arr,LenBlock)
-{
-    var Str = "";
-    var Arr2 = [];
-    for(var i = 0; i < Arr.length; i++)
-    {
-        Arr2[i % LenBlock] = Arr[i];
-        if(Arr2.length >= LenBlock)
-        {
-            Str += GetHexFromArr(Arr2) + "\n";
-            Arr2 = [];
-        }
-    }
-    if(Arr2.length)
-    {
-        Str += GetHexFromArr(Arr2);
-    }
-    
-    return Str;
-}
-
 function Rigth(Str,Count)
 {
     if(Str.length < Count)
@@ -1293,7 +1272,7 @@ function RetHistoryAccount(Item,Name)
 }
 function OpenHistoryPage(Num)
 {
-    OpenWindow("./history.html#" + Num, 'history', 800, 800);
+    OpenWindow("./history.html#" + Num);
 }
 
 function RetBaseAccount(Item)
@@ -1505,17 +1484,18 @@ var MapCurrencyIcon = {};
 
 function InitMapCurrency()
 {
+    window.NETWORK_ID = window.NETWORK_NAME + "." + window.SHARD_NAME;
     
     MapCurrency = {};
     MapCurrency[0] = window.SHARD_NAME;
     MapCurrencyIcon[0] = "./PIC/T.svg";
-    if(window.NETWORK_NAME === "MAIN-JINN")
+    if(window.NETWORK_ID === "MAIN-JINN.TERA")
     {
         MapCurrency[16] = "BTC";
         MapCurrencyIcon[16] = "./PIC/B.svg";
     }
     else
-        if(window.NETWORK_NAME === "TEST-JINN")
+        if(window.NETWORK_ID === "TEST-JINN.TEST")
         {
             MapCurrency[9] = "BTC";
             MapCurrency[10] = "USD";

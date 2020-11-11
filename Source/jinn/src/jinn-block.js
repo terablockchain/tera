@@ -103,6 +103,9 @@ function InitClass(Engine)
         if(!PrevBlock)
             return undefined;
         
+        if(PrevBlock.BlockNum < global.UPDATE_CODE_JINN)
+            return undefined;
+        
         var Block = {};
         Block.BlockNum = PrevBlock.BlockNum + 1;
         Block.PrevSumHash = PrevBlock.SumHash;
@@ -342,7 +345,7 @@ function InitClass(Engine)
         else
             Tx.HASH = sha3(body, 9);
         
-        Tx.HashTicket = Tx.HASH.slice(0, JINN_CONST.TX_TICKET_HASH_LENGTH);
+        Tx.HashTicket = Tx.HASH.slice(0, JINN_CONST.TT_TICKET_HASH_LENGTH);
         Tx.KEY = GetHexFromArr(Tx.HashTicket);
         Tx.body = body;
         

@@ -454,9 +454,10 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
         ArrLog.push(Item);
     }
     
-    var Ret = {result:1, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:MIN_POWER_POW_TR, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
-        UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NEW_SIGN_TIME:NEW_SIGN_TIME,
-        Smart:Smart, Account:Account, NETWORK:global.NETWORK, JINN_MODE:1, ArrWallet:WLData.arr, ArrEvent:EArr, ArrLog:ArrLog, };
+    var Ret = {result:1, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NEW_SIGN_TIME:NEW_SIGN_TIME, Smart:Smart,
+        Account:Account, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME, JINN_MODE:1, ArrWallet:WLData.arr, ArrEvent:EArr, ArrLog:ArrLog,
+    };
     
     if(global.WALLET)
     {
@@ -707,8 +708,7 @@ HTTPCaller.GetWalletInfo = function (Params)
     var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     
     var Ret = {result:1, WalletOpen:WALLET.WalletOpen, WalletIsOpen:(WALLET.WalletOpen !== false), WalletCanSign:(WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit),
-        CODE_VERSION:CODE_VERSION, MAX_TRANSACTION_LIMIT:MAX_TRANSACTION_LIMIT, PROTOCOL_VER:PROTOCOL_VER, PROTOCOL_MODE:PROTOCOL_MODE,
-        MAX_LEVEL:MAX_LEVEL, VersionNum:global.UPDATE_CODE_VERSION_NUM, RelayMode:SERVER.RelayMode, NodeSyncStatus:SERVER.NodeSyncStatus,
+        CODE_VERSION:CODE_VERSION, VersionNum:global.UPDATE_CODE_VERSION_NUM, RelayMode:SERVER.RelayMode, NodeSyncStatus:SERVER.NodeSyncStatus,
         BlockNumDB:SERVER.BlockNumDB, BlockNumDBMin:SERVER.BlockNumDBMin, CurBlockNum:GetCurrentBlockNumByTime(), CurTime:Date.now(),
         IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), AccountMap:WALLET.AccountMap, ArrLog:ArrLogClient, MaxAccID:ACCOUNTS.GetMaxAccount(),
         MaxActNum:COMMON_ACTS.GetActsMaxNum(), MaxJournalNum:JOURNAL_DB.GetMaxNum(), MaxDappsID:SMARTS.GetMaxNum(), MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
@@ -718,7 +718,7 @@ HTTPCaller.GetWalletInfo = function (Params)
         DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)), NodeAddrStr:SERVER.addrStr,
         STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD, CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum,
         MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(), CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused,
-        HashRate:HashRateOneSec, MIN_POWER_POW_TR:MIN_POWER_POW_TR, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
+        HashRate:HashRateOneSec, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
         MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum, SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK,
         SHARD_NAME:global.SHARD_NAME, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:1, sessionid:sessionid,
     };
@@ -2606,7 +2606,7 @@ function GetTransactionByID(Params)
     if(typeof Params.TxID === "string")
     {
         var Arr = GetArrFromHex(Params.TxID);
-        BlockNum = ReadUintFromArr(Arr, TX_TICKET_HASH_LENGTH);
+        BlockNum = ReadUintFromArr(Arr, TX_ID_HASH_LENGTH);
         var Block = SERVER.ReadBlockDB(BlockNum);
         if(Block && Block.arrContent)
         {

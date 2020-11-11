@@ -75,7 +75,7 @@ function InitClass(Engine)
                 if(GetBit(Tx.TXReceive, Level) || GetBit(Tx.TXSend, Level) || GetBit(Tx.TTTXReceive, Level))
                 {
                     ArrTtTx.push({HashTicket:Tx.HashTicket});
-                    Size += JINN_CONST.TX_TICKET_HASH_LENGTH + 2;
+                    Size += JINN_CONST.TT_TICKET_HASH_LENGTH + 2;
                 }
                 else
                 {
@@ -83,7 +83,7 @@ function InitClass(Engine)
                     Level) + ":" + GetBit(Tx.TXSend, Level) + ":" + GetBit(Tx.TTTXReceive, Level));
                     
                     ArrTtTx.push(Tx);
-                    Size += JINN_CONST.TX_TICKET_HASH_LENGTH + Tx.body.length + 2;
+                    Size += JINN_CONST.TT_TICKET_HASH_LENGTH + Tx.body.length + 2;
                     Tx.TXSend = SetBit(Tx.TXSend, Level);
                 }
             }

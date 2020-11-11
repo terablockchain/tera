@@ -31,7 +31,7 @@ function Init(Engine)
                 Tx.HASH = shaarr(body);
             }
         
-        Tx.HashTicket = Tx.HASH.slice(0, JINN_CONST.TX_TICKET_HASH_LENGTH);
+        Tx.HashTicket = Tx.HASH.slice(0, JINN_CONST.TT_TICKET_HASH_LENGTH);
         Tx.KEY = GetHexFromArr(Tx.HashTicket);
         Tx.body = body;
         
@@ -97,7 +97,15 @@ function Init(Engine)
     {
         var PrevHash;
         if(Block.BlockNum < global.UPDATE_CODE_JINN)
+        {
+            if(Block.OldPrevHash8 === undefined)
+            {
+                ToLogTrace("Error No Block.OldPrevHash8 on Block=" + Block.BlockNum);
+                return ZERO_ARR_32;
+            }
+            
             PrevHash = Block.OldPrevHash8;
+        }
         else
             PrevHash = Block.LinkSumHash;
         

@@ -186,18 +186,12 @@ class CommonActs
     }
     GetLastBlockNumAct()
     {
-        
-        var Item = this.GetLastBlockNumItem();
-        if(!Item)
-        {
-            return  - 1;
-        }
-        else
-            return Item.BlockNum;
+        throw "Error - old mode";
     }
     
     GetLastBlockNumItem()
     {
+        throw "Error - old mode";
         
         var DBAct;
         var MaxNum = this.DBAct.GetMaxNum();

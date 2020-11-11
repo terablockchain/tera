@@ -141,7 +141,7 @@ function Create(MapName)
     if(Engine.AddNodeAddr)
     {
         const SYSTEM_SCORE = 5000000;
-        if(global.NETWORK === "MAIN-JINN")
+        if(global.NETWORK_ID === "MAIN-JINN.TERA")
         {
             Engine.AddNodeAddr({ip:"t1.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"t2.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
@@ -152,7 +152,7 @@ function Create(MapName)
             Engine.AddNodeAddr({ip:"149.154.70.158", port:30000, Score:SYSTEM_SCORE, System:1});
         }
         else
-            if(global.NETWORK === "TEST-JINN")
+            if(global.NETWORK_ID === "TEST-JINN.TEST")
             {
                 Engine.AddNodeAddr({ip:"149.154.70.158", port:33000, Score:SYSTEM_SCORE, System:1});
                 Engine.AddNodeAddr({ip:"212.80.217.95", port:33006, Score:SYSTEM_SCORE, System:1});

@@ -392,23 +392,36 @@ function InitClass(Engine)
                     var Child = LevelData.Connect[i];
                     var Item = Child.AddrItem;
                     if(!Item)
+                    {
+                        Child.ToLogNet("Cannt Add to Hot - no Child.AddrItem");
                         continue;
+                    }
                     
                     if(Item.ROOT_NODE || Item.Self || Engine.InHotDeny(Item) || Engine.WasBanItem(Item))
                     {
+                        Child.ToLogNet("Cannt Add to Hot Item.Self=" + Item.Self + "  Engine.InHotDeny=" + Engine.InHotDeny(Item));
                         continue;
                     }
                     
                     if(!Item.TestExchangeTime)
+                    {
+                        Child.ToLogNet("Cannt Add to Hot Item.TestExchangeTime=" + Item.TestExchangeTime);
                         continue;
+                    }
                     
                     if(Engine.IsStartingTime && Item.TestExchangeTime !== global.BEST_TEST_TIME)
+                    {
+                        Child.ToLogNet("Cannt Add to Hot IsStartingTime=" + Engine.IsStartingTime + " Item.TestExchangeTime=" + Item.TestExchangeTime);
                         continue;
+                    }
                     
                     if(!CanTime(Item, "SendHotConnect", 1000, 1.5))
+                    {
+                        Child.ToLogNet("Cannt Add to Hot was SendHotConnect");
                         continue;
+                    }
                     
-                    Child.ToLogNet("Add to Hot    SendHotConnect=" + Item.SendHotConnectPeriod);
+                    Child.ToLogNet("Add to Hot  SendHotConnect=" + Item.SendHotConnectPeriod);
                     if(Engine.TryHotConnection(Child, 1))
                         break;
                 }

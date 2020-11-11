@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title> SVG </title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height : 100vh;
+            background-color: #202731; }
+    </style>
+</head>
+<body>
+<svg width="240" height="300" fill="#a30808">
+    <rect width="10%"  x="5%" rx="5%" ry="5%">
+        <animate attributeName= "height" values="20%; 70%; 20%" dur="0.7s" repeatCount="indefinite"/>
+        <animate attributeName= "y" values="40%; 15%; 40%;" dur="0.7s" repeatCount="indefinite"/>
+    </rect>
+    <rect width="10%"  x="25%" rx="5%" ry="5%">
+        <animate attributeName= "height" values="20%; 70%; 20%" dur="0.7s" begin="0.15s" repeatCount="indefinite"/>
+        <animate attributeName= "y" values="40%; 15%; 40%;" dur="0.7s" begin="0.15s" repeatCount="indefinite"/>
+    </rect>
+    <rect width="10%"  x="45%" rx="5%" ry="5%">
+        <animate attributeName= "height" values="20%; 70%; 20%" dur="0.7s" begin="0.3s" repeatCount="indefinite"/>
+        <animate attributeName= "y" values="40%; 15%; 40%;" dur="0.7s" begin="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <rect width="10%"  x="65%" rx="5%" ry="5%">
+        <animate attributeName= "height" values="20%; 70%; 20%" dur="0.7s" begin="0.45s" repeatCount="indefinite"/>
+        <animate attributeName= "y" values="40%; 15%; 40%;" dur="0.7s" begin="0.45s" repeatCount="indefinite"/>
+    </rect>
+    <rect width="10%"  x="85%" rx="5%" ry="5%">
+        <animate attributeName= "height" values="20%; 70%; 20%" dur="0.7s" begin="0.6s" repeatCount="indefinite"/>
+        <animate attributeName= "y" values="40%; 15%; 40%;" dur="0.7s" begin="0.6s" repeatCount="indefinite"/>
+    </rect>
+</svg>
+</body>
+</html>

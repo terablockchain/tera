@@ -211,9 +211,6 @@ class CommonJournal
     {
         this.Close()
         
-        if(JOURNAL_NEW_MODE === 0)
-            return COMMON_ACTS.GetLastBlockNumAct();
-        
         var BlockNum;
         var MaxNumJournal = this.GetMaxNum();
         var Item = this.ReadItem(MaxNumJournal);
@@ -221,10 +218,7 @@ class CommonJournal
             BlockNum = Item.BlockNum
         else
         {
-            if(MaxNumJournal > 0)
-                BlockNum =  - 1
-            else
-                BlockNum = COMMON_ACTS.GetLastBlockNumAct()
+            BlockNum =  - 1
         }
         
         return BlockNum;
@@ -232,18 +226,9 @@ class CommonJournal
     
     GetLastBlockNumItem()
     {
-        if(JOURNAL_NEW_MODE === 0)
-            return COMMON_ACTS.GetLastBlockNumItem();
         
         var MaxNumJournal = this.GetMaxNum();
         var Item = this.ReadItem(MaxNumJournal);
-        if(!Item)
-        {
-            if(MaxNumJournal > 0)
-                return undefined;
-            else
-                Item = COMMON_ACTS.GetLastBlockNumItem()
-        }
         
         return Item;
     }
@@ -292,30 +277,6 @@ class CommonJournal
                     Item.VerifySumHash = 1
                 else
                     Item.VerifySumHash =  - 1
-            }
-            Item.VerifyAccHash = 0
-            var Num = COMMON_ACTS.FindActByBlockNum(Item.BlockNum) - 1;
-            if(Num >= 0)
-            {
-                for(var n = Num; n < Num + 10; n++)
-                {
-                    var ItemAct = COMMON_ACTS.Read(n);
-                    if(!ItemAct)
-                        break;
-                    if(ItemAct.Mode === 200 && ItemAct.BlockNum === Item.BlockNum)
-                    {
-                        var HashData = COMMON_ACTS.GetActHashesFromBuffer(ItemAct.PrevValue.Data);
-                        if(HashData)
-                        {
-                            if(IsEqArr(HashData.AccHash, Item.AccHash))
-                                Item.VerifyAccHash = 1
-                            else
-                                Item.VerifyAccHash =  - 1
-                        }
-                        
-                        break;
-                    }
-                }
             }
         }
         

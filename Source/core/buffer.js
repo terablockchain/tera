@@ -180,8 +180,8 @@ function Write(buf,data,StringFormat,ParamValue,WorkStruct)
             case "tr":
                 {
                     var length = data.length;
-                    if(length > MAX_TRANSACTION_SIZE)
-                        length = MAX_TRANSACTION_SIZE;
+                    if(length > 65535)
+                        length = 65535;
                     buf[buf.len] = length & 255;
                     buf[buf.len + 1] = (length >>> 8) & 255;
                     buf.len += 2;

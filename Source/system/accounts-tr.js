@@ -30,7 +30,7 @@ class AccountTR extends require("./accounts-adv-mining")
             return "Error length transaction";
         
         var CheckMinPower = 1;
-        if(BlockNum >= 7000000 || global.NETWORK !== "MAIN-JINN")
+        if(BlockNum >= 7000000 || global.NETWORK_ID !== "MAIN-JINN.TERA")
         {
             if(ContextFrom && ContextFrom.To.length === 1 && ContextFrom.To[0].ID === 0 && ContextFrom.To[0].SumCOIN >= PRICE_DAO(BlockNum).NewAccount)
             {
@@ -47,7 +47,7 @@ class AccountTR extends require("./accounts-adv-mining")
         }
         this.CreateTrCount++
         
-        if(CheckMinPower && global.NETWORK === "MAIN-JINN")
+        if(CheckMinPower && global.NETWORK_ID === "MAIN-JINN.TERA")
         {
             var power;
             if(BlockNum >= global.BLOCKNUM_TICKET_ALGO)

@@ -30,19 +30,22 @@ function InitClass(Engine)
 {
     Engine.MaxHashReceiveCount = 0;
     Engine.MaxContextIDCounter = 0;
-    Engine.SendMaxContext = {};
+    Engine.SendMaxContextTree = new CBlockCache(function (a,b)
+    {
+        return a.BlockNum - b.BlockNum;
+    });
     
     Engine.StartSendMaxHash = function (BlockNum)
     {
         if(!Engine.CanProcessMaxHash(BlockNum))
             return;
         
-        var Context = Engine.SendMaxContext[BlockNum];
+        var Context = Engine.SendMaxContextTree.FindItemInCache({BlockNum:BlockNum});
         if(!Context)
         {
             Engine.MaxContextIDCounter++;
-            Context = {ID:Engine.MaxContextIDCounter, LiderID:0, WasReturn:0, BodyTreeNum:0, };
-            Engine.SendMaxContext[BlockNum] = Context;
+            Context = {BlockNum:BlockNum, ID:Engine.MaxContextIDCounter, LiderID:0, WasReturn:0, BodyTreeNum:0, };
+            Engine.SendMaxContextTree.AddItemToCache(Context);
         }
         
         if(Context.WaitIteration === 1)
@@ -246,7 +249,8 @@ function InitClass(Engine)
                 {
                     for(var d =  - JINN_CONST.MAX_DELTA_PROCESSING; d <= JINN_CONST.MAX_DELTA_PROCESSING; d++)
                     {
-                        var CurContext = Engine.SendMaxContext[BlockNum + d];
+                        var CurContext = Engine.SendMaxContextTree.FindItemInCache({BlockNum:BlockNum + d});
+                        
                         if(CurContext && CurContext.BodyTreeNum >= Data.BodyTreeNum)
                         {
                             return;
@@ -335,7 +339,7 @@ function InitClass(Engine)
             CountItem:"uint16", LoadN:"uint", LoadH:"zhash", Reserve:"uint16"}], CurTime:"uint32", };
     Engine.MAXHASH_RET = {result:"byte", errnum:"byte", result2:"byte", Reserve:"uint32", Mode:"byte", DepricatedHeaderArr:[{BlockNum:"uint32",
             PrevSumPow:"uint", LinkSumHash:"hash", TreeHash:"zhash", MinerHash:"hash", OldPrevHash8:"zhash"}], Reserve2:"uint32", BodyArr:[{BlockNum:"uint32",
-            TreeHash:"hash", ArrFull:[{body:"tr"}], ArrTtTx:[{HashTicket:"arr" + JINN_CONST.TX_TICKET_HASH_LENGTH, body:"tr"}], }], BodyTreeNum:"uint32",
+            TreeHash:"hash", ArrFull:[{body:"tr"}], ArrTtTx:[{HashTicket:"arr" + JINN_CONST.TT_TICKET_HASH_LENGTH, body:"tr"}], }], BodyTreeNum:"uint32",
         BodyTreeHash:"zhash", HeaderArr:[{BlockNum:"uint32", PrevSumPow:"uint", LinkSumHash:"hash", SysTreeHash:"zhash", TreeHash:"zhash",
             MinerHash:"hash", OldPrevHash8:"zhash", Reserve:"uint32"}], CurTime:"uint32", };
     Engine.MAXHASH = function (Child,Data)

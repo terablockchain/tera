@@ -46,6 +46,7 @@ window.onload = function ()
     DoLangScript();
     
     InitWalletKeyName();
+    
     if(IsLocalClient())
     {
         OnLoad();
@@ -56,9 +57,13 @@ window.onload = function ()
         {
             if(Data && Data.result)
             {
-                Storage.setItem("NETWORK", Data.NETWORK);
-                console.log("Default network: " + Data.NETWORK);
-                SetServerList(Data.NETWORK);
+                window.SHARD_NAME = Data.SHARD_NAME;
+                window.NETWORK_NAME = Data.NETWORK;
+                window.NETWORK_ID = Data.NETWORK + "." + Data.SHARD_NAME;
+                
+                Storage.setItem("NETWORK_ID", window.NETWORK_ID);
+                console.log("Default network: " + NETWORK_ID);
+                SetServerList(NETWORK_ID);
                 SetBlockChainConstant(Data);
                 OnLoad();
             }
@@ -111,24 +116,30 @@ window.onload = function ()
     }
 }
 
-function SetServerList(Name)
+function SetServerList(NameID)
 {
-    NETWORK_NAME = Name;
+    SetNetworkID(NameID);
     
-    FillSelect("idCurNetwork", [{value:NETWORK_NAME, text:Name}]);
-    $("idCurNetwork").value = NETWORK_NAME;
-    Storage.setItem("NETWORK", NETWORK_NAME);
+    FillSelect("idCurNetwork", [{value:NETWORK_ID, text:NameID}]);
+    $("idCurNetwork").value = NETWORK_ID;
+    Storage.setItem("NETWORK_ID", NETWORK_ID);
+}
+
+function SetNetworkID(NameID)
+{
+    var Index = NameID.indexOf(".");
+    window.NETWORK_ID = NameID;
+    window.SHARD_NAME = NameID.substr(0, Index);
+    window.NETWORK_NAME = NameID.substr(Index + 1);
 }
 
 function OnLoad()
 {
+    if(Storage.getItem("NETWORK_ID"))
     {
-        if(Storage.getItem("NETWORK"))
-        {
-            NETWORK_NAME = Storage.getItem("NETWORK");
-        }
-        $("idCurNetwork").value = NETWORK_NAME;
+        NETWORK_ID = Storage.getItem("NETWORK_ID");
     }
+    $("idCurNetwork").value = NETWORK_ID;
     
     LoadValues();
     
@@ -159,8 +170,10 @@ function ChangeNetwork(bStart)
 {
     FirstAccountsData = 1;
     CONNECT_STATUS = 0;
-    NETWORK_NAME = $("idCurNetwork").value;
-    Storage.setItem("NETWORK", NETWORK_NAME);
+    
+    SetNetworkID($("idCurNetwork").value);
+    
+    Storage.setItem("NETWORK_ID", NETWORK_ID);
     
     if(bStart)
         StartWebWallet();
@@ -1290,7 +1303,7 @@ function OpenHistoryPage(Num)
 {
     if(!UseInnerPage() || isOS())
     {
-        OpenWindow("./history.html#" + Num, 'history', 800, 800);
+        OpenWindow("./history.html#" + Num);
         return;
     }
     

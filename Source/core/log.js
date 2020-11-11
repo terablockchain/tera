@@ -158,7 +158,7 @@ global.ToError = function (Str,LogLevel)
 {
     if(!LogLevel)
         LogLevel = 1;
-    if(LogLevel < global.LOG_LEVEL)
+    if(LogLevel > global.LOG_LEVEL)
         return;
     ToLogFile(file_name_error, Str);
     ToLog(Str, LogLevel);

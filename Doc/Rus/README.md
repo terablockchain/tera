@@ -50,7 +50,7 @@ npm install
 node set httpport:8080 password:пароль_без_пробела
 
 ```
-Перед запуском ноды мы рекомендуем скачать бэкап блокчейна (zip size 7.6 Gb) по ссылке https://terawallet.org/files/jinn-db.zip
+Перед запуском ноды мы рекомендуем скачать бэкап блокчейна (zip size 8 Gb) по ссылке https://terawallet.org/files/jinn-db.zip
 Распакуйте архив и положите папку DB в каталог DATA кошелька (с полной заменой).
 
 Запустите ноду командой:
@@ -102,7 +102,7 @@ systemctl disable firewalld
 ```
 
 ### запуск ноды:
-Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 7.6 Gb), запустите команды:
+Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 8 Gb), запустите команды:
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
@@ -146,7 +146,7 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 
 
 ### запуск ноды:
-Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 7.6 Gb), запустите команды:
+Перед запуском ноды мы рекомендуем скачать и установить бэкап блокчейна (zip size 8 Gb), запустите команды:
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip

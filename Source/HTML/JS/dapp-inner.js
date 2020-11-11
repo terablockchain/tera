@@ -830,6 +830,9 @@ function UpdateDappInfo()
         SetBlockChainConstant(Data);
         
         window.NETWORK_NAME = INFO.NETWORK;
+        window.SHARD_NAME = INFO.SHARD_NAME;
+        window.NETWORK_ID = window.NETWORK_NAME + "." + window.SHARD_NAME;
+        
         if(!WasInitCurrency)
             FindAllCurrency();
         

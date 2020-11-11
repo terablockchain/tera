@@ -9,7 +9,10 @@
 */
 
 
+"use strict";
 
+
+const fs = require('fs');
 
 global.GlobalRunID = 0;
 global.GlobalRunMap = {};
@@ -227,5 +230,15 @@ process.on('unhandledRejection', function (reason,p)
     console.log("===============child unhandledRejection===============");
     ToLog('Unhandled Rejection at:' + p + 'reason:' + reason);
     ToError('Unhandled Rejection at:' + p + 'reason:' + reason);
+}
+);
+
+
+fs.watch(GetDataPath("const.lst"), {}, function (eventType,filename)
+{
+    if(filename)
+    {
+        LOAD_CONST();
+    }
 }
 );

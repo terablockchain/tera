@@ -8,11 +8,6 @@ if(!global.DATA_PATH || global.DATA_PATH==="")
 global.CODE_PATH=process.cwd();
 
 global.NWMODE=1;
-//global.NWVERSION="0.37.4";
-
-
-// global.START_PORT_NUMBER = 30000;
-
 
 global.LOCAL_RUN=0;
 
@@ -21,14 +16,16 @@ require('./core/library.js');
 if(!global.HTTP_PORT_NUMBER)//try 2
     global.HTTP_PORT_NUMBER=Math.trunc(10000*Math.random())+50000;
 
+global.WAS_START_MAIN_NW=0;
+
+OpenWindowLoadingNW();
+CheckStartNWClient();
 require('./process/main-process');
 
 
 
-setTimeout(function ()
+function OpenWindowClienNW()
 {
-    //global.WEB_LOG=1;
-
     var Path;
     global.NW_TOKEN=GetHexFromArr(crypto.randomBytes(32));
     if(global.HTTP_SERVER_START_OK)
@@ -50,6 +47,8 @@ setTimeout(function ()
             icon: "../HTML/PIC/wallet.png",
         }, function(win)
         {
+            global.WAS_START_MAIN_NW++;
+
             //win.showDevTools();
 
             //http://test.ru:58409/HTML/wallet.html
@@ -70,7 +69,7 @@ setTimeout(function ()
                     win.show();
                 else
                     win.hide();
-            })
+            });
 
             // Give it a menu
             var menu = new nw.Menu();
@@ -88,5 +87,41 @@ setTimeout(function ()
             //     console.log("url:"+url);
             // });
         });
-},500);
+}
+
+function CheckStartNWClient()
+{
+    if(global.HTTP_SERVER_START_OK && global.SERVER && global.SERVER.CanSend)
+    {
+        OpenWindowClienNW();
+    }
+    else
+    {
+        setTimeout(CheckStartNWClient,50);
+    }
+}
+
+function OpenWindowLoadingNW()
+{
+    nw.Window.open('/HTML/nw-loading.html',
+        {
+            width: 800,
+            height: 1000,
+            icon: "../HTML/PIC/wallet.png",
+        }, function(win)
+        {
+            //global.WAS_START_MAIN_NW=1;
+            function CheckCloseWindowLoadingNW()
+            {
+                if(global.WAS_START_MAIN_NW)
+                    win.close();
+                else
+                    setTimeout(CheckCloseWindowLoadingNW,100);
+            }
+            CheckCloseWindowLoadingNW();
+
+        });
+
+}
+
 

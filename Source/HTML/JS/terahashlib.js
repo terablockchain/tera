@@ -30,17 +30,17 @@ InitTeraHashConst();
 function InitTeraHashConst()
 {
     
-    if(global.LOCAL_RUN || global.TEST_NETWORK || global.FORK_MODE)
-    {
-        BLOCKNUM_ALGO2 = 0;
-        BLOCKNUM_HASH_NEW = 0;
-        BLOCKNUM_TICKET_ALGO = 0;
-    }
-    else
+    if(global.NETWORK_ID === "MAIN-JINN.TERA")
     {
         BLOCKNUM_ALGO2 = 6560000;
         BLOCKNUM_HASH_NEW = 10195000;
         BLOCKNUM_TICKET_ALGO = 16070000;
+    }
+    else
+    {
+        BLOCKNUM_ALGO2 = 0;
+        BLOCKNUM_HASH_NEW = 0;
+        BLOCKNUM_TICKET_ALGO = 0;
     }
 }
 
@@ -287,7 +287,7 @@ function ConvertBufferToStr(Data)
         else
             if(typeof item === "object")
             {
-                if(item.length > 2 && typeof item[0] === "number" && typeof item[1] === "number")
+                if(item && item.length > 2 && typeof item[0] === "number" && typeof item[1] === "number")
                     Data[key] = GetHexFromArr(item);
                 else
                     ConvertBufferToStr(item);
@@ -537,21 +537,21 @@ function GetTxID(BlockNum,Body)
 {
     var Nonce = ReadUintFromArr(Body, Body.length - 6);
     var Arr = CreateTxID(Body, BlockNum, Nonce);
-    return Arr.slice(0, TX_TICKET_HASH_LENGTH + 6);
+    return Arr.slice(0, TX_ID_HASH_LENGTH + 6);
 }
 
 function CreateTxID(body,BlockNum,Nonce)
 {
     var HASH = sha3(body, 31);
-    WriteUintToArrOnPos(HASH, BlockNum, TX_TICKET_HASH_LENGTH);
-    HASH = HASH.slice(0, TX_TICKET_HASH_LENGTH + 6);
+    WriteUintToArrOnPos(HASH, BlockNum, TX_ID_HASH_LENGTH);
+    HASH = HASH.slice(0, TX_ID_HASH_LENGTH + 6);
     return HASH;
 }
 
 function GetStrTxIDFromHash(Hash,BlockNum)
 {
-    var Hash2 = Hash.slice(0, TX_TICKET_HASH_LENGTH + 6);
-    WriteUintToArrOnPos(Hash2, BlockNum, TX_TICKET_HASH_LENGTH);
+    var Hash2 = Hash.slice(0, TX_ID_HASH_LENGTH + 6);
+    WriteUintToArrOnPos(Hash2, BlockNum, TX_ID_HASH_LENGTH);
     return GetHexFromArr(Hash2);
 }
 

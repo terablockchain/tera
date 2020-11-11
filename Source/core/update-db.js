@@ -31,7 +31,7 @@ function RunOnUpdate()
         
         SaveParams(fname, UpdateInfo);
         
-        if(global.NETWORK === "MAIN-JINN")
+        if(global.NETWORK_ID === "MAIN-JINN.TERA")
         {
             if(CurNum < 2304)
             {

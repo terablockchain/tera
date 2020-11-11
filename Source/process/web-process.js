@@ -9,6 +9,8 @@
 */
 
 
+"use strict";
+
 
 
 global.PROCESS_NAME = "WEB";
@@ -177,6 +179,8 @@ function MainHTTPFunction(request,response)
     
     var ip = request.socket.remoteAddress;
     global.WEB_LOG && ToLogWeb("" + ip + " Get Path:" + Path);
+    
+    Path = GetSafePath(Path);
     if(global.STAT_MODE === 2)
     {
         ADD_TO_STAT("HTTP_ALL");
@@ -353,6 +357,7 @@ if(!global.WebApi1)
 }
 
 global.HostingCaller = {};
+
 function DoCommandNew(request,response,Type,Path,Params)
 {
     if(global.HTTP_START_PAGE === "WWW")
@@ -597,6 +602,20 @@ function DoCommandWWW(request,response,Type,Path,Params,ArrPath)
     SendWebFile(request, response, Name, "", 0, 1000);
 }
 
+function GetSafePath(filename)
+{
+    if(filename.indexOf('\0') !==  - 1)
+    {
+        return "";
+    }
+    
+    filename = filename.replace(/\~/g, "");
+    filename = filename.replace(/\.\./g, "");
+    filename = filename.replace(/\/\//g, "");
+    
+    return filename;
+}
+
 
 
 HostingCaller.GetCurrentInfo = function (Params)
@@ -610,10 +629,10 @@ HostingCaller.GetCurrentInfo = function (Params)
     var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     
     var Ret = {result:1, VersionNum:global.START_CODE_VERSION_NUM, VersionUpd:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK,
-        MaxNumBlockDB:MaxNumBlockDB, CurBlockNum:GetCurrentBlockNumByTime(), MaxAccID:ACCOUNTS.GetMaxAccount(), MaxDappsID:SMARTS.GetMaxNum(),
-        TXBlockNum:TXBlockNum, CurTime:Date.now(), DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:MIN_POWER_POW_TR, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
-        UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME, PRICE_DAO:PRICE_DAO(MaxNumBlockDB),
-        GrayConnect:global.CLIENT_MODE, JINN_MODE:1, sessionid:sessionid, };
+        SHARD_NAME:global.SHARD_NAME, MaxNumBlockDB:MaxNumBlockDB, CurBlockNum:GetCurrentBlockNumByTime(), MaxAccID:ACCOUNTS.GetMaxAccount(),
+        MaxDappsID:SMARTS.GetMaxNum(), TXBlockNum:TXBlockNum, CurTime:Date.now(), DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:0,
+        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME,
+        PRICE_DAO:PRICE_DAO(MaxNumBlockDB), GrayConnect:global.CLIENT_MODE, JINN_MODE:1, sessionid:sessionid, };
     
     if(typeof Params === "object" && Params.Diagram == 1)
     {
@@ -790,7 +809,8 @@ HostingCaller.GetNodeList = function (Params)
         arr.push(Value);
     }
     
-    var Result = {result:1, arr:arr, VersionNum:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK, };
+    var Result = {result:1, arr:arr, VersionNum:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME,
+    };
     return Result;
 }
 
@@ -1191,8 +1211,6 @@ try
 catch(e)
 {
 }
-
-
 
 global.LoadBlockFromNetwork = function (Params,F)
 {

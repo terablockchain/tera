@@ -137,6 +137,8 @@ function RunServer()
     ToLog("NETWORK: " + global.NETWORK);
     ToLog("VERSION: " + global.UPDATE_CODE_VERSION_NUM);
     
+    CheckConstFile();
+    
     StartJinn();
 }
 
@@ -187,6 +189,13 @@ function RunOnce()
     }
 }
 
+function CheckConstFile()
+{
+    if(!fs.existsSync(GetDataPath("const.lst")))
+    {
+        SAVE_CONST(1);
+    }
+}
 var glPortDebug = 49800;
 function RunFork(Path,ArrArgs)
 {
@@ -199,7 +208,6 @@ function RunFork(Path,ArrArgs)
     if(global.LOCAL_RUN)
     {
         ArrArgs.push("LOCALRUN");
-        ArrArgs.push("STARTNETWORK:" + global.START_NETWORK_DATE);
         ArrArgs.push("SHARD_NAME=" + global.SHARD_NAME);
     }
     else
@@ -208,6 +216,8 @@ function RunFork(Path,ArrArgs)
     
     if(global.TEST_JINN)
         ArrArgs.push("TESTJINN");
+    
+    ArrArgs.push("STARTNETWORK:" + global.START_NETWORK_DATE);
     
     ArrArgs.push("PATH:" + global.DATA_PATH);
     ArrArgs.push("HOSTING:" + global.HTTP_HOSTING_PORT);

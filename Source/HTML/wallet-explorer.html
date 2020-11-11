@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/normalize.css"> <!-- Подключаем normalize -->
+  <link rel="stylesheet" href="css/main.css"> <!-- Подключаем CSS -->
+</head>
+<body>
+  <header class="header">
+    <div class="header__group wrapper">
+      <div class="logo">
+        <img src="./img/logo.svg" alt="Tera">
+      </div>
+      <nav class="header__menu">
+        <ul class="menu">
+          <li class="menu__item">
+            <a href="index.html" class="menu__link">
+              config
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="send.html" class="menu__link">
+              send
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="Dapps.html" class="menu__link">
+              dapps
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="#" class="menu__link active">
+              explorer
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="explorer wrapper">
+    <div class="tabs">
+      <div class="tab active">
+        Common
+      </div>
+      <div class="tab">
+        Utilities
+      </div>
+      <div class="tab">
+        Statistics
+      </div>
+    </div>
+    <div class="tab-content active">
+      <ul class="dropdown">
+        <li class="dropdown__item">
+          <div class="dropdown__title drop">
+            <h3 class="h3 h3_dropdown drop">Accounts</h3>
+            <img src="./img/arrow_left.svg" alt="tera" class="dropdown__arrow drop">
+          </div>
+          <div class="dropdown__content">
+            <div class="navigation df_space">
+              <button class="btn btn_nav">
+                <img src="./img/arrow_first.svg" alt="tera">
+              </button>
+              <button class="btn btn_nav">
+                <img src="./img/arrow_left.svg" alt="tera">
+              </button>
+              <div class="pages input">
+                <p>60</p>
+                <p>&#160;&#8594;&#160;</p>
+                <p>70</p>
+              </div>
+              <button class="btn btn_nav">
+                <img src="./img/arrow_left.svg" alt="tera" class="arrow-rotate"></button>
+              <button class="btn btn_nav">
+                <img src="./img/arrow_first.svg" alt="tera" class="arrow-rotate"></button>
+            </div>
+            <div class="table">
+              <div class="table__row table__title">
+                <div class="table__item table__item_1">ID</div>
+                <div class="table__item table__item_2">Amount</div>
+                <div class="table__item table__item_3">CUR</div>
+                <div class="table__item table__item_4 left">Name</div>
+                <div class="table__item table__item_5 left">Public key</div>
+                <div class="table__item table__item_6">Oper.</div>
+                <div class="table__item table__item_6">Smart</div>
+                <div class="table__item table__item_7">Block num</div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">192058</a>
+                </div>
+                <div class="table__item table__item_2 right"> 1,000000</div>
+                <div class="table__item table__item_3">TERA</div>
+                <div class="table__item table__item_4 left">Test</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">264862</a>
+                </div>
+                <div class="table__item table__item_2 right"> 50,000000</div>
+                <div class="table__item table__item_3">BTC</div>
+                <div class="table__item table__item_4 left">Test name</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">15320</a>
+                </div>
+                <div class="table__item table__item_2 right"> 200 000,000000</div>
+                <div class="table__item table__item_3">TERA</div>
+                <div class="table__item table__item_4 left">Name</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">6548</a>
+                </div>
+                <div class="table__item table__item_2 right"> 1 234 567,891234</div>
+                <div class="table__item table__item_3">BTC</div>
+                <div class="table__item table__item_4 left">Long string with...</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">189625</a>
+                </div>
+                <div class="table__item table__item_2 right"> 0,123456</div>
+                <div class="table__item table__item_3">TERA</div>
+                <div class="table__item table__item_4 left">Short</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">192058</a>
+                </div>
+                <div class="table__item table__item_2 right"> 1,000000</div>
+                <div class="table__item table__item_3">Tera</div>
+                <div class="table__item table__item_4 left">Test</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">264862</a>
+                </div>
+                <div class="table__item table__item_2 right"> 50,000000</div>
+                <div class="table__item table__item_3">BTC</div>
+                <div class="table__item table__item_4 left">Test name</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">15320</a>
+                </div>
+                <div class="table__item table__item_2 right"> 200 000,000000</div>
+                <div class="table__item table__item_3">TERA</div>
+                <div class="table__item table__item_4 left">Name</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">6548</a>
+                </div>
+                <div class="table__item table__item_2 right"> 1 234 567,891234</div>
+                <div class="table__item table__item_3">BTC</div>
+                <div class="table__item table__item_4 left">Long string with ...</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+              <div class="table__row">
+                <div class="table__item table__item_1">
+                  <a href="#" class="table__link">189625</a>
+                </div>
+                <div class="table__item table__item_2 right"> 0,123456</div>
+                <div class="table__item table__item_3">TERA</div>
+                <div class="table__item table__item_4 left">Short</div>
+                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                  35D9E8C1B7300F82544815BAB</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_6">0</div>
+                <div class="table__item table__item_7">
+                  <a href="#" class="table__link">25992600</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="dropdown__item">
+          <div class="dropdown__title drop">
+            <h3 class="h3 h3_dropdown drop">Blocks & Tr</h3>
+            <img src="./img/arrow_left.svg" alt="tera" class="dropdown__arrow drop">
+          </div>
+          <div class="dropdown__content">
+          </div>
+        </li>
+        <li class="dropdown__item">
+          <div class="dropdown__title drop">
+            <h3 class="h3 h3_dropdown drop">Accounts acts</h3>
+            <img src="./img/arrow_left.svg" alt="tera" class="dropdown__arrow drop">
+          </div>
+          <div class="dropdown__content">
+          </div>
+        </li>
+        <li class="dropdown__item">
+          <div class="dropdown__title drop">
+            <h3 class="h3 h3_dropdown drop">Accounts hash</h3>
+            <img src="./img/arrow_left.svg" alt="tera" class="dropdown__arrow drop">
+          </div>
+          <div class="dropdown__content">
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-content">
+      <section class="utilities">
+        <div class="utilities__group df_items-center">
+          <p class="utilities__text">Number of blocks in dept:</p>
+          <input type="text" class="input input_connection" value='0'>
+        </div>
+        <div class="utilities__buttons df_space">
+          <button class="btn btn_explorer">restart node</button>
+          <button class="btn btn_explorer">Rewrite transaction</button>
+          <button class="btn btn_explorer">Truncate chain</button>
+          <button class="btn btn_explorer">Clear database [ ! ]</button>
+        </div>
+        <div class="division division_light"></div>
+        <button class="btn btn_arrow">
+          <div class="df">
+            <img src="./img/console.svg" alt="tera" class="btn__img">
+            <p class="btn__arrow-text">console</p>
+          </div>
+          <img src="./img/arrow_right.svg" alt="tera">
+        </button>
+      </section>
+    </div>
+    <div class="tab-content">
+      <section class="statistics">
+        <div class="statistics__buttons">
+          <button class="btn btn_explorer">
+            <div class="df">
+              <img src="./img/counters.svg" alt="tera" class="btn__img">
+              <p class="btn__arrow-text">Counters</p>
+            </div>
+            <img src="./img/arrow_right.svg" alt="tera">
+          </button>
+          <button class="btn btn_explorer">
+            <div class="df">
+              <img src="./img/chains.svg" alt="tera" class="btn__img">
+              <p class="btn__arrow-text">Chains</p>
+            </div>
+            <img src="./img/arrow_right.svg" alt="tera">
+          </button>
+          <button class="btn btn_explorer">
+            <div class="df">
+              <img src="./img/network.svg" alt="tera" class="btn__img">
+              <p class="btn__arrow-text">Network</p>
+            </div>
+            <img src="./img/arrow_right.svg" alt="tera">
+          </button>
+          <button class="btn btn_explorer">
+            <div class="df">
+              <img src="./img/monitor.svg" alt="tera" class="btn__img">
+              <p class="btn__arrow-text">Monitor</p>
+            </div>
+            <img src="./img/arrow_right.svg" alt="tera">
+          </button>
+        </div>
+      </section>
+    </div>
+    <div class="division">
+    </div>
+    <h3 class="h3">Log from node:
+    </h3>
+    <textarea name="log" id="log" cols="30" rows="14" class="log">
+          20:21:33.906 WRITE DATA Count:1 32419290-32419290
+          20:21:36.159 WRITE DATA Count:3 32419290-32419292
+          20:21:36.943 WRITE DATA Count:1 32419293-32419293
+          20:21:49.912 WRITE DATA Count:1 32419306-32419306
+          20:22:17.771 WRITE DATA Count:3 32419331-32419333
+          20:23:03.669 WRITE DATA Count:1 32419380-32419380
+          20:23:19.590 WRITE DATA Count:1 32419394-32419394
+          20:24:35.145 WRITE DATA Count:1 32419471-32419471
+          20:24:42.068 WRITE DATA Count:10 32419469-32419478
+          20:24:43.387 WRITE DATA Count:1 32419479-32419479
+          20:24:49.663 WRITE DATA Count:2 32419484-32419485
+          20:25:40.204 WRITE DATA Count:1 32419536-32419536
+          20:25:40.204 WRITE DATA Count:1 32419536-32419536
+        </textarea>
+  </section>
+  <script src="js/main.js">
+  </script>
+</body>
+</html>

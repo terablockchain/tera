@@ -9,7 +9,7 @@
 */
 
 
-var MIN_VERSION = 2232;
+var MIN_VERSION = 2431;
 var COUNT_BLOCK_PROOF = 100;
 var MIN_SUM_POWER = 0;
 var MainServer = undefined;
@@ -18,6 +18,8 @@ var TIME_LENGTH_CONNECT_ALL = 2 * 1000;
 var StartTimeConnecting = 0;
 var ConnectedCount = 0;
 var NETWORK_NAME = "MAIN-JINN";
+var SHARD_NAME = "TERA";
+var NETWORK_ID = NETWORK_NAME + "." + SHARD_NAME;
 var ServerMap = {};
 var ServerMainMap = {"127.0.0.1":{"ip":"127.0.0.1", "port":80, "Name":"LOCAL"}, "terawallet.org":{"ip":"terawallet.org", "port":443,
         "Name":"terawallet", "System":1}, "teraexplorer.org":{"ip":"teraexplorer.org", "port":443, "Name":"teraexplorer", "System":1},
@@ -30,7 +32,7 @@ var ServerTestMap = {"127.0.0.1":{"ip":"127.0.0.1", "port":80, "Name":"LOCAL"}, 
 
 function StartWebWallet()
 {
-    if(NETWORK_NAME === "MAIN-JINN")
+    if(NETWORK_ID === "MAIN-JINN.TERA")
     {
         ServerMap = ServerMainMap;
         MIN_SUM_POWER = COUNT_BLOCK_PROOF * 30;
@@ -49,13 +51,13 @@ function StartWebWallet()
         BLOCKNUM_TICKET_ALGO = 0;
     }
     
-    $("idNetwork").innerText = NETWORK_NAME;
+    $("idNetwork").innerText = NETWORK_ID;
     OnInitWebWallet();
     ConnectWebWallet();
 }
 function OnInitWebWallet()
 {
-    var str = Storage.getItem(NETWORK_NAME + "NodesArrayList");
+    var str = Storage.getItem(NETWORK_ID + "NodesArrayList");
     if(str)
     {
         var arr = JSON.parse(str);
@@ -87,7 +89,7 @@ function SaveServerMap()
         Arr2.push({ip:Item.ip, port:Item.port, Stat:Item.Stat, t:Item.DeltaTime});
     }
     
-    Storage.setItem(NETWORK_NAME + "NodesArrayList", JSON.stringify(Arr2));
+    Storage.setItem(NETWORK_ID + "NodesArrayList", JSON.stringify(Arr2));
 }
 
 function SetStatus(Str)
@@ -177,13 +179,18 @@ function DoNodeList(Item)
     Item.StartTime = Date.now();
     GetData(GetProtocolServerPath(Item) + "/GetNodeList", {}, function (Data)
     {
-        if(Data && Data.result && Data.NETWORK === NETWORK_NAME && Data.VersionNum >= MIN_VERSION)
+        if(!Data || !Data.result)
+            return;
+        
+        var CurNetworkID = Data.NETWORK + "." + Data.SHARD_NAME;
+        if(CurNetworkID === NETWORK_ID && Data.VersionNum >= MIN_VERSION)
         {
             ConnectedCount++;
             Item.GetHandShake = 1;
             Item.BlockChain = Data.BlockChain;
             
             Item.DeltaTime = Date.now() - Item.StartTime;
+            SetStatus("Get: " + Item.ip + ":" + Item.port + " t: " + Item.DeltaTime);
             
             var bWas = 0;
             for(var i = 0; i < Data.arr.length; i++)
@@ -265,7 +272,11 @@ function DoWalletInfo(Item)
         if(!idTimeFindLider)
             return;
         
-        if(Data && Data.result && Data.BlockChain && Data.NETWORK === NETWORK_NAME)
+        if(!Data || !Data.result)
+            return;
+        
+        var CurNetworkID = Data.NETWORK + "." + Data.SHARD_NAME;
+        if(Data.BlockChain && CurNetworkID === NETWORK_ID)
         {
             Item.Name = "";
             Item.GetWalletInfo = 1;

@@ -379,12 +379,12 @@ function DoDappInfo(Data)
     Data.CanReloadDapp = 0;
     Data.result = 1;
     Data.DELTA_CURRENT_TIME = 0;
-    Data.MIN_POWER_POW_TR = 0;
     Data.FIRST_TIME_BLOCK = 0;
     Data.CONSENSUS_PERIOD_TIME = 1000;
     Data.PRICE_DAO = {NewAccount:10, NewSmart:100, NewTokenSmart:10000};
     Data.NEW_SIGN_TIME = 0;
     Data.NETWORK = Network_Name;
+    Data.SHARD_NAME = "TERA";
     
     Data.PubKey = DefPubKeyArr;
     Data.WalletIsOpen = 1;

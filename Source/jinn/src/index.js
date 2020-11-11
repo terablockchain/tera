@@ -27,8 +27,6 @@ if(typeof window !== "object" || global.NWMODE)
     
     if(!global.sha3)
         require("../extlib/sha3.js");
-    if(!global.RBTree)
-        require("../extlib/RBTree.js");
     
     if(!global.SerializeLib)
         require("../extlib/terabuf.js");
@@ -164,7 +162,7 @@ JINN_CONST.MAX_LEADER_COUNT = 4;
 JINN_CONST.CACHE_PERIOD_FOR_INVALIDATE = 5;
 
 
-JINN_CONST.TX_TICKET_HASH_LENGTH = 6;
+JINN_CONST.TT_TICKET_HASH_LENGTH = 6;
 JINN_CONST.MAX_TRANSACTION_COUNT = 3000;
 JINN_CONST.MAX_TRANSFER_TX = 400;
 

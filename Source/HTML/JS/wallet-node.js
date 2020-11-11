@@ -86,25 +86,6 @@ function SetCodeVersionJSON()
     $("idDevService").value = Str;
 }
 
-function SetCorrTimeJSON()
-{
-    var AutoDelta = parseInt($("idDevValue").value);
-    var Data = {Num:CONFIG_DATA.CurBlockNum, bUse:1, bAddTime:1};
-    if(AutoDelta < 0)
-    {
-        AutoDelta =  - AutoDelta;
-        Data.bAddTime = 0;
-    }
-    Data.DeltaTime = 40;
-    
-    Data.StartBlockNum = ServerCurBlockNum + 10;
-    
-    Data.EndBlockNum = Data.StartBlockNum + Math.floor(AutoDelta / Data.DeltaTime);
-    
-    var Data2 = CopyObjKeys({Service:"SetCheckDeltaTime"}, Data);
-    var Str = JSON.stringify(Data2, "", 2);
-    $("idDevService").value = Str;
-}
 function SetNetConstJSON()
 {
     var Str = JSON.stringify(Data, "", 2);

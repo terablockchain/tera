@@ -18,6 +18,8 @@ global.JINN_MODULES.push({InitClass:InitClass, DoNode:DoNode, Name:"Time"});
 const MAX_STAT_BLOCKNUM_PERIOD = 10;
 const OLD_STAT_BLOCKNUM_PERIOD = 1000;
 
+const CLUSTER_TIME_PERIOD = 1000000000;
+
 //Engine context
 function InitClass(Engine)
 {
@@ -245,7 +247,7 @@ function InitClass(Engine)
     {
         var CurTime = 0;
         if(global.CURRENT_OS_IS_LINUX)
-            CurTime = GetCurrentTime() % 1000000000;
+            CurTime = GetCurrentTime() % CLUSTER_TIME_PERIOD;
         return CurTime;
     };
     
@@ -254,12 +256,15 @@ function InitClass(Engine)
         if(!Child.IsCluster || !global.CLUSTER_TIME_CORRECT || !NodeTime)
             return;
         
-        var CurTime = GetCurrentTime() % 1000000000;
+        if(typeof global.CLUSTER_TIME_CORRECT === "string" && global.CLUSTER_TIME_CORRECT !== Child.Name && global.CLUSTER_TIME_CORRECT !== Child.ip)
+            return;
+        
+        var CurTime = GetCurrentTime() % CLUSTER_TIME_PERIOD;
         var Delta = NodeTime - CurTime;
         var DeltaAbs = Math.abs(Delta);
-        if(DeltaAbs < 1000000000 / 2 && DeltaAbs >= 500)
+        if(DeltaAbs < CLUSTER_TIME_PERIOD / 2 && DeltaAbs >= 500)
         {
-            ToLog("-----Set cluster time Delta=" + Delta, 3);
+            ToLog("----- Node " + Child.Name + " set cluster time Delta=" + Delta, 3);
             var Value = Math.floor(global.DELTA_CURRENT_TIME + Delta);
             Engine.SetTimeDelta(Value);
         }

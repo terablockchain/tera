@@ -70,7 +70,7 @@ function InitClass(Engine)
         for(var i = 0; i < Engine.CrossLevelArr.length; i++)
         {
             var Child = Engine.CrossLevelArr[i];
-            if(Child && Child.IsCluster)
+            if(Child && Child.IsCluster && Child.IsOpen())
             {
                 Engine.SendCrossTxOneNode(Child, CurrentStatus);
             }

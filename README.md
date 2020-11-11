@@ -58,7 +58,7 @@ node set httpport:8080 password:password_no_spaces
 run-node.bat
 
 ```
-Before starting the node, we recommend downloading a backup of the blockchain (zip size 7.6 Gb) at the link https://terawallet.org/files/jinn-db.zip
+Before starting the node, we recommend downloading a backup of the blockchain (zip size 8 Gb) at the link https://terawallet.org/files/jinn-db.zip
 Unpack the archive and put the DB folder in the wallet's DATA folder (with full replacement).
 Launch the node with the command:
 ```
@@ -104,7 +104,7 @@ systemctl disable firewalld
 ```
 
 ### start node:
-Before starting the node, we recommend downloading and installing a backup of the blockchain (zip size 7.6 Gb), run it:
+Before starting the node, we recommend downloading and installing a backup of the blockchain (zip size 8 Gb), run it:
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
@@ -147,7 +147,7 @@ sudo ufw allow 80/tcp
 
 
 ### start node:
-Before starting the node, we recommend downloading and installing a backup of the blockchain (zip size 7.6 Gb), run it:
+Before starting the node, we recommend downloading and installing a backup of the blockchain (zip size 8 Gb), run it:
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip

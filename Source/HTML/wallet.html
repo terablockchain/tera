@@ -1450,9 +1450,7 @@
                     <table>
                         <tr>
                             <td style="width: 100px">
-                                <BR>
                                 <INPUT type="button" class="bt btdoit" onclick="SetCodeVersionJSON()" value="CODE VERS >>"><BR>
-                                <INPUT type="button" class="bt btdoit" onclick="SetCorrTimeJSON()" value="DELTA TIME >>" id="idSetDeltaTime"><BR>
                                 <INPUT type="button" class="bt btdoit" onclick="SetNetConstJSON()" value="NET CONST >>"><BR>
 
                             </td>
@@ -2352,7 +2350,10 @@
         if(!CONFIG_DATA.CONSTANTS.HTTP_HOSTING_PORT)
             return;
 
-        window.Open(window.location.protocol+'//'+window.location.hostname+":"+CONFIG_DATA.CONSTANTS.HTTP_HOSTING_PORT+'/web-wallet.html')
+        var port=CONFIG_DATA.CONSTANTS.HTTP_HOSTING_PORT;
+        if(port===80 || port===443)
+            port=0;
+        window.Open(window.location.protocol+'//'+window.location.hostname+(port?":"+port:"")+'/web-wallet.html')
     }
 </script>
 

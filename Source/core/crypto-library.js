@@ -52,50 +52,6 @@ global.GetHexAddresFromPublicKey = function (arr)
     return Buffer.from(arr.slice(1)).toString('hex').toUpperCase();
 }
 
-global.GetHexFromArr = function (arr)
-{
-    if(!arr)
-        return "";
-    else
-        return Buffer.from(arr).toString('hex').toUpperCase();
-}
-global.GetHexFromArr8 = function (arr)
-{
-    return GetHexFromArr(arr).substr(0, 8);
-}
-
-function GetArrFromHex(Str)
-{
-    var array = [];
-    for(var i = 0; i < Str.length / 2; i++)
-    {
-        array[i] = parseInt(Str.substr(i * 2, 2), 16);
-    }
-    return array;
-}
-global.GetArrFromHex = GetArrFromHex;
-
-global.GetHexFromArrBlock = function (Arr,LenBlock)
-{
-    var Str = "";
-    var Arr2 = [];
-    for(var i = 0; i < Arr.length; i++)
-    {
-        Arr2[i % LenBlock] = Arr[i];
-        if(Arr2.length >= LenBlock)
-        {
-            Str += GetHexFromArr(Arr2) + "\n";
-            Arr2 = [];
-        }
-    }
-    if(Arr2.length)
-    {
-        Str += GetHexFromArr(Arr2);
-    }
-    
-    return Str;
-}
-
 global.GetPublicKeyFromAddres = function (Arr)
 {
     var RetArr = new Uint8Array(33);
@@ -1178,6 +1134,39 @@ function GetRandomBytes(Count)
     return crypto.randomBytes(Count);
 }
 
+function TeraDevKeysInit()
+{
+    global.DEVELOP_PUB_KEY_ARR = ["027e9fab89ea5dc9fad3cc45263b16d34a84be9460a71b33b58a0655ebccfce431", "02250c8c8f7f7e1468cdc5e9b9203841ba14250e2f480f77ebcd502f3e691506d8",
+    "027c0caec4e6f8f08d220f6dab24bb6f53d3f1d7b95231216805d9fac85d34a95f", "025defd5b884cc02f6948cd0d62b03d7b7445bf942206ab935158b6be8f0f7a2ce",
+    "024a97d69cd81c965f162b4b8b7b506263bc8aec8dbcea9eec59f73b5b470a0be1", ];
+    for(var i = 0; i < DEVELOP_PUB_KEY_ARR.length; i++)
+        DEVELOP_PUB_KEY_ARR[i] = Buffer.from(GetArrFromHex(DEVELOP_PUB_KEY_ARR[i]));
+    global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
+    global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("022e80aa78bc07c72781fac12488096f0bfa7b4f48fbab0f2a92e208d1ee3654df"));
+    
+    global.ARR_PUB_KEY = ["027ae0dce92d8be1f893525b226695ddf0fe6ad756349a76777ff51f3b59067d70", "02769165a6f9950d023a415ee668b80bb96b5c9ae2035d97bdfb44f356175a44ff",
+    "021566c6feb5495594fc4bbea27795e1db5a663b3fe81ea9846268d5c394e24c23", "0215accbc993e67216c9b7f3912b29b91671864e861e61ab73589913c946839efa",
+    "0270e0c5acb8eefe7faddac45503da4885e02fb554975d12907f6c33ac6c6bdba5", "0202f2aad628f46d433faf70ba6bf12ab9ed96a46923b592a72508dc43af36cb80",
+    "0254f373fc44ac4a3e80ec8cb8cc3693a856caa82e0493067bdead78ce8ec354b8", "027617f9511b0b0cdbda8f3e17907732731296321846f3fd6fd19460f7227d9482",
+    ];
+    
+    if(global.TEST_NETWORK || global.LOCAL_RUN)
+    {
+        if(global.LOCAL_RUN)
+        {
+            global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("026A04AB98D9E4774AD806E302DDDEB63BEA16B5CB5F223EE77478E861BB583EB3"));
+            global.DEVELOP_PUB_KEY = global.DEVELOP_PUB_KEY0;
+        }
+        
+        global.ARR_PUB_KEY = [];
+        for(var i = 0; i < 100; i++)
+            global.ARR_PUB_KEY[i] = GetHexFromArr(DEVELOP_PUB_KEY0);
+        
+        global.DEVELOP_PUB_KEY_ARR = [DEVELOP_PUB_KEY0];
+        global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
+    }
+}
+
 global.GetRandomBytes = GetRandomBytes;
 global.CalcMerklFromArray = CalcMerklFromArray;
 global.CalcTreeHashFromArrBody = CalcTreeHashFromArrBody;
@@ -1208,33 +1197,7 @@ global.IsDeveloperAccount = function (Key)
     return 0;
 }
 
-global.DEVELOP_PUB_KEY_ARR = ["027e9fab89ea5dc9fad3cc45263b16d34a84be9460a71b33b58a0655ebccfce431", "02250c8c8f7f7e1468cdc5e9b9203841ba14250e2f480f77ebcd502f3e691506d8",
-"027c0caec4e6f8f08d220f6dab24bb6f53d3f1d7b95231216805d9fac85d34a95f", "025defd5b884cc02f6948cd0d62b03d7b7445bf942206ab935158b6be8f0f7a2ce",
-"024a97d69cd81c965f162b4b8b7b506263bc8aec8dbcea9eec59f73b5b470a0be1", ];
-for(var i = 0; i < DEVELOP_PUB_KEY_ARR.length; i++)
-    DEVELOP_PUB_KEY_ARR[i] = Buffer.from(GetArrFromHex(DEVELOP_PUB_KEY_ARR[i]));
-global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
-global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("022e80aa78bc07c72781fac12488096f0bfa7b4f48fbab0f2a92e208d1ee3654df"));
-
-if(LOCAL_RUN)
-{
-    global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("026A04AB98D9E4774AD806E302DDDEB63BEA16B5CB5F223EE77478E861BB583EB3"));
-    global.DEVELOP_PUB_KEY = global.DEVELOP_PUB_KEY0;
-}
-
-global.ARR_PUB_KEY = ["027ae0dce92d8be1f893525b226695ddf0fe6ad756349a76777ff51f3b59067d70", "02769165a6f9950d023a415ee668b80bb96b5c9ae2035d97bdfb44f356175a44ff",
-"021566c6feb5495594fc4bbea27795e1db5a663b3fe81ea9846268d5c394e24c23", "0215accbc993e67216c9b7f3912b29b91671864e861e61ab73589913c946839efa",
-"0270e0c5acb8eefe7faddac45503da4885e02fb554975d12907f6c33ac6c6bdba5", "0202f2aad628f46d433faf70ba6bf12ab9ed96a46923b592a72508dc43af36cb80",
-"0254f373fc44ac4a3e80ec8cb8cc3693a856caa82e0493067bdead78ce8ec354b8", "027617f9511b0b0cdbda8f3e17907732731296321846f3fd6fd19460f7227d9482",
-];
-
-if(global.TEST_NETWORK || LOCAL_RUN)
-{
-    for(var i = 0; i < 100; i++)
-        global.ARR_PUB_KEY[i] = GetHexFromArr(DEVELOP_PUB_KEY0);
-    
-    global.DEVELOP_PUB_KEY_ARR = [DEVELOP_PUB_KEY0];
-    global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
-}
+if(!global.ARR_PUB_KEY)
+    TeraDevKeysInit();
 
 

@@ -119,7 +119,7 @@ class MerkleDBRow extends CDBRow
 function GetHash(Buf)
 {
     var Hash;
-    if(UPDATE_CODE_NEW_ACCHASH)
+    if(global.UPDATE_CODE_NEW_ACCHASH)
         Hash = sha3(Buf);
     else
         Hash = shaarr(Buf);

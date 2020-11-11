@@ -568,7 +568,7 @@
     function LoadValues()
     {
         LoadValuesByArr(SaveIdArr,"SMART2");
-        var List=localStorage["SMART-SendFileList-"+window.NETWORK];
+        var List=localStorage["SMART-SendFileList-"+window.NETWORK_NAME];
         if(List)
         {
             SendFileMap=JSON.parse(List);
@@ -746,7 +746,7 @@
                         SaveValues();
                     }
 
-                    localStorage["SMART-SendFileList-"+window.NETWORK]=JSON.stringify(SendFileMap);
+                    localStorage["SMART-SendFileList-"+window.NETWORK_NAME]=JSON.stringify(SendFileMap);
                     FillSelect("idSendFileList",SendFileMap);
                 }
 
@@ -816,7 +816,7 @@
         {
             SendFileMap={};
             FileMapByName={};
-            localStorage["SMART-SendFileList-"+window.NETWORK]=JSON.stringify(SendFileMap);
+            localStorage["SMART-SendFileList-"+window.NETWORK_NAME]=JSON.stringify(SendFileMap);
             FillSelect("idSendFileList",SendFileMap);
         });
     }

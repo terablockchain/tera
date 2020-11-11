@@ -51,7 +51,7 @@ function Init(Engine)
     
     SERVER.AddTransaction = function (Tx0)
     {
-        if(!global.LOCAL_RUN && !SERVER.GetHotNodesCount())
+        if(!global.USE_MINING && !SERVER.GetHotNodesCount())
             return TX_RESULT_NOCONNECT;
         var Body = Tx0.body;
         var BlockNum = GetBlockNumTx(Body);

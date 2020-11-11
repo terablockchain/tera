@@ -94,17 +94,23 @@ if(!global.ToLog)
         console.log(Str);
     };
 
-global.FindBlockchainStartTime = function ()
+global.FindBlockchainStartTime = function (bCheck)
 {
+    var Num = Math.trunc(Date.now() / CONSENSUS_PERIOD_TIME);
+    var PathFile = global.DATA_PATH + "/DB/main-index";
+    if(bCheck && !fs.existsSync(PathFile))
+    {
+        var StartTime = (Num - 16) * CONSENSUS_PERIOD_TIME;
+        return StartTime;
+    }
+    
     try
     {
-        var PathFile = global.DATA_PATH + "/DB/main-index";
         var stat = fs.statSync(PathFile);
         var MaxNum = Math.trunc(stat.size / 6) - 11;
         if(!MaxNum)
             MaxNum = 0;
         
-        var Num = Math.trunc(Date.now() / CONSENSUS_PERIOD_TIME);
         var StartTime = (Num - MaxNum - 8) * CONSENSUS_PERIOD_TIME;
         console.log("****************************** RUN MODE IN CONTINUE_DB MaxNum:" + MaxNum + " TIME:" + StartTime);
         return StartTime;
@@ -114,4 +120,27 @@ global.FindBlockchainStartTime = function ()
         console.log("****************************** CANNT RUN MODE IN CONTINUE_DB: " + e.stack);
         return 0;
     }
+}
+
+
+global.GetHexFromArr = function (arr)
+{
+    if(!arr)
+        return "";
+    else
+        return Buffer.from(arr).toString('hex').toUpperCase();
+}
+global.GetHexFromArr8 = function (arr)
+{
+    return GetHexFromArr(arr).substr(0, 8);
+}
+
+global.GetArrFromHex = function (Str)
+{
+    var array = [];
+    for(var i = 0; i < Str.length / 2; i++)
+    {
+        array[i] = parseInt(Str.substr(i * 2, 2), 16);
+    }
+    return array;
 }

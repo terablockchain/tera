@@ -91,7 +91,7 @@ function CreateNoncePOWExtern(arr0,BlockNum,count,startnone)
 }
 
 
-window.TX_TICKET_HASH_LENGTH = 10;
+window.TX_ID_HASH_LENGTH = 10;
 function CreateHashBody(body,Num,Nonce)
 {
     
@@ -114,16 +114,15 @@ function CreateHashBody(body,Num,Nonce)
     
     var HASH = sha3(body);
     var FullHashTicket = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    for(var i = 0; i < TX_TICKET_HASH_LENGTH; i++)
+    for(var i = 0; i < TX_ID_HASH_LENGTH; i++)
         FullHashTicket[i] = HASH[i];
     
-    WriteUintToArrOnPos(FullHashTicket, Num, TX_TICKET_HASH_LENGTH);
+    WriteUintToArrOnPos(FullHashTicket, Num, TX_ID_HASH_LENGTH);
     return sha3(FullHashTicket);
 }
 
 window.DELTA_POWER_POW_TR = 0;
 window.DELTA_FOR_TIME_TX = 0;
-window.MIN_POWER_POW_TR = 0;
 
 window.CONSENSUS_PERIOD_TIME = 3000;
 window.FIRST_TIME_BLOCK = 1530446400000;
@@ -131,18 +130,17 @@ window.NEW_SIGN_TIME = 25500000;
 
 window.SetBlockChainConstant = function (Data)
 {
-    window.NETWORK = Data.NETWORK;
-    if(NETWORK === "LOCAL")
+    window.NETWORK_NAME = Data.NETWORK;
+    if(window.NETWORK_NAME === "LOCAL")
         window.LOCAL_RUN = 1;
     else
-        if(window.NETWORK.substr(0, 9) === "TEST-JINN")
+        if(window.NETWORK_NAME.substr(0, 9) === "TEST-JINN")
             window.TEST_NETWORK = 1;
     
     var DeltaServerClient = new Date() - Data.CurTime;
     if(!Data.DELTA_CURRENT_TIME)
         Data.DELTA_CURRENT_TIME = 0;
     window.DELTA_CURRENT_TIME2 = Data.DELTA_CURRENT_TIME - DeltaServerClient;
-    window.MIN_POWER_POW_TR = DELTA_POWER_POW_TR + Data.MIN_POWER_POW_TR;
     
     window.FIRST_TIME_BLOCK = Data.FIRST_TIME_BLOCK;
     window.UPDATE_CODE_JINN = Data.UPDATE_CODE_JINN;

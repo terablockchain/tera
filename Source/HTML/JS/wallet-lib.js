@@ -364,7 +364,7 @@ function AddWhiteList()
 {
     var StrWhite = GetSendAccTo(1);
     if(StrWhite && $("idWhiteOnSend").checked)
-        Storage.setItem("White:" + NETWORK + ":" + StrWhite, 1);
+        Storage.setItem("White:" + NETWORK_ID + ":" + StrWhite, 1);
 }
 
 function SendMoneyTest()
@@ -381,7 +381,7 @@ function SendMoneyBefore()
     var StrToID = GetSendAccTo();
     var StrWhite = GetSendAccTo(1);
     var Item = MapAccounts[StrToID];
-    if(Storage.getItem("White:" + NETWORK + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
+    if(Storage.getItem("White:" + NETWORK_ID + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
     {
         SendMoney();
     }

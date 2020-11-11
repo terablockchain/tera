@@ -97,10 +97,10 @@ class SmartScroll extends require("./dapp")
     }
     InitHole()
     {
-        if(global.LOCAL_RUN || global.TEST_NETWORK || global.FORK_MODE)
-            this.RowHole = {}
-        else
+        if(global.NETWORK_ID === "MAIN-JINN.TERA")
             this.RowHole = {"10":1, "19":1, "22":1, "23":1, "24":1, "26":1, "27":1, "29":1, "30":1, "34":1, "56":1, "57":1}
+        else
+            this.RowHole = {}
         
         for(var Num = 0; Num < 8; Num++)
             this.RowHole[Num] = 1

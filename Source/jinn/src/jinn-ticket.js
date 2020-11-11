@@ -163,7 +163,7 @@ function InitClass(Engine)
         return Count;
     };
     
-    Engine.TRANSFERTT_SEND = {BlockNum:"uint32", TtArr:[{HashTicket:"arr" + JINN_CONST.TX_TICKET_HASH_LENGTH}], ReqArr:[{HashTicket:"arr" + JINN_CONST.TX_TICKET_HASH_LENGTH}]};
+    Engine.TRANSFERTT_SEND = {BlockNum:"uint32", TtArr:[{HashTicket:"arr" + JINN_CONST.TT_TICKET_HASH_LENGTH}], ReqArr:[{HashTicket:"arr" + JINN_CONST.TT_TICKET_HASH_LENGTH}]};
     Engine.TRANSFERTT = function (Child,Data)
     {
         if(!Data)

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/normalize.css"> <!-- Подключаем normalize -->
+  <link rel="stylesheet" href="css/main.css"> <!-- Подключаем CSS -->
+</head>
+<body>
+  <header class="header">
+    <div class="header__group wrapper">
+      <div class="logo">
+        <img src="./img/logo.svg" alt="Tera">
+      </div>
+      <nav class="header__menu">
+        <ul class="menu">
+          <li class="menu__item">
+            <a href="index.html" class="menu__link">
+              config
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="#" class="menu__link active">
+              send
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="Dapps.html" class="menu__link">
+              dapps
+            </a>
+          </li>
+          <li class="menu__item">
+            <a href="explorer.html" class="menu__link">
+              explorer
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <section class="tokens wrapper">
+    <h2 class="h2">
+      Sending tokens
+    </h2>
+    <div class="input-group">
+      <p class="input-group__text">From:</p>
+      <div class="select ">
+        <div class="select__header input input_send">
+          <span class="select__current"> 198413&#160;&#160;&#160; Minecraft is life (2 000 000 000,00000000 TERA)</span>
+          <div class="select__icon">
+            <img src="./img/arrow.svg" alt="tera">
+          </div>
+        </div>
+        <div class="select__body">
+          <div class="select__item">198414 &#160;&#160;&#160; Minecraft is life (2 000 000 000,00000000 TERA)
+          </div>
+          <div class="select__item"> 198415 &#160;&#160;&#160; Minecraft is life (2 000 000 000,00000000 TERA)
+          </div>
+          <div class="select__item"> 198416 &#160;&#160;&#160; Minecraft is life (2 000 000 000,00000000 TERA)
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-group__row">
+        <p class="input-group__text">Pay to:</p>
+        <div class="input-group__right">
+          <a href="#" class="input-group__link">Paste</a>
+          <a href="#" class="input-group__link">
+            <p class="input-group__link-text"> Address book</p>
+            <img src="./img/book.svg" alt="tera">
+          </a>
+        </div>
+      </div>
+      <input type="text" class="input input_send" value="Enter ID...">
+    </div>
+    <div class="input-group">
+      <div class="input-group__row">
+        <p class="input-group__text">Amount:</p>
+        <div class="input-group__right">
+          <a href="#" class="input-group__link">
+            <p class="input-group__link-text"> 2 000 000 000,00000000</p>
+            <img src="./img/load.svg" alt="tera">
+          </a>
+        </div>
+      </div>
+      <input type="text" class="input input_send" value="Input TERA amount...">
+    </div>
+    <div class="input-group">
+      <div class="input-group__row">
+        <p class="input-group__text">Description:</p>
+      </div>
+      <input type="text" class="input input_send" value="Optional...">
+    </div>
+    <div class="wallet__buttons">
+      <a href="#" class="btn btn__transparent btn_extrawide" id="json">
+        <img src="./img/edit.svg" alt="tera" class="btn__img">
+        <p>Edit json</p>
+      </a>
+      <div class="wallet__btn-group">
+        <button class="btn btn__transparent btn_extrawide btn_margin">Clear</button>
+        <button class="btn btn_wide" id="transaction">SEND TERA</button>
+      </div>
+    </div>
+    <div class="division">
+    </div>
+    <h3 class="h3">Log from node:
+    </h3>
+    <textarea name="log" id="log" cols="30" rows="14" class="log">
+          20:21:33.906 WRITE DATA Count:1 32419290-32419290
+          20:21:36.159 WRITE DATA Count:3 32419290-32419292
+          20:21:36.943 WRITE DATA Count:1 32419293-32419293
+          20:21:49.912 WRITE DATA Count:1 32419306-32419306
+          20:22:17.771 WRITE DATA Count:3 32419331-32419333
+          20:23:03.669 WRITE DATA Count:1 32419380-32419380
+          20:23:19.590 WRITE DATA Count:1 32419394-32419394
+          20:24:35.145 WRITE DATA Count:1 32419471-32419471
+          20:24:42.068 WRITE DATA Count:10 32419469-32419478
+          20:24:43.387 WRITE DATA Count:1 32419479-32419479
+          20:24:49.663 WRITE DATA Count:2 32419484-32419485
+          20:25:40.204 WRITE DATA Count:1 32419536-32419536
+          20:25:40.204 WRITE DATA Count:1 32419536-32419536
+        </textarea>
+  </section>
+  <div class="modal modal_json">
+    <div class="modal__container">
+      <div class="btn-close">
+        <img src="./img/Close.svg" alt="tera">
+      </div>
+      <form action="" class="form" name="account">
+        <h3 class="h3 h3_form">
+          Edit JSON
+        </h3>
+        <div class="division division_form"></div>
+        <textarea name="log-form" id="log-form" class="log log_form">
+              {
+                "Type": 111,
+                "Version": 3,
+                "Reserve": 0,
+                "FromID": 202527,
+                "OperationID": 0,
+                "To": [
+                    {
+                        "PubKey": "",
+                        "ID": 200112,
+                        "SumCOIN": 1,
+                        "SumCENT": 0
+                    }
+                ],
+                "Description": "test",
+                "Body": "",
+                "Sign": "29CF1CE38040C81D144A2C0090E0A8C50584780BA2152B7AAD674F2AE586A698226D570F1F62E4AACA48AEC20848FF1161854F324BC19684345CDEF15911D520"
+            }              
+            </textarea>
+        <div class="form__buttons">
+          <button class="btn btn__transparent btn_wide btn_margin">Sign json</button>
+          <button class="btn">send from json</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal modal_transaction">
+    <div class="modal__container form">
+      <div class="btn-close">
+        <img src="./img/Close.svg" alt="tera">
+      </div>
+      <h3 class="h3 h3_form">
+        Adding a new account
+      </h3>
+      <div class="division division_form"></div>
+      <div class="transaction">
+        <div class="transaction__row">
+          <p class="transaction__desc">From ID:</p>
+          <div class="transaction__group">
+            <p class="transaction__number">192413</p>
+            <p class="transaction__text">Minecraft is life (2 000 000 000,00000000 TERA)</p>
+          </div>
+        </div>
+        <div class="transaction__row">
+          <p class="transaction__desc">Pay to ID:</p>
+          <div class="transaction__group">
+            <div class="df">
+              <p class="transaction__number">192834</p>
+              <a href="#" class="input-group__link">
+                <p class="input-group__link-text"> Save</p>
+                <img src="./img/book.svg" alt="tera">
+              </a>
+            </div>
+            <p class="transaction__text">Desitest2 (1 100 000 000,00000000 TERA)</p>
+          </div>
+        </div>
+        <div class="transaction__row">
+          <p class="transaction__desc">Amount:</p>
+          <div class="transaction__group">
+            <p class="transaction__text transaction__text_08">Minecraft is life (2 000 000 000,00000000 TERA)</p>
+          </div>
+        </div>
+        <div class="transaction__row">
+          <p class="transaction__desc">Description:</p>
+          <div class="transaction__group">
+            <p class="transaction__text transaction__text_08">Returning debt. Thank's for being part of my life. With
+              respect, Oleg Gazmanov.</p>
+          </div>
+        </div>
+      </div>
+      <div class="form__buttons">
+        <button class="btn btn__transparent cancel btn_margin">Cancel</button>
+        <button class="btn">confirm</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/main.js">
+  </script>
+</body>
+</html>
