@@ -519,59 +519,6 @@ class AccountTR extends require("./accounts-adv-mining")
             RunSmartMethod(Block, undefined, ToData.Value.Smart, ToData, BlockNum, TrNum, Context, "OnGet")
         }
     }
-    WriteBlockTR(Block)
-    {
-        var BlockNum = Block.BlockNum;
-        var DBChanges = GET_TR_CHANGES();
-        
-        if(!BlockNum)
-        {
-            ToLogTx("Error BlockNum=" + BlockNum)
-            throw "Error BlockNum=" + BlockNum;
-        }
-        for(var i = 0; i < DBChanges.BlockHistory.length; i++)
-        {
-            var Data = DBChanges.BlockHistory[i];
-            
-            var Account = DBChanges.BlockMap[Data.CurID];
-            
-            if(Data.SmartMode)
-                Data.Type = 2
-            else
-                Data.Type = 1
-            Data.NextPos = Account.Value.NextPos
-            Account.Value.NextPos = this.WriteHistoryBody(Data)
-        }
-        var arr = [];
-        for(var key in DBChanges.BlockMap)
-        {
-            key = ParseNum(key)
-            var Data = DBChanges.BlockMap[key];
-            if(Data.Changed)
-            {
-                arr.push(Data)
-            }
-        }
-        
-        arr.sort(function (a,b)
-        {
-            return a.Num - b.Num;
-        })
-        COMMON_ACTS.WriteActArr(BlockNum, arr)
-        for(var i = 0; i < arr.length; i++)
-        {
-            var Account = arr[i];
-            this.DBStateWriteInner(Account, BlockNum, 0)
-        }
-        for(var i = 0; i < arr.length; i++)
-        {
-            var Account = arr[i];
-            var History = {Num:Account.Num, NextPos:Account.Value.NextPos};
-            this.DBStateHistory.Write(History)
-        }
-        
-        this.WriteHash100(Block)
-    }
 };
 
 module.exports = AccountTR;

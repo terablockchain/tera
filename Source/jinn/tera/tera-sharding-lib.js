@@ -45,7 +45,7 @@ function Init(Engine)
     
     Engine.IsCorrectTxData = function (CheckBlockNum)
     {
-        SERVER.UpdateAllDB();
+        SERVER.RefreshAllDB();
         var Item = JOURNAL_DB.GetLastBlockNumItem();
         if(!Item)
             return  - 1;

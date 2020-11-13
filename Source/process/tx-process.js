@@ -351,7 +351,7 @@ function CheckBadsBlock()
 
 var TxProcess = undefined;
 var TX_RUN_PERIOD = 50;
-function DoRunTXProcess(bNoFirst)
+function DoRunTXProcess()
 {
     if(!TxProcess)
     {
@@ -364,15 +364,15 @@ function DoRunTXProcess(bNoFirst)
     
     if(SERVER)
     {
-        SERVER.UpdateAllDB();
+        SERVER.RefreshAllDB();
     }
     
-    if(TxProcess && !bNoFirst)
+    if(TxProcess)
         TxProcess.Run();
     
     setTimeout(DoRunTXProcess, TX_RUN_PERIOD * (1 + 10 * ErrorInitCount));
 }
-DoRunTXProcess(1);
+setTimeout(DoRunTXProcess, 2000);
 
 setInterval(function ()
 {

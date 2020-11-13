@@ -180,7 +180,7 @@ function StartRun()
     RunNum++;
     if(RunNum % 10 === 0)
     {
-        SERVER.UpdateAllDB();
+        SERVER.RefreshAllDB();
     }
     SERVER.NodeSyncStatus = {Header1:Engine.Header1, Header2:Engine.Header2, Block1:Engine.Block1, Block2:Engine.Block2, };
     

@@ -228,7 +228,7 @@ function Init(Engine)
             }
         }
         
-        SERVER.UpdateAllDB();
+        SERVER.RefreshAllDB();
         
         return 0;
     };
@@ -715,7 +715,7 @@ function Init(Engine)
         return BlockNum - BlockNumTX;
     };
     
-    SERVER.UpdateAllDB = function ()
+    SERVER.RefreshAllDB = function ()
     {
         if(global.PROCESS_NAME !== "TX")
         {

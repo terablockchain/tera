@@ -20,12 +20,16 @@ const OLD_STAT_BLOCKNUM_PERIOD = 1000;
 
 const CLUSTER_TIME_PERIOD = 1000000000;
 
+require("./lib/time-sync");
+
 //Engine context
 function InitClass(Engine)
 {
     
     Engine.WasCorrectTime = 0;
     Engine.TimeCorrectStartNum = 0;
+    
+    Engine.TimeMedian = new CTimeMedian(21, 200);
     
     Engine.TreeTimeStat = new RBTree(function (a,b)
     {
@@ -261,12 +265,21 @@ function InitClass(Engine)
         
         var CurTime = GetCurrentTime() % CLUSTER_TIME_PERIOD;
         var Delta = NodeTime - CurTime;
-        var DeltaAbs = Math.abs(Delta);
-        if(DeltaAbs < CLUSTER_TIME_PERIOD / 2 && DeltaAbs >= 500)
+        if(Math.abs(Delta) < CLUSTER_TIME_PERIOD / 2)
         {
-            ToLog("----- Node " + Child.Name + " set cluster time Delta=" + Delta, 3);
-            var Value = Math.floor(global.DELTA_CURRENT_TIME + Delta);
-            Engine.SetTimeDelta(Value);
+            Engine.TimeMedian.AddStat(Delta);
+            var AvgDelta = Engine.TimeMedian.GetStat();
+            if(AvgDelta === undefined)
+                return;
+            
+            if(Math.abs(AvgDelta) > 300)
+            {
+                ToLog("----- Node " + Child.Name + " set cluster time Delta=" + AvgDelta, 3);
+                var Value = Math.floor(global.DELTA_CURRENT_TIME + AvgDelta);
+                Engine.SetTimeDelta(Value);
+                
+                Engine.TimeMedian.Clear();
+            }
         }
     };
 }

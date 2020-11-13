@@ -201,7 +201,7 @@ function Init(Engine)
     Engine.PrepareResultCrossMsg = function (Child,Data)
     {
         
-        SERVER.UpdateAllDB();
+        SERVER.RefreshAllDB();
         if(SERVER.GetTXDelta() > 10)
             return {result:100, text:"Busy", ChannelArr:[]};
         

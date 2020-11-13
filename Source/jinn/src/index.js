@@ -33,7 +33,7 @@ if(typeof window !== "object" || global.NWMODE)
     require("./jinn-log.js");
     require("./jinn-stat.js");
     
-    require("./cache-block.js");
+    require("./lib/cache-block.js");
     if(global.EMULATE_FILE)//set global.CDBBase (not use for TERA)
         require("./db/jinn-db-base.js");
     require("./db/jinn-db-row.js");

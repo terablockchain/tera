@@ -221,14 +221,7 @@ class AccountApp extends require("./accounts-hash")
             ROLLBACK_TRANSACTION()
         }
         
-        if(global.JOURNAL_NEW_MODE)
-        {
-            this.WriteHash100(Block)
-        }
-        else
-        {
-            this.WriteBlockTR(Block)
-        }
+        this.WriteHash100(Block)
     }
     
     OnProcessTransaction(Block, Body, BlockNum, TrNum, ContextFrom)
