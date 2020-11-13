@@ -56,16 +56,24 @@ function InitClass(Engine)
     
     Engine.GetLevelArr = function (Child)
     {
-        if(Child.ShardName === JINN_CONST.SHARD_NAME)
-            return Engine.LevelArr;
-        else
+        if(Child.IsCluster && Child.ShardName !== JINN_CONST.SHARD_NAME)
             return Engine.CrossLevelArr;
+        else
+            return Engine.LevelArr;
     };
     
     Engine.SendCrossTx = function ()
     {
         
         var CurrentStatus = {};
+        for(var i = 0; i < Engine.LevelArr.length; i++)
+        {
+            var Child = Engine.LevelArr[i];
+            if(Child && Child.IsCluster && Child.IsOpen())
+            {
+                Engine.SendCrossTxOneNode(Child, CurrentStatus);
+            }
+        }
         
         for(var i = 0; i < Engine.CrossLevelArr.length; i++)
         {

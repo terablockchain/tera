@@ -61,51 +61,6 @@ switch(global.MODE_RUN)
         
         break;
         
-    case "LOCAL_JINN":
-        global.NETWORK = "LOCAL-JINN";
-        global.SHARD_NAME = "TERA";
-        global.LOCAL_RUN = 1;
-        global.JINN_MODE = 1;
-        global.TEST_JINN = 1;
-        
-        global.CONSENSUS_PERIOD_TIME = 3000;
-        
-        global.PERIOD_ACCOUNT_HASH = 50;
-        global.START_BLOCK_ACCOUNT_HASH = 1;
-        global.START_BLOCK_ACCOUNT_HASH3 = 1;
-        
-        global.SMART_BLOCKNUM_START = 0;
-        global.START_MINING = 60;
-        global.REF_PERIOD_END = 0;
-        global.REF_PERIOD_MINING = 10;
-        
-        global.MIN_POWER_POW_ACC_CREATE = 0;
-        
-        global.NEW_ACCOUNT_INCREMENT = 1;
-        global.NEW_BLOCK_REWARD1 = 1;
-        global.NEW_FORMULA_START = 1;
-        global.NEW_FORMULA_KTERA = 3;
-        global.NEW_FORMULA_TARGET1 = 0;
-        global.NEW_FORMULA_TARGET2 = 1;
-        global.NEW_SIGN_TIME = 0;
-        global.START_BAD_ACCOUNT_CONTROL = 0;
-        global.BLOCKNUM_TICKET_ALGO = 0;
-        
-        global.UPDATE_CODE_1 = 0;
-        global.UPDATE_CODE_2 = 0;
-        global.UPDATE_CODE_3 = 0;
-        global.UPDATE_CODE_4 = 0;
-        global.UPDATE_CODE_5 = 0;
-        global.UPDATE_CODE_6 = 0;
-        global.UPDATE_CODE_7 = 0;
-        
-        global.UPDATE_CODE_JINN = 0;
-        global.UPDATE_CODE_JINN_KTERA = global.UPDATE_CODE_JINN;
-        global.NEW_FORMULA_JINN_KTERA = 3 * 3;
-        global.UPDATE_CODE_SHARDING = 0;
-        
-        break;
-        
     case "MAIN_JINN":
         global.JINN_MODE = 1;
         global.NETWORK = "MAIN-JINN";

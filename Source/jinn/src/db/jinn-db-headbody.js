@@ -80,7 +80,8 @@ class CDBHeadBody
         if(Num <= this.DBHeader.GetMaxNum())
         {
             var Data = this.DBHeader.Read(Num);
-            this.DeleteFromItem(Data)
+            if(Data)
+                this.DeleteFromItem(Data)
         }
     }
     

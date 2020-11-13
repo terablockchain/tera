@@ -33,7 +33,7 @@ function DoNode(Engine)
         return;
     
     Engine.CheckHotConnections(Engine.LevelArr);
-    Engine.CheckHotConnections(Engine.CrossLevelArr);
+    Engine.CheckHotConnections(Engine.CrossLevelArr, 1);
     Engine.DoConnectHotLevels();
 }
 
@@ -49,10 +49,15 @@ function InitClass(Engine)
         if(bSend && Child.IsOpen())
             Engine.Send("DISCONNECTLEVEL", Child, {});
         
-        var LevelArr = Engine.GetLevelArr(Child);
-        if(LevelArr[Child.Level] === Child)
+        if(Engine.LevelArr[Child.Level] === Child)
         {
-            LevelArr[Child.Level] = null;
+            Engine.LevelArr[Child.Level] = null;
+            Child.ToLogNet("*DisconnectLevel* Level=" + Child.Level);
+            Engine.NetConfiguration++;
+        }
+        if(Engine.CrossLevelArr[Child.Level] === Child)
+        {
+            Engine.CrossLevelArr[Child.Level] = null;
             Child.ToLogNet("*DisconnectLevel* Level=" + Child.Level);
             
             Engine.NetConfiguration++;
@@ -441,7 +446,7 @@ function InitClass(Engine)
         }
     };
     
-    Engine.CheckHotConnections = function (LevelArr)
+    Engine.CheckHotConnections = function (LevelArr,bCross)
     {
         for(var L = 0; L < JINN_CONST.MAX_LEVEL_ALL(); L++)
         {
@@ -451,42 +456,55 @@ function InitClass(Engine)
             
             var StrError = "";
             var bNeedDisconnect = 0;
-            if(!Engine.InHotStart(Child) && (!Child.IsOpen() || Child.Del))
+            if(bCross && !Child.IsCluster)
             {
                 bNeedDisconnect = 1;
-                StrError = "1# CheckHotConnections: The connection was broken, but the hot sign remained. L=" + Child.Level + "/" + L;
+                StrError = "5# Disconnect not clustered node " + ChildName(Child);
             }
             else
-                if(Child.HotStart && !Engine.InHotStart(Child))
+                if(bCross && Child.ShardName === JINN_CONST.SHARD_NAME)
                 {
                     bNeedDisconnect = 1;
-                    StrError = "2# CheckHotConnections: More than the allowed connection time has passed. L=" + Child.Level + "/" + L;
+                    StrError = "6# Disconnect cross hot node " + ChildName(Child);
                 }
                 else
-                    if(Child.FirstTransferTime)
+                    if(!Engine.InHotStart(Child) && (!Child.IsOpen() || Child.Del))
                     {
-                        var NowTime = Date.now();
-                        var Delta1 = NowTime - Child.FirstTransferTime;
-                        var Delta2 = NowTime - Child.LastTransferTime;
-                        if(Child.Name)
-                            Delta2 = Delta2 / 3;
-                        
-                        if((Delta1 > START_TRANSFER_TIMEOUT) && (Delta2 > MAX_TRANSFER_TIMEOUT))
+                        bNeedDisconnect = 1;
+                        StrError = "1# Connect not was open " + ChildName(Child);
+                    }
+                    else
+                        if(Child.HotStart && !Engine.InHotStart(Child))
                         {
                             bNeedDisconnect = 1;
-                            StrError = "3# CheckHotConnections: there is no data exchange here for a long time. Delta1=" + Delta1 + "  Delta2=" + Delta2;
-                            Child.LastTransferTime = 0;
-                            Child.FirstTransferTime = 0;
+                            StrError = "2# Bad connect time period " + ChildName(Child);
                         }
-                    }
-            if(Child.IsHot() && !Engine.InHotStart(Child) && !Child.IsHotReady())
+                        else
+                            if(Child.FirstTransferTime)
+                            {
+                                var NowTime = Date.now();
+                                var Delta1 = NowTime - Child.FirstTransferTime;
+                                var Delta2 = NowTime - Child.LastTransferTime;
+                                if(Child.Name)
+                                    Delta2 = Delta2 / 3;
+                                
+                                if((Delta1 > START_TRANSFER_TIMEOUT) && (Delta2 > MAX_TRANSFER_TIMEOUT))
+                                {
+                                    bNeedDisconnect = 1;
+                                    StrError = "3# Not data exchange a long time " + ChildName(Child);
+                                    Child.LastTransferTime = 0;
+                                    Child.FirstTransferTime = 0;
+                                }
+                            }
+            if(Child.IsHot() && !Child.IsHotReady())
             {
                 bNeedDisconnect = 1;
-                StrError = "4# CheckHotConnections - not HotReady";
+                StrError = "4# CheckHotConnections - not HotReady " + ChildName(Child);
             }
             
             if(bNeedDisconnect)
             {
+                
                 Child.ToLogNet(StrError);
                 Engine.StartDisconnect(Child, 1, StrError);
                 Engine.DenyHotConnection(Child);

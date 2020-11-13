@@ -13,8 +13,8 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2435;
-global.MIN_JINN_VERSION_NUM = 2177;
+global.UPDATE_CODE_VERSION_NUM = 2442;
+global.MIN_JINN_VERSION_NUM = 2428;
 
 global.DEBUG_TRAFFIC = 0;
 
@@ -71,7 +71,7 @@ global.PERIOD_ACCOUNT_HASH = 20;
 global.START_BLOCK_ACCOUNT_HASH = 1;
 global.START_BLOCK_ACCOUNT_HASH3 = 1;
 global.SMART_BLOCKNUM_START = 0;
-global.START_MINING = 60;
+global.START_MINING = 100;
 global.REF_PERIOD_END = 0;
 global.REF_PERIOD_MINING = 10;
 global.MIN_POWER_POW_ACC_CREATE = 0;
@@ -218,19 +218,17 @@ if(global.START_NETWORK_DATE_FORCE)
 global.STANDART_PORT_NUMBER = 30000;
 
 global.InitParamsArg = InitParamsArg;
-
+require("./startlib.js");
 InitParamsArg();
 
-require("./startlib.js");
-
+if(global.DATA_PATH === undefined)
+    global.DATA_PATH = "../DATA";
 var ShardParamPath = GetDataPath("shard.js");
 if(fs.existsSync(ShardParamPath))//Shard init values
     require(ShardParamPath);
 else
     require("./const-mode.js");
 
-if(global.DATA_PATH === undefined)
-    global.DATA_PATH = "../DATA";
 CheckCreateDir(global.DATA_PATH);
 CheckCreateDir(global.DATA_PATH + "/DB");
 if(!global.START_NETWORK_DATE)

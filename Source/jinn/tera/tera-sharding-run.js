@@ -137,11 +137,13 @@ function Init(Engine)
             return  - 3;
         
         Engine.UpdateVBlockChannelList();
-        
         var TxArr = [];
         for(var Shard in Engine.VBlockChannelList)
         {
             var ShardData = Engine.VBlockChannelList[Shard];
+            if(Engine.IsReadyCrossReceive(ShardData.Num) <= 0)
+                continue;
+            
             var HeadNum = ShardData.VBlockArr.length;
             if(HeadNum > 2)
             {

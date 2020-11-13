@@ -153,16 +153,6 @@ class CTXProcess
         if(LastItem)
             LastBlockNum = LastItem.BlockNum
         
-        if(JOURNAL_DB.GetMaxNum() > 1000)
-        {
-            if(COMMON_ACTS.GetActsMaxNum() > 0)
-            {
-                ToLog("************** DELETE OLD ACT FILES ****************")
-                COMMON_ACTS.DBAct.Truncate( - 1)
-                COMMON_ACTS.DBActPrev.Truncate( - 1)
-            }
-        }
-        
         ErrorInitCount = 0
         
         ToLogTx("Init CTXProcess: " + LastBlockNum)
@@ -320,60 +310,7 @@ class CTXProcess
         
         return Block;
     }
-};
-
-function CheckActDB()
-{
-    if(!SERVER)
-        return;
-    
-    if(global.JOURNAL_NEW_MODE)
-        return;
-    
-    SERVER.UpdateAllDB();
-    
-    var MaxBlockNumDB = SERVER.GetMaxNumBlockDB();
-    var DBAct = COMMON_ACTS.DBAct;
-    var MaxNum = DBAct.GetMaxNum();
-    var Num = MaxNum - 100;
-    if(Num < 0)
-        Num = 0;
-    var Item = DBAct.Read(Num);
-    if(!Item)
-        return;
-    ToLogTx("Check " + Item.BlockNum, 5);
-    while(1)
-    {
-        var Item = DBAct.Read(Num);
-        if(!Item)
-            return;
-        
-        if(Item.Mode === 200)
-        {
-            Item.HashData = COMMON_ACTS.GetActHashesFromBuffer(Item.PrevValue.Data);
-            if(Item)
-            {
-                if(Item.BlockNum > MaxBlockNumDB - 5)
-                    break;
-                
-                var Block = SERVER.ReadBlockHeaderDB(Item.BlockNum);
-                if(!Block)
-                    return;
-                if(!IsEqArr(Block.SumHash, Item.HashData.SumHash))
-                {
-                    ToLogTx("---CheckActDB: Error SumHash on BlockNum=" + Item.BlockNum, 3);
-                    ReWriteDAppTransactions({StartNum:Item.BlockNum}, 1);
-                    
-                    return;
-                }
-            }
-        }
-        
-        Num++;
-    }
 }
-
-
 
 global.OnBadAccountHash = function (BlockNum,BlockNumHash)
 {
@@ -439,7 +376,6 @@ DoRunTXProcess(1);
 
 setInterval(function ()
 {
-    CheckActDB();
     CheckBadsBlock();
 }
 , 60 * 1000);

@@ -1199,5 +1199,3 @@ global.IsDeveloperAccount = function (Key)
 
 if(!global.ARR_PUB_KEY)
     TeraDevKeysInit();
-
-

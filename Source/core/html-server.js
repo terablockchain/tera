@@ -572,8 +572,7 @@ HTTPCaller.GetTransactionAll = function (Params,response)
 
 HTTPCaller.GetActList = function (Params)
 {
-    var arr = COMMON_ACTS.GetActList(Params.StartNum, Params.CountNum);
-    return {arr:arr, result:1};
+    return {arr:[], result:1};
 }
 HTTPCaller.GetJournalList = function (Params)
 {
@@ -711,17 +710,16 @@ HTTPCaller.GetWalletInfo = function (Params)
         CODE_VERSION:CODE_VERSION, VersionNum:global.UPDATE_CODE_VERSION_NUM, RelayMode:SERVER.RelayMode, NodeSyncStatus:SERVER.NodeSyncStatus,
         BlockNumDB:SERVER.BlockNumDB, BlockNumDBMin:SERVER.BlockNumDBMin, CurBlockNum:GetCurrentBlockNumByTime(), CurTime:Date.now(),
         IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), AccountMap:WALLET.AccountMap, ArrLog:ArrLogClient, MaxAccID:ACCOUNTS.GetMaxAccount(),
-        MaxActNum:COMMON_ACTS.GetActsMaxNum(), MaxJournalNum:JOURNAL_DB.GetMaxNum(), MaxDappsID:SMARTS.GetMaxNum(), MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
+        MaxActNum:0, MaxJournalNum:JOURNAL_DB.GetMaxNum(), MaxDappsID:SMARTS.GetMaxNum(), MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
         MaxCrossInNum:SHARDS.GetMaxCrossInNum(), MaxShardNum:SHARDS.GetMaxShardNum(), NeedRestart:global.NeedRestart, ip:SERVER.ip,
-        port:SERVER.port, INTERNET_IP_FROM_STUN:global.INTERNET_IP_FROM_STUN, HistoryMaxNum:MaxHistory, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME,
-        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME,
-        DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)), NodeAddrStr:SERVER.addrStr,
-        STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD, CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum,
-        MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(), CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused,
-        HashRate:HashRateOneSec, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
-        MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum, SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK,
-        SHARD_NAME:global.SHARD_NAME, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT, JINN_MODE:1, sessionid:sessionid,
-    };
+        port:SERVER.port, HistoryMaxNum:MaxHistory, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME, DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)),
+        NodeAddrStr:SERVER.addrStr, STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD,
+        CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum, MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(),
+        CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused, HashRate:HashRateOneSec, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB),
+        NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH, MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum,
+        SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT,
+        JINN_MODE:1, sessionid:sessionid, };
     
     if(Params.Account)
         Ret.PrivateKey = GetHexFromArr(WALLET.GetPrivateKey(WALLET.AccountMap[Params.Account]));

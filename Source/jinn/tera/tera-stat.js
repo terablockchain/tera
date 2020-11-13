@@ -74,8 +74,12 @@ function Init(Engine)
         return Arr;
     };
     
-    function AddNodeToArr(Arr,Node)
+    function AddNodeToArr(MapSet,Arr,Node)
     {
+        if(MapSet.has(Node))
+            return;
+        MapSet.add(Node);
+        
         if(!Node.IDStr)
         {
             Node.IDArr = CalcIDArr(Node.ip, Node.port);
@@ -166,6 +170,7 @@ function Init(Engine)
     };
     SERVER.GetTransferTree = function ()
     {
+        var MapSet = new Set();
         var ArrRes = [];
         var ArrLevels = Engine.GetTransferArrByLevel(3, 1);
         for(var L = 0; L < ArrLevels.length; L++)
@@ -173,16 +178,18 @@ function Init(Engine)
             var LevelData = ArrLevels[L];
             
             if(LevelData.HotChild)
-                AddNodeToArr(ArrRes, LevelData.HotChild);
+                AddNodeToArr(MapSet, ArrRes, LevelData.HotChild);
+            if(LevelData.CrossChild)
+                AddNodeToArr(MapSet, ArrRes, LevelData.CrossChild);
             
             for(var i = 0; i < LevelData.Connect.length; i++)
             {
-                AddNodeToArr(ArrRes, LevelData.Connect[i]);
+                AddNodeToArr(MapSet, ArrRes, LevelData.Connect[i]);
             }
             
             for(var i = 0; i < LevelData.NotConnect.length; i++)
             {
-                AddNodeToArr(ArrRes, LevelData.NotConnect[i]);
+                AddNodeToArr(MapSet, ArrRes, LevelData.NotConnect[i]);
             }
         }
         

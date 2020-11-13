@@ -779,38 +779,45 @@ var Utf8ArrayToStrInner = (function ()
         
         result.length = 0;
         
-        for(var i = 0; i < buffLen; )
+        try
         {
-            byte1 = array[i++];
-            
-            if(byte1 <= 0x7F)
+            for(var i = 0; i < buffLen; )
             {
-                codePt = byte1;
-            }
-            else
-                if(byte1 <= 0xDF)
+                byte1 = array[i++];
+                
+                if(byte1 <= 0x7F)
                 {
-                    codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
+                    codePt = byte1;
                 }
                 else
-                    if(byte1 <= 0xEF)
+                    if(byte1 <= 0xDF)
                     {
-                        codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                        codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
                     }
                     else
-                        if(String.fromCodePoint)
+                        if(byte1 <= 0xEF)
                         {
-                            codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                            codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
                         }
                         else
-                        {
-                            codePt = 63;
-                            i += 3;
-                        }
-            
-            result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+                            if(String.fromCodePoint)
+                            {
+                                codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
+                            }
+                            else
+                            {
+                                codePt = 63;
+                                i += 3;
+                            }
+                
+                result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+            }
         }
-        
+        catch(e)
+        {
+            if(glError)
+                ToLog("charFromCodePt:" + e, 3);
+        }
         return result.join('');
     };
 }
@@ -881,6 +888,17 @@ function WriteUint32AtPos(arr,Num,Pos)
     arr[Pos + 2] = (Num >>> 16) & 0xFF;
     arr[Pos + 3] = (Num >>> 24) & 0xFF;
 }
+function WriteUint32ReverseAtPos(arr,Num,Pos)
+{
+    if(!Num)
+        Num = 0;
+    
+    arr[Pos + 3] = Num & 0xFF;
+    arr[Pos + 2] = (Num >>> 8) & 0xFF;
+    arr[Pos + 1] = (Num >>> 16) & 0xFF;
+    arr[Pos] = (Num >>> 24) & 0xFF;
+}
+
 function WriteStr(arr,Str,ConstLength)
 {
     if(!Str)
@@ -907,7 +925,10 @@ function WriteStr(arr,Str,ConstLength)
     
     for(var i = 0; i < length; i++)
     {
-        arr[len + i] = arrStr[i];
+        if(arrStr[i])
+            arr[len + i] = arrStr[i];
+        else
+            arr[len + i] = 0;
     }
 }
 
@@ -1008,6 +1029,8 @@ function ReadArr(arr,length)
     for(var i = 0; i < length; i++)
     {
         Ret[i] =  + arr[len + i];
+        if(!Ret[i])
+            Ret[i] = 0;
     }
     arr.len += length;
     return Ret;
@@ -1095,10 +1118,9 @@ function TestValue(Value,Format,bLog)
 }
 
 global.WriteUint32AtPos = WriteUint32AtPos;
+global.WriteUint32ReverseAtPos = WriteUint32ReverseAtPos;
 global.WriteUint32 = WriteUint32;
 global.ReadUint32FromArr = ReadUint32FromArr;
-
-glError = 1;
 
 if(!global.ToLog)
     global.ToLog = function (Str)

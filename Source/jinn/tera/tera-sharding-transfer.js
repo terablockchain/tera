@@ -22,22 +22,35 @@ var LIST_DEPTH_START = 5;
 if(global.LOCAL_RUN)
     LIST_DEPTH_START = 0;
 
-const DELTA_TIME_CLEAR_TREE = 30;
 var START_TIME_DELTA = 30;
 if(global.LOCAL_RUN)
     START_TIME_DELTA = 5;
+
+const MAX_DELTA_TIME_CROSS_EXCHANGE = 10;
 
 function Init(Engine)
 {
     
     var bReadOnly = (global.PROCESS_NAME !== "MAIN");
-    SERVER.CrossReceive = new CDBCrossTx("cross-receive", bReadOnly);
+    SERVER.CrossReceive = new CDBCrossTx("cross-receive", {Receive:"str10"}, bReadOnly);
     SERVER.CrossReceive.Ready = 100;
     
     SERVER.StartTeraShardingRun = Date.now();
     
     Engine.CROSSMSG_RET = {Reserve:"uint", result:"byte", ChannelArr:[{ChannelName:"str20", result:"byte", MaxRowNum:"uint", Arr:[{BlockNum:"uint32",
-                RowNum:"uint", RowHash:"hash", Msg:FORMAT_CROSS_MSG}]}]};
+                RowNum:"uint", RowHash:"hash", Msg:FORMAT_CROSS_MSG}], CheckTime:"uint", Reserve:"arr10", }], };
+    
+    Engine.IsReadyCrossReceive = function (Num)
+    {
+        var Head = SERVER.CrossReceive.ReadHead(Num);
+        if(!Head || !Head.CheckTime)
+            return  - 1;
+        var Delta = GetCurrentTime() - Head.CheckTime;
+        if(Delta > MAX_DELTA_TIME_CROSS_EXCHANGE * 1000)
+            return 0;
+        else
+            return 1;
+    };
     
     Engine.GetCrossStatusForSend = function (Child)
     {
@@ -87,13 +100,22 @@ function Init(Engine)
             if(!ShardItem)
                 continue;
             
-            Engine.DoCrossMsgItem(ShardItem, Channel);
+            Engine.DoCrossMsgItem(ShardItem, Channel, Child);
         }
     };
     
-    Engine.DoCrossMsgItem = function (ShardItem,Ret)
+    Engine.DoCrossMsgItem = function (ShardItem,Ret,Child)
     {
         var MaxItem = SERVER.CrossReceive.GetMaxRowIteration(ShardItem.Num);
+        var Head = SERVER.CrossReceive.ReadHead(ShardItem.Num);
+        if(Head && Head.CheckTime > Ret.CheckTime)
+        {
+            return;
+        }
+        Head.CheckTime = Ret.CheckTime;
+        SERVER.CrossReceive.WriteHead(Head);
+        ShardItem.CheckTime = Ret.CheckTime;
+        
         if(Ret.result)
         {
             if(Ret.result === 2)
@@ -124,6 +146,7 @@ function Init(Engine)
                     else
                         RecalcHash = 1;
                     
+                    Item.Receive = Child.Name;
                     SERVER.CrossReceive.Write(ShardItem.ChannelName, Item, Engine.CurrentBlockNum, RecalcHash);
                     
                     LastRowNum = Item.RowNum;
@@ -183,6 +206,7 @@ function Init(Engine)
             return {result:100, text:"Busy", ChannelArr:[]};
         
         var Arr = [];
+        var DBTable;
         for(var i = 0; i < Data.ChannelArr.length; i++)
         {
             var Channel = Data.ChannelArr[i];
@@ -191,7 +215,12 @@ function Init(Engine)
             if(!ShardItem)
                 continue;
             
-            var Item = SHARDS.CrossSend.Read(ShardItem.Num);
+            if(Child.ShardName === JINN_CONST.SHARD_NAME)
+                DBTable = SERVER.CrossReceive;
+            else
+                DBTable = SHARDS.CrossSend;
+            
+            var Item = DBTable.Read(ShardItem.Num);
             var ResItem;
             if(!Item)
             {
@@ -199,17 +228,18 @@ function Init(Engine)
             }
             else
             {
-                ResItem = Engine.PrepareResultCrossItem(Item, Channel.RowNum, Channel.RowHash);
+                ResItem = Engine.PrepareResultCrossItem(DBTable, Item, Channel.RowNum, Channel.RowHash);
             }
+            ResItem.CheckTime = GetCurrentTime();
             
-            ResItem.ChannelName = ChannelName;
+            ResItem.ChannelName = Channel.ChannelName;
             Arr.push(ResItem);
         }
         
         return {result:1, ChannelArr:Arr};
     };
     
-    Engine.PrepareResultCrossItem = function (Item,RowNum,RowHash)
+    Engine.PrepareResultCrossItem = function (DBTable,Item,RowNum,RowHash)
     {
         
         var MaxRowNum = Item.RowNum;
@@ -240,84 +270,11 @@ function Init(Engine)
             if(Item.BlockNum <= Engine.CurrentBlockNum - LIST_DEPTH_START)
                 Arr.unshift(Item);
             
-            Item = SHARDS.CrossSend.ReadPrevItem(Item);
+            Item = DBTable.ReadPrevItem(Item);
         }
         
         Arr.length = Math.min(ITEM_LIST_COUNT, Arr.length);
         return {result:2, MaxRowNum:MaxRowNum, Count:Arr.length, Arr:Arr};
-    };
-    SERVER.FindReceiveCrossMsg = function (ShardNum,RowNum,RowHash)
-    {
-        
-        var Delta = Date.now() - SERVER.StartTeraShardingRun;
-        if(Delta < START_TIME_DELTA * 1000)
-        {
-            return 2;
-        }
-        SERVER.CheckTreeCrossMsg();
-        var ITEM = {ShardNum:ShardNum, RowNum:RowNum, RowHash:RowHash};
-        var Find = SERVER.TreeCrossMsg.find(ITEM);
-        if(Find)
-        {
-            return IsEqArr(Find.RowHash, RowHash);
-        }
-        
-        var MsgItem = SERVER.CrossReceive.Read(ShardNum);
-        if(MsgItem)
-        {
-            if(MsgItem.RowNum - ITEM_LIST_DEPTH >= RowNum)
-                return 0;
-            
-            var Count = ITEM_LIST_DEPTH;
-            while(MsgItem && MsgItem.RowNum >= RowNum)
-            {
-                Count--;
-                if(Count < 0)
-                    break;
-                
-                var CURITEM = {ShardNum:ShardNum, RowNum:MsgItem.RowNum, RowHash:MsgItem.RowHash};
-                var Find = SERVER.TreeCrossMsg.find(CURITEM);
-                if(!Find)
-                {
-                    SERVER.TreeCrossMsg.insert(CURITEM);
-                }
-                
-                if(MsgItem.RowNum === RowNum)
-                {
-                    if(IsEqArr(MsgItem.RowHash, RowHash))
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-                MsgItem = SERVER.CrossReceive.ReadPrevItem(MsgItem);
-            }
-        }
-        
-        return 0;
-    };
-    SERVER.CheckTreeCrossMsg = function ()
-    {
-        if(!SERVER.TreeCrossMsgDate)
-            SERVER.TreeCrossMsgDate = 0;
-        var Now = Date.now();
-        var Delta = Now - SERVER.TreeCrossMsgDate;
-        if(Delta > DELTA_TIME_CLEAR_TREE * 1000)
-            SERVER.TreeCrossMsg = undefined;
-        
-        if(!SERVER.TreeCrossMsg)
-        {
-            SERVER.TreeCrossMsgDate = Now;
-            SERVER.TreeCrossMsg = new RBTree(function (a,b)
-            {
-                if(a.ShardNum !== b.ShardNum)
-                    return a.ShardNum - b.ShardNum;
-                return a.RowNum - b.RowNum;
-            });
-        }
     };
     Engine.CheckCrossReceiveSize = function ()
     {
@@ -337,7 +294,7 @@ function Init(Engine)
         if(bReadOnly)
             return;
         
-        if(SERVER.CrossReceive.GetMaxNum() > 0)
+        if(SERVER.CrossReceive.GetMaxNum() >= 0)
             SERVER.CrossReceive.Clear();
         Engine.CheckCrossReceiveSize();
     };

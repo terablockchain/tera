@@ -231,7 +231,7 @@ function RunOneTX(App,Block,Tx,BlockNum,TxNum,bCrossRun)
     }
     else
     {
-        ToLogTx("ERROR on Block=" + BlockNum + " TxNum=" + TxNum + " : " + Result, global.DEV_MODE ? 2 : 4);
+        ToLogTx("ERROR on Block=" + BlockNum + " TxNum=" + TxNum + " : " + Result, global.DEV_MODE ? 3 : 4);
         ROLLBACK_TRANSACTION();
         SetResult = 0;
     }
@@ -254,10 +254,7 @@ function BlockRestore(BlockNum)
     }
     else
     {
-        var Res = JOURNAL_DB.RestoreFromJournalAtNum(BlockNum, 0);
-        
-        if(JOURNAL_NEW_MODE === 1 || !Res)
-            COMMON_ACTS.MoveActToStates(BlockNum, !Res);
+        JOURNAL_DB.RestoreFromJournalAtNum(BlockNum, 0);
     }
 }
 

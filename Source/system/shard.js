@@ -194,7 +194,18 @@ class ShardApp extends ChardCross
     
     GetShardList(start, count)
     {
-        return this.GetScrollList(this.DBChannel, start, count);
+        var Arr = this.GetScrollList(this.DBChannel, start, count);
+        for(var i = 0; i < Arr.length; i++)
+        {
+            var Item = Arr[i];
+            var Receive = SERVER.CrossReceive.ReadHead(Item.Num);
+            if(Receive)
+            {
+                Item.CheckTime = Receive.CheckTime
+            }
+        }
+        
+        return Arr;
     }
 };
 

@@ -56,7 +56,7 @@
 
 
 
-    var INTERNET_IP_FROM_STUN;
+
     var SERVER_IP;
     var SERVER_PORT;
 
@@ -741,7 +741,7 @@
         }
 
 
-        INTERNET_IP_FROM_STUN=Data.INTERNET_IP_FROM_STUN;
+
         SERVER_IP=Data.ip;
         SERVER_PORT=Data.port;
 
@@ -2109,8 +2109,8 @@
 
                             <th id="Item.StatusStr" class="num">Status</th>
                             <th id="(RetOpenBlock(Item.BlockNumVote,1,Item.ConfirmsStr))" class="num">C</th>
-                            <th id="Item.Height" class="num">Height</th>
-                            <th id="Item.HeightStart" class="num">HeightStart</th>
+<!--                            <th id="Item.Height" class="num">Height</th>-->
+<!--                            <th id="Item.HeightStart" class="num">HeightStart</th>-->
 <!--                            <th id="(RetOpenBlock(Item.BlockNumVote,1))" class="num">Last vote</th>-->
 
                             <th id="(RetOpenBlock(Item.BlockNumRun,1))" class="num">Run</th>
@@ -2119,6 +2119,7 @@
                             <th id="Item.BlockNumRun?Item.BlockNumRun-Math.min(Item.BlockNum,Item.BlockNumAdd):''" class="num">Delta</th>
 
                             <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
+                            <th id="Item.Receive" class="name">Receive</th>
 
 
 <!--                            <th id="GetHexFromArr(Item.DataHash)" class="hash">DHash</th>-->
@@ -2155,7 +2156,7 @@
                             <th id="GetHexFromArr(Item.MaxVBlock.Hash)" class="hash">Hash</th>
 <!--                            <th id="Item.MaxVBlock.RowNum" class="num">MaxRow</th>-->
                             <th id="GetHexFromArr(Item.MaxVBlock.RowHash)" class="hash">RowHash</th>
-
+                            <th id="formatDate(new Date(Item.CheckTime))" class="date">CheckTime</th>
 
 <!--                            <th id="Item.System" class="num">System</th>-->
 

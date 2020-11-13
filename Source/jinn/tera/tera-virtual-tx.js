@@ -169,7 +169,7 @@ function Init(Engine)
                         Bundle = Engine.SysTreeBundleTx.FindItemInCache({Hash:CurBlock.SysTreeHash});
                         if(!Bundle)
                         {
-                            ToLog("Not find bundle: " + GetHexFromArr8(CurBlock.SysTreeHash) + " Block:" + BlockInfo(CurBlock), 3);
+                            ToLogOne("Not find bundle: " + GetHexFromArr8(CurBlock.SysTreeHash) + " Block:" + BlockInfo(CurBlock), "", 3);
                             continue;
                         }
                     }

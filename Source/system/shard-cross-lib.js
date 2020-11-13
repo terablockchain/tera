@@ -148,6 +148,7 @@ class ShardCrossLib extends require("./shard-cross-tr")
                 Item.Height = 0
                 Item.HeightStart = 0
                 Item.BlockNumVote = 0
+                Item.BlockNumAdd = 0
             }
             Item.StatusStr = this.GetStatusMsgItem(Item)
             if(!Item.BlockNumAdd)

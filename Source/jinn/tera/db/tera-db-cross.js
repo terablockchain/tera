@@ -16,17 +16,20 @@ global.FORMAT_CROSS_MSG = {BlockNumFrom:"uint32", TxNumFrom:"uint16", ShardFrom:
     Reserve:"arr6", };
 
 const HEAD_FORMAT = {LastPos:"uint", ShardName:SHARD_STR_TYPE, Confirms:"uint32", ChannelName:"str20", BlockNumCreate:"uint32",
-    Work:"byte", Reserve:"arr57"};
+    Work:"byte", CheckTime:"uint", Reserve:"arr51"};
 
 const DATA_FORMAT = {PrevPos:"uint", BlockNum:"uint32", Reserve:"uint32", RowNum:"uint", RowHash:"hash", Msg:FORMAT_CROSS_MSG,
 };
 const WorkStructBody = {};
 
-class CDBCrossTx
+module.exports = class CDBCrossTx
 {
-    constructor(name, bReadOnly)
+    constructor(name, AddDataFormat, bReadOnly)
     {
-        this.DB = new CDBList(name, HEAD_FORMAT, DATA_FORMAT, bReadOnly)
+        var DATA_FORMAT1 = CopyObjKeys({}, DATA_FORMAT);
+        var DATA_FORMAT2 = CopyObjKeys(DATA_FORMAT1, AddDataFormat);
+        
+        this.DB = new CDBList(name, HEAD_FORMAT, DATA_FORMAT2, bReadOnly)
     }
     
     Clear()
@@ -43,6 +46,11 @@ class CDBCrossTx
     {
         var Head = {Num:Item.Num, ShardName:Item.ShardName, Confirms:Item.Confirms, ChannelName:Item.ChannelName, Work:Item.Work, LastPos:0,
             BlockNumCreate:BlockNumCreate};
+        return this.DB.DBHeader.Write(Head);
+    }
+    
+    WriteHead(Head)
+    {
         return this.DB.DBHeader.Write(Head);
     }
     
@@ -102,7 +110,7 @@ class CDBCrossTx
     {
         var Item = this.Read(ShardNum);
         if(!Item)
-            return {RowNum:0, RowHash:ZERO_ARR_32};
+            return {RowNum:0, RowHash:ZERO_ARR_32, CheckTime:0};
         else
             return Item;
     }
@@ -148,6 +156,7 @@ class CDBCrossTx
 global.CalcCrossRowItem = function (Item,PrevRowNum,PrevHash)
 {
     Item.BlockNum = 0;
+    
     Item.PrevPos = 0;
     Item.RowNum = PrevRowNum + 1;
     Item.RowHash = PrevHash;
@@ -156,4 +165,3 @@ global.CalcCrossRowItem = function (Item,PrevRowNum,PrevHash)
     Item.RowHash = sha3(Arr);
 }
 
-module.exports = CDBCrossTx;

@@ -21,7 +21,7 @@ class ShardCrossDB extends require("./shard-cross-lib")
     constructor(bReadOnly)
     {
         super(bReadOnly)
-        this.CrossSend = new CDBCrossTx("cross-send", bReadOnly)
+        this.CrossSend = new CDBCrossTx("cross-send", {}, bReadOnly)
         const FormatRowHash = {RowHash:"hash", RowNum:"uint", ChannelNum:"uint32", BlockNum:"uint32", TxNum:"uint16", HeightStart:"uint32",
             Height:"uint32", BlockNumVote:"uint32", TxNumVote:"uint16", BlockNumRun:"uint32", TxNumRun:"uint16", PrevRowHash:"hash", PrevLogRowHash:"hash",
             Reserve:"arr10"};
