@@ -86,8 +86,7 @@ function ClearDataBase()
 global.RewriteAllTransactions = RewriteAllTransactions;
 function RewriteAllTransactions(bSilent)
 {
-    if(!bSilent)
-        ToLogTx("*************RewriteAllTransactions");
+    ToLogTx("*************RewriteAllTransactions");
     
     ClearDataBase();
     return 1;
@@ -99,7 +98,7 @@ function ReWriteDAppTransactions(Params,bSilent)
     StopTxProcess = 0;
     var StartNum = Params.StartNum;
     
-    ToLogTx("ReWriteDAppTransactions from: " + StartNum, bSilent ? 5 : 0);
+    ToLogTx("ReWriteDAppTransactions from: " + StartNum);
     
     ACCOUNTS.BadBlockNumChecked = SERVER.GetMaxNumBlockDB() - 1;
     ACCOUNTS.BadBlockNumHash = 0;
@@ -139,13 +138,19 @@ class CTXProcess
 {
     constructor()
     {
-        
         var LastItem = JOURNAL_DB.GetLastBlockNumItem();
+        var JMaxNum = JOURNAL_DB.GetMaxNum();
         var AccountLastNum = ACCOUNTS.DBState.GetMaxNum();
-        if(!LastItem && AccountLastNum > 16)
+        if(!LastItem && (AccountLastNum > 16 || JMaxNum !==  - 1))
         {
-            ToLogTx("Error Init CTXProcess  AccountLastNum=" + AccountLastNum)
+            ToLogTx("Error Init CTXProcess  AccountLastNum=" + AccountLastNum + "  JMaxNum=" + JMaxNum)
             ErrorInitCount++
+            
+            if(JMaxNum !==  - 1)
+            {
+                ToLogTx("Delete jrow at: " + JMaxNum)
+                JOURNAL_DB.DBJournal.DeleteFromNum(JMaxNum)
+            }
             
             return;
         }
@@ -231,6 +236,22 @@ class CTXProcess
             if(SERVER.GetMaxNumBlockDB() < BLOCK_PROCESSING_LENGTH2)
                 return 0;
             
+            var JMaxNum = JOURNAL_DB.GetMaxNum();
+            if(JMaxNum >= 0)
+            {
+                ToLog("Detect run Error. JMaxNum=" + JMaxNum + " Need restart.")
+                if(!this.StartRestart)
+                {
+                    setTimeout(function ()
+                    {
+                        Exit()
+                    }, 10000)
+                    this.StartRestart = 1
+                }
+                
+                return 0;
+            }
+            
             return this.DoBlock(1);
         }
         
@@ -303,7 +324,6 @@ class CTXProcess
         
         if(BlockNum % 100000 === 0 || bShowDetail)
             ToLogTx("CALC: " + BlockNum)
-        
         BLOCK_PROCESS_TX(Block)
         
         RunTestAccHash(BlockNum)

@@ -56,8 +56,8 @@ class MerkleDBRow extends CDBRow
         var Buf = this.Read(Num, 1);
         if(!Buf)
         {
-            if(global.WATCHDOG_DEV)
-                ToLogTx("Update MerkleTree: Error reading on num: " + Num)
+            var StrError = "Update MerkleTree: Error reading on num: " + Num;
+            StopAndExit(StrError)
             return;
         }
         

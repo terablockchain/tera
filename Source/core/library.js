@@ -75,7 +75,6 @@ String.prototype.right = function (count)
 
 require("../jinn/tera/db/BinTreeExt");
 
-global.Stun = require('stun');
 global.ZIP = require("zip");
 
 var strOS = os.platform() + "_" + os.arch();

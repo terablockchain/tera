@@ -94,6 +94,7 @@ function StartUseStun(ip,port,F)
         return;
     }
     
+    let Stun = require('stun');
     let server = Stun.createServer();
     const request = Stun.createMessage(Stun.constants.STUN_BINDING_REQUEST);
     

@@ -58,7 +58,7 @@ process.on('message', function (msg)
     switch(msg.cmd)
     {
         case "Alive":
-            DELTA_CURRENT_TIME = msg.DELTA_CURRENT_TIME;
+            global.DELTA_CURRENT_TIME = msg.DELTA_CURRENT_TIME;
             break;
         case "Exit":
             Exit();

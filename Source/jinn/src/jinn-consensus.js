@@ -583,10 +583,11 @@ function InitClass(Engine)
                 StrCheckSum = "--- Checked on " + CheckBlockSeed.BlockNum;
             
             var BlockDB = Engine.GetBlockHeaderDB(BlockNumDB);
-            if(CheckBlockSeed.SumPow < BlockDB.SumPow || CheckBlockSeed.SumPow === BlockDB.SumPow && CompareArr(BlockDB.PowHash, CheckBlockSeed.PowHash) <= 0)
-            {
-                return 0;
-            }
+            if(BlockDB)
+                if(CheckBlockSeed.SumPow < BlockDB.SumPow || CheckBlockSeed.SumPow === BlockDB.SumPow && CompareArr(BlockDB.PowHash, CheckBlockSeed.PowHash) <= 0)
+                {
+                    return 0;
+                }
         }
         else
         {

@@ -112,12 +112,12 @@ function CheckStartOneProcess(Name)
     if(global.READ_ONLY_DB || DBMapCheckProcess[Name])
         return;
     DBMapCheckProcess[Name] = 1;
-    
-    var path = GetDataPath("DB/Run/" + Name);
+    var path = GetDataPath("DB/" + Name);
     if(fs.existsSync(path))
     {
         fs.unlinkSync(path);
     }
+    
     try
     {
         LibDBFile.OpenDBFile(Name);

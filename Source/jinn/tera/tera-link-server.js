@@ -204,7 +204,7 @@ function Init(Engine)
             BlockNum--;
             ToLog("******************************** SET NEW BlockNumDB = " + BlockNum + "/" + SERVER.BlockNumDB);
             
-            if(1 && global.DEV_MODE)
+            if(0 && global.DEV_MODE)
             {
                 throw "STOP AND EXIT!";
             }
