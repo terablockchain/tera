@@ -15,10 +15,11 @@
 
 if(typeof global !== "object")
     global = window;
-
-global.ZERO_ARR_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-global.MAX_ARR_32 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
+if(!global.ZERO_ARR_32)
+    global.ZERO_ARR_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+if(!global.MAX_ARR_32)
+    global.MAX_ARR_32 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
 
 global.JINN_MODULES = [];
 
@@ -34,6 +35,7 @@ if(typeof window !== "object" || global.NWMODE)
     require("./jinn-stat.js");
     
     require("./lib/cache-block.js");
+    require("./lib/time-sync");
     if(global.EMULATE_FILE)//set global.CDBBase (not use for TERA)
         require("./db/jinn-db-base.js");
     require("./db/jinn-db-row.js");
@@ -234,7 +236,7 @@ JINN_CONST.DELTA_TIME_NEW_BLOCK = 500;
 
 JINN_CONST.MAX_CHILD_PROCESS_TIME = 10;
 
-JINN_CONST.BLOCK_CREATE_INTERVAL = 5;
+JINN_CONST.BLOCK_CREATE_INTERVAL = global.BLOCK_CREATE_INTERVAL;
 
 
 JINN_CONST.MAX_CROSS_MSG_COUNT = 300;

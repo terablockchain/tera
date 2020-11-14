@@ -113,11 +113,11 @@
             GetData("GetBlockList",{StartNum:BlockNum,CountNum:1,ChainMode:DefTr.ChainMode},function (Data)
             {
                 var Str="";
-                if(BlockNum && Data && Data.result  && Data.arr.length)
+                if(Data && Data.result  && Data.arr.length)//BlockNum
                 {
                     var Block=Data.arr[0];
                     Str+="Hash: <b class='hash'>"+GetHexFromArr(Block.Hash)+"</b>";
-                    Str+="<BR>PrevHash: <b class='hash'>"+GetHexFromArr(Block.PrevHash)+"</b>";
+                    // Str+="<BR>PrevHash: <b class='hash'>"+GetHexFromArr(Block.PrevHash)+"</b>";
                     Str+="<BR>TreeHash: <b class='hash'>"+GetHexFromArr(Block.TreeHash)+"</b>";
                     // Str+="<BR>MinerHash: <b class='hash'>"+GetHexFromArr(Block.MinerHash)+"</b>";
                     // Str+="<BR>ShardBits: <b class='hash'>"+GetHexFromArr(Block.ShardBits)+"</b>";

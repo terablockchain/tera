@@ -20,8 +20,6 @@ const OLD_STAT_BLOCKNUM_PERIOD = 1000;
 
 const CLUSTER_TIME_PERIOD = 1000000000;
 
-require("./lib/time-sync");
-
 //Engine context
 function InitClass(Engine)
 {

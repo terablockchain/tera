@@ -609,15 +609,13 @@ function GetCountMiningCPU0()
 }
 global.GetCountMiningCPU = GetCountMiningCPU0;
 
-if(global.TEST_JINN)
+if(global.TEST_MINING)
 {
     global.GetCountMiningCPU = function ()
     {
-        var CountCPU = GetCountMiningCPU0();
+        var CountCPU = global.COUNT_MINING_CPU;
         if(!CountCPU)
             CountCPU = 1;
-        if(CountCPU > 2)
-            CountCPU = 2;
         return CountCPU;
     };
 }

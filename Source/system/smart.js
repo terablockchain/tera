@@ -136,10 +136,6 @@ class SmartApp extends require("./smart-tr")
     
     Start()
     {
-        if(this.GetMaxNum() + 1 >= 7)
-            return;
-        
-        COMMON_ACTS.ClearDataBase()
     }
     
     Close()
@@ -154,6 +150,14 @@ class SmartApp extends require("./smart-tr")
         
         this.DBSmart.Clear()
         
+        if(SHARD_PARAMS.GenesisSmartCreate)
+            SHARD_PARAMS.GenesisSmartCreate()
+        else
+            this.GenesisSmartCreate()
+    }
+    
+    GenesisSmartCreate()
+    {
         this.DBSmartWrite({Num:0, ShortName:SHARD_NAME, Name:SHARD_NAME, Description:SHARD_NAME, BlockNum:0, TokenGenerate:1, Account:0,
             Category1:0})
         for(var i = 1; i < 8; i++)

@@ -120,6 +120,9 @@ class AccountApp extends require("./accounts-hash")
     
     Start(bClean)
     {
+        this.DBState.InitMerkleTree()
+        this.CalcMerkleTree(1)
+        
         // tx-process var
         this.BadBlockNum = 0
         this.BadBlockNumChecked = 0
@@ -127,13 +130,7 @@ class AccountApp extends require("./accounts-hash")
         
         this.InitAMIDTab()
         
-        if(!bClean && this.DBState.GetMaxNum() + 1 >= BLOCK_PROCESSING_LENGTH2)
-        {
-            ToLog("ACCOUNTS MAX_NUM:" + this.DBState.GetMaxNum())
-            return;
-        }
-        
-        COMMON_ACTS.ClearDataBase()
+        ToLog("ACCOUNTS MAX_NUM:" + this.DBState.GetMaxNum())
     }
     
     Close()
@@ -154,7 +151,21 @@ class AccountApp extends require("./accounts-hash")
         
         this.ClearAccountsHash()
         this.ClearRest()
+        
         this.ClearHistory()
+        if(SHARD_PARAMS.GenesisAccountCreate)
+            SHARD_PARAMS.GenesisAccountCreate()
+        else
+            this.GenesisAccountCreate()
+        
+        var MaxNum = this.DBState.GetMaxNum();
+        if(MaxNum >= 0)
+            this.DBStateHistory.Write({Num:MaxNum})
+        
+        this.Start()
+    }
+    GenesisAccountCreate()
+    {
         this.DBStateWriteInner({Num:0, PubKey:[], Value:{BlockNum:1, SumCOIN:0.95 * TOTAL_SUPPLY_TERA}, Name:"System account"}, 1)
         for(var i = 1; i < 8; i++)
             this.DBStateWriteInner({Num:i, PubKey:[], Value:{BlockNum:1}, Name:""})
@@ -164,11 +175,6 @@ class AccountApp extends require("./accounts-hash")
         this.DBStateWriteInner({Num:9, PubKey:GetArrFromHex(ARR_PUB_KEY[1]), Value:{BlockNum:1, SumCOIN:0}, Name:"Developer account"})
         for(var i = 10; i < BLOCK_PROCESSING_LENGTH2; i++)
             this.DBStateWriteInner({Num:i, PubKey:GetArrFromHex(ARR_PUB_KEY[i - 8]), Value:{BlockNum:1}, Name:""})
-        
-        this.DBStateHistory.Write({Num:15})
-        
-        this.DBState.InitMerkleTree()
-        this.CalcMerkleTree(1)
     }
     
     DBStateTruncateInner(Num)
@@ -207,7 +213,12 @@ class AccountApp extends require("./accounts-hash")
         try
         {
             BEGIN_TRANSACTION()
-            this.DoCoinBaseTR(Block)
+            
+            if(SHARD_PARAMS.DoCoinBaseTR)
+                SHARD_PARAMS.DoCoinBaseTR(Block)
+            else
+                this.DoCoinBaseTR(Block)
+            
             COMMIT_TRANSACTION(Block.BlockNum, 0xFFFF)
         }
         catch(e)
@@ -269,16 +280,7 @@ class AccountApp extends require("./accounts-hash")
         var SysData = this.ReadStateTR(0);
         var SysBalance = SysData.Value.SumCOIN;
         var REF_PERIOD_START = global.START_MINING;
-        
-        var AccountID = ReadUintFromArr(Block.AddrHash, 0);
-        
-        if(Block.BlockNum >= global.UPDATE_CODE_5 && AccountID >= 1e9)
-        {
-            var FindAMID = AccountID;
-            AccountID = this.GetIDByAMID(FindAMID)
-            if(!AccountID)
-                ToLogTx("DoCoinBaseTR: Error find AMID:" + FindAMID + " on BlockNum:" + Block.BlockNum)
-        }
+        var AccountID = this.GetMinerFromBlock(Block);
         
         if(AccountID < 8)
             return;

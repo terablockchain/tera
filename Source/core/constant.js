@@ -13,7 +13,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2445;
+global.UPDATE_CODE_VERSION_NUM = 2447;
 global.MIN_JINN_VERSION_NUM = 2428;
 
 global.DEBUG_TRAFFIC = 0;
@@ -66,7 +66,7 @@ global.SHARD_NAME = "NONE";
 global.START_NETWORK_DATE = 0;
 global.CONSENSUS_PERIOD_TIME = 3000;
 
-
+global.SHARD_PARAMS = {};
 global.PERIOD_ACCOUNT_HASH = 20;
 global.START_BLOCK_ACCOUNT_HASH = 1;
 global.START_BLOCK_ACCOUNT_HASH3 = 1;
@@ -98,6 +98,9 @@ global.UPDATE_CODE_JINN = 0;
 global.UPDATE_CODE_JINN_KTERA = 0;
 global.NEW_FORMULA_JINN_KTERA = 3 * 3;
 global.UPDATE_CODE_SHARDING = 0;
+global.TEST_MINING = 0;
+global.BLOCK_CREATE_INTERVAL = 1;
+global.START_HISTORY = 10;
 
 global.HTTP_USE_ZIP = 0;
 
@@ -106,8 +109,6 @@ global.USE_API_WALLET = 1;
 global.USE_API_V1 = 1;
 global.USE_HARD_API_V2 = 0;
 global.MAX_TX_FROM_WEB_IP = 20;
-
-global.START_HISTORY = 10;
 
 global.TX_ID_HASH_LENGTH = 10;
 
@@ -189,15 +190,15 @@ global.TOTAL_SUPPLY_TERA = 1e9;
 if(!global.MAX_ACTS_LENGTH)
     global.MAX_ACTS_LENGTH = 10 * 1000 * 1000;
 
-
-
-
-
 global.MAX_SIZE_LOG = 200 * 1024 * 1024;
 
-global.ZERO_ARR_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-global.MAX_ARR_32 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+var ZERO_ARR_32_0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var MAX_ARR_32_0 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
+Object.freeze(ZERO_ARR_32_0);
+Object.freeze(MAX_ARR_32_0);
+Object.defineProperty(global, "ZERO_ARR_32", {writable:false, value:ZERO_ARR_32_0});
+Object.defineProperty(global, "MAX_ARR_32", {writable:false, value:MAX_ARR_32_0});
 
 
 global.READ_ONLY_DB = 0;

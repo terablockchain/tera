@@ -165,6 +165,14 @@ function Create(MapName)
                     Engine.AddNodeAddr({ip:"127.0.0.1", port:50001, Score:SYSTEM_SCORE, System:1});
                 }
         
+        if(SHARD_PARAMS.SeedServerArr)
+        {
+            for(var i = 0; i < SHARD_PARAMS.SeedServerArr.length; i++)
+            {
+                Engine.AddNodeAddr(SHARD_PARAMS.SeedServerArr[i]);
+            }
+        }
+        
         Engine.LoadAddrOnStart();
     }
     

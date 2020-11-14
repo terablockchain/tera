@@ -105,10 +105,7 @@ function RunStopPOWProcess(Mode)
     if(global.USE_MINING && ArrMiningWrk.length)
         return;
     
-    if(SERVER.LoadHistoryMode)
-        return;
-    
-    if(GetMiningAccount() < 8)
+    if(!GetMiningAccount())
         return;
     
     var PathMiner = GetCodePath("../miner.js");
@@ -119,7 +116,7 @@ function RunStopPOWProcess(Mode)
         return;
     
     var Memory;
-    if(global.TEST_JINN)
+    if(global.TEST_MINING)
     {
         Memory = 90 * 1e6 * global.GetCountMiningCPU();
     }

@@ -206,7 +206,7 @@ function Init(Engine)
             
             if(0 && global.DEV_MODE)
             {
-                throw "STOP AND EXIT!";
+                StopAndExit("SET NEW BlockNumDB");
             }
             
             SERVER.TruncateBlockDB(BlockNum);
@@ -593,7 +593,6 @@ function Init(Engine)
         if(BlockNumTime < MaxNum)
             MaxNum = BlockNumTime;
         
-        var arr = [];
         for(var num = StartNum; num <= MaxNum; num++)
         {
             
@@ -653,27 +652,23 @@ function Init(Engine)
         }
         return num > 0 ? num - 1 : 0;
     };
-    SERVER.GetHashGenesis = function (Num)
-    {
-        return [Num + 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, Num + 1];
-    };
-    
     SERVER.GenesisBlockHeaderDB = function (Num)
     {
         if(Num < 0)
             return undefined;
         
-        var Block = {BlockNum:Num, TreeHash:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0], AddrHash:DEVELOP_PUB_KEY0, Hash:SERVER.GetHashGenesis(Num), PowHash:SERVER.GetHashGenesis(Num), PrevHash:[0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], SeqHash:[0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], PrevSumHash:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], SumHash:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Comment1:"GENESIS", Comment2:"", TrCount:0, TrDataPos:0, TrDataLen:0, };
+        var Block = {BlockNum:Num, TreeHash:ZERO_ARR_32, PrevHash:ZERO_ARR_32, PrevSumHash:ZERO_ARR_32, SumHash:ZERO_ARR_32, TrCount:0,
+            TrDataLen:0, };
+        
+        if(Block.BlockNum < global.UPDATE_CODE_JINN)
+            Block.AddrHash = DEVELOP_PUB_KEY0;
+        // rudiment from old code
+        else
+            Block.AddrHash = ZERO_ARR_32;
         
         Block.SeqHash = GetSeqHash(Block.BlockNum, Block.PrevHash, Block.TreeHash);
         
         Block.SumPow = 0;
-        Block.bSave = true;
         
         return Block;
     };

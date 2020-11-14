@@ -61,6 +61,7 @@ class CDBChain
     }
     WriteBlock(Block)
     {
+        
         var Item = this.ReadIndex(Block.BlockNum);
         if(!Item)
         {
@@ -109,6 +110,7 @@ class CDBChain
             Item.LastPosition = Block.Position
             return this.WriteIndex(Item);
         }
+        
         return 1;
     }
     

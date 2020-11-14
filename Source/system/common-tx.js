@@ -67,8 +67,14 @@ function GET_DAPP_TRANSACTIONS(Block)
 function BLOCK_PROCESS_TX(Block)
 {
     var BlockNum = Block.BlockNum;
-    if(!BlockNum || BlockNum <= 0)
+    if(typeof BlockNum !== "number" || BlockNum <= 0)
         return;
+    
+    if(BlockNum === 1)
+    {
+        ToLog("=FIRST GENESIS BLOCK=");
+        COMMON_ACTS.ClearDataBase();
+    }
     
     BlockTruncate(BlockNum);
     

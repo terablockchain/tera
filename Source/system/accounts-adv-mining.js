@@ -57,6 +57,24 @@ class AccountAdvMining extends require("./accounts-history")
         
         return this.AdvMining.GetID(AMID);
     }
+    
+    GetMinerFromBlock(Block)
+    {
+        var AccountID = ReadUintFromArr(Block.AddrHash, 0);
+        
+        if(Block.BlockNum >= global.UPDATE_CODE_5 && AccountID >= 1e9)
+        {
+            var SearchAMID = AccountID;
+            AccountID = this.GetIDByAMID(SearchAMID)
+            if(!AccountID)
+            {
+                ToLogTx("Bad search AMID:" + SearchAMID + " on BlockNum:" + Block.BlockNum, 3)
+                AccountID = 0
+            }
+        }
+        
+        return AccountID;
+    }
 };
 
 class CAdvMining

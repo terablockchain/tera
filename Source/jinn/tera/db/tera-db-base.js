@@ -141,9 +141,6 @@ class CDBBase extends require("./tera-db-file")
     Clear()
     {
         
-        if(global.DEV_MODE)
-            ToLog("Clear " + this.FileName, 3)
-        
         var FI = this.OpenDBFile(this.FileName, 1);
         FI.size = 0
         fs.ftruncateSync(FI.fd, FI.size)

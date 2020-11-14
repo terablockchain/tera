@@ -38,19 +38,11 @@ function Init(Engine)
         return Tx;
     };
     
-    Engine.GetGenesisBlock = function (BlockNum)
+    Engine.GetGenesisBlockInner = function (BlockNum)
     {
-        if(BlockNum >= JINN_CONST.BLOCK_GENESIS_COUNT)
-        {
-            ToLogTrace("Error GenesisBlock Num = " + BlockNum);
-            return undefined;
-        }
-        
         var Block = SERVER.GenesisBlockHeaderDB(BlockNum);
         Engine.ConvertFromTera(Block, 1, 1);
-        
         Engine.CalcBlockData(Block);
-        
         return Block;
     };
     
@@ -79,6 +71,7 @@ function Init(Engine)
             Block.Hash[0] = 1 + Block.BlockNum;
             Block.Hash[31] = Block.Hash[0];
             Block.PowHash = Block.Hash;
+            
             Block.Power = GetPowPowerBlock(Block.BlockNum, Block.Hash);
             Block.OldPrevHash8 = ZERO_ARR_32;
         }

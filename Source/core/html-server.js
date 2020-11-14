@@ -565,6 +565,8 @@ HTTPCaller.GetTransactionAll = function (Params,response)
         Params.CountNum = 1;
     
     var BlockNum = Params.Param3;
+    if(!BlockNum)
+        BlockNum = 0;
     
     var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.ChainMode, Params.Filter);
     return {arr:arr, result:1};
@@ -1545,10 +1547,10 @@ HTTPCaller.GetHistoryTransactions = function (Params)
 
 function GetCopyBlock(Block)
 {
-    var Result = {BlockNum:Block.BlockNum, bSave:Block.bSave, TreeHash:GetHexFromAddres(Block.TreeHash), AddrHash:GetHexFromAddres(Block.AddrHash),
-        PrevHash:GetHexFromAddres(Block.PrevHash), SumHash:GetHexFromAddres(Block.SumHash), SumPow:Block.SumPow, TrDataPos:Block.TrDataPos,
-        TrDataLen:Block.TrDataLen, SeqHash:GetHexFromAddres(Block.SeqHash), Hash:GetHexFromAddres(Block.Hash), Power:GetPowPower(Block.PowHash),
-        TrCount:Block.TrCount, arrContent:Block.arrContent, };
+    var Result = {BlockNum:Block.BlockNum, TreeHash:GetHexFromAddres(Block.TreeHash), AddrHash:GetHexFromAddres(Block.AddrHash),
+        PrevHash:GetHexFromAddres(Block.PrevHash), SumHash:GetHexFromAddres(Block.SumHash), SumPow:Block.SumPow, TrDataLen:Block.TrDataLen,
+        SeqHash:GetHexFromAddres(Block.SeqHash), Hash:GetHexFromAddres(Block.Hash), Power:GetPowPower(Block.PowHash), TrCount:Block.TrCount,
+        arrContent:Block.arrContent, };
     return Result;
 }
 
@@ -1608,16 +1610,14 @@ function CopyBlockDraw(Block,MainChains)
         Mining = 0;
     
     GetGUID(Block);
-    var Item = {guid:Block.guid, Active:Block.Active, bSave:Block.bSave, Prepared:Block.Prepared, BlockNum:Block.BlockNum, Hash:GetHexFromAddresShort(Block.Hash),
+    var Item = {guid:Block.guid, Active:Block.Active, Prepared:Block.Prepared, BlockNum:Block.BlockNum, Hash:GetHexFromAddresShort(Block.Hash),
         SumHash:GetHexFromAddresShort(Block.SumHash), SeqHash:GetHexFromAddresShort(Block.SeqHash), TreeHash:GetHexFromAddresShort(Block.TreeHash),
-        AddrHash:GetHexFromAddresShort(Block.AddrHash), MinerID:MinerID, MinerName:MinerName, Comment1:Block.Comment1, Comment2:Block.Comment2,
-        SumPow:Block.SumPow, Info:Block.Info, TreeLoaded:Block.TreeEq, AddToLoad:Block.AddToLoad, LoadDB:Block.LoadDB, FindBlockDB:Block.FindBlockDB,
-        TrCount:Block.TrCount, ArrLength:0, TrDataLen:Block.TrDataLen, Power:GetPowPower(Block.PowHash), CheckPoint:CheckPoint, Mining:Mining,
-        TransferSize:Block.TransferSize, HasErr:Block.HasErr, };
+        AddrHash:GetHexFromAddresShort(Block.AddrHash), MinerID:MinerID, MinerName:MinerName, SumPow:Block.SumPow, Info:Block.Info,
+        TreeLoaded:Block.TreeEq, AddToLoad:Block.AddToLoad, LoadDB:Block.LoadDB, FindBlockDB:Block.FindBlockDB, TrCount:Block.TrCount,
+        ArrLength:0, TrDataLen:Block.TrDataLen, Power:GetPowPower(Block.PowHash), CheckPoint:CheckPoint, Mining:Mining, TransferSize:Block.TransferSize,
+        HasErr:Block.HasErr, };
     if(Block.chain)
         Item.chainid = Block.chain.id;
-    if(Block.LoadDB !== undefined)
-        Item.bSave = Block.LoadDB;
     if(Block.arrContent)
         Item.TrCount = Block.arrContent.length;
     
@@ -1637,9 +1637,9 @@ function CopyChainDraw(Chain,bWasRecursive,bMain)
     
     GetGUID(Chain);
     
-    var Item = {guid:Chain.guid, id:Chain.id, chainid:Chain.id, bSave:Chain.LoadDB, FindBlockDB:Chain.FindBlockDB, GetFindDB:Chain.GetFindDB(),
-        BlockNum:Chain.BlockNumStart, Hash:GetHexFromAddresShort(Chain.HashStart), Comment1:Chain.Comment1, Comment2:Chain.Comment2,
-        StopSend:Chain.StopSend, SumPow:0, Info:Chain.Info, IsSum:Chain.IsSum, Main:bMain, };
+    var Item = {guid:Chain.guid, id:Chain.id, chainid:Chain.id, FindBlockDB:Chain.FindBlockDB, GetFindDB:Chain.GetFindDB(), BlockNum:Chain.BlockNumStart,
+        Hash:GetHexFromAddresShort(Chain.HashStart), StopSend:Chain.StopSend, SumPow:0, Info:Chain.Info, IsSum:Chain.IsSum, Main:bMain,
+    };
     if(Chain.IsSumStart)
     {
         Item.SumHash = Item.Hash;

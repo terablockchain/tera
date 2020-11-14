@@ -72,7 +72,7 @@ function SendCall(Account,MethodName,Params,A,B)
     }
     
     var FromNum, ParamsArr;
-    if(typeof A === "number")
+    if(typeof A !== "object")
     {
         FromNum = A;
         ParamsArr = B;

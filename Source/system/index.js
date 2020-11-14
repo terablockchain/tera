@@ -25,3 +25,4 @@ require("./file");
 global.ACCOUNTS = DApps.Account;
 global.SMARTS = DApps.Smart;
 global.SHARDS = DApps.Shard;
+

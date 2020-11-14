@@ -59,6 +59,7 @@ switch(global.MODE_RUN)
         
         global.UPDATE_CODE_SHARDING = 3160000;
         
+        global.TEST_MINING = 1;
         break;
         
     case "MAIN_JINN":

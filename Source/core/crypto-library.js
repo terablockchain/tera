@@ -1141,7 +1141,6 @@ function TeraDevKeysInit()
     "024a97d69cd81c965f162b4b8b7b506263bc8aec8dbcea9eec59f73b5b470a0be1", ];
     for(var i = 0; i < DEVELOP_PUB_KEY_ARR.length; i++)
         DEVELOP_PUB_KEY_ARR[i] = Buffer.from(GetArrFromHex(DEVELOP_PUB_KEY_ARR[i]));
-    global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
     global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("022e80aa78bc07c72781fac12488096f0bfa7b4f48fbab0f2a92e208d1ee3654df"));
     
     global.ARR_PUB_KEY = ["027ae0dce92d8be1f893525b226695ddf0fe6ad756349a76777ff51f3b59067d70", "02769165a6f9950d023a415ee668b80bb96b5c9ae2035d97bdfb44f356175a44ff",
@@ -1155,7 +1154,6 @@ function TeraDevKeysInit()
         if(global.LOCAL_RUN)
         {
             global.DEVELOP_PUB_KEY0 = Buffer.from(GetArrFromHex("026A04AB98D9E4774AD806E302DDDEB63BEA16B5CB5F223EE77478E861BB583EB3"));
-            global.DEVELOP_PUB_KEY = global.DEVELOP_PUB_KEY0;
         }
         
         global.ARR_PUB_KEY = [];
@@ -1163,7 +1161,6 @@ function TeraDevKeysInit()
             global.ARR_PUB_KEY[i] = GetHexFromArr(DEVELOP_PUB_KEY0);
         
         global.DEVELOP_PUB_KEY_ARR = [DEVELOP_PUB_KEY0];
-        global.DEVELOP_PUB_KEY = DEVELOP_PUB_KEY_ARR[0];
     }
 }
 

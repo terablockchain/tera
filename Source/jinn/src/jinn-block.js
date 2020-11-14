@@ -39,6 +39,7 @@ function InitClass(Engine)
     // Modeling...
     
     Engine.GenesisArr = [];
+    
     Engine.GetGenesisBlock = function (Num)
     {
         if(Engine.GenesisArr[Num])
@@ -49,6 +50,15 @@ function InitClass(Engine)
             ToLogTrace("Error GenesisBlock Num = " + Num);
             return undefined;
         }
+        
+        var Block = Engine.GetGenesisBlockInner(Num);
+        Engine.GenesisArr[Num] = Block;
+        
+        return Block;
+    };
+    
+    Engine.GetGenesisBlockInner = function (Num)
+    {
         
         var PrevBlock;
         if(!Num)
@@ -67,7 +77,6 @@ function InitClass(Engine)
         Block.PrevSumPow = PrevBlock.SumPow;
         Engine.CalcBlockData(Block);
         
-        Engine.GenesisArr[Num] = Block;
         return Block;
     };
     
