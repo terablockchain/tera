@@ -404,7 +404,7 @@ function InitClass(Engine)
                     
                     if(Item.ROOT_NODE || Item.Self || Engine.InHotDeny(Item) || Engine.WasBanItem(Item))
                     {
-                        Child.ToLogNet("Cannt Add to Hot Item.Self=" + Item.Self + "  Engine.InHotDeny=" + Engine.InHotDeny(Item));
+                        Child.ToLogNet("Cannt Add to Hot InHotDeny=" + Engine.InHotDeny(Item));
                         continue;
                     }
                     

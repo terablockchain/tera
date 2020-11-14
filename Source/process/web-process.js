@@ -503,34 +503,41 @@ function DoCommandNew(request,response,Type,Path,Params)
                     return;
                 }
                 else
-                    if(Method === "update")
+                    if(Method === "shard.js")
                     {
-                        PrefixPath = global.DATA_PATH + "Update";
-                        Name = "";
-                        for(var i = 1; i < ArrPath.length; i++)
-                            if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
-                                Name += "/" + ArrPath[i];
-                        Name = PrefixPath + Name;
-                        SendWebFile(request, response, Name, "", 0, 1000);
+                        var ShardParamPath = GetDataPath("shard.js");
+                        SendWebFile(request, response, ShardParamPath, "", 0, 1000);
                         return;
                     }
                     else
-                        if(LangPathMap[Method])
+                        if(Method === "update")
                         {
-                            PrefixPath = "./SITE/" + Method;
+                            PrefixPath = global.DATA_PATH + "Update";
+                            Name = "";
+                            for(var i = 1; i < ArrPath.length; i++)
+                                if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
+                                    Name += "/" + ArrPath[i];
+                            Name = PrefixPath + Name;
+                            SendWebFile(request, response, Name, "", 0, 1000);
+                            return;
                         }
                         else
-                        {
-                            var Name2 = WalletFileMap[Name];
-                            if(!Name2)
-                                PrefixPath = "./SITE";
+                            if(LangPathMap[Method])
+                            {
+                                PrefixPath = "./SITE/" + Method;
+                            }
                             else
                             {
-                                PrefixPath = "./HTML";
-                                if(typeof Name2 === "string")
-                                    Name = Name2;
+                                var Name2 = WalletFileMap[Name];
+                                if(!Name2)
+                                    PrefixPath = "./SITE";
+                                else
+                                {
+                                    PrefixPath = "./HTML";
+                                    if(typeof Name2 === "string")
+                                        Name = Name2;
+                                }
                             }
-                        }
                 
                 var type = Path.substr(Path.length - 3, 3);
                 var LongTime = global.HTTP_CACHE_LONG;

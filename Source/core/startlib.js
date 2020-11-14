@@ -144,3 +144,9 @@ global.GetArrFromHex = function (Str)
     }
     return array;
 }
+
+global.runcode = function (filename)
+{
+    var Str = fs.readFileSync(filename, "utf-8");
+    eval(Str);
+}

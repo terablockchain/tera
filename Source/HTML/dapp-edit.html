@@ -202,7 +202,9 @@
                 if(Data && Data.result)
                 {
                     CheckSessionID(Data.sessionid);
-
+                    SHARD_NAME=Data.SHARD_NAME;
+                    NETWORK_NAME=Data.NETWORK;
+                    NETWORK_ID=NETWORK_NAME+"."+SHARD_NAME;
                     WasFirstUpdate=1;
                     CONFIG_DATA=Data;
                     SetBlockChainConstant(Data);
@@ -1147,7 +1149,9 @@
     {
         if(StartNum===undefined)
             StartNum=$("idSmartStart").value;
-        if(!StartNum || StartNum<8)
+        if(!StartNum)
+            StartNum=1;
+        if(NETWORK_ID==="MAIN-JINN.TERA" && (StartNum<8))
             StartNum=8;
         if(!Count)
             Count=100;

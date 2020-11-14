@@ -215,10 +215,19 @@ function Init(Engine)
             if(!ShardItem)
                 continue;
             
+            var CheckTime = 0;
             if(Child.ShardName === JINN_CONST.SHARD_NAME)
+            {
                 DBTable = SERVER.CrossReceive;
+                var Head = SERVER.CrossReceive.ReadHead(ShardItem.Num);
+                if(Head && Head.CheckTime)
+                    CheckTime = Head.CheckTime;
+            }
             else
+            {
                 DBTable = SHARDS.CrossSend;
+                CheckTime = GetCurrentTime();
+            }
             
             var Item = DBTable.Read(ShardItem.Num);
             var ResItem;
@@ -230,7 +239,7 @@ function Init(Engine)
             {
                 ResItem = Engine.PrepareResultCrossItem(DBTable, Item, Channel.RowNum, Channel.RowHash);
             }
-            ResItem.CheckTime = GetCurrentTime();
+            ResItem.CheckTime = CheckTime;
             
             ResItem.ChannelName = Channel.ChannelName;
             Arr.push(ResItem);

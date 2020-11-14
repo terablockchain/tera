@@ -1,4 +1,4 @@
-
+"use strict";
 require("./core/library");
 
 var fs = require("fs");
@@ -38,7 +38,8 @@ global.StartLoadNewCode=function(bRestart)
     });
 
     LoadNewCode(bRestart);
-}
+};
+
 function LoadNewCode(bRestart)
 {
     var path=Arr[CurNum%Arr.length].ip;
@@ -69,7 +70,7 @@ function LoadNewCode(bRestart)
 
         }
 
-        //if(0)
+
         if (error)
         {
             console.error(error.message);
@@ -82,9 +83,9 @@ function LoadNewCode(bRestart)
             return;
         }
 
-        var fname="./wallet.zip";
-        var file_handle=fs.openSync(fname, "w");
-        var Bytes=0;
+        let fname="./wallet.zip";
+        let file_handle=fs.openSync(fname, "w");
+        let Bytes=0;
         res.on('data', (chunk) =>
         {
             Bytes+=chunk.length;
@@ -107,23 +108,6 @@ function LoadNewCode(bRestart)
             {
                 ToLog(e.message);
             }
-
-            // try
-            // {
-            //     //const parsedData = JSON.parse(rawData);
-            //     //ToLog(parsedData);
-            //
-            // }
-            // catch (e)
-            // {
-            //
-            //     console.error(e.message);
-            //     // if(CurNum<Arr.length)
-            //     //     LoadNewCode(bRestart);
-            //     // else
-            //         CheckFinish();
-            //     return;
-            // }
             CheckFinish();
         });
     }).on('error', (e) =>

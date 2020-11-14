@@ -123,8 +123,13 @@ function Init(Engine)
     
     Engine.OnSeNodeName = function ()
     {
+        var Name = global.NODES_NAME;
+        if(!Name)
+        {
+            Name = "-";
+        }
         Engine.ArrCommonSecret = sha3(global.COMMON_KEY + ":" + Engine.RndHashStr);
-        Engine.ArrNodeName = Engine.ValueToEncrypt("CLUSTER:" + global.NODES_NAME, 40);
+        Engine.ArrNodeName = Engine.ValueToEncrypt("CLUSTER:" + Name, 40);
     };
     
     SERVER.GetNodesArrWithAlive = function ()

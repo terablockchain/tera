@@ -13,7 +13,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2447;
+global.UPDATE_CODE_VERSION_NUM = 2448;
 global.MIN_JINN_VERSION_NUM = 2428;
 
 global.DEBUG_TRAFFIC = 0;
@@ -54,11 +54,6 @@ global.DEBUG_EXIT_ON_BADS = 0;
 
 
 global.UPDATE_CODE_SHARDING = 0;
-
-// Code updates for JINN
-
-
-
 
 
 global.NETWORK = "NONE";
@@ -224,9 +219,10 @@ InitParamsArg();
 
 if(global.DATA_PATH === undefined)
     global.DATA_PATH = "../DATA";
+
 var ShardParamPath = GetDataPath("shard.js");
 if(fs.existsSync(ShardParamPath))//Shard init values
-    require(ShardParamPath);
+    runcode(ShardParamPath);
 else
     require("./const-mode.js");
 
