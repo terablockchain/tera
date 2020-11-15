@@ -7,6 +7,7 @@ This is a public blockchain whose main feature is true decentralization through 
 * To learn more about this project, we recommend reading the review article: [Decentralized applications on TERA platform](https://medium.com/@evkara777/decentralized-applications-on-tera-platform-2aa56b597ae9)
 * The current Tera 2.0 Protocol is based on the new JINN library
 * The following describes how to install it on your device
+* Starting from version 2450 you can use sharding, see more details in the discord on the #sharding channel https://discord.gg/Jm9TgkXHTU
 
 
 ## Light-wallet (web-version)
