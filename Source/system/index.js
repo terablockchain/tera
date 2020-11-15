@@ -19,7 +19,7 @@ require("./common-tx");
 require("./dapp");
 require("./accounts");
 require("./smart");
-require("./shard");
+require("./shard-channel");
 require("./file");
 
 global.ACCOUNTS = DApps.Account;

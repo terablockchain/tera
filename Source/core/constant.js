@@ -13,7 +13,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2448;
+global.UPDATE_CODE_VERSION_NUM = 2450;
 global.MIN_JINN_VERSION_NUM = 2428;
 
 global.DEBUG_TRAFFIC = 0;
@@ -335,49 +335,56 @@ function InitParamsArg()
                                                 global.MODE_RUN = str.substr(5);
                                             }
                                             else
-                                            {
-                                                switch(STR)
+                                                if(STR.substr(0, 5) == "FROM:")
                                                 {
-                                                    case "TESTJINN":
-                                                        global.TEST_JINN = 1;
-                                                        break;
-                                                    case "LOCALRUN":
-                                                        global.LOCAL_RUN = 1;
-                                                        break;
-                                                    case "TESTRUN":
-                                                        global.TEST_NETWORK = 1;
-                                                        break;
-                                                    case "NOLOCALRUN":
-                                                        global.LOCAL_RUN = 0;
-                                                        break;
-                                                        
-                                                    case "NOAUTOUPDATE":
-                                                        global.USE_AUTO_UPDATE = 0;
-                                                        break;
-                                                    case "NOPARAMJS":
-                                                        global.USE_PARAM_JS = 0;
-                                                        break;
-                                                    case "READONLYDB":
-                                                        global.READ_ONLY_DB = 1;
-                                                        break;
-                                                    case "NWMODE":
-                                                        global.NWMODE = 1;
-                                                        break;
-                                                    case "NOALIVE":
-                                                        global.NOALIVE = 1;
-                                                        break;
-                                                    case "DEV_MODE":
-                                                        global.DEV_MODE = 1;
-                                                        break;
-                                                    case "API_V2":
-                                                        global.USE_HARD_API_V2 = 1;
-                                                        break;
-                                                        
-                                                    case "NOPSWD":
-                                                        global.NOHTMLPASSWORD = 1;
-                                                        break;
+                                                    var Addres = str.substr(5);
+                                                    var LoadShardParams = require("./loader").LoadShardParams;
+                                                    LoadShardParams(Addres);
                                                 }
-                                            }
+                                                else
+                                                {
+                                                    switch(STR)
+                                                    {
+                                                        case "TESTJINN":
+                                                            global.TEST_JINN = 1;
+                                                            break;
+                                                        case "LOCALRUN":
+                                                            global.LOCAL_RUN = 1;
+                                                            break;
+                                                        case "TESTRUN":
+                                                            global.TEST_NETWORK = 1;
+                                                            break;
+                                                        case "NOLOCALRUN":
+                                                            global.LOCAL_RUN = 0;
+                                                            break;
+                                                            
+                                                        case "NOAUTOUPDATE":
+                                                            global.USE_AUTO_UPDATE = 0;
+                                                            break;
+                                                        case "NOPARAMJS":
+                                                            global.USE_PARAM_JS = 0;
+                                                            break;
+                                                        case "READONLYDB":
+                                                            global.READ_ONLY_DB = 1;
+                                                            break;
+                                                        case "NWMODE":
+                                                            global.NWMODE = 1;
+                                                            break;
+                                                        case "NOALIVE":
+                                                            global.NOALIVE = 1;
+                                                            break;
+                                                        case "DEV_MODE":
+                                                            global.DEV_MODE = 1;
+                                                            break;
+                                                        case "API_V2":
+                                                            global.USE_HARD_API_V2 = 1;
+                                                            break;
+                                                            
+                                                        case "NOPSWD":
+                                                            global.NOHTMLPASSWORD = 1;
+                                                            break;
+                                                    }
+                                                }
     }
 }
 

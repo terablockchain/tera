@@ -126,7 +126,10 @@ function Init(Engine)
         var Name = global.NODES_NAME;
         if(!Name)
         {
-            Name = "-";
+            if(Engine.ip === "0.0.0.0")
+                Name = "-";
+            else
+                Name = Engine.ip;
         }
         Engine.ArrCommonSecret = sha3(global.COMMON_KEY + ":" + Engine.RndHashStr);
         Engine.ArrNodeName = Engine.ValueToEncrypt("CLUSTER:" + Name, 40);

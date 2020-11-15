@@ -10,14 +10,24 @@ CheckCreateDir(global.DATA_PATH);
 
 
 //InitParamsArg(); было в require("./core/constant");
-InitParamsArg();
+//InitParamsArg(); - зачем?
 
 //ToLog("save to "+global.DATA_PATH);
 
 SAVE_CONST(true);
 
 
-process.exit();
+CheckFinish(1);
 
 
+function CheckFinish(bCheckFinish)
+{
+    if(!bCheckFinish)
+        return;
+
+    setTimeout(function ()
+    {
+        process.exit();
+    },2000);
+}
 
