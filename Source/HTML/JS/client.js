@@ -12,6 +12,14 @@
 window.CLIENT_VERSION = 20;
 window.SHARD_NAME = "TERA";
 
+window.RUN_CLIENT = 1;
+window.RUN_SERVER = 0;
+if(typeof global === 'object')
+{
+    global.RUN_CLIENT = 1;
+    global.RUN_SERVER = 0;
+}
+
 var MaxBlockNum = 0;
 var MAX_CLIENT_LOG_SIZE = 64000;
 

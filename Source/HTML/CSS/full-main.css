@@ -1146,3 +1146,32 @@ button {
   -webkit-justify-content: space-between;
       -ms-flex-pack: justify;
           justify-content: space-between; }
+
+/*my*/
+.menu__item
+{
+    cursor: pointer;
+}
+
+#idOpenWallet
+{
+    z-index:1001;
+    position:relative;
+    float: right;
+    top:15px;
+    right: calc((50% - 350px) + 0px);
+    text-align: center;
+    box-shadow: 0 0 0 1px;
+
+    width: 130px;
+    height: 40px;
+    line-height: 20px;
+    margin: 10px;
+    background: transparent;
+    font-weight: 600;
+
+    background-image: url('/HTML/PIC/lock_closed.png');
+    background-repeat: no-repeat;
+    background-size: 20%;
+    cursor: pointer;
+}

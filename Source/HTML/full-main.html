@@ -6,6 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="./CSS/full-normalize.css"> <!-- Подключаем normalize -->
   <link rel="stylesheet" href="./CSS/full-main.css"> <!-- Подключаем CSS -->
+
+
+    <!--    стандарные скрипты полной ноды-->
+    <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
+    <script type="text/javascript" src="../HTML/JS/client.js"></script>
+    <script type="text/javascript" src="../HTML/JS/sha3.js"></script>
+    <script type="text/javascript" src="../HTML/JS/crypto-client.js"></script>
+
+    <script type="text/javascript" src="/HTML/JS/wallet-lib.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-node.js"></script>
+    <script type="text/javascript" src="/HTML/JS/terahashlib.js"></script>
+
+    <script type="text/javascript" src="/HTML/JS/wallet-hash-info.js"></script>
+
+    <script type="text/javascript" src="./JS/sign-lib-min.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-full.js"></script>
+
+    <script>
+        //run
+        window.onload=function()
+        {
+            // FillCategory("idCategory");
+            //
+            // LoadValues();
+            // InitPasItems();
+            // SelectStyle();
+            // SelectTypeKey();
+            // InitRun();
+            window.onkeydown = CheckCtrlEnterAndESC;
+            // SetVisibleTab();
+            //
+            // localStorage["BIGWALLET"]=1;
+            //
+            // window.OnInitWallet();
+            //
+            // window.addEventListener("popstate", function(event)
+            // {
+            //     var Name=window.location.hash.substr(1);
+            //     SelectTab(Name,1);
+            // }, false);
+
+        };
+    </script>
+
 </head>
 <body>
   <header class="header">
@@ -16,29 +60,37 @@
       <nav class="header__menu">
         <ul class="menu">
           <li class="menu__item">
-            <a href="#" class="menu__link active">
+            <span onclick="SelectTab('TabAccounts')" class="menu__link active">
               config
-            </a>
+            </span>
           </li>
-          <li class="menu__item">
-            <a href="full-send.html" class="menu__link">
+          <li onclick="SelectTab('TabSend')" class="menu__item">
+            <span  class="menu__link">
               send
-            </a>
+            </span>
           </li>
-          <li class="menu__item">
-            <a href="full-dapps.html" class="menu__link">
+          <li onclick="SelectTab('TabDapps')" class="menu__item">
+            <span  class="menu__link">
               dapps
-            </a>
+            </span>
           </li>
-          <li class="menu__item">
-            <a href="full-explorer.html" class="menu__link">
+            <li onclick="SelectTab('TabSharding')" class="menu__item">
+            <span  class="menu__link">
+              sharding
+            </span>
+            </li>
+          <li onclick="SelectTab('TabExplorer')" class="menu__item">
+            <span  class="menu__link">
               explorer
-            </a>
+            </span>
           </li>
         </ul>
       </nav>
     </div>
   </header>
+
+  <INPUT id="idOpenWallet" style="display2: none" type="button" onclick="OnClickOpenCloseWallet()" value="Wallet closed">
+
   <section class="config wrapper">
     <div class="config__desc">
       <div class="config__group">

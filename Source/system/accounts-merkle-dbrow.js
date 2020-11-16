@@ -53,10 +53,14 @@ class MerkleDBRow extends CDBRow
     
     UpdateByNum(Num)
     {
+        var MaxNum = this.GetMaxNum();
+        if(Num > MaxNum)
+            return;
+        
         var Buf = this.Read(Num, 1);
         if(!Buf)
         {
-            var StrError = "Update MerkleTree: Error reading on num: " + Num;
+            var StrError = "Update MerkleTree: Error reading on num: " + Num + " MaxNum=" + MaxNum;
             StopAndExit(StrError)
             return;
         }

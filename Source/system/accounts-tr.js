@@ -84,9 +84,9 @@ class AccountTR extends require("./accounts-adv-mining")
             return "Error transaction format";
         }
         
-        if(BlockNum >= 3500000 && !TR.Name)
+        if((global.LOCAL_RUN || BlockNum >= 3500000) && !TR.Name)
             return "Account name required";
-        if(BlockNum >= 5700000 && !TR.Name.trim())
+        if((global.LOCAL_RUN || BlockNum >= 5700000) && !TR.Name.trim())
             return "Account name required";
         
         var Account = this.NewAccountTR(BlockNum, TrNum, TR.Smart);
