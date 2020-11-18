@@ -11,6 +11,8 @@
 function SavePrivateKey()
 {
     var Select = $("idTypeKey");
+    if(!Select)
+        Select = {value:"private"};
     if(Select.value === "brain")
     {
         ConvertToPrivateKey();
@@ -53,16 +55,6 @@ function SavePrivateKey()
     });
 }
 
-function CreateCheckPoint()
-{
-    if(!ServerBlockNumDB || ServerBlockNumDB < 16)
-    {
-        SetError("Not set ServerBlockNumDB");
-        return;
-    }
-    var BlockNum = ServerBlockNumDB - 10;
-    SetCheckPoint(BlockNum);
-}
 
 function SetCodeVersionJSON()
 {
@@ -370,13 +362,6 @@ function ViewNetworkMode()
     {
         SetVisibleBlock('idNetworkView', true);
         
-        $("idAutoDetectIP").checked = CONFIG_DATA.CONSTANTS.AUTODETECT_IP;
-        if(CONFIG_DATA.CONSTANTS.AUTODETECT_IP)
-            $("idIP").value = "";
-        else
-            $("idIP").value = CONFIG_DATA.CONSTANTS.JINN_IP;
-        $("idPort").value = CONFIG_DATA.CONSTANTS.JINN_PORT;
-        
         OnSetNetworkMode();
     }
 }
@@ -457,9 +442,6 @@ function ViewRemoteParams()
     else
     {
         SetVisibleBlock('idRemoteView', true);
-        if(CONFIG_DATA.HTTPPort)
-            $("idHTTPPort").value = CONFIG_DATA.HTTPPort;
-        $("idHTTPPassword").value = CONFIG_DATA.HTTPPassword;
     }
 }
 function SetRemoteParams(bRestart)
@@ -490,13 +472,14 @@ function RewriteAllTransactions()
 
 function RewriteTransactions()
 {
-    DoBlockChainProcess("RewriteTransactions", "Rewrite transactions on last %1 blocks", 1);
+    DoBlockChainProcess("RewriteTransactions", "Rewrite transactions on last %1 blocks", "idBlockCount");
 }
 
 function TruncateBlockChain()
 {
-    DoBlockChainProcess("TruncateBlockChain", "Truncate last %1 blocks", 1);
+    DoBlockChainProcess("TruncateBlockChain", "Truncate last %1 blocks", "idBlockCount");
 }
+
 function ClearDataBase()
 {
     DoBlockChainProcess("ClearDataBase", "Clear DataBase", 0);
@@ -523,14 +506,14 @@ function AddSetNode()
     });
 }
 
-function DoBlockChainProcess(FuncName,Text,LastBlock)
+function DoBlockChainProcess(FuncName,Text,LastBlockId)
 {
     SaveValues();
     
     var Params = {};
-    if(LastBlock)
+    if(LastBlockId)
     {
-        Params.BlockCount = ParseNum($("idBlockCount").value);
+        Params.BlockCount = ParseNum($(LastBlockId).value);
         Text = Text.replace("%1", Params.BlockCount);
     }
     

@@ -2440,9 +2440,10 @@ function openModal(id)
     glWasModal = 1;
     var modal = document.querySelector("#" + id);
     var overlay = document.querySelector("#idOverlay");
-    modal.style.display = "block";
+    modal.style.display = "flex";
     overlay.style.display = "block";
 }
+
 function closeModal()
 {
     glWasModal = 0;

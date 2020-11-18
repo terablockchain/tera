@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FULL WALLET</title>
+    <link rel="shortcut icon" href="/HTML/PIC/wallet.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./CSS/full-normalize.css"> <!-- Подключаем normalize -->
+    <link rel="stylesheet" href="./CSS/full-main.css"> <!-- Подключаем CSS -->
+
+
+
+    <!--    стандарные скрипты полной ноды-->
+    <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
+    <script type="text/javascript" src="../HTML/JS/client.js"></script>
+    <script type="text/javascript" src="../HTML/JS/sha3.js"></script>
+    <script type="text/javascript" src="../HTML/JS/crypto-client.js"></script>
+
+    <script type="text/javascript" src="/HTML/JS/wallet-lib.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-node.js"></script>
+    <script type="text/javascript" src="/HTML/JS/terahashlib.js"></script>
+
+    <script type="text/javascript" src="/HTML/JS/wallet-hash-info.js"></script>
+
+    <script type="text/javascript" src="./JS/sign-lib-min.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-full.js"></script>
+
+    <!-- новый скрипт-->
+    <script src="./JS/wallet-full-new.js"></script>
+
+
+    <script>
+        //run
+        window.onload=function()
+        {
+            InitFullMain();
+
+            FillCategory("idCategory");
+
+            LoadValues();
+            InitPasItems();
+
+            // SelectStyle();
+            // SelectTypeKey();
+            // InitRun();
+            window.onkeydown = CheckCtrlEnterAndESC;
+            SetVisibleTab();
+            //
+            localStorage["BIGWALLET"]=1;
+
+            window.OnInitWallet();
+
+            window.addEventListener("popstate", function(event)
+            {
+                var Name=window.location.hash.substr(1);
+                SelectTab(Name,1);
+            }, false);
+
+            //DoConfirm("Confirm Enter","Pls confirm Enter to wallet");
+
+        };
+    </script>
+
+</head>
+<body>
+
+<header class="header">
+    <div class="header__group wrapper">
+        <div class="logo">
+            <img src="./img/logo.svg" alt="Tera">
+        </div>
+        <nav class="header__menu">
+            <ul class="menu">
+                <li class="menu__item">
+                    <span id="MTabAccounts" onclick="SelectTab('TabAccounts')" class="menu__link active">
+                      config
+                    </span>
+                </li>
+                <li id="MTabSend" onclick="SelectTab('TabSend')" class="menu__link">
+                    <span  class="menu__link">
+                      send
+                    </span>
+                </li>
+                <li id="MTabDapps" onclick="SelectTab('TabDapps')" class="menu__link">
+                    <span  class="menu__link">
+                      dapps
+                    </span>
+                </li>
+                <li id="MTabSharding" onclick="SelectTab('TabSharding')" class="menu__link">
+                    <span  class="menu__link">
+                      sharding
+                    </span>
+                </li>
+                <li id="MTabExplorer" onclick="SelectTab('TabExplorer')" class="menu__link">
+                    <span  class="menu__link">
+                      explorer
+                    </span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<INPUT id="idOpenWallet" style="display: none" type="button" onclick="OnClickOpenCloseWallet()" value="Wallet closed">
+<section class="config wrapper">
+<DIV id="idStatus" style="height: 40px;z-index: 2000;display: flex">&nbsp;</DIV>
+</section>
+<BR>
+
+
+<DIV id="TabAccounts" style="display: block">
+    <section class="config wrapper">
+        <div class="config__desc">
+            <div class="config__group">
+                <h4 class="h4">Block</h4>
+                <p id="idCurBlockNum" class="config__number">32416782</p>
+            </div>
+            <div class="config__group">
+                <h4 class="h4">DB delta</h4>
+                <p id="idDeltaDB" class="config__number">-</p>
+            </div>
+            <div class="config__group">
+                <h4 class="h4">TX delta</h4>
+                <p id="idDeltaTX" class="config__number">-</p>
+            </div>
+            <div class="config__group">
+                <h4 class="h4">Time delta</h4>
+                <p id="idDeltaTime" class="config__number">-</p>
+            </div>
+            <div class="config__group">
+                <h4 class="h4">Wallet ver</h4>
+                <p id="idWalletVersion" class="config__number">-</p>
+            </div>
+            <div class="config__group">
+                <h4 class="h4">max</h4>
+                <p id="idSpeedSignLib" class="config__number"></p>
+            </div>
+        </div>
+        <div class="config__parameters">
+            <div class="config__parameter">
+                <p class="config__name">Wallet data path:</p>
+                <p id="idDataPath" class="config__value">-</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="wallet wrapper">
+        <div class="tabs">
+            <div class="tab active">
+                Accounts
+            </div>
+            <div class="tab">
+                Mining
+            </div>
+            <div class="tab">
+                Network
+            </div>
+            <div class="tab">
+                System
+            </div>
+            <div class="tab" id="idDevelopServiceView" style="display: none">
+                Dev.service
+            </div>
+        </div>
+
+        <!--Wallet settings-->
+        <div class="tab-content active">
+            <div class="wallet__settings">
+                <div class="wallet__buttons" id="wallet_config_tab">
+                    <div class="wallet__btn-group">
+                        <a  onclick="FindMyAccounts();" class="btn btn_margin btn__transparent" style="width: 150px">
+                            <img src="./img/reload.svg" class="btn__img">
+                            refresh
+                        </a>
+                        <a onclick="openModal('idBlockAddAccount')" class="btn btn_margin">
+                            add account
+                        </a>
+                        <a onclick="EditPrivateKey()" class="btn btn_margin">
+                            edit wallet
+                        </a>
+                        <a onclick="openModal('idBlockPasswordSet')" class="btn btn_margin" id="idBtBlockPasswordSet">
+                            password wallet
+                        </a>
+                    </div>
+                </div>
+
+                <div class="wallet__group">
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a class="account__number"> 1984130</a>
+                                <p class="account__text">Minecraft. Description for long string</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">2 000 000 000,00000000</p>
+                                    <p class="account__desc-text">NYANCAT. Token: 198136</p>
+                                </div>
+                                <img src="./img/icon1.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <img src="./img/dex.svg" class="account__coins-i">
+                                <p class="account__coins-text">DEX (198135)</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a class="account__number"> 1984130</a>
+                                <p class="account__text">Zarplata</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">2 000 000 000,00000000</p>
+                                    <p class="account__desc-text"></p>
+                                </div>
+                                <img src="./img/coin2.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <img src="./img/cat.svg" class="account__coins-i">
+                                <p class="account__coins-text">CAT coin (198135)</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a class="account__number"> 1984130</a>
+                                <p class="account__text">Empty</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">0,00000000</p>
+                                    <p class="account__desc-text">CAT coin. Token: 198135</p>
+                                </div>
+                                <img src="./img/catcoin.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <img src="./img/cat.svg" class="account__coins-i">
+                                <p class="account__coins-text">CAT coin (198135)</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a class="account__number"> 1984130</a>
+                                <p class="account__text">Minecraft. Description for long string</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">2 000 000 000,00000000</p>
+                                    <p class="account__desc-text">CAT coin. Token: 198135</p>
+                                </div>
+                                <img src="./img/catcoin.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <img src="./img/dex.svg" class="account__coins-i">
+                                <p class="account__coins-text">DEX (198135)</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a href="#" class="account__number"> 1984130</a>
+                                <p class="account__text">Zarplata</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">2 000 000 000,00000000</p>
+                                    <p class="account__desc-text"></p>
+                                </div>
+                                <img src="./img/coin2.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <img src="./img/cat.svg" class="account__coins-i">
+                                <p class="account__coins-text">CAT coin (198135)</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet__item account">
+                        <div class="account__left ">
+                            <div class="account__title">
+                                <a href="#" class="account__number"> 1984130</a>
+                                <p class="account__text">Empty</p>
+                            </div>
+                            <div class="account__desc">
+                                <div class="account__desc-left">
+                                    <p class="account__desc-num">0,00000000</p>
+                                    <p class="account__desc-text">Bitcoin. Token: 16</p>
+                                </div>
+                                <img src="./img/bitcion.svg">
+                            </div>
+                        </div>
+                        <div class="account__right">
+                            <div class="account__coins">
+                                <a href="#">
+                                    <img src="./img/plus.svg" alt="" class="account__coins-i">
+                                </a>
+                                <p class="account__coins-text">Connect DApp...</p>
+                            </div>
+                            <div class="dots">
+                                <img src="./img/dots.svg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Mining-->
+        <div class="tab-content">
+            <div class="wallet__mining mining">
+                <BR>
+                <h3 class="h3">Hashrate index</h3>
+
+                <canvas  width='800' height='60' id='idBlockInfo'></canvas>
+
+
+                <div class="division"> </div>
+                <div class="mining__switches">
+                    <div class="mining__switches-left">
+                        <div class="mining__switch">
+                            <p class="mining__switch-text">Use mining </p>
+                            <label for="idUseMining">
+                                <input type="checkbox" class="checkbox" id="idUseMining" onchange = "UseMining()">
+                                <label for="idUseMining"></label>
+                            </label>
+                        </div>
+                        <DIV style="width: 600px;display2: none" id="idMiningParams">
+                            <div class="row">
+                                <div class="mining__switch" >
+                                    <p>Mining account:</p>
+                                    <input type="number" class="input input_mining" id="idMiningAccount" min=0 max=1000000000000 value="0" onchange="SaveMiningSet()">
+                                </div>
+                                <div class="mining__switch">
+                                    <p>CPU use:</p>
+                                    <input class="input input_mining" type="number" min=0 max=100 id="idPercentMining" onchange="SetPercentMining()"/>
+                                    <p>%</p>
+                                </div>
+                            </div>
+                        </DIV>
+                    </div>
+                </div>
+                <BR>
+                <h3 class="h3"> Mining stat</h3>
+                <DIV id="idStatusMining"></DIV>
+                <div class="division"></div>
+            </div>
+        </div>
+
+
+        <!--Network-->
+        <div class="tab-content">
+            <BR>
+            <h3 class="h3">Network connection</h3>
+            <div class="connection__switch ">
+                <div class="mining__switch">
+                    <p class="mining__switch-text">Autodetect IP </p>
+                    <label for="idAutoDetectIP">
+                        <input type="checkbox" class="checkbox" id="idAutoDetectIP" onchange="SaveNetParams()">
+                        <label for="idAutoDetectIP"></label>
+<!--                        <div class="switch">-->
+<!--                        </div>-->
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="connection">
+                    <p class="connection__text">ip</p>
+                    <input type="text" maxlength="40" class="input input_connection" value="-" id="idIP" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Port</p>
+                    <input type="text"  maxlength="9" class="input input_connection" value="-" id="idPort" onchange="SaveNetParams()">
+                </div>
+<!--                <button class="btn btn__transparent">save and restart</button>-->
+            </div>
+            <div class="division"></div>
+            <h3 class="h3">Remote access</h3>
+            <div class="row">
+                <div class="connection">
+                    <p class="connection__text">HTTP port:</p>
+                    <input type="text" class="input  input_access" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Password on HTTP: </p>
+                    <input type="password" class="input  input_access" id="idHTTPPassword" placeholder="Enter password..." onchange="SaveNetParams()">
+                </div>
+<!--                <button class="btn btn__transparent">save and restart</button>-->
+            </div>
+            <div class="division"></div>
+        </div>
+
+        <!--System-->
+        <div class="tab-content">
+            <BR>
+            <div class="mining__switches-left">
+                <div class="mining__switch">
+                    <p class="mining__switch-text">Use autoupdate </p>
+                    <label for="idAutoUpdate">
+                        <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
+                        <label for="idAutoUpdate"></label>
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="division division_light"></div>
+            <h3 class="h3">Constants</h3>
+            <div class="constants">
+                <a class="btn" onclick="ViewConstant()">Edit all costants</a>
+                <p class="constants__text">only for advanced users</p>
+            </div>
+        </div>
+
+        <!--Developer service-->
+        <div class="tab-content">
+            <BR>
+            <table>
+                <tr>
+                    <td style="width: 100px">
+                        <INPUT type="button" class="bt btdoit" onclick="SetCodeVersionJSON()" value="CODE VERS >>"><BR>
+                        <INPUT type="button" class="bt btdoit" onclick="SetNetConstJSON()" value="NET CONST >>"><BR>
+
+                    </td>
+                    <td style="width: 300px">
+                        Value:<INPUT type="string" id="idDevValue" value="0"><BR>
+                        <TEXTAREA id="idDevService" rows="15" cols="70"> </TEXTAREA><BR>
+                    </td>
+                    <td style="width: 200px">
+                        <INPUT type="button" class="bt btdoit" style="background-color: #f4f542;color:black;font-weight: bold;height: 50px;width: 100px;" onclick="RunDevelopService()" value="SEND">
+                        <INPUT type="button" class="bt btdoit" style="background-color: #58aff5;color:black;height: 24px;width: 100px;" onclick="ConnectToAll()" value="ConnectToAll">
+                    </td>
+                </tr>
+            </table>
+            <HR>
+        </div>
+
+
+
+<!--        <div class="tab-content">-->
+<!--            <div class="theme">-->
+<!--                <h3 class="h3 h3_theme">Color theme</h3>-->
+<!--                <div class="theme__color theme__color_light">-->
+<!--                    <p class="theme__text">light</p>-->
+<!--                </div>-->
+<!--                <div class="theme__color theme__color_dark">-->
+<!--                    <p class="theme__text">dark</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <div class="division">
+        </div>
+    </section>
+
+
+    <div class="ModalDlg modal_account" id="idBlockAddAccount">
+        <div class="modal__container">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+                <h3 class="h3 h3_form">
+                    Adding a new account
+                </h3>
+                <div class="division division_form"></div>
+                <div class="form__group">
+                    <p class="connection__text">Public name</p>
+                    <input type="text" class="input input_modal" value="" id="idAccountName">
+                </div>
+
+                <DIV class="myrow form__group">
+                    <div>
+                        <p class="connection__text">Currency</p>
+                        <input type="search" list="idCurrencyList" id="idCurrency" class="select__item input inputacc" onchange="ValidateCurrency(this)"/>
+                        <datalist id="idCurrencyList">
+                            <option value="Loading"></option>
+                        </datalist>
+                    </div>
+
+                    <div>
+                        <p class="connection__text">Smart:</p>
+                        <INPUT type="number" class="select__item input inputacc" id="idSmart" min=0 max=100000000 value="0">
+                    </div>
+
+                    <div>
+                        <p class="connection__text">Advanced miner ID:</p>
+                        <INPUT type="number" class="select__item input inputacc"  id="idAMinerID" min=1000000000 max=9999999999 value="0">
+                    </div>
+                    <div id="idRowWN" style="display: none;">
+                        <p class="connection__text">WN:</p>
+                        <INPUT type="number" class="select__item input inputacc"  id="idWN" min=0 max=100 value="0">
+                    </div>
+                 </DIV>
+
+                <BR>
+                <BR>
+                <BR>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                    <button class="btn btn_middle btn_margin doclose" onclick="CreateAccount(0)">Create</button>
+                    <button class="btn btn_middle doclose" onclick="CreateAccount(1)">to Pay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ModalDlg modal_wallet" id="idBlockEditWallet">
+        <div class="modal__container">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+                <h3 class="h3 h3_form">
+                    Edit wallet info
+                </h3>
+                <div class="division division_form"></div>
+                <div class="form__group">
+                    <p class="connection__text">Private key</p>
+                    <input type="text" class="input input_modal" id="idKeyNew" value="-">
+                </div>
+                <div class="form__group">
+                    <p class="connection__text">Public key</p>
+                    <input type="text" class="input input_modal" id="idPubKey" value="-">
+                </div>
+                <div class="form__links">
+                    <button class="btn btn__transparent" onclick="NewPrivateKey()">Generate new key</button>
+                </div>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                    <button class="btn btn_middle doclose" onclick="SavePrivateKey()">confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ModalDlg" id="idBlockConstSet">
+        <div class="modal__container">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+                <h3 class="h3 h3_form">
+                    Edit all constants
+                </h3>
+                <div class="division division_form"></div>
+                <textarea name="form-const" id="idConstant" class="log log_form editconstants">
+                {}
+                </textarea>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                    <button class="btn btn__transparent btn_margin btn_middle doclose" onclick="SaveConstant(0)">Save</button>
+                    <button class="btn btn_middle doclose" onclick="SaveConstant(1)">save and restart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ModalDlg" id="idBlockPasswordSet">
+        <div class="modal__container"  style="display: block">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+
+                <h3 class="h3 h3_form">
+                    Wallet password
+                </h3>
+                <div class="division division_form"></div>
+
+                <div class="form__group">
+                    <p class="connection__text">password</p>
+                    <input type="password" class="input  input_access" placeholder="Enter password" id="idPassword1">
+                </div>
+                <div class="form__group">
+                    <p class="connection__text">repeat password </p>
+                    <input type="password" class="input  input_access" placeholder="Repeat password" id="idPassword2">
+                </div>
+                <DIV class="form__group"><BR></DIV>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                    <button class="btn btn_middle" onclick="SetPassword(); closeModal()">confirm</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</DIV>
+
+
+<DIV id="TabSend" style="display: none">
+    <section class="tokens wrapper">
+        <h2 class="h3">
+            Sending tokens
+        </h2>
+        <DIV class="row" id="idSendList"> </DIV>
+        <div class="input-group">
+            <p class="input-group__text">From:</p>
+            <div class="select">
+                <select class="select__item input_send" size="1" id="idAccount" onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="input-group__row">
+                <p class="input-group__text">Pay to:</p>
+                <div class="input-group__right" id="idNameTo">
+                </div>
+            </div>
+<!--            <input id="idTo" type="text" class="input input_send" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID...">-->
+
+            <INPUT list="idToList" class="select__item input input_send" type="string" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID..." >
+            <datalist id="idToList">
+                <option value="Loading"></option>
+            </datalist>
+
+        </div>
+        <div class="input-group">
+            <div class="input-group__row">
+                <p class="input-group__text">Amount:</p>
+                <p id="idCoinName" class="input-group__link-text">-</p>
+                <div class="input-group__right">
+                        <a onclick="SetAllSum()" class="input-group__link">
+                        <img src="./img/load.svg">
+                    </a>
+                </div>
+            </div>
+            <input type="number" class="input input_send" placeholder="Input TERA amount..." id="idSumSend" value="" step=0 min=0 max=1000000000 onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
+        </div>
+        <div class="input-group">
+            <div class="input-group__row">
+                <p class="input-group__text">Description:</p>
+            </div>
+            <textarea id="idDescription" rows="4" class="input input_send" onkeyup="CheckLengthAccDesription('idDescription',200);OnEditTransactionFields()" onchange="OnEditTransactionFields()"></textarea>
+        </div>
+        <DIV id="idAttach"> </DIV>
+        <div class="wallet__buttons">
+            <a onclick="EditJSONTransaction()" class="btn btn__transparent btn_wide" id="json">
+                <img src="./img/edit.svg" class="btn__img">
+                <p>Edit json</p>
+            </a>
+            <div class="wallet__btn-group">
+                <button class="btn btn__transparent btn_wide btn_margin" onclick="ClearTransaction()">Clear</button>
+                <button class="btn btn_wide" id="idSendButton" onclick="SendMoneyBefore()">SEND</button>
+            </div>
+        </div>
+        <div class="division">
+        </div>
+
+    </section>
+
+    <div class="ModalDlg" id="idBlockEditJson">
+        <div class="modal__container">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+                <h3 class="h3 h3_form">
+                    Edit JSON
+                </h3>
+                <div class="division division_form"></div>
+                <textarea class="log log_form" id="idTransaction" rows="20"></textarea>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent btn_middle cancel btn_margin doclose">Cancel</button>
+                    <button class="btn btn__transparent btn_middle btn_margin" id="idSignJSON"  onclick="SignJSON()">Sign json</button>
+                    <button class="btn btn_middle doclose" onclick="SendMoneyJSON()">send from json</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ModalDlg">
+        <div class="modal__container form">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <h3 class="h3 h3_form">
+                Adding a new account
+            </h3>
+            <div class="division division_form"></div>
+            <div class="transaction">
+                <div class="transaction__row">
+                    <p class="transaction__desc">From ID:</p>
+                    <div class="transaction__group">
+                        <p class="transaction__number">192413</p>
+                        <p class="transaction__text">Minecraft is life (2 000 000 000,00000000 TERA)</p>
+                    </div>
+                </div>
+                <div class="transaction__row">
+                    <p class="transaction__desc">Pay to ID:</p>
+                    <div class="transaction__group">
+                        <div class="df">
+                            <p class="transaction__number">192834</p>
+                            <a class="input-group__link">
+                                <p class="input-group__link-text"> Save</p>
+                                <img src="./img/book.svg">
+                            </a>
+                        </div>
+                        <p class="transaction__text">Desitest2 (1 100 000 000,00000000 TERA)</p>
+                    </div>
+                </div>
+                <div class="transaction__row">
+                    <p class="transaction__desc">Amount:</p>
+                    <div class="transaction__group">
+                        <p class="transaction__text transaction__text_08">Minecraft is life (2 000 000 000,00000000 TERA)</p>
+                    </div>
+                </div>
+                <div class="transaction__row">
+                    <p class="transaction__desc">Description:</p>
+                    <div class="transaction__group">
+                        <p class="transaction__text transaction__text_08">Returning debt. Thank's for being part of my life. With
+                            respect, Oleg Gazmanov.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form__buttons">
+                <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                <button class="btn btn_middle doclose">confirm</button>
+            </div>
+        </div>
+    </div>
+
+</DIV>
+
+
+<DIV id="TabDapps" style="display: none">
+    <section class="dapps wrapper">
+        <BR>
+        <div class="dapps__title df_space">
+            <h3 class="h3">
+                Decentralized applications (dApps)
+            </h3>
+            <button class="btn btn_arrow" onclick="window.Open('./HTML/dapp-edit.html','smart',1240)">
+                <p class="btn__arrow-text">dapps editor</p>
+                <img src="./img/arrow_right.svg" class="btn__arrow-img">
+            </button>
+        </div>
+
+        <div class="myrow">
+            <p class="connection__text">Search:</p>
+            <INPUT type="search" id="idViewDappsFilter" class="input" value="" onchange="CheckNewSearch(DefDapps); ViewCurrent(DefDapps)">
+
+            <p class="connection__text">Category:</p>
+            <select size="1" id="idCategory" class="select__item" onchange="ViewCurrent(DefDapps)"></select>
+        </div>
+
+
+<!--        <div class="select">-->
+<!--            <div class="select__header input input_send">-->
+<!--                <span class="select__current"> Choose the category</span>-->
+<!--                <div class="select__icon">-->
+<!--                    <img src="./img/arrow.svg">-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="select__body">-->
+<!--                <div class="select__item"> Category 1</div>-->
+<!--                <div class="select__item"> Category 2</div>-->
+<!--                <div class="select__item"> Category 3</div>-->
+<!--            </div>-->
+<!--        </div>-->
+        <div class="navigation df_space">
+            <button class="btn btn_nav">
+                <img src="./img/arrow_first.svg">
+            </button>
+            <button class="btn btn_nav">
+                <img src="./img/arrow_left.svg">
+            </button>
+            <div class="pages input">
+                <p>60</p>
+                <p>&#160;&#8594;&#160;</p>
+                <p>70</p>
+            </div>
+            <button class="btn btn_nav">
+                <img src="./img/arrow_left.svg" class="arrow-rotate"></button>
+            <button class="btn btn_nav">
+                <img src="./img/arrow_first.svg" class="arrow-rotate"></button>
+        </div>
+        <div class="dapps__card card">
+            <div class="card__left">
+                <div class="card__row">
+                    <p class="card__desc">ID:</p>
+                    <p class="card__text">1960000000</p>
+                    <p class="card__desc">OWNER:</p>
+                    <p class="card__text">1960000000</p>
+                </div>
+                <div class="card__row">
+                    <p class="card__name">Floppy bird</p>
+                    <p class="card__token_no">Without token generate</p>
+                </div>
+                <p class="card__text">The first online store on the blockchain. Transactions are guaranteed by smart-contract
+                    and escrow. v 1.2</p>
+                <div class="card__row">
+                    <div class="card__type">
+                        1.Gaming & VR
+                    </div>
+                    <div class="card__type">
+                        1.Gaming & VR
+                    </div>
+                    <div class="card__type">
+                        1.Gaming & VR
+                    </div>
+                </div>
+            </div>
+            <div class="card__right">
+                <a class="card__link">
+                    <img src="./img/i.svg">
+                    <p class="card__link-text">More info</p>
+                </a>
+                <img src="./img/duck.svg">
+            </div>
+        </div>
+        <div class="dapps__card card">
+            <div class="card__left">
+                <div class="card__row">
+                    <p class="card__desc">ID:</p>
+                    <p class="card__text">1960000000</p>
+                    <p class="card__desc">OWNER:</p>
+                    <p class="card__text">69</p>
+                </div>
+                <div class="card__row">
+                    <p class="card__name">Tetris Masters</p>
+                    <div class="df_center">
+                        <img src="./img/check.svg">
+                        <p class="card__token">Token generate</p>
+                    </div>
+                </div>
+                <div class="card__row">
+                    <div class="card__type">
+                        1.Gaming & VR
+                    </div>
+                </div>
+            </div>
+            <div class="card__right">
+                <a class="card__link">
+                    <img src="./img/i.svg">
+                    <p class="card__link-text">More info</p>
+                </a>
+                <img src="./img/duck.svg">
+            </div>
+        </div>
+        <div class="division">
+        </div>
+    </section>
+</DIV>
+
+<DIV id="TabSharding" style="display: none">
+    <section class="config wrapper">
+
+
+    <DIV style="float: left;padding-top: 18px;">
+        <input type="checkbox" class="checkbox" id="idUseMiningShards" onchange = "UseMiningShards()"/>
+        <label for="idUseMiningShards">Mining cross-tx</label>
+    </DIV>
+
+    <INPUT type="button" onclick="ViewCurrent(DefShard,1,this)" class="btdoit bt btexlporer" id="idDown" value="Shards">
+    <INPUT type="button" onclick="ViewCurrent(DefCrossOut,1,this)" class="btdoit bt btexlporer" id="idDown" value="Msg send">
+    <INPUT type="button" onclick="ViewCurrent(DefCrossIn,1,this)" class="btdoit bt btexlporer" id="idDown" value="Msg receive">
+
+
+
+
+    <BR>
+    <DIV>
+        <DIV id="idPaginationCrossSend" style="display: none">
+            <HR>
+            <DIV id="view_header" >Msg Send<BR></DIV>
+            <!--                    Block:<INPUT type="search" id="idViewCrossOutBlockNum" value="" onchange="SetRowByBlockNum(DefCrossOut);">-->
+            <INPUT type="button" onclick="ViewBegin(DefCrossOut)" class="btscrollm bt" value="|&lt;-">
+            <INPUT type="button" onclick="ViewPrev(DefCrossOut)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="number" id="idViewCrossOutNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefCrossOut)">
+            <INPUT type="button" onclick="ViewNext(DefCrossOut,MaxCrossOutNum)" class="btscroll bt" value="Next &gt;&gt;">
+            <INPUT type="button" onclick="ViewEnd(DefCrossOut,MaxCrossOutNum)" class="btscrollm bt" value="-&gt;|">
+
+
+            <table id="grid_cross_send" class="grid">
+                <tr>
+                    <!--                            <th id="Item.Num" class="num">Num</th>-->
+                    <th id="Item.RowNum" class="num">Row</th>
+                    <!--                            <th id="Item.Position" class="num">Position</th>-->
+                    <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                    <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
+
+                    <!--                            <th id="Item.Mode" class="num">Mode</th>-->
+                    <th id="Item.Msg.Iteration" class="num">Iter</th>
+                    <th id="Item.Msg.Confirms" class="num">C</th>
+                    <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
+                    <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
+                    <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                    <th id="Item.Msg.MethodName" class="hash2">Method</th>
+                    <th id="Item.Msg.Params" class="hex">Params</th>
+                    <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
+                    <!--                            <th id="Item.Confirms" class="num">confirms</th>-->
+
+                    <!--                            <th id="Item.Position" class="num">Position</th>-->
+                </tr>
+            </table>
+            <BR>
+            <INPUT type="button" onclick="ViewPrev(DefCrossOut)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="button" onclick="ViewNext(DefCrossOut,MaxCrossOutNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+        </DIV>
+
+        <DIV id="idPaginationCrossReceive" style="display: none">
+            <HR>
+            <DIV id="view_header" >Msg Receive<BR></DIV>
+            <!--                    Block:<INPUT type="search" id="idViewCrossInBlockNum" value="" onchange="SetRowByBlockNum(DefCrossIn);">-->
+            <INPUT type="button" onclick="ViewBegin(DefCrossIn)" class="btscrollm bt" value="|&lt;-">
+            <INPUT type="button" onclick="ViewPrev(DefCrossIn)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="number" id="idViewCrossInNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefCrossIn)">
+            <INPUT type="button" onclick="ViewNext(DefCrossIn,MaxCrossInNum)" class="btscroll bt" value="Next &gt;&gt;">
+            <INPUT type="button" onclick="ViewEnd(DefCrossIn,MaxCrossInNum)" class="btscrollm bt" value="-&gt;|">
+
+
+            <table id="grid_cross_receive" class="grid">
+                <tr>
+                    <!--                            <th id="Item.Num" class="num">Num</th>-->
+                    <th id="(RetOpenBlock(Item.BlockNumAdd,1,Item.RowNum))" class="num">Row</th>
+                    <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
+                    <th id="Item.Msg.Iteration" class="num">Iter</th>
+                    <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
+                    <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
+                    <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                    <th id="Item.Msg.MethodName" class="hash2">Method</th>
+                    <th id="Item.Msg.Params" class="hex">Params</th>
+
+                    <th id="Item.StatusStr" class="num">Status</th>
+                    <th id="(RetOpenBlock(Item.BlockNumVote,1,Item.ConfirmsStr))" class="num">C</th>
+                    <!--                            <th id="Item.Height" class="num">Height</th>-->
+                    <!--                            <th id="Item.HeightStart" class="num">HeightStart</th>-->
+                    <!--                            <th id="(RetOpenBlock(Item.BlockNumVote,1))" class="num">Last vote</th>-->
+
+                    <th id="(RetOpenBlock(Item.BlockNumRun,1))" class="num">Run</th>
+
+                    <!--                            <th id="Item.HeightStart" class="num">Start</th>-->
+                    <th id="Item.BlockNumRun?Item.BlockNumRun-Math.min(Item.BlockNum,Item.BlockNumAdd):''" class="num">Delta</th>
+
+                    <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
+                    <th id="Item.Receive" class="name">Receive</th>
+
+
+                    <!--                            <th id="GetHexFromArr(Item.DataHash)" class="hash">DHash</th>-->
+
+                    <!--                            <th id="Item.Position" class="num">Position</th>-->
+                </tr>
+            </table>
+            <BR>
+            <INPUT type="button" onclick="ViewPrev(DefCrossIn)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="button" onclick="ViewNext(DefCrossIn,MaxCrossInNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+        </DIV>
+
+
+
+        <DIV id="idPaginationShard" style="display: none">
+            <HR>
+            <DIV id="view_header" >Shards<BR></DIV>
+            <INPUT type="button" onclick="ViewBegin(DefShard)" class="btscrollm bt" value="|&lt;-">
+            <INPUT type="button" onclick="ViewPrev(DefShard)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="number" id="idViewShardNum" style="text-align: center" value="0" min=0 max=1000000000 onchange="ViewCurrent(DefShard)">
+            <INPUT type="button" onclick="ViewNext(DefShard,MaxShardNum)" class="btscroll bt" value="Next &gt;&gt;">
+            <INPUT type="button" onclick="ViewEnd(DefShard,MaxShardNum)" class="btscrollm bt" value="-&gt;|">
+
+
+            <table id="grid_shard" class="grid">
+                <tr>
+                    <th id="Item.Num" class="num">Num</th>
+                    <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                    <th id="Item.ShardName+'-'+Item.Confirms" class="name">Name-confirms</th>
+                    <th id="Item.Description" class="name">Description</th>
+
+                    <th id="(RetOpenBlock(Item.MaxVBlock.BlockNum,1,Item.MaxVBlock.Height))" class="num">MaxHeight</th>
+                    <th id="GetHexFromArr(Item.MaxVBlock.Hash)" class="hash">Hash</th>
+                    <!--                            <th id="Item.MaxVBlock.RowNum" class="num">MaxRow</th>-->
+                    <th id="GetHexFromArr(Item.MaxVBlock.RowHash)" class="hash">RowHash</th>
+                    <th id="formatDate(new Date(Item.CheckTime))" class="date">CheckTime</th>
+
+                    <!--                            <th id="Item.System" class="num">System</th>-->
+
+                    <!--                            <th id="GetHexFromArr(Item.LastHash)" class="hash">Hash</th>-->
+
+                    <!--                            <th id="Item.Pos" class="num">Pos</th>-->
+                </tr>
+            </table>
+            <BR>
+            <INPUT type="button" onclick="ViewPrev(DefShard)" class="btscroll bt" value="&lt;&lt; Prev">
+            <INPUT type="button" onclick="ViewNext(DefShard,MaxShardNum)" class="btscroll bt" value="Next &gt;&gt;">
+
+            <HR>
+            New shard: <INPUT maxlength="6" id="idShardName" style="width: 80px;">
+            Confirms: <INPUT  type="number" min=0 max=100000 id="idShardConfirms" value="10" style="width: 60px;">
+            Description: <INPUT maxlength="40" id="idShardDescription" style="width: 200px;">
+            <BUTTON onclick="CreateNewShard()" class="btdoit btutil bt">Send to pay</BUTTON>
+
+        </DIV>
+
+
+    </DIV>
+
+    </section>
+
+</DIV>
+
+<DIV id="TabExplorer" style="display: none">
+    <section class="explorer wrapper">
+        <div class="tabs">
+            <div class="tab active">
+                Common
+            </div>
+            <div class="tab">
+                Statistics
+            </div>
+            <div class="tab">
+                Utilities
+            </div>
+        </div>
+
+        <!--Common-->
+        <div class="tab-content active">
+            <BR>
+            <div class="utilities__buttons df_space">
+                <button class="btn drop_down active" onclick="ViewCurrentNew(DefAccounts,1,this)">
+                    <p class="txt_dropdown">Accounts</p>
+                    <img src="./img/arrow_left.svg">
+                </button>
+
+                <button class="btn drop_down" onclick="ViewCurrentNew(DefBlock,1,this)">
+                    <p class="txt_dropdown">Blocks & Tx</p>
+                    <img src="./img/arrow_left.svg">
+                </button>
+                <button class="btn drop_down" onclick="ViewCurrentNew(DefJournal,1,this)">
+                    <p class="txt_dropdown">Journal</p>
+                    <img src="./img/arrow_left.svg">
+                </button>
+                <button class="btn drop_down" onclick="ViewCurrentNew(DefHash,1,this)">
+                    <p class="txt_dropdown">Checks</p>
+                    <img src="./img/arrow_left.svg">
+                </button>
+            </div>
+
+            <ul class="dropdown">
+                <li class="dropdown__item">
+                    <div class="dropdown__title drop">
+                        <h3 class="h3 h3_dropdown drop">Accounts</h3>
+                        <img src="./img/arrow_left.svg" class="dropdown__arrow drop">
+                    </div>
+                    <div class="dropdown__content">
+                        <div class="navigation df_space">
+                            <button class="btn btn_nav">
+                                <img src="./img/arrow_first.svg">
+                            </button>
+                            <button class="btn btn_nav">
+                                <img src="./img/arrow_left.svg">
+                            </button>
+                            <div class="pages input">
+                                <p>60</p>
+                                <p>&#160;&#8594;&#160;</p>
+                                <p>70</p>
+                            </div>
+                            <button class="btn btn_nav">
+                                <img src="./img/arrow_left.svg" class="arrow-rotate"></button>
+                            <button class="btn btn_nav">
+                                <img src="./img/arrow_first.svg" class="arrow-rotate"></button>
+                        </div>
+                        <div class="table">
+                            <div class="table__row table__title">
+                                <div class="table__item table__item_1">ID</div>
+                                <div class="table__item table__item_2">Amount</div>
+                                <div class="table__item table__item_3">CUR</div>
+                                <div class="table__item table__item_4 left">Name</div>
+                                <div class="table__item table__item_5 left">Public key</div>
+                                <div class="table__item table__item_6">Oper.</div>
+                                <div class="table__item table__item_6">Smart</div>
+                                <div class="table__item table__item_7">Block num</div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a class="table__link">192058</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 1,000000</div>
+                                <div class="table__item table__item_3">TERA</div>
+                                <div class="table__item table__item_4 left">Test</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a class="table__link">264862</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 50,000000</div>
+                                <div class="table__item table__item_3">BTC</div>
+                                <div class="table__item table__item_4 left">Test name</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">15320</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 200 000,000000</div>
+                                <div class="table__item table__item_3">TERA</div>
+                                <div class="table__item table__item_4 left">Name</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">6548</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 1 234 567,891234</div>
+                                <div class="table__item table__item_3">BTC</div>
+                                <div class="table__item table__item_4 left">Long string with...</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">189625</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 0,123456</div>
+                                <div class="table__item table__item_3">TERA</div>
+                                <div class="table__item table__item_4 left">Short</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">192058</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 1,000000</div>
+                                <div class="table__item table__item_3">Tera</div>
+                                <div class="table__item table__item_4 left">Test</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">264862</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 50,000000</div>
+                                <div class="table__item table__item_3">BTC</div>
+                                <div class="table__item table__item_4 left">Test name</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">15320</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 200 000,000000</div>
+                                <div class="table__item table__item_3">TERA</div>
+                                <div class="table__item table__item_4 left">Name</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">6548</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 1 234 567,891234</div>
+                                <div class="table__item table__item_3">BTC</div>
+                                <div class="table__item table__item_4 left">Long string with ...</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                            <div class="table__row">
+                                <div class="table__item table__item_1">
+                                    <a href="#" class="table__link">189625</a>
+                                </div>
+                                <div class="table__item table__item_2 right"> 0,123456</div>
+                                <div class="table__item table__item_3">TERA</div>
+                                <div class="table__item table__item_4 left">Short</div>
+                                <div class="table__item table__item_5 table__key left">03632D359C3D6680A7713E5F865537EE82F6E19D2
+                                    35D9E8C1B7300F82544815BAB</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_6">0</div>
+                                <div class="table__item table__item_7">
+                                    <a href="#" class="table__link">25992600</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="dropdown__item">
+                    <div class="dropdown__title drop">
+                        <h3 class="h3 h3_dropdown drop">Blocks & Tr</h3>
+                        <img src="./img/arrow_left.svg" class="dropdown__arrow drop">
+                    </div>
+                    <div class="dropdown__content">
+                    </div>
+                </li>
+                <li class="dropdown__item">
+                    <div class="dropdown__title drop">
+                        <h3 class="h3 h3_dropdown drop">Accounts acts</h3>
+                        <img src="./img/arrow_left.svg" class="dropdown__arrow drop">
+                    </div>
+                    <div class="dropdown__content">
+                    </div>
+                </li>
+                <li class="dropdown__item">
+                    <div class="dropdown__title drop">
+                        <h3 class="h3 h3_dropdown drop">Accounts hash</h3>
+                        <img src="./img/arrow_left.svg" class="dropdown__arrow drop">
+                    </div>
+                    <div class="dropdown__content">
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!--Statistics-->
+        <div class="tab-content">
+            <section class="statistics">
+                <div class="statistics__buttons">
+
+
+                    <button class="btn btn_explorer" onclick="window.Open('./HTML/stat.html','counters',920)">
+                        <div class="df">
+                            <img src="./img/counters.svg" class="btn__img">
+                            <p class="btn__arrow-text">Counters</p>
+                        </div>
+                        <img src="./img/arrow_right.svg">
+                    </button>
+                    <button class="btn btn_explorer" onclick="window.Open('./HTML/network.html','network',1200)">
+                        <div class="df">
+                            <img src="./img/network.svg" class="btn__img">
+                            <p class="btn__arrow-text">Network</p>
+                        </div>
+                        <img src="./img/arrow_right.svg">
+                    </button>
+                    <button class="btn btn_explorer" onclick="window.Open('./HTML/monitor.html','monitor',1200)">
+                        <div class="df">
+                            <img src="./img/monitor.svg" class="btn__img">
+                            <p class="btn__arrow-text">Monitor</p>
+                        </div>
+                        <img src="./img/arrow_right.svg">
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!--Utilities-->
+        <div class="tab-content">
+            <section class="utilities">
+                <BR><BR>
+                <button class="btn btn_arrow" onclick="window.Open('./HTML/console.html','console',1240)">
+                    <div class="df">
+                        <img src="./img/console.svg" class="btn__img">
+                        <p class="btn__arrow-text">console</p>
+                    </div>
+                    <img src="./img/arrow_right.svg">
+                </button>
+                <div class="division division_light"></div>
+                <div class="utilities__group df_items-center">
+                    <p class="utilities__text ">Rewrite tx (blocks):</p>
+                    <input type="text" class="input input_connection" value='0' id="idBlockCount">
+                    <button class="btn btn_explorer btn_utils" onclick="RewriteTransactions()" >Rewrite</button>
+                </div>
+
+                <div class="utilities__group df_items-center">
+                    <p class="utilities__text ">Truncate chain (blocks):</p>
+                    <input type="text" class="input input_connection" value='0' id="idBlockCount2">
+                    <button class="btn btn_explorer btn_utils" onclick="TruncateBlockChain()">Truncate</button>
+                </div>
+                <div class="division division_light"></div>
+                <div class="utilities__buttons df_space">
+                    <button class="btn btn_explorer btn_utils" onclick="StartLoadNewCode();InitArrInfo();">Update code</button>
+                    <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
+                    <button class="btn btn_explorer btn_utils" onclick="RewriteAllTransactions()">Rewrite all tx</button>
+                    <button class="btn btn_explorer btn_utils" onclick="ClearDataBase();InitArrInfo();">Clear DataBase</button>
+                </div>
+            </section>
+        </div>
+
+
+
+     </section>
+
+    <audio style="visibility: hidden;" controls="controls" id="sound_coin">
+        <source src="coin.mp3" type="audio/mpeg"/>
+    </audio>
+    <audio style="visibility: hidden;" controls="controls" id="sound_err">
+        <source src="click.mp3" type="audio/mpeg"/>
+    </audio>
+
+</DIV>
+
+
+<div class="ModalDlg" id="idBlockPasswordGet">
+    <div class="modal__container">
+        <div class="btn-close doclose">
+            <img src="./img/Close.svg">
+        </div>
+        <div class="form">
+
+            <h3 class="h3 h3_form">
+                Enter your password:
+            </h3>
+            <div class="division division_form"></div>
+
+            <div class="form__group">
+                <p class="connection__text">password</p>
+                <input type="password" class="input  input_access" placeholder="Enter password" id="idPasswordGet">
+            </div>
+            <DIV class="form__group"><BR></DIV>
+            <div class="form__buttons">
+                <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                <button class="btn btn_middle doclose" onclick="OpenWallet();">confirm</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<section class="wallet wrapper">
+    <h3 class="h3">Log from node:
+    </h3>
+    <div id="idServerLogHeader"> Log from node, detail level: <b id="idLogLevelText">-</b> <input type="range" min="0" max="3" id="idLogLevel" oninput="ChangeLog()" value="0"></div>
+    <textarea name="log" cols="30" rows="14" class="log focusnowrite" id="idServerLog"  readonly>-</textarea>
+</section>
+
+
+<INPUT type="hidden" id="idCurTabName" value="TabInfo" style="display: none">
+
+<!--modal support for dapp-->
+<style id="idModalCSS">
+    /*modal support*/
+    #idOverlay
+    {
+        z-index: 1;
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        top: 0;
+        left:0;
+        display: none;
+        background: rgba(68, 83, 104, 0.65);
+    }
+    .confirm__container
+    {
+        border-radius: 5px;
+        border: 1px solid #727473;
+        box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+        min-width: 300px;
+        min-height: 200px;
+        padding: 20px;
+        margin: 0 auto;
+    }
+
+    .bt-confirm
+    {
+        border-radius: 4px;
+        min-height: 14px;
+        margin: 5px;
+        width: 100px;
+        height: 36px;
+
+        color:white;
+        background-color: #53687e;
+        border-color: #445368;
+    }
+
+    .bt-confirm:hover
+    {
+        color: #cb763a;
+        cursor: pointer;
+    }
+</style>
+
+<div id="idOverlay" onclick="closeModal();" style="display: none;"></div>
+<div class="ModalDlg" id="idConfirm" style="display: none;">
+    <div class="modal__container confirm__container"  style="display: block">
+        <div class="btn-close doclose">
+            <img src="./img/Close.svg">
+        </div>
+        <DIV align='center'>
+            <h2 id="idConfirmTitle">Confirm</h2>
+            <p id="idConfirmText">A you sure?</p>
+            <BR>
+            <button class="bt-confirm doclose">Cancel</button>
+            <button class="bt-confirm"  onclick="OnConfirmOK()">Confirm</button>
+        </DIV>
+    </div>
+</div>
+
+
+
+<DIV id="idStableScroll" align='center'>
+    <A href="https://terafoundation.org/?utm_source=full_node&utm_medium=link&utm_campaign=wallet">Web-site</A>
+    <A href="https://bitcointalk.org/index.php?topic=4573801.0">ANN</A>
+    <A href="https://twitter.com/terafoundation">Twitter</A>
+    <A href="https://t.me/terafoundation">Telegram</A>
+    <A href="https://discord.gg/CvwrbeG">Discord</A>
+    <A href="https://jq.qq.com/?_wv=1027&k=5KpN5fw">QQ</A>
+    <A href="javascript:OpenOwnWebWallet()">Wallet</A>
+    <!--progr76@gmail.com-->
+</DIV>
+</body>
+</html>
+

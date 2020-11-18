@@ -9,6 +9,7 @@
 */
 
 
+
 var LOC_ADD_NAME = "$";
 module.exports = function ()
 {

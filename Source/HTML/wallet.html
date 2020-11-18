@@ -214,7 +214,7 @@
                     <HR>
                 </DIV>
             </DIV>
-            <INPUT type="checkbox" id="idChainMode" style="float: right; display: none" onchange="StartDrawBlockInfo()">
+<!--            <INPUT type="checkbox" id="idChainMode" style="float: right; display: none" onchange="StartDrawBlockInfo()">-->
             <canvas  width='800' height='30' id='idBlockInfo'></canvas>
             <BR><BR>
             <DIV style="float: left; font-family: monospace">
@@ -370,7 +370,7 @@
                     <H3>Network connections:</H3>
                     Own IP: <INPUT  maxlength="40" id="idIP">
                     Port: <INPUT maxlength="9" id="idPort">
-                    <INPUT type="checkbox" id="idAutoDetectIP" onchange="OnSetNetworkMode()">Auto detect IP
+                    <INPUT type="checkbox" id="idAutoDetectIP" onchange="OnSetNetworkMode()">Autodetect IP
                     <INPUT type="button" onclick="SetNetworkParams(1)" class="btdoit bt" value="Save and Restart">
                     <HR>
                 </DIV>
@@ -457,7 +457,10 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Description (optional)</td><td><textarea id="idDescription" rows="4" onkeyup="CheckLengthAccDesription('idDescription',200);OnEditTransactionFields()" onchange="OnEditTransactionFields()"></textarea></td>
+                    <td>Description (optional)</td>
+                    <td>
+                        <textarea id="idDescription" rows="4" onkeyup="CheckLengthAccDesription('idDescription',200);OnEditTransactionFields()" onchange="OnEditTransactionFields()"></textarea>
+                    </td>
                     <td><DIV id="idAttach"> </DIV></td>
                 </tr>
                 <tr>
@@ -475,7 +478,7 @@
                 <BR>
                 <INPUT type="button" onclick="SignJSON()" class="btdoit bt" value="Sign JSON" id="idSignJSON">
                 <INPUT type="button" onclick="SendMoneyJSON()" class="btdoit bt" value="Send from JSON">
-                <INPUT type="button" onclick="SendMoneyTest()" class="btdoit bt" value="Send TEST">
+<!--                <INPUT type="button" onclick="SendMoneyTest()" class="btdoit bt" value="Send TEST">-->
             </DIV>
 
 
@@ -948,7 +951,7 @@
 
                 <tr>
                     <td></td>
-                    <td><INPUT type="button" onclick="SetPassword()" class="bt" value="Set">
+                    <td><INPUT type="button" onclick="SetPassword(1)" class="bt" value="Set">
                         <INPUT type="button" onclick="CancelSetPassword()" class="bt" value="Cancel"></td>
                 </tr>
 
@@ -965,7 +968,7 @@
                 </tr>
                 <tr>
                     <td></td>
-                    <td><INPUT type="button" onclick="SetPassword()" class="bt" value="Set">
+                    <td><INPUT type="button" onclick="SetPassword(1)" class="bt" value="Set">
                         <INPUT type="button" onclick="CancelSetPassword()" class="bt" value="Cancel"></td>
                 </tr>
             </table>

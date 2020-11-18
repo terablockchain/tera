@@ -142,6 +142,8 @@ class CApp
         {
             ToLogClient("Wallet was open")
         }
+        if(!this.KeyXOR)
+            return 1;
         
         var Hash = this.HashProtect(StrPassword);
         var TestPrivKey = this.XORHash(this.KeyXOR, Hash, 32);
@@ -196,6 +198,8 @@ class CApp
     }
     XORHash(arr1, arr2, length)
     {
+        if(!arr1 || !arr2)
+            ToLogTrace("Error arr for xor")
         var arr3 = [];
         for(var i = 0; i < length; i++)
         {

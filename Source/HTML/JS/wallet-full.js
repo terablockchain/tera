@@ -30,7 +30,7 @@ var CurTabName;
 var TabArr = [{name:"TabAccounts", log:1}, {name:"TabSend", log:1}, {name:"TabDapps"}, {name:"TabSharding"}, {name:"TabExplorer"}];
 var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idSelStyle", "idViewAccountNum", "idViewBlockNum", "idViewActNum",
 "idViewJournNum", "idViewCrossOutNum", "idViewCrossInNum", "idViewHashNum", "idViewDappNum", "idViewShardNum", "idRunText",
-"idViewAccountFilter", "idBlockCount"];
+"idViewAccountFilter", "idBlockCount", "idBlockCount2", "idCurTabName"];
 
 var MaxAccID = 0;
 var MaxDappsID = 0;
@@ -40,8 +40,6 @@ var HistoryMaxNum = 0;
 var MaxCrossOutNum = 0;
 var MaxCrossInNum = 0;
 var MaxShardNum = 0;
-
-var idPercentItem;
 
 var WasSetRestart = 0;
 
@@ -154,7 +152,11 @@ function ViewNewAccount()
 }
 function SetViewWN()
 {
-    $("Item.WN").innerText = "";
+    var Item = $("Item.WN");
+    if(!Item)
+        return;
+    
+    Item.innerText = "";
     SetVisibleBlock("Item.WN", "none");
 }
 function CancelCreateAccount()
@@ -304,28 +306,35 @@ function SelectTypeKey()
 }
 function SetVisibleItemByTypeKey()
 {
-    var SelectType = $("idTypeKey").value;
-    if(SelectType === "brain")
+    var ItemSelect = $("idTypeKey");
+    if(ItemSelect)
     {
-        SetVisibleBlock("idViewKeyNew2", "table-row");
-        SetVisibleBlock("idBtConvertKey", "inline-block");
-        SetVisibleBlock("idBtSaveKey", false);
-    }
-    else
-    {
-        SetVisibleBlock("idViewKeyNew2", "none");
-        SetVisibleBlock("idBtConvertKey", false);
-        SetVisibleBlock("idBtSaveKey", "inline-block");
+        var SelectType = ItemSelect.value;
+        if(SelectType === "brain")
+        {
+            SetVisibleBlock("idViewKeyNew2", "table-row");
+            SetVisibleBlock("idBtConvertKey", "inline-block");
+            SetVisibleBlock("idBtSaveKey", false);
+        }
+        else
+        {
+            SetVisibleBlock("idViewKeyNew2", "none");
+            SetVisibleBlock("idBtConvertKey", false);
+            SetVisibleBlock("idBtSaveKey", "inline-block");
+        }
     }
     
     var StrPrivHex = $("idKeyNew").value;
     if(StrPrivHex && window.SignLib)
     {
+        var Str;
         var PrivKeyArr = GetArrFromHex($("idKeyNew").value);
         if(PrivKeyArr.length === 33)
-            $("idPubKey").innerText = $("idKeyNew").value;
+            Str = $("idKeyNew").value;
         else
-            $("idPubKey").innerText = GetHexFromArr(SignLib.publicKeyCreate(PrivKeyArr, 1));
+            Str = GetHexFromArr(SignLib.publicKeyCreate(PrivKeyArr, 1));
+        
+        $("idPubKey").innerText = Str;
     }
 }
 
@@ -599,8 +608,6 @@ function SetConfigData(Data)
     if($("idDataPath").innerText !== Data.DATA_PATH)
         $("idDataPath").innerText = Data.DATA_PATH;
     
-    SetVisibleBlock("idChainMode", Data.IsDevelopAccount);
-    
     var bDevService = !!CONFIG_DATA.CONSTANTS.WALLET_DESCRIPTION;
     SetVisibleBlock("idDevelopService", Data.IsDevelopAccount);
     SetVisibleBlock("idDevelopService2", bDevService);
@@ -612,18 +619,24 @@ function SetConfigData(Data)
     
     SERVER_IP = Data.ip;
     SERVER_PORT = Data.port;
+    $("idAutoDetectIP").checked = CONFIG_DATA.CONSTANTS.AUTODETECT_IP;
+    
+    if(CONFIG_DATA.CONSTANTS.AUTODETECT_IP)
+        $("idIP").value = "";
+    else
+        SetConstValue("idIP", "JINN_IP");
+    SetConstValue("idPort", "JINN_PORT");
+    SetConstValue("idHTTPPort", "HTTP_PORT_NUMBER");
+    SetConstValue("idHTTPPassword", "HTTP_PORT_PASSWORD");
     MiningAccount = Data.MiningAccount;
     $("idUseMining").checked = CONFIG_DATA.CONSTANTS.USE_MINING;
-    $("idUseMiningShards").checked = CONFIG_DATA.CONSTANTS.USE_MINING_SHARDS;
-    if(!idPercentItem || document.activeElement !== idPercentItem)
-    {
-        idPercentItem = $("idPercentMining");
-        idPercentItem.value = CONFIG_DATA.CONSTANTS.POW_MAX_PERCENT;
-    }
+    SetConstValue("idPercentMining", "POW_MAX_PERCENT");
+    SetConstValue("idMiningAccount", "MINING_ACCOUNT");
     if(Data.CountMiningCPU > 0 && CONFIG_DATA.CONSTANTS.USE_MINING)
         SetVisibleBlock("idMiningParams", "inline-block");
     else
         SetVisibleBlock("idMiningParams", 0);
+    $("idUseMiningShards").checked = CONFIG_DATA.CONSTANTS.USE_MINING_SHARDS;
     
     SetStatusMining(" Mining on:<B>" + MiningAccount + "</B>  HashRate:<B>" + (Math.floor(Data.HashRate * 10) / 10) + "</B>Mh/s CPU RUN:<B>" + Data.CountRunCPU + "</B>/" + Data.CountMiningCPU + " " + (Data.MiningPaused ? "<B style='color:darkred;'>=PAUSED=</B>" : ""));
     if(CONFIG_DATA.CONSTANTS.USE_MINING && Data.CountRunCPU !== Data.CountMiningCPU)
@@ -657,8 +670,9 @@ function SetConfigData(Data)
     $("idLogLevelText").innerText = CONFIG_DATA.CONSTANTS.LOG_LEVEL;
     $("idLogLevel").max = CONFIG_DATA.MaxLogLevel;
     
-    if(!CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
+    if(!CONFIG_DATA.CONSTANTS.DEBUG_WALLET && $("GetStateItem(Item)"))
     {
+        
         SetVisibleBlock("GetStateItem(Item)", "none");
         $("GetStateItem(Item)").innerText = "";
         SetVisibleBlock("GetStateItem2(Item)", "none");
@@ -669,6 +683,16 @@ function SetConfigData(Data)
     {
         sessionStorage[WALLET_KEY_NAME] = "";
     }
+}
+function SetConstValue(IdName,ConstName)
+{
+    var Item = $(IdName);
+    if(document.activeElement === Item)
+    {
+        return;
+    }
+    
+    Item.value = CONFIG_DATA.CONSTANTS[ConstName];
 }
 
 function ChangeLog()
@@ -849,10 +873,10 @@ function CheckCtrlEnterAndESC(e,F)
                     }
                     else
                         if(IsVisibleBlock("idBlockPasswordSet"))
-                            SetPassword();
+                            SetPassword(1);
                         else
                             if(IsVisibleBlock("idBlockPasswordGet"))
-                                SetPassword();
+                                SetPassword(1);
                             else
                                 if(WalletOpen === false)
                                 {
@@ -895,6 +919,9 @@ function SelectStyle(value)
 {
     
     var Select = $("idSelStyle");
+    if(!Select)
+        return;
+    
     if(value)
         Select.value = value;
     
@@ -1010,9 +1037,9 @@ function ViewSetPassword()
     itemPassword1.focus();
 }
 
-function SetPassword()
+function SetPassword(bCheckView)
 {
-    if(!IsVisibleBlock("idBlockPasswordSet"))
+    if(bCheckView && !IsVisibleBlock("idBlockPasswordSet"))
     {
         OpenWallet();
         return;

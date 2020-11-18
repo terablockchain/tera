@@ -129,8 +129,8 @@ function SetNetworkID(NameID)
 {
     var Index = NameID.indexOf(".");
     window.NETWORK_ID = NameID;
-    window.SHARD_NAME = NameID.substr(0, Index);
-    window.NETWORK_NAME = NameID.substr(Index + 1);
+    window.NETWORK_NAME = NameID.substr(0, Index);
+    window.SHARD_NAME = NameID.substr(Index + 1);
 }
 
 function OnLoad()
