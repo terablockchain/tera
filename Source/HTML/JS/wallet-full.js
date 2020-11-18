@@ -9,7 +9,7 @@
 */
 
 var WasInitCurrency = 0;
-var CONFIG_DATA = {};
+var CONFIG_DATA = {NotInit:1};
 CONFIG_DATA.CONSTANTS = {};
 var ServerBlockNumDB = 0;
 var ServerCurBlockNum = 0;
@@ -28,9 +28,9 @@ var SERVER_PORT;
 var CurTabName;
 
 var TabArr = [{name:"TabAccounts", log:1}, {name:"TabSend", log:1}, {name:"TabDapps"}, {name:"TabSharding"}, {name:"TabExplorer"}];
-var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idSelStyle", "idViewAccountNum", "idViewBlockNum", "idViewActNum",
-"idViewJournNum", "idViewCrossOutNum", "idViewCrossInNum", "idViewHashNum", "idViewDappNum", "idViewShardNum", "idRunText",
-"idViewAccountFilter", "idBlockCount", "idBlockCount2", "idCurTabName"];
+var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idSelStyle", "idViewAccountNum", "idViewBlockNum", "idViewJournNum",
+"idViewCrossOutNum", "idViewCrossInNum", "idViewHashNum", "idViewDappNum", "idViewShardNum", "idRunText", "idViewAccountFilter",
+"idBlockCount", "idBlockCount2", "idCurTabName"];
 
 var MaxAccID = 0;
 var MaxDappsID = 0;
@@ -264,8 +264,6 @@ function CreateNewShard()
     var Item = {name:Name, To:0, Amount:CONFIG_DATA.PRICE_DAO.NewShard, Description:"Shard " + Name + ":" + Confirms, Body:Body,
     };
     AddToInvoiceList(Item, 1);
-    
-    SetVisibleShardCreate();
 }
 
 function SetVisibleEditKeys(bSet)
@@ -347,7 +345,7 @@ var DefBlock = {BlockName:"idPaginationBlock", NumName:"idViewBlockNum", TabName
 
 var DefHistory = {BlockName:"idPaginationHistory", NumName:"idViewHistoryNum", TabName:"grid_history", APIName:"GetHistoryAct",
     Param3:"", FilterName:"idViewHistoryFilter", TotalSum:"idTotalSumH"};
-var DefActs = {BlockName:"idPaginationAct", NumName:"idViewActNum", TabName:"grid_acts_all", APIName:"GetActList", Param3:""};
+
 var DefJournal = {BlockName:"idPaginationJournal", NumName:"idViewJournNum", TabName:"grid_journal", APIName:"GetJournalList",
     Param3:"", FBlockName:"idViewJournalRunBlockNum", FindBlock:"FindJournalByBlockNum"};
 var DefHash = {BlockName:"idPaginationHash", NumName:"idViewHashNum", TabName:"grid_hash_all", APIName:"GetHashList", Param3:""};
@@ -426,7 +424,7 @@ function UpdatesAccountsData()
 
 function UpdatesData()
 {
-    
+    UpdatesConfigData();
     UpdatesAccountsData();
     CheckNameAccTo();
     CheckSending();
@@ -454,9 +452,25 @@ function SetConfigData(Data)
     if(!Data || !Data.result)
         return;
     
-    CheckSessionID(Data.sessionid);
-    
     CONFIG_DATA = Data;
+    CheckSessionID(Data.sessionid);
+    window.DEBUG_WALLET = 0;
+    if(CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
+        window.DEBUG_WALLET = 1;
+    if(!window.DEBUG_WALLET)
+    {
+        if($("GetStateItem(Item)"))
+        {
+            SetVisibleBlock("GetStateItem(Item)", "none");
+            $("GetStateItem(Item)").innerText = "";
+        }
+        if($("GetStateItem2(Item)"))
+        {
+            SetVisibleBlock("GetStateItem2(Item)", "none");
+            $("GetStateItem2(Item)").innerText = "";
+        }
+    }
+    
     ServerBlockNumDB = Data.BlockNumDB;
     ServerCurBlockNum = Data.CurBlockNum;
     ServerTime = Data.CurTime;
@@ -659,8 +673,6 @@ function SetConfigData(Data)
     
     $("idAutoUpdate").checked = CONFIG_DATA.CONSTANTS.USE_AUTO_UPDATE;
     
-    window.DEBUG_WALLET = CONFIG_DATA.CONSTANTS.DEBUG_WALLET;
-    
     SetViewWN();
     
     StartDrawBlockInfo();
@@ -669,15 +681,6 @@ function SetConfigData(Data)
     $("idLogLevel").value = CONFIG_DATA.CONSTANTS.LOG_LEVEL;
     $("idLogLevelText").innerText = CONFIG_DATA.CONSTANTS.LOG_LEVEL;
     $("idLogLevel").max = CONFIG_DATA.MaxLogLevel;
-    
-    if(!CONFIG_DATA.CONSTANTS.DEBUG_WALLET && $("GetStateItem(Item)"))
-    {
-        
-        SetVisibleBlock("GetStateItem(Item)", "none");
-        $("GetStateItem(Item)").innerText = "";
-        SetVisibleBlock("GetStateItem2(Item)", "none");
-        $("GetStateItem2(Item)").innerText = "";
-    }
     
     if(bDevService)
     {
@@ -715,7 +718,7 @@ function SetVisibleBtOpenWallet()
         if(WalletOpen == false)
         {
             item.value = "Wallet closed";
-            item.style = "background-image: url('/HTML/PIC/lock_closed.png');color:" + "#9b712a";
+            item.style = "background-image: url('/HTML/PIC/lock_closed.png');color:" + "#5b5e91";
         }
     
     SetVisibleBlock("wallet_config_tab", WalletOpen !== false);
@@ -731,12 +734,10 @@ function DoRepeatTx(BlockNum,Tx)
     ToLog("Copy OK!");
 }
 
-var bMainCanClear = true;
 var StrMainStatus = "";
 var StrNormalStatus = "";
 function SetMainStatus(Str,bCanClear)
 {
-    bMainCanClear = bCanClear;
     StrMainStatus = Str;
     ViewStatus();
 }
@@ -746,10 +747,6 @@ function SetStatus(Str,bError)
         return SetError(Str);
     
     StrNormalStatus = Str;
-    if(bMainCanClear)
-    {
-        StrMainStatus = "";
-    }
     ViewStatus();
 }
 
@@ -1117,11 +1114,9 @@ function OpenOwnWebWallet()
 
 function OnInitWallet()
 {
-    
-    UpdatesConfigData();
     UpdatesData();
     setInterval(UpdatesData, 1000);
-    setInterval(UpdatesConfigData, 1000);
+    
     setInterval(CheckNewMoney, 2000);
     setInterval(SaveValues, 2000);
     setTimeout(CheckNameAccTo, 100);

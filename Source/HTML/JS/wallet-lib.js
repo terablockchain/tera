@@ -27,6 +27,8 @@ function SetAccountsData(Data,AccountsDataStr)
 {
     if(!Data || !Data.result)
         return;
+    if(CONFIG_DATA.NotInit)
+        return;
     
     if($("idBtRun"))
         $("idBtRun").style.display = (Data.arr.length ? '' : 'none');
@@ -376,7 +378,9 @@ function SendMoneyTest()
 function SendMoneyBefore()
 {
     if($("idSendButton").disabled)
+    {
         return;
+    }
     
     var StrToID = GetSendAccTo();
     var StrWhite = GetSendAccTo(1);
@@ -402,6 +406,7 @@ function SendMoneyBefore()
         SetImg(this, 'idBlockOnSend');
     }
 }
+
 function SendMoney2()
 {
     AddWhiteList();

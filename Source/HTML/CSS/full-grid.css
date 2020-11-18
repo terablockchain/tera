@@ -1,0 +1,172 @@
+
+
+.grid
+{
+    border-collapse: collapse;
+    border-spacing: 1px;
+    width: 100%;
+ }
+.grid th {
+    background: #222A3A;
+    border: 1px solid #445368;
+
+    height: 30px;
+    padding: 5px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 400;
+    white-space: nowrap;
+
+}
+
+.grid td
+{
+    background: #2e3847;
+    border: 1px solid #445368;
+
+    padding: 5px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 16px;
+    letter-spacing: 0.02em;
+
+
+}
+
+
+
+
+.grid .num button {
+    background: none;
+    border: none;
+    text-decoration: underline;
+}
+
+
+
+
+/*----------------*/
+
+.grid td.hash {
+    width: 165px;
+    font-size: 10px;
+    line-height: 12px;
+    letter-spacing: 0.02em;
+    min-width: 120px;
+    word-break: break-all;
+}
+.grid td.pubkey {
+    width: 208px;
+    min-width: 208px;
+    font-size: 10px;
+    line-height: 12px;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+}
+
+.grid td.code
+{
+    width: 165px;
+    min-width: 100px;
+    font-family: "courier new", "times new roman", monospace;
+    font-size: 90%;
+    align-content: left;
+    text-align: left;
+    word-break: break-all;
+}
+
+
+
+
+.grid td.sum
+{
+    text-align: right;
+    width: 120px;
+}
+
+
+.grid td.num
+{
+    text-align: right;
+    width: 50px;
+}
+.grid td.snum
+{
+    text-align: center;
+    width: 25px;
+}
+
+.grid td.cur
+{
+    text-align: left;
+    width: 50px;
+    font-size:smaller;
+}
+
+.grid td.direct
+{
+    text-align: center;
+    vertical-align: middle;
+    width: 10px;
+    font-weight: 700;
+    font-size:x-large;
+}
+
+
+.grid td.txt
+{
+    text-align: left;
+    width: 100px;
+}
+.grid td.desc
+{
+    text-align: left;
+    width: 200px;
+    max-width: 200px;
+    word-break: break-all;
+}
+.grid td.name
+{
+    text-align: left;
+    width: 200px;
+}
+
+
+.grid td.date
+{
+    text-align: left;
+    width: 90px;
+    min-width: 70px;
+    font-size: small;
+}
+
+.grid td.verify
+{
+    text-align: right;
+    width: 20px;
+}
+
+
+.olink
+{
+    cursor: pointer;
+    text-decoration: none;
+}
+.olink:hover
+{
+    font-weight: bold;
+    color: #cb763a;
+}
+
+.openblock
+{
+    cursor: pointer;
+    text-decoration: none;
+}
+.openblock:hover
+{
+    font-weight: bold;
+    color: #cb763a;
+}
+

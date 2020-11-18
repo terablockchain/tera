@@ -94,6 +94,7 @@ function OnSelectTab(name)
     
     if(name === "TabAccounts" || name === "TabSend")
     {
+        UpdatesAccountsData(1);
     }
     else
         if(name === "TabExplorer")
@@ -102,6 +103,7 @@ function OnSelectTab(name)
         else
             if(name === "TabDapps")
             {
+                ViewDapps();
             }
 }
 
@@ -153,10 +155,11 @@ function DropDownClearAllActive()
     });
 }
 
-function ViewCurrentNew(Def,flag,This)
+function ViewCurrent(Def,flag,This)
 {
     DropDownClearAllActive();
-    This.classList.add("active");
+    if(ViewCurrentInner(Def, flag) && This)
+        This.classList.add("active");
 }
 
 function ViewConstant()
@@ -225,7 +228,7 @@ function SaveNetParams()
     
     GetData("SaveConstant", Const, function (Data)
     {
-        SetStatus("SaveNetParams");
+        SetStatus("Save ok");
     });
 }
 
@@ -238,4 +241,97 @@ function EditJSONTransaction()
 function TruncateBlockChain()
 {
     DoBlockChainProcess("TruncateBlockChain", "Truncate last %1 blocks", "idBlockCount2");
+}
+
+function RetChangeSmart(Item)
+{
+    var StrName = RetOpenDapps(Item.SmartObj, 1, Item.Num);
+    return '<div class="smart_name">' + StrName + '<div class="dots" onclick="ChangeSmart(' + Item.Num + ',' + Item.Value.Smart + ')"><img src="./img/dots.svg"></div></div>';
+}
+
+function RetOpenDapps(Item,bNum,AccountNum)
+{
+    if(!Item)
+        return "<div></div>";
+    var Name = escapeHtml(Item.Name);
+    if(bNum)
+        Name = "" + Item.Num + "." + Name;
+    
+    var StrOpen;
+    if(Item.HTMLLength > 0)
+        StrOpen = 'class="smart_coin pointer" onclick="OpenDapps(' + Item.Num + ',' + AccountNum + ',1)"';
+    else
+        StrOpen = 'class="smart_coin"';
+    
+    var StrImg = RetIconDapp(Item);
+    return '<div ' + StrOpen + '>' + StrImg + '<p class="smart_coin-text">' + Name + '</p> </div>';
+}
+
+function RetIconDapp(Item)
+{
+    return '<img src="' + RetIconPath(Item, 0) + '" class="smart_coin-img"> ';
+}
+
+function ChangeSmart(NumAccount,WasSmart)
+{
+    if(!IsPrivateMode())
+    {
+        SetError("Pls, open wallet");
+        return 0;
+    }
+    
+    var StrHtml = '<BR><BR><div class="myrow">' + '<p>Smart number:</p>' + '<input type="number" class="select__item input inputacc" id="idSmartNew" min="0" max="100000000" value="">' + '</div><BR><BR>';
+    setTimeout(function ()
+    {
+        $("idSmartNew").focus();
+        $("idSmartNew").value = WasSmart;
+    }, 1);
+    
+    DoConfirm("Account change", StrHtml, function ()
+    {
+        var SmartNum =  + $("idSmartNew").value;
+        DoChangeSmart(NumAccount, WasSmart, SmartNum);
+    });
+}
+
+function ViewStatus()
+{
+    var id = $("idStatus");
+    var Str1 = '<div class="row df_space" style="width:600px;"><div class="">Shard: ' + window.SHARD_NAME + '</div><div>' + StrMainStatus + '</div><div></div></div>';
+    var Str2 = '<BR><div class="myrow"><div>' + StrNormalStatus + '</div><div></div></div>';
+    
+    id.innerHTML = Str1 + Str2;
+}
+
+function SendMoneyBefore()
+{
+    if($("idSendButton").disabled)
+    {
+        return;
+    }
+    
+    var StrToID = GetSendAccTo();
+    var StrWhite = GetSendAccTo(1);
+    var Item = MapAccounts[StrToID];
+    if(Storage.getItem("White:" + NETWORK_ID + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
+    {
+        SendMoney();
+    }
+    else
+    {
+        var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
+        var StrTo = " to " + GetAccountText(Item, StrWhite);
+        $("idWhiteOnSend").checked = 0;
+        
+        $("idOnSendSum").innerText = STRING_FROM_COIN(CoinAmount);
+        $("idOnSendCoinName").innerText = $("idCoinName").innerText;
+        $("idOnSendToName").innerText = StrTo;
+        
+        SetVisibleBlock("idOnSendWarning", ($("idSumSend").value >= 100000));
+        SetVisibleBlock("idBtOnSend", Item ? "inline-block" : "none");
+        
+        SetVisibleBlock("idBlockOnSend", 1);
+        
+        openModal('idBlockOnSend');
+    }
 }

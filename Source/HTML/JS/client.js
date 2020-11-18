@@ -812,8 +812,12 @@ function SetDownImgButton(This,bVisible)
             This.className += " btpress";
     }
 }
-
 function ViewCurrent(Def,flag,This)
+{
+    return ViewCurrentInner(Def, flag, This);
+}
+
+function ViewCurrentInner(Def,flag,This)
 {
     if(Def.BlockName)
     {
@@ -858,6 +862,7 @@ function ViewCurrent(Def,flag,This)
     
     if(This)
         SetImg(This, Def.BlockName);
+    return 1;
 }
 
 function ViewPrev(Def)
@@ -1168,9 +1173,7 @@ function RetIconPath(Item,bCurrency)
     }
     
     if(Item.IconBlockNum)
-    {
         return StrPath + '/file/' + Item.IconBlockNum + '/' + Item.IconTrNum;
-    }
     else
         return StrPath + "/PIC/blank.svg";
 }
@@ -1193,10 +1196,12 @@ function RetOpenDapps(Item,bNum,AccountNum)
     if(Item.HTMLLength > 0)
     {
         var StrText = RetIconDapp(Item) + Name;
-        return '<button type="button" class="bt_open_dapp" style="margin: -2px 0 0 0" onclick="OpenDapps(' + Item.Num + ',' + AccountNum + ',1)">' + StrText + '</button>';
+        return '<button type="button" class="bt_open_dapp" onclick="OpenDapps(' + Item.Num + ',' + AccountNum + ',1)">' + StrText + '</button>';
     }
     else
+    {
         return RetIconDapp(Item) + Name;
+    }
 }
 
 function RetDirect(Value)

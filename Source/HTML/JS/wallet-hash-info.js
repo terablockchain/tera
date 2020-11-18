@@ -14,9 +14,9 @@ var MaxHeight = 30;
 function InitArrInfo()
 {
     MapInfo = {};
-    ArrInfo = [{Name:"Hashrate from the beginning of the chain", Delta:1000000000, DX:310}, {Name:"month", Delta0:30.5 * 24 * 3600,
-        DX:190, Mult:10000}, {Name:"day", Delta0:24 * 3600, DX:140, Mult:1000}, {Name:"hour", Delta0:3600, DX:100, Mult:100}, {Name:"minute",
-        Delta0:60, DX:60, Mult:1}, ];
+    ArrInfo = [{Name:"all", Text:"From begin", Delta:1000000000, DX:310}, {Name:"month", Text:"Month", Delta0:30.5 * 24 * 3600,
+        DX:190, Mult:10000}, {Name:"day", Text:"Day", Delta0:24 * 3600, DX:140, Mult:1000}, {Name:"hour", Text:"Hour", Delta0:3600,
+        DX:100, Mult:100}, {Name:"minute", Text:"Minute", Delta0:60, DX:60, Mult:1}, ];
     
     for(var i = 0; i < ArrInfo.length; i++)
     {
@@ -325,11 +325,13 @@ function DrawBlockInfoByArr(ArrMax,StatTotal,TimeBlockNum,CountErrMax)
     ctx.beginPath();
     ctx.moveTo(obj.width, 0);
     ctx.lineTo(obj.width, obj.height);
-    var Y = obj.height - 5;
+    var Y = obj.height - 13;
+    ctx.font = "12px monospace";
     for(var i = 0; i < ArrInfo.length; i++)
     {
         var Item = ArrInfo[i];
-        ctx.fillText("" + Item.Name + (WasRed ? "-" + Item.AvgPow : ""), Item.x + Item.DX / 2 - 4 * Item.Name.length / 2 - 10, Y - 8);
+        var X = Item.x + 10;
+        ctx.fillText("" + Item.Text + (WasRed ? "-" + Item.AvgPow : ""), X, Y, Item.DX);
     }
     ctx.stroke();
 }
