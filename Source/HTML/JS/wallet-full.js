@@ -653,7 +653,7 @@ function SetConfigData(Data)
     $("idUseMiningShards").checked = CONFIG_DATA.CONSTANTS.USE_MINING_SHARDS;
     
     SetStatusMining(" Mining on:<B>" + MiningAccount + "</B>  HashRate:<B>" + (Math.floor(Data.HashRate * 10) / 10) + "</B>Mh/s CPU RUN:<B>" + Data.CountRunCPU + "</B>/" + Data.CountMiningCPU + " " + (Data.MiningPaused ? "<B style='color:darkred;'>=PAUSED=</B>" : ""));
-    if(CONFIG_DATA.CONSTANTS.USE_MINING && Data.CountRunCPU !== Data.CountMiningCPU)
+    if(CONFIG_DATA.CONSTANTS.USE_MINING && ( + Data.CountRunCPU) !== ( + Data.CountMiningCPU))
     {
         $("idUseMining").className = "checkbox checkbox_red";
     }
@@ -673,6 +673,8 @@ function SetConfigData(Data)
     
     $("idAutoUpdate").checked = CONFIG_DATA.CONSTANTS.USE_AUTO_UPDATE;
     
+    SetConstValueAuto();
+    
     SetViewWN();
     
     StartDrawBlockInfo();
@@ -687,6 +689,7 @@ function SetConfigData(Data)
         sessionStorage[WALLET_KEY_NAME] = "";
     }
 }
+
 function SetConstValue(IdName,ConstName)
 {
     var Item = $(IdName);
@@ -695,8 +698,59 @@ function SetConstValue(IdName,ConstName)
         return;
     }
     
-    Item.value = CONFIG_DATA.CONSTANTS[ConstName];
+    var Value = CONFIG_DATA.CONSTANTS[ConstName];
+    if(Item.type === "checkbox")
+    {
+        Item.checked =  + Value;
+    }
+    else
+    {
+        Item.value = Value;
+    }
 }
+
+function SetConstValueAuto()
+{
+    const arr = document.querySelectorAll(".node-const");
+    arr.forEach(function (Item)
+    {
+        SetConstValue(Item.id, Item.id);
+    });
+}
+
+function SaveNetParams()
+{
+    
+    var Const = {};
+    Const.HTTP_PORT_NUMBER = $("idHTTPPort").value;
+    Const.HTTP_PORT_PASSWORD = $("idHTTPPassword").value;
+    
+    Const.JINN_IP = $("idIP").value;
+    Const.JINN_PORT = $("idPort").value;
+    Const.AUTODETECT_IP = $("idAutoDetectIP").checked;
+    
+    const arr = document.querySelectorAll(".node-const");
+    arr.forEach(function (Item)
+    {
+        var Value;
+        if(Item.type === "checkbox")
+        {
+            Value = Item.checked;
+        }
+        else
+        {
+            Value = Item.value;
+        }
+        
+        Const[Item.id] = Value;
+    });
+    
+    GetData("SaveConstant", Const, function (Data)
+    {
+        SetStatus("Save ok");
+    });
+}
+
 
 function ChangeLog()
 {

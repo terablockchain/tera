@@ -215,23 +215,6 @@ function SetVisibleItemByTypeKey()
     }
 }
 
-function SaveNetParams()
-{
-    
-    var Const = {};
-    Const.HTTP_PORT_NUMBER = $("idHTTPPort").value;
-    Const.HTTP_PORT_PASSWORD = $("idHTTPPassword").value;
-    
-    Const.JINN_IP = $("idIP").value;
-    Const.JINN_PORT = $("idPort").value;
-    Const.AUTODETECT_IP = $("idAutoDetectIP").checked;
-    
-    GetData("SaveConstant", Const, function (Data)
-    {
-        SetStatus("Save ok");
-    });
-}
-
 function EditJSONTransaction()
 {
     CreateTransaction();
@@ -334,4 +317,9 @@ function SendMoneyBefore()
         
         openModal('idBlockOnSend');
     }
+}
+
+function RetDescription(Item)
+{
+    return '<div class="desc">' + Item.Description + '</div>';
 }

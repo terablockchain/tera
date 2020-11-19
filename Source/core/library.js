@@ -600,7 +600,7 @@ var CPU_Count = os.cpus().length;
 function GetCountMiningCPU0()
 {
     
-    if(global.COUNT_MINING_CPU)
+    if( + global.COUNT_MINING_CPU)
         return global.COUNT_MINING_CPU;
     else
     {
@@ -613,7 +613,7 @@ if(global.TEST_MINING)
 {
     global.GetCountMiningCPU = function ()
     {
-        var CountCPU = global.COUNT_MINING_CPU;
+        var CountCPU =  + global.COUNT_MINING_CPU;
         if(!CountCPU)
             CountCPU = 1;
         return CountCPU;

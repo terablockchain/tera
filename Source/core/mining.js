@@ -123,7 +123,7 @@ function RunStopPOWProcess(Mode)
     else
     {
         if(global.SIZE_MINING_MEMORY)
-            Memory = global.SIZE_MINING_MEMORY;
+            Memory =  + global.SIZE_MINING_MEMORY;
         else
         {
             Memory = os.freemem() - (800 + GetCountMiningCPU() * 80) * 1024 * 1014;

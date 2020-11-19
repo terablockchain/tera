@@ -152,6 +152,7 @@ Before starting the node, we recommend downloading and installing a backup of th
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
+rm -r DB
 unzip -o jinn-db.zip
 ```
 

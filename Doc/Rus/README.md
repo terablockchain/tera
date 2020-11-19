@@ -106,6 +106,7 @@ systemctl disable firewalld
 ```
 cd ~/wallet/DATA
 wget https://terawallet.org/files/jinn-db.zip
+rm -r DB
 unzip -o jinn-db.zip
 
 ```
