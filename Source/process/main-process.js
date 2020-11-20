@@ -66,6 +66,8 @@ global.NeedRestart = 0;
 process.on('uncaughtException', function (err)
 {
     console.log("--------------------uncaughtException--------------------");
+    console.log(err.code);
+    console.log("---------------------------------------------------------");
     
     if(err.code === "ENOTFOUND" || err.code === "ECONNRESET" || err.code === "EPIPE" || err.code === "ETIMEDOUT")
     {

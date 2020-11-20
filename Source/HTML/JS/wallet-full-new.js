@@ -8,7 +8,6 @@
  * Telegram:  https://t.me/terafoundation
 */
 
-window.GlBackgroundColor = "#202731";
 
 function PrepareToggleTab()
 {
@@ -280,8 +279,8 @@ function ChangeSmart(NumAccount,WasSmart)
 function ViewStatus()
 {
     var id = $("idStatus");
-    var Str1 = '<div class="row df_space" style="width:600px;"><div class="">Shard: ' + window.SHARD_NAME + '</div><div>' + StrMainStatus + '</div><div></div></div>';
-    var Str2 = '<BR><div class="myrow"><div>' + StrNormalStatus + '</div><div></div></div>';
+    var Str1 = '<div class="row df_space" style="width:700px;margin-bottom: 20px;"><div class="shard-name">Shard: ' + window.SHARD_NAME + '</div><div>' + StrMainStatus + '</div><div></div></div>';
+    var Str2 = '<div>' + StrNormalStatus + '</div>';
     
     id.innerHTML = Str1 + Str2;
 }
@@ -322,4 +321,20 @@ function SendMoneyBefore()
 function RetDescription(Item)
 {
     return '<div class="desc">' + Item.Description + '</div>';
+}
+
+
+function SelectStyle(value)
+{
+    
+    var Select = $("idSelStyle");
+    if(!Select)
+        return;
+    
+    if(value)
+        Select.value = value;
+    
+    if(!Select.value)
+        Select.value = Select.options[0].value;
+    document.body.className = "" + Select.value;
 }

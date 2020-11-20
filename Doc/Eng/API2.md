@@ -15,7 +15,7 @@ After setting the constants, you need to restart the node.
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.
 
 
-Warning: the Tera blockchain has a high rate of block confirmation (starting from 4 seconds), but since it uses PoW, it is possible to get into local orphan chains. Therefore, for a reliable transfer of value, we recommend that exchanges wait for additional time, such as 100 seconds, to interpret the finality of the transaction.
+Warning: the Tera blockchain has a high rate of block confirmation (starting from 8 seconds), but since it uses PoW, it is possible to get into local orphan chains. Therefore, for a reliable transfer of value, we recommend that exchanges wait for additional time, such as 100 seconds, to interpret the finality of the transaction.
 In the method of sending transactions to the blockchain (Send,CreateAccount,SendRawTransaction) have a Confirm parameter which specifies the number of blocks-confirmations. The default value is 8. Attention: it is not recommended to set the value equal to zero, as in this case, the delivery transaction in the blockchain is not guaranteed.
 
 Call format: 
@@ -69,7 +69,7 @@ http://127.0.0.1/api/v2/CreateAccount
     "Name": "PrivTest02",
     "PrivKey": "A2D45610FE8AC931F32480BFE3E78D26E45B0A4F88045D6518263DA12FA9C033",
     "Currency":16,
-    "Confirm":10
+    "Confirm":5
 }
 ```
 return:
@@ -105,7 +105,7 @@ http://127.0.0.1/api/v2/Send
     "ToID":190165,
     "Amount":10.5,
     "Description":"Тест",
-    "Confirm":10
+    "Confirm":5
    
 }
 ```
@@ -128,7 +128,7 @@ http://127.0.0.1/api/v2/Send
     "ToID":"0240EDF5ECB25D886FD58DB92A53914FAC975078C1C2EDD1AC292B70C7BC13461F",
     "Amount":10,
     "Description":"New account",
-    "Confirm":10
+    "Confirm":5
    
 }
 ```
@@ -441,7 +441,7 @@ http://127.0.0.1/api/v2/SendRawTransaction
         "Description": "Тест",
         "Sign": "123456789ABCD931F3A2D45610FE8AC931F32480BFE3E78D26E45B0A4F88045D6518263DA12FA9C0332480BFE3E78D26E45B0A4F88045D6518263DA12FA9C033"
     },
-    "Confirm":20
+    "Confirm":5
 }
 ```
 

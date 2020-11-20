@@ -186,8 +186,9 @@ function Init(Engine)
             if(Engine.SendConnectReq(Child))
                 Count++;
         }
-        
-        ToLog("Connect to " + Count + " nodes");
+        var Str = "Connect to " + Count + " nodes";
+        ToLog(Str);
+        return Str;
     };
     
     Object.defineProperty(SERVER, "ip", {get:function ()

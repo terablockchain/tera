@@ -12,6 +12,8 @@
 window.CLIENT_VERSION = 20;
 window.SHARD_NAME = "TERA";
 
+window.SUM_PRECISION = 9;
+
 window.RUN_CLIENT = 1;
 window.RUN_SERVER = 0;
 if(typeof global === 'object')
@@ -314,6 +316,9 @@ function SUM_TO_STRING(Value,Currency,bFloat,bLocal)
     if(Value.SumCOIN >= 1e12)
         return "UNIT:" + Value.SumCOIN;
     
+    if(typeof window.SUM_PRECISION !== "number")
+        window.SUM_PRECISION = 9;
+    
     var Str;
     if(Value.SumCOIN || Value.SumCENT)
     {
@@ -326,7 +331,7 @@ function SUM_TO_STRING(Value,Currency,bFloat,bLocal)
             var SumCOIN = Value.SumCOIN;
             if(bLocal)
                 SumCOIN = SumCOIN.toLocaleString();
-            Str = "" + SumCOIN + "." + Rigth("000000000" + Value.SumCENT, 9);
+            Str = "" + SumCOIN + "." + Rigth("000000000" + Value.SumCENT, window.SUM_PRECISION);
         }
     }
     else
@@ -878,9 +883,10 @@ function ViewPrev(Def)
 }
 function ViewNext(Def,MaxNum)
 {
+    MaxNum =  + MaxNum;
     var item = document.getElementById(Def.NumName);
     var Num = ParseNum(item.value);
-    Num += GetCountViewRows(Def);
+    Num +=  + GetCountViewRows(Def);
     
     if(Def.FilterName)
     {
@@ -922,6 +928,7 @@ function GetCountViewRows(Def)
 
 function DoStableScroll()
 {
+    
     var item = $("idStableScroll");
     if(!item)
         return;
@@ -1112,7 +1119,7 @@ function RetOpenBlock(BlockNum,bTrDataLen,Str)
     }
     else
     {
-        return '<B>' + Str + '</B>';
+        return '<div>' + Str + '</div>';
     }
 }
 function PrevValueToString(Item)
@@ -2600,10 +2607,6 @@ function GetStateItem(Item)
         Str = JSON.stringify(Item.SmartState);
     
     return Str;
-}
-function GetStateItem2(Item)
-{
-    return GetStateItem(Item);
 }
 
 function SaveWebDataToFile(text,filename)

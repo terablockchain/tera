@@ -42,7 +42,7 @@ function OpenWindowClienNW()
 
     nw.Window.open(Path,
         {
-            width: 1000,
+            width: 1100,
             height: 1000,
             icon: "../HTML/PIC/wallet.png",
         }, function(win)
@@ -105,7 +105,7 @@ function OpenWindowLoadingNW()
 {
     nw.Window.open('/HTML/nw-loading.html',
         {
-            width: 1000,
+            width: 1100,
             height: 1000,
             icon: "../HTML/PIC/wallet.png",
         }, function(win)

@@ -676,11 +676,12 @@ HostingCaller.GetAccountList = function (Params)
 {
     if(typeof Params !== "object")
         return {result:0};
+    Params.CountNum = ParseNum(Params.CountNum);
     if(Params.CountNum > MaxCountViewRows)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum));
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum);
     return {result:1, arr:arr};
 }
 
@@ -735,12 +736,13 @@ HostingCaller.GetDappList = function (Params)
     if(typeof Params !== "object")
         return {result:0};
     
+    Params.CountNum = ParseNum(Params.CountNum);
     if(Params.CountNum > MaxCountViewRows)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, Params.Filter, 1);
+    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), Params.CountNum, undefined, Params.Filter, 1);
     return {result:1, arr:arr};
 }
 
@@ -1068,12 +1070,13 @@ HostingCaller.DappAccountList = function (Params)
     if(typeof Params !== "object")
         return {result:0};
     
+    Params.CountNum = ParseNum(Params.CountNum);
     if(Params.CountNum > MaxCountViewRows)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum, undefined, 1);
     return {arr:arr, result:1};
 }
 HostingCaller.DappSmartList = function (Params)
@@ -1081,12 +1084,13 @@ HostingCaller.DappSmartList = function (Params)
     if(typeof Params !== "object")
         return {result:0};
     
+    Params.CountNum = ParseNum(Params.CountNum);
     if(Params.CountNum > MaxCountViewRows)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), ParseNum(Params.CountNum), undefined, undefined, Params.GetAllData, Params.TokenGenerate,
+    var arr = SMARTS.GetRows(ParseNum(Params.StartNum), Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate,
     Params.AllRow);
     return {arr:arr, result:1};
 }

@@ -5,9 +5,9 @@
     <title>WALLET</title>
     <link rel="shortcut icon" href="/HTML/PIC/wallet.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
-    <link rel="stylesheet" href="./CSS/wallet-new.css"> <!-- Подключаем CSS -->
     <link rel="stylesheet" href="./CSS/wallet-grid.css">
+    <link rel="stylesheet" href="./CSS/wallet-new.css"> <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
 
 
 
@@ -41,9 +41,8 @@
             LoadValues();
             InitPasItems();
 
-            // SelectStyle();
+            SelectStyle();
             // SelectTypeKey();
-            // InitRun();
             window.onkeydown = CheckCtrlEnterAndESC;
             SetVisibleTab();
 
@@ -103,8 +102,8 @@
 </header>
 <div class="header_base"></div>
 
-<INPUT id="idOpenWallet" style="display: none" type="button" onclick="OnClickOpenCloseWallet()" value="Wallet closed">
-<section class="wrapper" style="width:600px; height: 60px; padding: 0; margin-top:10px; margin-bottom:-30px;">
+<INPUT id="idOpenWallet" style="display: none" type="button" onclick="OnClickOpenCloseWallet()" value="---">
+<section class="wrapper" style="height: 30px; padding: 0; margin-top:10px;">
     <DIV id="idStatus" class="">&nbsp;</DIV>
 </section>
 <BR>
@@ -158,9 +157,9 @@
                 Network
             </div>
             <div class="tab">
-                System
+                Params
             </div>
-            <div class="tab" id="idDevelopServiceView" style="display: none">
+            <div class="tab" id="idDevelopService" style="display: none">
                 Dev.service
             </div>
         </div>
@@ -191,18 +190,20 @@
 
                     <table id="grid_accounts" class="grid">
                         <tr>
-                            <th id="(RetHistoryAccount(Item))" class="num">ID</th>
+                            <th id="(RetHistoryAccount(Item))" class="id">ID</th>
                             <th id="Item.Name" data-name="Account name" class="name ">Name</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum bold">Amount</th>
                             <th id="CurrencyNameItem(Item)" data-name="Currency" class="cur">Cur</th>
                             <th id="Item.Value.OperationID" data-name="Operation ID" class="snum ">OP</th>
-                            <th id="Item.Adviser" data-name="Adviser" class="snum ">Adv</th>
+                            <th id="Item.Adviser" data-name="Adviser" class="">Adv</th>
 
                             <th id="(RetChangeSmart(Item))" data-name="Smart contract (DApp)" class="">Smart</th>
                             <th id="Item.WN" class="num" style="width: 30px;"></th>
                             <th id="GetStateItem(Item)" class="code">State</th>
                         </tr>
                     </table>
+                    <BR>
+                    <DIV id="idMyTotalSum"></DIV>
                 </div>
 
             </div>
@@ -248,11 +249,11 @@
                 <div class="row">
                 <div class="connection">
                     <p class="connection__text">count mining cpu:</p>
-                    <input type="number" class="input  input_access node-const" min=0 max=200 id="COUNT_MINING_CPU" maxlength="5" value="" onchange="SaveNetParams()">
+                    <input type="number" class="input  input_big node-const" min=0 max=200 id="COUNT_MINING_CPU" maxlength="5" value="" onchange="SaveNetParams()">
                 </div>
                     <div class="connection">
                         <p class="connection__text">size mining memory:</p>
-                        <input type="number" class="input  input_access node-const" id="SIZE_MINING_MEMORY" maxlength="20" value="" onchange="SaveNetParams()">
+                        <input type="number" class="input  input_big node-const" id="SIZE_MINING_MEMORY" maxlength="20" value="" onchange="SaveNetParams()">
                     </div>
                 </div>
             </div>
@@ -287,38 +288,41 @@
             <div class="row">
                 <div class="connection">
                     <p class="connection__text">ip</p>
-                    <input type="text" maxlength="40" class="input input_connection" value="-" id="idIP" onchange="SaveNetParams()">
+                    <input type="text" maxlength="40" class="input input_middle" value="-" id="idIP" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">Port</p>
-                    <input type="text"  maxlength="9" class="input input_connection" value="-" id="idPort" onchange="SaveNetParams()">
+                    <input type="text"  maxlength="9" class="input input_middle" value="-" id="idPort" onchange="SaveNetParams()">
                 </div>
-<!--                <button class="btn btn__transparent">save and restart</button>-->
             </div>
             <div class="division"></div>
             <h3 class="h3">Remote access</h3>
             <div class="row">
                 <div class="connection">
                     <p class="connection__text">HTTP port:</p>
-                    <input type="text" class="input  input_access" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
+                    <input type="text" class="input  input_middle" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">Password on HTTP: </p>
-                    <input type="password" class="input  input_access" id="idHTTPPassword" placeholder="" onchange="SaveNetParams()">
+                    <input type="password" class="input  input_middle" id="idHTTPPassword" placeholder="" onchange="SaveNetParams()">
                 </div>
-            </div>
-            <div class="connection">
-                <p class="connection__text">Remote IP filter:</p>
-                <input type="text" class="input  input_access node-const" id="HTTP_IP_CONNECT" maxlength="40" value="" onchange="SaveNetParams()">
+                <div class="connection">
+                    <p class="connection__text">Remote IP filter:</p>
+                    <input type="text" class="input  input_middle node-const" id="HTTP_IP_CONNECT" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
             </div>
 
             <div class="division"></div>
             <h3 class="h3">Cluster set</h3>
-            <div class="connection">
-                <p class="connection__text">Common key:</p>
-                <input type="text" class="input  input_access node-const" id="COMMON_KEY" maxlength="40" value="" onchange="SaveNetParams()">
-                <p class="connection__text">Node name:</p>
-                <input type="text" class="input  input_access node-const" id="NODES_NAME" maxlength="40" value="" onchange="SaveNetParams()">
+            <div class="myrow">
+                <div class="connection">
+                    <p class="connection__text">Common key:</p>
+                    <input type="text" class="input  input_big node-const" id="COMMON_KEY" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Node name:</p>
+                    <input type="text" class="input  input_middle node-const" id="NODES_NAME" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
             </div>
             <div class="connection__switch ">
                 <div class="mining__switch" style="width: 400px">
@@ -329,42 +333,124 @@
                     </label>
                 </div>
             </div>
-            <div class="division"></div>
-        </div>
 
-        <!--System-->
-        <div class="tab-content">
-            <BR>
-            <div class="mining__switches-left">
-                <div class="mining__switch">
-                    <p class="mining__switch-text">Use autoupdate </p>
-                    <label for="idAutoUpdate">
-                        <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
-                        <label for="idAutoUpdate"></label>
+
+            <div class="division"></div>
+            <h3 class="h3">WEB-WALLET/API-1/API-2 SET</h3>
+            <div class="myrow">
+                <div class="connection">
+                    <p class="connection__text">PORT:</p>
+                    <input type="number" class="input  input_middle node-const" id="HTTP_HOSTING_PORT" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">DOMAIN:</p>
+                    <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_DOMAIN" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">ADMIN EMAIL:</p>
+                    <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_EMAIL" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+            </div>
+            <div class="connection">
+                <p class="connection__text">START WEB-PAGE:</p>
+                <input type="text" class="input  input_middle node-const" id="HTTP_START_PAGE" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
+            <div class="connection">
+                <p class="connection__text">MAX COUNT ALLOWED ROWS:</p>
+                <input type="number" class="input  input_middle node-const" id="HTTP_MAX_COUNT_ROWS" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
+            <div class="connection__switch ">
+                <div class="mining__switch" style="width: 400px">
+                    <p class="mining__switch-text">Web log:</p>
+                    <label for="WEB_LOG">
+                        <input type="checkbox" class="checkbox node-const" id="WEB_LOG" onchange="SaveNetParams()">
+                        <label for="WEB_LOG"></label>
                     </label>
                 </div>
             </div>
 
+
+
             <div class="division"></div>
-            <h3 class="h3">Wallet view set</h3>
-            <div class="connection">
-                <p class="connection__text">Window name:</p>
-                <input type="text" class="input  input_access node-const" id="WALLET_NAME" maxlength="40" value="" onchange="SaveNetParams()">
-                <p class="connection__text">Description:</p>
-                <input type="text" class="input  input_access node-const" id="WALLET_DESCRIPTION" maxlength="40" value="" onchange="SaveNetParams()">
-                <div class="connection__switch ">
-                    <div class="mining__switch" style="width: 400px">
-                        <p class="mining__switch-text">View all table rows:</p>
-                        <label for="ALL_VIEW_ROWS">
-                            <input type="checkbox" class="checkbox node-const" id="ALL_VIEW_ROWS" onchange="SaveNetParams()">
-                            <label for="ALL_VIEW_ROWS"></label>
+            <h3 class="h3">Links to other nodes</h3>
+            <div class="myrow">
+                <p> Node ip:</p>
+                <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
+                <p> Port:</p>
+                <INPUT class="input input_small" type="number" id="idChildPort" value="30000">
+                <p> Score:</p>
+                <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
+                <button onclick="AddSetNode()" class="btn">set node</button>
+            </div>
+
+        </div>
+
+        <!--Params-->
+        <div class="tab-content">
+            <div class="row">
+                <div class="mining__switches-left">
+                    <div class="mining__switch">
+                        <p class="mining__switch-text">Use autoupdate </p>
+                        <label for="idAutoUpdate">
+                            <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
+                            <label for="idAutoUpdate"></label>
                         </label>
                     </div>
                 </div>
-                <p class="connection__text">Max count view table rows:</p>
-                <input type="text" class="input  input_access node-const" id="COUNT_VIEW_ROWS" maxlength="40" value="" onchange="SaveNetParams()">
-                <p class="connection__text">Save history from account:</p>
-                <input type="text" class="input  input_access node-const" id="START_HISTORY" maxlength="40" value="" onchange="SaveNetParams()">
+
+                Select color theme:
+                <select size="1" id="idSelStyle" onkeyup="SelectStyle();SaveValues()" onchange="SelectStyle();SaveValues()">
+                    <option value="styleDark">Dark</option>
+                    <option value="styleLight">Light</option>
+                </select>
+
+<!--                <div class="theme">-->
+<!--                    <p class="h3 h3_theme">Color theme:</p>-->
+<!--                    <div class="theme__color theme__color_light" onclick="SelectTheme(1)">-->
+<!--                        <p class="theme__text">light</p>-->
+<!--                    </div>-->
+<!--                    <div class="theme__color theme__color_dark" onclick="SelectTheme(1)">-->
+<!--                        <p class="theme__text">dark</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+            </div>
+
+            <div class="division"></div>
+            <h3 class="h3">Wallet view set</h3>
+
+            <div class="row">
+                <div class="connection">
+                    <p class="connection__text">Window name:</p>
+                    <input type="text" class="input  input_middle node-const" id="WALLET_NAME" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Description:</p>
+                    <input type="text" class="input  input_middle node-const" id="WALLET_DESCRIPTION" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+            </div>
+            <BR>
+            <div class="myrow">
+                <p class="text input_middle">Coin sum precision:</p>
+                <input type="number" class="input  input_small node-const" id="SUM_PRECISION" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
+            <BR>
+            <div class="myrow">
+                <p class="text input_middle">Max count view table rows:</p>
+                <input type="number" class="input  input_small node-const" id="COUNT_VIEW_ROWS" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
+            <BR>
+            <div class="myrow">
+                <p class="text input_middle">Account history start from:</p>
+                <input type="number" class="input  input_small node-const" id="START_HISTORY" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
+            <div class="connection__switch ">
+                <div class="mining__switch" style="width: 400px">
+                    <p class="mining__switch-text">View all table rows:</p>
+                    <label for="ALL_VIEW_ROWS">
+                        <input type="checkbox" class="checkbox node-const" id="ALL_VIEW_ROWS" onchange="SaveNetParams()">
+                        <label for="ALL_VIEW_ROWS"></label>
+                    </label>
+                </div>
             </div>
 
 
@@ -388,43 +474,22 @@
         </div>
 
         <!--Developer service-->
-        <div class="tab-content">
+        <div class="tab-content" >
             <BR>
-            <table>
-                <tr>
-                    <td style="width: 100px">
-                        <INPUT type="button" class="bt btdoit" onclick="SetCodeVersionJSON()" value="CODE VERS >>"><BR>
-                        <INPUT type="button" class="bt btdoit" onclick="SetNetConstJSON()" value="NET CONST >>"><BR>
-
-                    </td>
-                    <td style="width: 300px">
-                        Value:<INPUT type="string" id="idDevValue" value="0"><BR>
-                        <TEXTAREA id="idDevService" rows="15" cols="70"> </TEXTAREA><BR>
-                    </td>
-                    <td style="width: 200px">
-                        <INPUT type="button" class="bt btdoit" style="background-color: #f4f542;color:black;font-weight: bold;height: 50px;width: 100px;" onclick="RunDevelopService()" value="SEND">
-                        <INPUT type="button" class="bt btdoit" style="background-color: #58aff5;color:black;height: 24px;width: 100px;" onclick="ConnectToAll()" value="ConnectToAll">
-                    </td>
-                </tr>
-            </table>
-
-            <div class="division"></div>
+            <div class="row">
+                <button class="btn btn_margin" onclick="SetCodeVersionJSON()">CODE VERS</button>
+                <button class="btn btn_margin" onclick="SetNetConstJSON()">NET CONSTS</button>
+                <button class="btn" onclick="ConnectToAll()">All connect</button>
+            </div>
+            <TEXTAREA id="idDevService" rows="12" cols="70" class="log editdevservice"> </TEXTAREA><BR>
+            <div class="row">
+                <button class="btn" onclick="RunDevelopService()">SEND</button>
+            </div>
 
         </div>
 
 
 
-<!--        <div class="tab-content">-->
-<!--            <div class="theme">-->
-<!--                <h3 class="h3 h3_theme">Color theme</h3>-->
-<!--                <div class="theme__color theme__color_light">-->
-<!--                    <p class="theme__text">light</p>-->
-<!--                </div>-->
-<!--                <div class="theme__color theme__color_dark">-->
-<!--                    <p class="theme__text">dark</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
 
         <div class="division"></div>
     </section>
@@ -545,11 +610,11 @@
 
                 <div class="form__group">
                     <p class="connection__text">password</p>
-                    <input type="password" class="input  input_access" placeholder="Enter password" id="idPassword1">
+                    <input type="password" class="input  input_big" placeholder="Enter password" id="idPassword1">
                 </div>
                 <div class="form__group">
                     <p class="connection__text">repeat password </p>
-                    <input type="password" class="input  input_access" placeholder="Repeat password" id="idPassword2">
+                    <input type="password" class="input  input_big" placeholder="Repeat password" id="idPassword2">
                 </div>
                 <DIV class="form__group"><BR></DIV>
                 <div class="form__buttons">
@@ -586,9 +651,8 @@
                 <div class="input-group__right" id="idNameTo">
                 </div>
             </div>
-<!--            <input id="idTo" type="text" class="input input_send" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID...">-->
 
-            <INPUT list="idToList" class="select__item input input_send" type="string" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID..." >
+            <INPUT list="idToList" class="input select__item input_send" type="string" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID..." >
             <datalist id="idToList">
                 <option value="Loading"></option>
             </datalist>
@@ -596,8 +660,7 @@
         </div>
         <div class="input-group">
             <div class="input-group__row">
-                <p class="input-group__text">Amount:</p>
-                <p id="idCoinName" class="input-group__link-text">-</p>
+                <p class="input-group__text">Amount <span id="idCoinName"></span></p>
                 <div class="input-group__right">
                         <a onclick="SetAllSum()" class="input-group__link">
                         <img src="./img/load.svg">
@@ -658,7 +721,7 @@
             Decentralized applications (dApps)
         </h3>
 
-        <button class="btn btn_arrow" style="float: right" onclick="window.Open('./HTML/dapp-edit.html','smart',1240)">
+        <button class="btn btn_arrow " style="float: right; margin-top: 11px;" onclick="window.Open('./HTML/dapp-edit.html','smart',1240)">
             <p class="btn__arrow-text">dapps editor</p>
             <img src="./img/arrow_right.svg">
         </button>
@@ -689,7 +752,7 @@
         <div class="wallet__group" id="idPaginationDapps">
             <table id="grid_dapps_all" class="grid">
                 <tr>
-                    <th id="(RetNumDapp(Item))" class="num">ID</th>
+                    <th id="(RetNumDapp(Item))" class="id">ID</th>
                     <th id="(RetOpenDapps(Item,0,0))" class="">Name</th>
                     <th id="(RetDescription(Item))" class="">Description</th>
                     <th id="(RetCategory(Item))" class="">Category</th>
@@ -699,7 +762,7 @@
                     <th id="(RetHistoryAccount(Item,'Owner'))" class="snum">Owner</th>
 
                     <th id="RetBool(Item.TokenGenerate)" class="bool">Token</th>
-                    <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                    <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
 
                 </tr>
 
@@ -724,7 +787,7 @@
 
 
         <div class="utilities__buttons df_space">
-            <DIV style="float: left;padding-top: 18px;">
+            <DIV style="float: left;">
                 <input type="checkbox" class="checkbox" id="idUseMiningShards" onchange = "UseMiningShards()"/>
                 <label for="idUseMiningShards">Mining cross-tx</label>
             </DIV>
@@ -767,17 +830,17 @@
                         <!--                            <th id="Item.Num" class="num">Num</th>-->
                         <th id="Item.RowNum" class="num">Row</th>
                         <!--                            <th id="Item.Position" class="num">Position</th>-->
-                        <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                        <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
                         <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
 
                         <!--                            <th id="Item.Mode" class="num">Mode</th>-->
                         <th id="Item.Msg.Iteration" class="num">Iter</th>
                         <th id="Item.Msg.Confirms" class="num">C</th>
                         <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
-                        <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
-                        <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                        <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="channel">From</th>
+                        <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="channel">To</th>
                         <th id="Item.Msg.MethodName" class="hash2">Method</th>
-                        <th id="Item.Msg.Params" class="hex">Params</th>
+                        <th id="Item.Msg.Params" class="code">Params</th>
                         <th id="GetHexFromArr(Item.RowHash)" class="hash">RowHash</th>
                         <!--                            <th id="Item.Confirms" class="num">confirms</th>-->
 
@@ -807,22 +870,22 @@
                 <table id="grid_cross_receive" class="grid">
                     <tr>
                         <!--                            <th id="Item.Num" class="num">Num</th>-->
-                        <th id="(RetOpenBlock(Item.BlockNumAdd,1,Item.RowNum))" class="num">Row</th>
+                        <th id="(RetOpenBlock(Item.BlockNumAdd,1,Item.RowNum))" class="block">Row</th>
                         <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
                         <th id="Item.Msg.Iteration" class="num">Iter</th>
                         <th id="Item.Msg.TxNumFrom" class="num">Tx</th>
-                        <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="name">From</th>
-                        <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="name">To</th>
+                        <th id="Item.Msg.ShardFrom+':'+Item.Msg.AccountFrom" class="channel">From</th>
+                        <th id="Item.Msg.ShardTo+':'+Item.Msg.AccountTo" class="channel">To</th>
                         <th id="Item.Msg.MethodName" class="hash2">Method</th>
-                        <th id="Item.Msg.Params" class="hex">Params</th>
+                        <th id="Item.Msg.Params" class="code">Params</th>
 
                         <th id="Item.StatusStr" class="num">Status</th>
-                        <th id="(RetOpenBlock(Item.BlockNumVote,1,Item.ConfirmsStr))" class="num">C</th>
+                        <th id="(RetOpenBlock(Item.BlockNumVote,1,Item.ConfirmsStr))" class="block">C</th>
                         <!--                            <th id="Item.Height" class="num">Height</th>-->
                         <!--                            <th id="Item.HeightStart" class="num">HeightStart</th>-->
                         <!--                            <th id="(RetOpenBlock(Item.BlockNumVote,1))" class="num">Last vote</th>-->
 
-                        <th id="(RetOpenBlock(Item.BlockNumRun,1))" class="num">Run</th>
+                        <th id="(RetOpenBlock(Item.BlockNumRun,1))" class="block">Run</th>
 
                         <!--                            <th id="Item.HeightStart" class="num">Start</th>-->
                         <th id="Item.BlockNumRun?Item.BlockNumRun-Math.min(Item.BlockNum,Item.BlockNumAdd):''" class="num">Delta</th>
@@ -858,11 +921,11 @@
                 <table id="grid_shard" class="grid">
                     <tr>
                         <th id="Item.Num" class="num">Num</th>
-                        <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                        <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
                         <th id="Item.ShardName+'-'+Item.Confirms" class="name">Name-confirms</th>
                         <th id="Item.Description" class="name">Description</th>
 
-                        <th id="(RetOpenBlock(Item.MaxVBlock.BlockNum,1,Item.MaxVBlock.Height))" class="num">MaxHeight</th>
+                        <th id="(RetOpenBlock(Item.MaxVBlock.BlockNum,1,Item.MaxVBlock.Height))" class="block">MaxHeight</th>
                         <th id="GetHexFromArr(Item.MaxVBlock.Hash)" class="hash">Hash</th>
                         <!--                            <th id="Item.MaxVBlock.RowNum" class="num">MaxRow</th>-->
                         <th id="GetHexFromArr(Item.MaxVBlock.RowHash)" class="hash">RowHash</th>
@@ -913,20 +976,20 @@
         <div class="tab-content active">
             <BR>
             <div class="utilities__buttons df_space">
-                <button class="btn drop_down active" onclick="ViewCurrent(DefAccounts,1,this)">
+                <button class="btn drop_down btn_common active" onclick="ViewCurrent(DefAccounts,1,this)">
                     <p class="txt_dropdown">Accounts</p>
                     <img src="./img/arrow_left.svg">
                 </button>
 
-                <button class="btn drop_down" onclick="ViewCurrent(DefBlock,1,this)">
+                <button class="btn drop_down btn_common" onclick="ViewCurrent(DefBlock,1,this)">
                     <p class="txt_dropdown">Blocks & Tx</p>
                     <img src="./img/arrow_left.svg">
                 </button>
-                <button class="btn drop_down" onclick="ViewCurrent(DefJournal,1,this)">
+                <button class="btn drop_down btn_common" onclick="ViewCurrent(DefJournal,1,this)">
                     <p class="txt_dropdown">Journal</p>
                     <img src="./img/arrow_left.svg">
                 </button>
-                <button class="btn drop_down" onclick="ViewCurrent(DefHash,1,this)">
+                <button class="btn drop_down btn_common" onclick="ViewCurrent(DefHash,1,this)">
                     <p class="txt_dropdown">Checks</p>
                     <img src="./img/arrow_left.svg">
                 </button>
@@ -952,7 +1015,7 @@
 
                     <table id="grid_accounts_all" class="grid">
                         <tr>
-                            <th id="(RetHistoryAccount(Item))" class="num">ID</th>
+                            <th id="(RetHistoryAccount(Item))" class="id">ID</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum smallbold">Amount</th>
                             <th id="CurrencyNameItem(Item)" class="cur">Cur</th>
                             <th id="Item.Name" class="name">Name</th>
@@ -960,12 +1023,12 @@
                             <th id="Item.Value.OperationID" class="num">Operation</th>
                             <th id="Item.Adviser" class="num">Adv</th>
                             <th id="Item.Value.Smart" class="num">Smart</th>
-                            <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="num">Block Num</th>
-                            <th id="GetStateItem2(Item)" class="hash2">State</th>
+                            <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="block">Block</th>
+                            <th id="GetStateItem((Item))" class="code">State</th>
                         </tr>
                     </table>
                     <BR>
-                    <B><DIV id="idTotalSum"></DIV></B>
+                    <DIV id="idTotalSum"></DIV>
                     <BR>
                 </DIV>
 
@@ -988,7 +1051,7 @@
                     <table id="grid_block_all" class="grid">
                         <tr>
 
-                            <th id="(RetOpenBlock(Item.BlockNum,Item.TrDataLen))" class="num">Num</th>
+                            <th id="(RetOpenBlock(Item.BlockNum,Item.TrDataLen))" class="block">Num</th>
                             <th id="(DateFromBlock(Item.BlockNum,1))" class="date">Date</th>
                             <th id="GetHexFromArr(Item.TreeHash)" class="hash">Tx Hash</th>
                             <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
@@ -1044,7 +1107,7 @@
                     <table id="grid_journal" class="grid">
                         <tr>
                             <th id="Item.Num" class="num">Num</th>
-                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="num">Block</th>
+                            <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
                             <th id="GetHexFromArr(Item.SumHash)" class="hash">Sum Hash</th>
                             <th id="(RetVerify(Item.VerifySumHash))" class="verify">S</th>
                             <th id="GetHexFromArr(Item.AccHash)" class="hash">Acc Hash</th>
@@ -1079,8 +1142,7 @@
                     <table id="grid_hash_all" class="grid">
                         <tr>
                             <th id="Item.Num" class="num">Num</th>
-                            <th id="(RetOpenBlock(Item.BlockNum,3))" class="num">Block</th>
-    <!--                        <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>-->
+                            <th id="(RetOpenBlock(Item.BlockNum,3))" class="block">Block</th>
                             <th id="GetHexFromArr(Item.AccHash)" class="hash">AccHash</th>
                             <th id="GetHexFromArr(Item.SumHash)" class="hash">SumHash</th>
                             <th id="Item.AccountMax" class="num">Account Max</th>
@@ -1093,6 +1155,11 @@
                 </DIV>
             </DIV>
 
+            <div class="myrow">
+                <p class="connection__text">Find Tx:</p>
+                <INPUT type="search" class="input input_big" id="idFindTx" placeholder="Type TxID...">
+                <button class="btn" onclick="OnFindTx('idFindTx')">Find</button>
+            </div>
 
         </div>
 
@@ -1141,19 +1208,19 @@
                 <div class="division division_light"></div>
                 <div class="utilities__group df_items-center">
                     <p class="utilities__text ">Rewrite tx (blocks):</p>
-                    <input type="text" class="input input_connection" value='0' id="idBlockCount">
+                    <input type="text" class="input input_small" value='0' id="idBlockCount">
                     <button class="btn btn_explorer btn_utils" onclick="RewriteTransactions()" >Rewrite</button>
                 </div>
 
                 <div class="utilities__group df_items-center">
                     <p class="utilities__text ">Truncate chain (blocks):</p>
-                    <input type="text" class="input input_connection" value='0' id="idBlockCount2">
+                    <input type="text" class="input input_small" value='0' id="idBlockCount2">
                     <button class="btn btn_explorer btn_utils" onclick="TruncateBlockChain()">Truncate</button>
                 </div>
                 <div class="division division_light"></div>
                 <div class="utilities__buttons df_space">
-                    <button class="btn btn_explorer btn_utils" onclick="StartLoadNewCode();InitArrInfo();">Update code</button>
                     <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
+                    <button class="btn btn_explorer btn_utils" onclick="StartLoadNewCode();InitArrInfo();">Update code</button>
                     <button class="btn btn_explorer btn_utils" onclick="RewriteAllTransactions()">Rewrite all tx</button>
                     <button class="btn btn_explorer btn_utils" onclick="ClearDataBase();InitArrInfo();">Clear DataBase</button>
                 </div>
@@ -1187,7 +1254,7 @@
 
             <div class="form__group">
                 <p class="connection__text">password</p>
-                <input type="password" class="input  input_access" placeholder="Enter password" id="idPasswordGet">
+                <input type="password" class="input  input_big" placeholder="Enter password" id="idPasswordGet">
             </div>
             <DIV class="form__group"><BR></DIV>
             <div class="form__buttons">
@@ -1305,8 +1372,9 @@
         <div class="btn-close doclose">
             <img src="./img/Close.svg">
         </div>
-        <DIV align='center'>
+        <DIV align='center' style="margin-right: 30px">
             <h2 id="idConfirmTitle">Confirm</h2>
+            <div class="division"></div>
             <p id="idConfirmText">A you sure?</p>
             <BR>
             <button class="bt-confirm doclose">Cancel</button>
@@ -1317,7 +1385,7 @@
 
 
 
-<DIV id="idStableScroll" align='center'>
+<DIV id="_idStableScroll" align='center'>
     <A href="https://terafoundation.org/?utm_source=full_node&utm_medium=link&utm_campaign=wallet">Web-site</A>
     <A href="https://bitcointalk.org/index.php?topic=4573801.0">ANN</A>
     <A href="https://twitter.com/terafoundation">Twitter</A>

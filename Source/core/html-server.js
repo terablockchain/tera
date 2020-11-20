@@ -493,12 +493,13 @@ HTTPCaller.DappWalletList = function (Params)
 }
 HTTPCaller.DappAccountList = function (Params)
 {
-    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum, Params.CountNum, undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, undefined, 1);
     return {arr:arr, result:1};
 }
 HTTPCaller.DappSmartList = function (Params)
 {
-    var arr = SMARTS.GetRows(Params.StartNum, Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate, Params.AllRow);
+    var arr = SMARTS.GetRows(Params.StartNum,  + Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate,
+    Params.AllRow);
     return {arr:arr, result:1};
 }
 HTTPCaller.DappBlockList = function (Params,response)
@@ -538,37 +539,37 @@ HTTPCaller.GetAccount = function (id)
 
 HTTPCaller.GetAccountList = function (Params)
 {
-    if(!Params.CountNum)
+    if(!( + Params.CountNum))
         Params.CountNum = 1;
     
-    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum, Params.CountNum, Params.Filter, Params.GetState);
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, Params.Filter, Params.GetState);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetDappList = function (Params)
 {
-    if(!Params.CountNum)
+    if(!( + Params.CountNum))
         Params.CountNum = 1;
-    var arr = SMARTS.GetRows(Params.StartNum, Params.CountNum, Params.Filter, Params.Filter2, 1);
+    var arr = SMARTS.GetRows(Params.StartNum,  + Params.CountNum, Params.Filter, Params.Filter2, 1);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetBlockList = function (Params,response,bOnlyNum)
 {
-    if(!Params.CountNum)
+    if(!( + Params.CountNum))
         Params.CountNum = 1;
     
-    var arr = SERVER.GetRows(Params.StartNum, Params.CountNum, Params.Filter, !bOnlyNum, Params.ChainMode);
+    var arr = SERVER.GetRows(Params.StartNum,  + Params.CountNum, Params.Filter, !bOnlyNum, Params.ChainMode);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetTransactionAll = function (Params,response)
 {
-    if(!Params.CountNum)
+    if(!( + Params.CountNum))
         Params.CountNum = 1;
     
     var BlockNum = Params.Param3;
     if(!BlockNum)
         BlockNum = 0;
     
-    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum, Params.CountNum, Params.ChainMode, Params.Filter);
+    var arr = SERVER.GetTrRows(BlockNum, Params.StartNum,  + Params.CountNum, Params.ChainMode, Params.Filter);
     return {arr:arr, result:1};
 }
 
@@ -578,7 +579,7 @@ HTTPCaller.GetActList = function (Params)
 }
 HTTPCaller.GetJournalList = function (Params)
 {
-    var arr = JOURNAL_DB.GetScrollList(Params.StartNum, Params.CountNum);
+    var arr = JOURNAL_DB.GetScrollList(Params.StartNum,  + Params.CountNum);
     return {arr:arr, result:1};
 }
 
@@ -597,18 +598,18 @@ HTTPCaller.FindJournalByBlockNum = function (Params)
 
 HTTPCaller.GetCrossOutList = function (Params)
 {
-    var arr = SHARDS.GetCrossOutList(Params.StartNum, Params.CountNum);
+    var arr = SHARDS.GetCrossOutList(Params.StartNum,  + Params.CountNum);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetCrossInList = function (Params)
 {
-    var arr = SHARDS.GetCrossInList(Params.StartNum, Params.CountNum);
+    var arr = SHARDS.GetCrossInList(Params.StartNum,  + Params.CountNum);
     return {arr:arr, result:1};
 }
 
 HTTPCaller.GetShardList = function (Params)
 {
-    var arr = SHARDS.GetShardList(Params.StartNum, Params.CountNum);
+    var arr = SHARDS.GetShardList(Params.StartNum,  + Params.CountNum);
     return {arr:arr, result:1};
 }
 
@@ -647,7 +648,7 @@ HTTPCaller.FindCrossRunByBlockNum = function (Params)
 
 HTTPCaller.GetHashList = function (Params)
 {
-    var arr = ACCOUNTS.DBAccountsHash.GetRows(Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = ACCOUNTS.DBAccountsHash.GetRows(Params.StartNum,  + Params.CountNum, Params.Filter);
     for(var i = 0; i < arr.length; i++)
     {
         var item = arr[i];
@@ -656,7 +657,7 @@ HTTPCaller.GetHashList = function (Params)
         var Block = SERVER.ReadBlockHeaderDB(item.BlockNum);
         if(Block && Block.MinerHash)
         {
-            item.Miner = ReadUintFromArr(Block.MinerHash, 0);
+            item.Miner = ACCOUNTS.GetMinerFromBlock(Block);
         }
         
         var Arr = SERVER.GetTrRows(item.BlockNum, 0, 65535, 0);
@@ -675,7 +676,7 @@ HTTPCaller.GetHashList = function (Params)
 
 HTTPCaller.GetHistoryAct = function (Params)
 {
-    var arr = WALLET.GetHistory(Params.StartNum, Params.CountNum, Params.Filter);
+    var arr = WALLET.GetHistory(Params.StartNum,  + Params.CountNum, Params.Filter);
     return {arr:arr, result:1};
 }
 
@@ -850,8 +851,7 @@ HTTPCaller.SendDirectCode = function (Params,response)
     {
         try
         {
-            var ret = eval(Params.Code);
-            Result = JSON.stringify(ret, "", 4);
+            Result = eval(Params.Code);
         }
         catch(e)
         {
@@ -1977,13 +1977,13 @@ function GetFileSimple(Path)
     }
     return data;
 }
-function GetFileSimpleBin(Path)
+global.GetFileSimpleBin = function (Path)
 {
     var Key = "GetFileSimpleBin-" + Path;
     var data = global.SendHTMLMap[Key];
     if(!data)
     {
-        data = (fs.readFileSync(Path));
+        data = fs.readFileSync(Path);
         global.SendHTMLMap[Key] = data;
     }
     return data;
@@ -2076,16 +2076,32 @@ function SetSafeResponce(response)
     if(!response.Safe)
     {
         response.Safe = 1;
+        response.StopSend = 0;
         response._end = response.end;
         response._writeHead = response.writeHead;
         
         if(response.socket._events && response.socket._events.error.length < 2)
             response.socket.on("error", function (err)
             {
-                console.log("Responce socket.error code=" + err.code);
-                ToLog(err.stack, 3);
             });
         
+        response.on('error', function (err)
+        {
+            console.log("Error " + err);
+        });
+        
+        response.writeHead = function ()
+        {
+            try
+            {
+                response._writeHead.apply(response, arguments);
+            }
+            catch(e)
+            {
+                ToError("H##2");
+                ToError(e);
+            }
+        };
         response.end = function ()
         {
             
@@ -2104,18 +2120,6 @@ function SetSafeResponce(response)
             {
                 
                 ToError("H##1");
-                ToError(e);
-            }
-        };
-        response.writeHead = function ()
-        {
-            try
-            {
-                response._writeHead.apply(response, arguments);
-            }
-            catch(e)
-            {
-                ToError("H##2");
                 ToError(e);
             }
         };

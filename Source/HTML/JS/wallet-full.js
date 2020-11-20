@@ -30,7 +30,7 @@ var CurTabName;
 var TabArr = [{name:"TabAccounts", log:1}, {name:"TabSend", log:1}, {name:"TabDapps"}, {name:"TabSharding"}, {name:"TabExplorer"}];
 var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idSelStyle", "idViewAccountNum", "idViewBlockNum", "idViewJournNum",
 "idViewCrossOutNum", "idViewCrossInNum", "idViewHashNum", "idViewDappNum", "idViewShardNum", "idRunText", "idViewAccountFilter",
-"idBlockCount", "idBlockCount2", "idCurTabName"];
+"idBlockCount", "idBlockCount2", "idWN", "idCurTabName", "idChildIP", "idChildPort", "idChildScore"];
 
 var MaxAccID = 0;
 var MaxDappsID = 0;
@@ -454,20 +454,25 @@ function SetConfigData(Data)
     
     CONFIG_DATA = Data;
     CheckSessionID(Data.sessionid);
+    
+    window.SUM_PRECISION =  + CONFIG_DATA.CONSTANTS.SUM_PRECISION;
     window.DEBUG_WALLET = 0;
     if(CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
         window.DEBUG_WALLET = 1;
     if(!window.DEBUG_WALLET)
     {
-        if($("GetStateItem(Item)"))
+        var State1 = "GetStateItem(Item)";
+        var State2 = "GetStateItem((Item))";
+        
+        if($(State1))
         {
-            SetVisibleBlock("GetStateItem(Item)", "none");
-            $("GetStateItem(Item)").innerText = "";
+            SetVisibleBlock(State1, "none");
+            $(State1).innerText = "";
         }
-        if($("GetStateItem2(Item)"))
+        if($(State2))
         {
-            SetVisibleBlock("GetStateItem2(Item)", "none");
-            $("GetStateItem2(Item)").innerText = "";
+            SetVisibleBlock(State2, "none");
+            $(State2).innerText = "";
         }
     }
     
@@ -761,18 +766,29 @@ function ChangeLog()
 
 function SetVisibleBtOpenWallet()
 {
-    SetVisibleBlock("idOpenWallet", WalletOpen !== undefined);
     var item = $("idOpenWallet");
+    item.classList.remove("wallet-close");
+    item.classList.remove("wallet-open");
+    
+    SetVisibleBlock("idOpenWallet", WalletOpen !== undefined);
     if(WalletOpen == true)
     {
-        item.value = "Wallet opened";
-        item.style = "background-image: url('/HTML/PIC/lock_open.png');color:green;";
+        item.classList.add("wallet-open");
+        if(item.value !== "Wallet opened")
+        {
+            item.value = "Wallet opened";
+            item.style = "background-image: url('/HTML/PIC/lock_open.png');color:green;";
+        }
     }
     else
         if(WalletOpen == false)
         {
-            item.value = "Wallet closed";
-            item.style = "background-image: url('/HTML/PIC/lock_closed.png');color:" + "#5b5e91";
+            item.classList.add("wallet-close");
+            if(item.value !== "Wallet closed")
+            {
+                item.value = "Wallet closed";
+                item.style = "background-image: url('/HTML/PIC/lock_closed.png');color:" + "#5b5e91";
+            }
         }
     
     SetVisibleBlock("wallet_config_tab", WalletOpen !== false);
@@ -980,22 +996,6 @@ function SelectStyle(value)
         Select.value = Select.options[0].value;
     
     document.body.className = "univers " + Select.value;
-}
-
-function InitRun()
-{
-    if(localStorage["WasStart"] !== "1")
-    {
-        var ValText = $("idRunText").value;
-        if(ValText && ValText !== "undefined" && ValText.trim())
-        {
-            localStorage["WasStart"] = "1";
-            SetError("Run script ... Was Error?", 1);
-            eval(ValText);
-            SetStatus("Run script ... OK");
-        }
-        localStorage["WasStart"] = "0";
-    }
 }
 
 function SetRun()

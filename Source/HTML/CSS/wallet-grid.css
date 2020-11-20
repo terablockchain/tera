@@ -7,8 +7,10 @@
     width: 100%;
  }
 .grid th {
-    background: #222A3A;
-    border: 1px solid #445368;
+    color: var(--colorHGrid);
+    background-color: var(--colorBHGrid);/*#222A3A;*/
+
+    border: 1px solid #536278;
 
     height: 30px;
     padding: 5px;
@@ -22,8 +24,10 @@
 
 .grid td
 {
-    background: #2e3847;
-    border: 1px solid #445368;
+    color: var(--colorGrid);
+    background-color: var(--colorBGrid);
+
+    border: 1px solid #536278;
 
     padding: 5px;
     text-align: center;
@@ -31,6 +35,9 @@
     line-height: 16px;
     letter-spacing: 0.02em;
 
+    padding-left: 2px;
+    padding-right: 2px;
+    word-break: break-all;
 
 }
 
@@ -48,25 +55,30 @@
 
 .grid td.hash {
     width: 165px;
+    min-width: 120px;
+    max-width: 210px;
     font-size: 10px;
     line-height: 12px;
     letter-spacing: 0.02em;
-    min-width: 120px;
     word-break: break-all;
+    font-family: "courier new", "times new roman", monospace;
 }
 .grid td.pubkey {
-    width: 208px;
-    min-width: 208px;
+    width: 205px;
+    min-width: 205px;
+    max-width: 205px!important;
+
     font-size: 10px;
     line-height: 12px;
     letter-spacing: 0.02em;
     word-break: break-all;
+    font-family: "courier new", "times new roman", monospace;
 }
 
 .grid td.code
 {
     width: 165px;
-    min-width: 100px;
+    min-width: 140px;
     font-family: "courier new", "times new roman", monospace;
     font-size: 90%;
     text-align: left;
@@ -75,11 +87,28 @@
 
 
 
+.grid td.id
+{
+    text-align: right;
+    width: 70px;
+    min-width: 60px;
+    max-width: 100px;
+}
+
+.grid td.block
+{
+    text-align: right;
+    width: 80px;
+    min-width: 80px;
+    max-width: 120px;
+}
 
 .grid td.sum
 {
     text-align: right;
-    width: 120px;
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
 }
 
 
@@ -97,17 +126,9 @@
 .grid td.cur
 {
     text-align: left;
-    width: 50px;
+    width: 70px;
+    min-width:70px;
     font-size:smaller;
-}
-
-.grid td.direct
-{
-    text-align: center;
-    vertical-align: middle;
-    width: 10px;
-    font-weight: 700;
-    font-size:x-large;
 }
 
 
@@ -117,20 +138,28 @@
     width: 100px;
 }
 
+.grid td.channel
+{
+    text-align: center;
+    width: 100px;
+}
 
 
 .grid td.name
 {
     text-align: left;
-    width: 200px;
+    width: 180px;
+    max-width: 250px;
+    min-width: 180px;
 }
 
 
 .grid td.date
 {
-    text-align: left;
-    width: 90px;
-    min-width: 70px;
+    text-align: center;
+    width: 65px;
+    max-width: 65px;
+    min-width: 65px;
     font-size: small;
 }
 
@@ -150,7 +179,6 @@
     max-height: 80px;
     overflow-y:scroll;
     text-align: left;
-    word-break: break-all;
 }
 
 
@@ -168,7 +196,9 @@
 .openblock
 {
     cursor: pointer;
-    text-decoration: none;
+    background-color: transparent;
+    text-decoration: underline;
+    padding:0 2px 0 0;
 }
 .openblock:hover
 {
