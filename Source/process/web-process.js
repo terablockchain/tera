@@ -106,6 +106,7 @@ if(!global.HTTP_HOSTING_PORT)
     OnExit();
     process.exit();
 }
+global.HTTP_HOSTING_PORT =  + global.HTTP_HOSTING_PORT;
 
 var JinnLib = require("../jinn/tera");
 var Map = {"Block":1, "BlockDB":1, "Log":1, };

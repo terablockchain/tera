@@ -727,11 +727,11 @@ function SaveNetParams()
 {
     
     var Const = {};
-    Const.HTTP_PORT_NUMBER = $("idHTTPPort").value;
+    Const.HTTP_PORT_NUMBER = ParseNum($("idHTTPPort").value);
     Const.HTTP_PORT_PASSWORD = $("idHTTPPassword").value;
     
     Const.JINN_IP = $("idIP").value;
-    Const.JINN_PORT = $("idPort").value;
+    Const.JINN_PORT = ParseNum($("idPort").value);
     Const.AUTODETECT_IP = $("idAutoDetectIP").checked;
     
     const arr = document.querySelectorAll(".node-const");
@@ -744,7 +744,10 @@ function SaveNetParams()
         }
         else
         {
-            Value = Item.value;
+            if(Item.type === "number")
+                Value = ParseNum(Item.value);
+            else
+                Value = Item.value;
         }
         
         Const[Item.id] = Value;

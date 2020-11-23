@@ -186,7 +186,7 @@ function UseMiningShards()
 }
 function SetPercentMining()
 {
-    var Data = {POW_MAX_PERCENT:$("idPercentMining").value};
+    var Data = {POW_MAX_PERCENT:ParseNum($("idPercentMining").value)};
     
     GetData("SaveConstant", Data, function (Data)
     {

@@ -410,6 +410,9 @@ button {
 .input_middle {
     width: 195px; }
 
+.input_middle2 {
+    width: 295px; }
+
 .input_big {
     width: 400px; }
 
@@ -1178,6 +1181,17 @@ a
     margin-right: 10px;
 }
 
+.myrowl
+{
+    margin-top: 10px;
+    position: static;
+    display: inline-flex;
+}
+.myrowl p
+{
+    margin-top: 8px;
+    margin-right: 10px;
+}
 
 
 .btn_shard

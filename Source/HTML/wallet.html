@@ -265,34 +265,38 @@
             <BR>
             <h3 class="h3">Network connection</h3>
             <div class="row">
-            <div class="connection__switch ">
-                <div class="mining__switch">
-                    <p class="mining__switch-text">Autodetect IP </p>
-                    <label for="idAutoDetectIP">
-                        <input type="checkbox" class="checkbox" id="idAutoDetectIP" onchange="SaveNetParams()">
-                        <label for="idAutoDetectIP"></label>
-                    </label>
+                <div class="connection__switch ">
+                    <div class="mining__switch">
+                        <p class="mining__switch-text">Autodetect IP </p>
+                        <label for="idAutoDetectIP">
+                            <input type="checkbox" class="checkbox" id="idAutoDetectIP" onchange="SaveNetParams()">
+                            <label for="idAutoDetectIP"></label>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <div class="connection__switch ">
-                <div class="mining__switch">
-                    <p class="mining__switch-text">Client mode only</p>
-                    <label for="CLIENT_MODE">
-                        <input type="checkbox" class="checkbox  node-const" id="CLIENT_MODE" onchange="SaveNetParams()">
-                        <label for="CLIENT_MODE"></label>
-                    </label>
+                <div class="connection__switch ">
+                    <div class="mining__switch">
+                        <p class="mining__switch-text">Client mode only</p>
+                        <label for="CLIENT_MODE">
+                            <input type="checkbox" class="checkbox  node-const" id="CLIENT_MODE" onchange="SaveNetParams()">
+                            <label for="CLIENT_MODE"></label>
+                        </label>
+                    </div>
                 </div>
-            </div>
             </div>
 
             <div class="row">
                 <div class="connection">
+                    <p class="connection__text">IP VERSION:</p>
+                    <input type="number" class="input  input_small node-const" id="IP_VERSION" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
                     <p class="connection__text">ip</p>
-                    <input type="text" maxlength="40" class="input input_middle" value="-" id="idIP" onchange="SaveNetParams()">
+                    <input type="text" maxlength="40" class="input input_middle2" value="-" id="idIP" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">Port</p>
-                    <input type="text"  maxlength="9" class="input input_middle" value="-" id="idPort" onchange="SaveNetParams()">
+                    <input type="number"  maxlength="9" class="input input_middle" value="-" id="idPort" onchange="SaveNetParams()">
                 </div>
             </div>
             <div class="division"></div>
@@ -300,7 +304,7 @@
             <div class="row">
                 <div class="connection">
                     <p class="connection__text">HTTP port:</p>
-                    <input type="text" class="input  input_middle" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
+                    <input type="number" class="input  input_middle" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">Password on HTTP: </p>
@@ -337,17 +341,37 @@
 
             <div class="division"></div>
             <h3 class="h3">WEB-WALLET/API-1/API-2 SET</h3>
+            <div class="row">
+                <div class="connection__switch ">
+                    <div class="mining__switch" style="width: 285px">
+                        <p class="mining__switch-text">API v1:</p>
+                        <label for="USE_API_V1">
+                            <input type="checkbox" class="checkbox node-const" id="USE_API_V1" onchange="SaveNetParams()">
+                            <label for="USE_API_V1"></label>
+                        </label>
+                    </div>
+                </div>
+                <div class="connection__switch ">
+                    <div class="mining__switch" style="width: 285px">
+                        <p class="mining__switch-text">API v2:</p>
+                        <label for="USE_HARD_API_V2">
+                            <input type="checkbox" class="checkbox node-const" id="USE_HARD_API_V2" onchange="SaveNetParams()">
+                            <label for="USE_HARD_API_V2"></label>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="myrow">
                 <div class="connection">
-                    <p class="connection__text">PORT:</p>
+                    <p class="connection__text">Port:</p>
                     <input type="number" class="input  input_middle node-const" id="HTTP_HOSTING_PORT" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
-                    <p class="connection__text">DOMAIN:</p>
+                    <p class="connection__text">Domain:</p>
                     <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_DOMAIN" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
-                    <p class="connection__text">ADMIN EMAIL:</p>
+                    <p class="connection__text">Admin email:</p>
                     <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_EMAIL" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
             </div>
@@ -359,8 +383,12 @@
                 <p class="connection__text">MAX COUNT ALLOWED ROWS:</p>
                 <input type="number" class="input  input_middle node-const" id="HTTP_MAX_COUNT_ROWS" maxlength="40" value="" onchange="SaveNetParams()">
             </div>
+            <div class="connection">
+                <p class="connection__text">MAX TX FROM WEB:</p>
+                <input type="number" class="input  input_middle node-const" id="MAX_TX_FROM_WEB_IP" maxlength="40" value="" onchange="SaveNetParams()">
+            </div>
             <div class="connection__switch ">
-                <div class="mining__switch" style="width: 400px">
+                <div class="mining__switch" style="width: 195px">
                     <p class="mining__switch-text">Web log:</p>
                     <label for="WEB_LOG">
                         <input type="checkbox" class="checkbox node-const" id="WEB_LOG" onchange="SaveNetParams()">
@@ -373,7 +401,7 @@
 
             <div class="division"></div>
             <h3 class="h3">Links to other nodes</h3>
-            <div class="myrow">
+            <div class="myrowl">
                 <p> Node ip:</p>
                 <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
                 <p> Port:</p>
@@ -382,6 +410,9 @@
                 <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
                 <button onclick="AddSetNode()" class="btn">set node</button>
             </div>
+
+            <div class="division"></div>
+            <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
 
         </div>
 
@@ -429,17 +460,17 @@
                 </div>
             </div>
             <BR>
-            <div class="myrow">
+            <div class="myrowl">
                 <p class="text input_middle">Coin sum precision:</p>
                 <input type="number" class="input  input_small node-const" id="SUM_PRECISION" maxlength="40" value="" onchange="SaveNetParams()">
             </div>
             <BR>
-            <div class="myrow">
+            <div class="myrowl">
                 <p class="text input_middle">Max count view table rows:</p>
                 <input type="number" class="input  input_small node-const" id="COUNT_VIEW_ROWS" maxlength="40" value="" onchange="SaveNetParams()">
             </div>
             <BR>
-            <div class="myrow">
+            <div class="myrowl">
                 <p class="text input_middle">Account history start from:</p>
                 <input type="number" class="input  input_small node-const" id="START_HISTORY" maxlength="40" value="" onchange="SaveNetParams()">
             </div>
@@ -940,7 +971,7 @@
                 </table>
 
                 <div class="division"></div>
-                <div class="myrow">
+                <div class="myrowl">
                     <p>New shard:</p><INPUT class="input" maxlength="6" id="idShardName" style="width: 80px;">
                     <p>Confirms:</p><INPUT class="input" type="number" min=0 max=100000 id="idShardConfirms" value="10" style="width: 60px;">
                     <p>Description:</p><INPUT class="input" maxlength="40" id="idShardDescription" style="width: 200px;">
