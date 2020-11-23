@@ -206,10 +206,7 @@ class AccountTR extends require("./accounts-adv-mining")
             Data.Value.OperationID = TR.OperationID
         Data.Value.OperationID++
         
-        if(global.JOURNAL_NEW_MODE)
-        {
-            this.WriteStateTR(Data, BlockNum, TrNum)
-        }
+        this.WriteStateTR(Data, BlockNum, TrNum)
         
         TR.Value = TotalSum
         
@@ -356,22 +353,8 @@ class AccountTR extends require("./accounts-adv-mining")
     
     NewAccountTR(BlockNum, TrNum, SmartNum)
     {
-        if(global.JOURNAL_NEW_MODE)
-        {
-            var Data = {Num:this.GetMaxAccount() + 1, New:1, Changed:1, ChangeTrNum:TrNum, BackupValue:{}, PubKey:[], Currency:0, Adviser:0,
-                Value:{SumCOIN:0, SumCENT:0, OperationID:0, Smart:SmartNum, Data:[]}};
-            return Data;
-        }
-        
-        var DBChanges = GET_TR_CHANGES();
-        
-        DBChanges.TRMaxAccount++
-        
-        var Data = {Num:DBChanges.TRMaxAccount, New:1, Changed:1, ChangeTrNum:TrNum, BackupValue:{}, PubKey:[], Currency:0, Adviser:0,
-            Value:{SumCOIN:0, SumCENT:0, OperationID:0, Smart:0, Data:[]}};
-        
-        DBChanges.TRMap[Data.Num] = Data
-        
+        var Data = {Num:this.GetMaxAccount() + 1, New:1, Changed:1, ChangeTrNum:TrNum, BackupValue:{}, PubKey:[], Currency:0, Adviser:0,
+            Value:{SumCOIN:0, SumCENT:0, OperationID:0, Smart:SmartNum, Data:[]}};
         return Data;
     }
     
@@ -379,46 +362,7 @@ class AccountTR extends require("./accounts-adv-mining")
     {
         Num = ParseNum(Num)
         
-        if(global.JOURNAL_NEW_MODE)
-            return this.DBState.Read(Num);
-        
-        var DBChanges = GET_TR_CHANGES();
-        var TRMap = DBChanges.TRMap;
-        
-        var Data = TRMap[Num];
-        if(!Data)
-        {
-            var Value;
-            var BlockMap = DBChanges.BlockMap;
-            var BData = BlockMap[Num];
-            
-            if(!BData)
-            {
-                BData = this.DBState.Read(Num)
-                if(!BData)
-                    return undefined;
-                BData.Num = Num
-                
-                Value = BData.Value
-                
-                var BHistory = this.DBStateHistory.Read(Num);
-                if(BHistory)
-                    Value.NextPos = BHistory.NextPos
-                
-                BData.BackupValue = {SumCOIN:Value.SumCOIN, SumCENT:Value.SumCENT, OperationID:Value.OperationID, Smart:Value.Smart, Data:Value.Data,
-                    NextPos:Value.NextPos}
-                BlockMap[Num] = BData
-            }
-            
-            Value = BData.Value
-            Data = {Num:Num, Currency:BData.Currency, PubKey:BData.PubKey, Name:BData.Name, BlockNumCreate:BData.BlockNumCreate, Adviser:BData.Adviser,
-                Value:{SumCOIN:Value.SumCOIN, SumCENT:Value.SumCENT, OperationID:Value.OperationID, Smart:Value.Smart, Data:CopyArr(Value.Data),
-                    NextPos:Value.NextPos}, BackupValue:BData.BackupValue}
-            
-            TRMap[Num] = Data
-        }
-        
-        return Data;
+        return this.DBState.Read(Num);
     }
     
     WriteStateTR(Data, BlockNum, TrNum)
@@ -426,23 +370,14 @@ class AccountTR extends require("./accounts-adv-mining")
         Data.Changed = 1
         Data.ChangeTrNum = TrNum
         
-        if(global.JOURNAL_NEW_MODE)
-        {
-            if(Data.New)
-                this.OnWriteNewAccountTR(Data, BlockNum, TrNum)
-            this.DBStateWriteInner(Data, BlockNum, 0)
-        }
+        if(Data.New)
+            this.OnWriteNewAccountTR(Data, BlockNum, TrNum)
+        this.DBStateWriteInner(Data, BlockNum, 0)
     }
     
     WriteHistoryTR(AccountNum, HistoryObj)
     {
-        if(global.JOURNAL_NEW_MODE)
-        {
-            return this.WriteHistory(AccountNum, HistoryObj);
-        }
-        
-        var DBChanges = GET_TR_CHANGES();
-        DBChanges.TRHistory.push(HistoryObj)
+        return this.WriteHistory(AccountNum, HistoryObj);
     }
     
     SendMoneyTR(Block, FromID, ToID, CoinSum, BlockNum, TrNum, DescriptionFrom, DescriptionTo, OperationCount, bSmartMode, OperationNum)
@@ -503,8 +438,7 @@ class AccountTR extends require("./accounts-adv-mining")
         
         if(FromData.Value.Smart)
         {
-            if(global.JOURNAL_NEW_MODE)
-                FromData = this.ReadStateTR(FromID)
+            FromData = this.ReadStateTR(FromID)
             
             var Context = {FromID:FromID, ToID:ToID, Description:DescriptionFrom, Value:CoinSum};
             if(BlockNum >= global.UPDATE_CODE_SHARDING)

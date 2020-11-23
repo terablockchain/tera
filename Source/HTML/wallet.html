@@ -11,11 +11,11 @@
 
 
 
-    <!--    стандарные скрипты полной ноды-->
     <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
-    <script type="text/javascript" src="../HTML/JS/client.js"></script>
-    <script type="text/javascript" src="../HTML/JS/sha3.js"></script>
-    <script type="text/javascript" src="../HTML/JS/crypto-client.js"></script>
+    <script type="text/javascript" src="/HTML/JS/client.js"></script>
+    <script type="text/javascript" src="/HTML/JS/sha3.js"></script>
+    <script type="text/javascript" src="/HTML/JS/sign-lib-min.js"></script>
+    <script type="text/javascript" src="/HTML/JS/crypto-client.js"></script>
 
     <script type="text/javascript" src="/HTML/JS/wallet-lib.js"></script>
     <script type="text/javascript" src="/HTML/JS/wallet-node.js"></script>
@@ -23,11 +23,8 @@
 
     <script type="text/javascript" src="/HTML/JS/wallet-hash-info.js"></script>
 
-    <script type="text/javascript" src="./JS/sign-lib-min.js"></script>
     <script type="text/javascript" src="/HTML/JS/wallet-full.js"></script>
-
-    <!-- новый скрипт-->
-    <script src="./JS/wallet-full-new.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-full-new.js"></script>
 
 
     <script>
@@ -288,7 +285,7 @@
             <div class="row">
                 <div class="connection">
                     <p class="connection__text">IP VERSION:</p>
-                    <input type="number" class="input  input_small node-const" id="IP_VERSION" maxlength="40" value="" onchange="SaveNetParams()">
+                    <input type="number" class="input  input_small node-const" id="IP_VERSION" maxlength="40" value="" placeholder="4 or 6" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">ip</p>
@@ -304,7 +301,7 @@
             <div class="row">
                 <div class="connection">
                     <p class="connection__text">HTTP port:</p>
-                    <input type="number" class="input  input_middle" id="idHTTPPort" maxlength="9" value="80" placeholder="http port..." onchange="SaveNetParams()">
+                    <input type="number" class="input  input_middle" id="idHTTPPort" maxlength="9" value="8000"  onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
                     <p class="connection__text">Password on HTTP: </p>
@@ -364,14 +361,14 @@
             <div class="myrow">
                 <div class="connection">
                     <p class="connection__text">Port:</p>
-                    <input type="number" class="input  input_middle node-const" id="HTTP_HOSTING_PORT" maxlength="40" value="" onchange="SaveNetParams()">
+                    <input type="number" class="input  input_middle node-const" id="HTTP_HOSTING_PORT" placeholder="80 or 443" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
-                    <p class="connection__text">Domain:</p>
+                    <p class="connection__text">HTTPS Domain:</p>
                     <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_DOMAIN" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
-                    <p class="connection__text">Admin email:</p>
+                    <p class="connection__text">Sertificate Email:</p>
                     <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_EMAIL" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
             </div>
@@ -1403,13 +1400,15 @@
         <div class="btn-close doclose">
             <img src="./img/Close.svg">
         </div>
-        <DIV align='center' style="margin-right: 30px">
-            <h2 id="idConfirmTitle">Confirm</h2>
+        <DIV align='center'>
+            <h2 id="idConfirmTitle" style="margin-right: 30px">Confirm</h2>
             <div class="division"></div>
-            <p id="idConfirmText">A you sure?</p>
+            <p id="idConfirmText">Are you sure?</p>
             <BR>
-            <button class="bt-confirm doclose">Cancel</button>
-            <button class="bt-confirm"  onclick="OnConfirmOK()">Confirm</button>
+            <div class="row df_space">
+                <button class="btn btn_middle btn__transparent cancel doclose">Cancel</button>
+                <button class="btn btn_middle"  onclick="OnConfirmOK()">Confirm</button>
+            </div>
         </DIV>
     </div>
 </div>

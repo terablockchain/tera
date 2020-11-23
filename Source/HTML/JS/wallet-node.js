@@ -517,7 +517,7 @@ function DoBlockChainProcess(FuncName,Text,LastBlockId)
         Text = Text.replace("%1", Params.BlockCount);
     }
     
-    DoConfirm(Text + "?", " ", function ()
+    DoConfirm(Text + "", "Are you sure?", function ()
     {
         SetVisibleBlock("idServerBlock", 1);
         SetStatus("START: " + Text);

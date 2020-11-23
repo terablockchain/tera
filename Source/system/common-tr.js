@@ -81,10 +81,6 @@ global.START_BLOCK = function ()
 {
     SetRollBackTransaction = 0;
     BeginTransactionDB("Block");
-    if(global.JOURNAL_NEW_MODE)
-        return;
-    
-    BlockChanges = {BlockMap:{}, BlockMaxAccount:ACCOUNTS.GetMaxAccount(), BlockHistory:[], BlockEvent:[], };
 }
 global.BEGIN_TRANSACTION = function ()
 {
@@ -92,13 +88,6 @@ global.BEGIN_TRANSACTION = function ()
     SetTickCounter(35000);
     
     SetRollBackTransaction = 0;
-    if(global.JOURNAL_NEW_MODE)
-        return;
-    
-    BlockChanges.TRMap = {};
-    BlockChanges.TRMaxAccount = BlockChanges.BlockMaxAccount;
-    BlockChanges.TREvent = [];
-    BlockChanges.TRHistory = [];
 }
 
 global.ROLLBACK_TRANSACTION = function ()
@@ -118,41 +107,12 @@ global.COMMIT_TRANSACTION = function (BlockNum,TrNum)
     
     CommitTransactionDB("TX");
     
-    if(global.JOURNAL_NEW_MODE)
-        return true;
-    BlockChanges.BlockMaxAccount = BlockChanges.TRMaxAccount;
-    for(var key in BlockChanges.TRMap)
-    {
-        key = ParseNum(key);
-        var Data = BlockChanges.TRMap[key];
-        if(Data.Changed)
-        {
-            BlockChanges.BlockMap[key] = Data;
-            if(Data.New)
-                ACCOUNTS.OnWriteNewAccountTR(Data, BlockNum, TrNum);
-        }
-    }
-    
-    AddCopyBlockChangesArrs("History");
-    AddCopyBlockChangesArrs("Event");
-    
-    SetTickCounter(0);
     return true;
 }
 
 global.IS_ROLLBACK_TRANSACTION = function ()
 {
     return SetRollBackTransaction;
-}
-
-function AddCopyBlockChangesArrs(Name)
-{
-    var ArrSrc = BlockChanges["TR" + Name];
-    var ArrDst = BlockChanges["Block" + Name];
-    for(var i = 0; i < ArrSrc.length; i++)
-    {
-        ArrDst.push(ArrSrc[i]);
-    }
 }
 
 global.FINISH_BLOCK = function ()

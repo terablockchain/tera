@@ -10,9 +10,6 @@
 
 "use strict";
 
-global.JOURNAL_NEW_MODE = 1;
-
-
 var BufHashTree = new RBTree(CompareArr);
 BufHashTree.LastAddNum = 0;
 
@@ -192,9 +189,6 @@ function BLOCK_PROCESS_TX(Block)
         DApps[key].OnProcessBlockFinish(Block);
     }
     
-    if(!global.JOURNAL_NEW_MODE)
-        COMMON_ACTS.WriteMode200(Block);
-    
     FINISH_BLOCK();
 }
 
@@ -253,15 +247,7 @@ global.BLOCK_DELETE_TX = function (BlockNum)
 
 function BlockRestore(BlockNum)
 {
-    if(JOURNAL_NEW_MODE === 0)
-    {
-        COMMON_ACTS.MoveActToStates(BlockNum, 1);
-        JOURNAL_DB.RestoreFromJournalAtNum(BlockNum, 1);
-    }
-    else
-    {
-        JOURNAL_DB.RestoreFromJournalAtNum(BlockNum, 0);
-    }
+    JOURNAL_DB.RestoreFromJournalAtNum(BlockNum, 0);
 }
 
 function BlockTruncate(BlockNum)

@@ -13,7 +13,7 @@
 //accounts-hash
 
 
-class AccountHash extends require("./accounts-tr")
+class AccountHash extends require("./accounts-keyvalue")
 {
     constructor(bReadOnly)
     {
@@ -155,13 +155,7 @@ class AccountHash extends require("./accounts-tr")
             return;
         
         var BlockMaxAccount;
-        if(global.JOURNAL_NEW_MODE)
-            BlockMaxAccount = this.GetMaxAccount()
-        else
-        {
-            var DBChanges = GET_TR_CHANGES();
-            BlockMaxAccount = DBChanges.BlockMaxAccount
-        }
+        BlockMaxAccount = this.GetMaxAccount()
         var Hash = this.GetCalcHash();
         
         var SmartHash;

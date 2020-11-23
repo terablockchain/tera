@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
 "use strict";
 
 //Actual calculation of the total hash via Merkle tree

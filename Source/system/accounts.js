@@ -98,7 +98,8 @@ class AccountApp extends require("./accounts-hash")
             Value:{SumCOIN:uint,SumCENT:uint32, OperationID:uint,Smart:uint32,Data:arr80},\
             BlockNumCreate:uint,\
             Adviser:uint,\
-            Reserve:arr9,\
+            KeyValueSize:arr6,\
+            Reserve:arr3,\
             }"
         
         this.SIZE_ACCOUNT_ROW = 6 + 33 + 40 + (6 + 4 + 6 + 84) + 6 + 6 + 9
@@ -141,6 +142,8 @@ class AccountApp extends require("./accounts-hash")
         this.CloseAccountsHash()
         this.CloseRest()
         this.CloseHistory()
+        
+        this.CloseKeyValue()
     }
     
     ClearDataBase()
@@ -153,6 +156,7 @@ class AccountApp extends require("./accounts-hash")
         this.ClearRest()
         
         this.ClearHistory()
+        this.ClearKeyValue()
         if(SHARD_PARAMS.GenesisAccountCreate)
             SHARD_PARAMS.GenesisAccountCreate()
         else
