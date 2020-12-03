@@ -1290,6 +1290,26 @@ function RetHistoryAccount(Item,Name)
     
     return Str;
 }
+
+function RetEditAccount(Item)
+{
+    return Item.Name;
+}
+
+function DoEditAccount(Num)
+{
+    var Item = MapAccounts[Num];
+    if(!Item)
+        return;
+    openModal('idBlockEditAccount', 'isSaveBtEditAccount');
+    
+    $("idAccountNumEdit").value = Num;
+    $("idAccountNameEdit").value = Item.Name;
+    $("idPublicKeyEdit").value = GetHexFromArr(Item.PubKey);
+    
+    $("idAccountNameEdit").focus();
+}
+
 function OpenHistoryPage(Num)
 {
     OpenWindow("./history.html#" + Num);
@@ -2447,13 +2467,22 @@ var glConfirmF;
 var glWasModal = 0;
 var TEMP_DISABLED_MAP = {};
 
-function openModal(id)
+function openModal(id,idOK)
 {
     glWasModal = 1;
     var modal = document.querySelector("#" + id);
     var overlay = document.querySelector("#idOverlay");
     modal.style.display = "flex";
     overlay.style.display = "block";
+    
+    if(idOK)
+    {
+        glConfirmF = function ()
+        {
+            glConfirmF = undefined;
+            $(idOK).click();
+        };
+    }
 }
 
 function closeModal()

@@ -139,7 +139,7 @@ class SmartTR extends require("./smart-scroll")
         
         if(!ContextFrom && TR.FromNum)
         {
-            var ResultCheck = this.CheckSignFrom(Body, TR, BlockNum, TrNum);
+            var ResultCheck = ACCOUNTS.CheckSignFrom(Body, TR, BlockNum, TrNum);
             if(typeof ResultCheck === "string")
                 return ResultCheck;
             ContextFrom = ResultCheck
@@ -175,7 +175,7 @@ class SmartTR extends require("./smart-scroll")
         
         if(!ContextFrom)
         {
-            var ResultCheck = this.CheckSignFrom(Body, TR, BlockNum, TrNum);
+            var ResultCheck = ACCOUNTS.CheckSignFrom(Body, TR, BlockNum, TrNum);
             if(typeof ResultCheck === "string")
                 return ResultCheck;
             ContextFrom = ResultCheck
@@ -229,47 +229,6 @@ class SmartTR extends require("./smart-scroll")
         }
         
         return true;
-    }
-    
-    CheckSignFrom(Body, TR, BlockNum, TrNum)
-    {
-        var ContextFrom = {FromID:TR.FromNum};
-        
-        var AccountFrom = ACCOUNTS.ReadStateTR(TR.FromNum);
-        if(!AccountFrom)
-            return "Error account FromNum: " + TR.FromNum;
-        if(TR.OperationID < AccountFrom.Value.OperationID)
-            return "Error OperationID (expected: " + AccountFrom.Value.OperationID + " for ID: " + TR.FromNum + ")";
-        var MaxCountOperationID = 100;
-        if(BlockNum >= global.BLOCKNUM_TICKET_ALGO)
-            MaxCountOperationID = 1000000
-        if(TR.OperationID > AccountFrom.Value.OperationID + MaxCountOperationID)
-            return "Error too much OperationID (expected max: " + (AccountFrom.Value.OperationID + MaxCountOperationID) + " for ID: " + TR.FromNum + ")";
-        var hash;
-        if(TR.Version === 4 && BlockNum >= global.UPDATE_CODE_6)
-            hash = SHA3BUF(Body.slice(0, Body.length - 64), BlockNum)
-        else
-            hash = SHA3BUF(Body.slice(0, Body.length - 64 - 12), BlockNum)
-        
-        var Result = CheckSign(hash, TR.Sign, AccountFrom.PubKey);
-        if(!Result)
-        {
-            return "Error sign transaction";
-        }
-        
-        if(BlockNum >= 13000000)
-        {
-            AccountFrom.Value.OperationID = TR.OperationID + 1
-            ACCOUNTS.WriteStateTR(AccountFrom, BlockNum, TrNum)
-        }
-        else
-            if(AccountFrom.Value.OperationID !== TR.OperationID)
-            {
-                AccountFrom.Value.OperationID = TR.OperationID
-                ACCOUNTS.WriteStateTR(AccountFrom, BlockNum, TrNum)
-            }
-        
-        return ContextFrom;
     }
     
     SendSmartEvent(Data)

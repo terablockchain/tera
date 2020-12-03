@@ -287,68 +287,7 @@ LangPathMap["docs"] = 1;
 LangPathMap["game"] = 1;
 
 var WalletFileMap = {};
-WalletFileMap["coinlib.js"] = 1;
-WalletFileMap["client.js"] = 1;
-WalletFileMap["diagram.js"] = 1;
-WalletFileMap["sha3.js"] = 1;
-WalletFileMap["terabuf.js"] = 1;
-WalletFileMap["terahashlib.js"] = 1;
-WalletFileMap["wallet-web.js"] = 1;
-WalletFileMap["wallet-lib.js"] = 1;
-
-WalletFileMap["sign-lib-min.js"] = 1;
-
-WalletFileMap["crypto-client.js"] = 1;
-WalletFileMap["dapp-inner.js"] = 1;
-WalletFileMap["dapp-outer.js"] = 1;
-WalletFileMap["smart-vm.js"] = 1;
-WalletFileMap["smart-play.js"] = 1;
-
-WalletFileMap["lexer.js"] = 1;
-
-WalletFileMap["marked.js"] = 1;
-WalletFileMap["highlight.js"] = 1;
-WalletFileMap["highlight-js.js"] = 1;
-WalletFileMap["highlight-html.js"] = 1;
-WalletFileMap["codes.css"] = 1;
-
-WalletFileMap["buttons.css"] = 1;
-WalletFileMap["style.css"] = 1;
-WalletFileMap["wallet.css"] = 1;
-
-WalletFileMap["history.html"] = 1;
-WalletFileMap["blockviewer.html"] = 1;
-WalletFileMap["web-wallet.html"] = 1;
-
-WalletFileMap["address_book.png"] = 1;
-
-WalletFileMap["mobile-wallet.html"] = 1;
-WalletFileMap["mobile-wallet.js"] = 1;
-WalletFileMap["mobile-wallet.css"] = 1;
-WalletFileMap["reload.svg"] = 1;
-WalletFileMap["T.svg"] = 1;
-WalletFileMap["B.svg"] = 1;
-WalletFileMap["blank.svg"] = 1;
-WalletFileMap["info.svg"] = 1;
-
-WalletFileMap["info.svg"] = 1;
-WalletFileMap["check.svg"] = 1;
-WalletFileMap["right-arrow.svg"] = 1;
-WalletFileMap["down-arrow.svg"] = 1;
-WalletFileMap["glass.svg"] = 1;
-
-WalletFileMap["up.png"] = 1;
-WalletFileMap["down.png"] = 1;
-
-WalletFileMap["dapp-edit.html"] = 1;
-WalletFileMap["_test-api.html"] = 1;
-
-
-WalletFileMap["TeraLogo.svg"] = 1;
-
 WalletFileMap["mobile-wallet.html"] = "web-wallet.html";
-WalletFileMap["viewer.png"] = 1;
-WalletFileMap["smart.png"] = 1;
 
 if(!global.WebApi2)
     global.WebApi2 = {};
@@ -402,6 +341,14 @@ function DoCommandNew(request,response,Type,Path,Params)
                 Caller = WebApi1;
             }
         Method = ArrPath[2];
+    }
+    else
+    {
+        if(!global.USE_API_WALLET)
+        {
+            response.end();
+            return;
+        }
     }
     if(global.STAT_MODE === 2)
     {
@@ -523,22 +470,12 @@ function DoCommandNew(request,response,Type,Path,Params)
                             return;
                         }
                         else
-                            if(LangPathMap[Method])
-                            {
-                                PrefixPath = "./SITE/" + Method;
-                            }
-                            else
-                            {
-                                var Name2 = WalletFileMap[Name];
-                                if(!Name2)
-                                    PrefixPath = "./SITE";
-                                else
-                                {
-                                    PrefixPath = "./HTML";
-                                    if(typeof Name2 === "string")
-                                        Name = Name2;
-                                }
-                            }
+                        {
+                            var Name2 = WalletFileMap[Name];
+                            PrefixPath = "./HTML";
+                            if(typeof Name2 === "string")
+                                Name = Name2;
+                        }
                 
                 var type = Path.substr(Path.length - 3, 3);
                 var LongTime = global.HTTP_CACHE_LONG;
@@ -604,8 +541,6 @@ function DoCommandWWW(request,response,Type,Path,Params,ArrPath)
     for(var i = 1; i < ArrPath.length; i++)
         if(ArrPath[i] && ArrPath[i].indexOf("..") ===  - 1 && ArrPath[i].indexOf("\\") ===  - 1)
             Name += "/" + ArrPath[i];
-    
-    global.WEB_LOG && ToLogWeb("Name: " + Name);
     
     SendWebFile(request, response, Name, "", 0, 1000);
 }

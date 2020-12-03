@@ -18,6 +18,8 @@ const MerkleDBRow = require("./accounts-merkle-dbrow");
 global.OLD_BLOCK_CREATE_INTERVAL = 10;
 
 global.TYPE_TRANSACTION_CREATE = 100;
+global.TYPE_TRANSACTION_ACC_CHANGE = 102;
+
 const TYPE_DEPRECATED_TRANSFER1 = 105;
 const TYPE_DEPRECATED_TRANSFER2 = 110;
 global.TYPE_TRANSACTION_TRANSFER = 111;
@@ -84,6 +86,9 @@ global.FORMAT_ACCOUNT_HASH = "{\
     }";
 global.WorkStructAccHash = {};
 
+global.FORMAT_ACC_CHANGE = {Type:"byte", OperationID:"uint", Account:"uint", PubKey:"arr33", Name:"str40", Reserve:"arr10",
+    Sign:"arr64", };
+
 
 class AccountApp extends require("./accounts-hash")
 {
@@ -98,7 +103,7 @@ class AccountApp extends require("./accounts-hash")
             Value:{SumCOIN:uint,SumCENT:uint32, OperationID:uint,Smart:uint32,Data:arr80},\
             BlockNumCreate:uint,\
             Adviser:uint,\
-            KeyValueSize:arr6,\
+            KeyValueSize:uint,\
             Reserve:arr3,\
             }"
         
@@ -271,6 +276,9 @@ class AccountApp extends require("./accounts-hash")
             case TYPE_TRANSACTION_ACC_HASH:
                 Result = this.TRCheckAccountHash(Block, Body, BlockNum, TrNum, ContextFrom)
                 break;
+            case TYPE_TRANSACTION_ACC_CHANGE:
+                Result = this.TRChangeAccount(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
         }
         
         return Result;
@@ -429,70 +437,6 @@ class AccountApp extends require("./accounts-hash")
         return this.DBState.GetMaxNum();
     }
     
-    GetSignTransferTx(TR, PrivKey)
-    {
-        var Arr;
-        if(TR.Version === 4)
-        {
-            Arr = BufLib.GetBufferFromObject(TR, FORMAT_MONEY_TRANSFER_BODY3, GetTxSize(TR), {})
-        }
-        else
-            if(TR.Version === 2 || TR.Version === 3)
-            {
-                var format;
-                if(TR.Version === 2)
-                    format = FORMAT_MONEY_TRANSFER_BODY2
-                else
-                    format = FORMAT_MONEY_TRANSFER_BODY3
-                
-                Arr = []
-                for(var i = 0; i < TR.To.length; i++)
-                {
-                    var Item = TR.To[i];
-                    
-                    var DataTo = ACCOUNTS.ReadState(Item.ID);
-                    if(!DataTo)
-                    {
-                        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    }
-                    for(var j = 0; j < 33; j++)
-                        Arr[Arr.length] = DataTo.PubKey[j]
-                }
-                var Body = BufLib.GetBufferFromObject(TR, format, GetTxSize(TR), {});
-                
-                for(var j = 0; j < Body.length; j++)
-                    Arr[Arr.length] = Body[j]
-            }
-            else
-            {
-                Arr = BufLib.GetBufferFromObject(TR, FORMAT_MONEY_TRANSFER_BODY, GetTxSize(TR), {})
-            }
-        
-        var sigObj = secp256k1.sign(SHA3BUF(Arr), Buffer.from(PrivKey));
-        return sigObj.signature;
-    }
-    
-    CheckSignTransferTx(BlockNum, Body)
-    {
-        if(Body.length < 64)
-            return 0;
-        
-        var Type = Body[0];
-        if(Type === TYPE_TRANSACTION_CREATE)
-        {
-            if(JINN_CONST.BLOCK_CREATE_INTERVAL < 2 || BlockNum % JINN_CONST.BLOCK_CREATE_INTERVAL === 0)
-                return 1;
-            else
-                return 0;
-        }
-        else
-            if(Type !== TYPE_TRANSACTION_TRANSFER)
-                return 0;
-        
-        return this.CheckSignAccountTx(BlockNum, Body);
-    }
-    
     GetPowTx(Body, BlockNum)
     {
         var HASH = sha3(Body);
@@ -507,52 +451,6 @@ class AccountApp extends require("./accounts-hash")
         var power = GetPowPower(HashPow);
         
         return power;
-    }
-    GetSenderNum(BlockNum, Body)
-    {
-        var Type = Body[0];
-        if(Type && Body.length > 90)
-        {
-            switch(Type)
-            {
-                case TYPE_TRANSACTION_CREATE:
-                    {
-                        if(BlockNum < global.UPDATE_CODE_7 && BlockNum % OLD_BLOCK_CREATE_INTERVAL !== 0)
-                            return 0;
-                        
-                        var Num = this.GetMaxAccount() + 1;
-                        return Num;
-                    }
-                case TYPE_TRANSACTION_TRANSFER:
-                    
-                    var Num = ReadUintFromArr(Body, 1 + 1 + 6);
-                    return Num;
-                    
-                case TYPE_TRANSACTION_ACC_HASH:
-                    return  - 1;
-            }
-        }
-        
-        return 0;
-    }
-    GetSenderOperationID(BlockNum, Body)
-    {
-        var Type = Body[0];
-        if(Type && Body.length > 90)
-        {
-            switch(Type)
-            {
-                case TYPE_TRANSACTION_TRANSFER:
-                    
-                    var Num = ReadUintFromArr(Body, 1 + 1);
-                    return Num;
-                    
-                case TYPE_TRANSACTION_ACC_HASH:
-                    return 0;
-            }
-        }
-        
-        return 0;
     }
     
     GetFormatTransaction(Type)
@@ -586,6 +484,10 @@ class AccountApp extends require("./accounts-hash")
                 format = FORMAT_ACCOUNT_HASH
                 break;
                 
+            case TYPE_TRANSACTION_ACC_CHANGE:
+                format = FORMAT_ACC_CHANGE
+                break;
+                
             default:
                 format = ""
         }
@@ -595,6 +497,7 @@ class AccountApp extends require("./accounts-hash")
 var App = new AccountApp;
 
 REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_CREATE);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_ACC_CHANGE);
 REGISTER_SYS_DAPP(App, TYPE_DEPRECATED_TRANSFER1);
 REGISTER_SYS_DAPP(App, TYPE_DEPRECATED_TRANSFER2);
 REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_TRANSFER);

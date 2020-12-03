@@ -8,7 +8,13 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
+"use strict";
+
 var ArrChildProcess = [];
+
+global.GlobalRunID = 0;
+global.GlobalRunMap = {};
 
 var WebProcess = {Name:"WEB PROCESS", idInterval:0, idInterval1:0, idInterval2:0, LastAlive:Date.now(), Worker:undefined, Path:"./process/web-process.js",
     OnMessage:OnMessageWeb, PeriodAlive:10 * 1000, UpdateConst:0};
@@ -142,9 +148,6 @@ function StartAllProcess(bClose)
     }
 }
 
-var GlobalRunID = 0;
-var GlobalRunMap = {};
-
 function StartChildProcess(Item)
 {
     if(Item.NodeOnly && global.NOT_RUN)
@@ -244,10 +247,11 @@ function StartChildProcess(Item)
                         case "RetFindTX":
                             if(msg.WebID >= 1e9)
                             {
-                                var F = global.GlobalRunMap[msg.WebID];
+                                
+                                var F = GlobalRunMap[msg.WebID];
                                 if(F)
                                 {
-                                    delete global.GlobalRunMap[msg.WebID];
+                                    delete GlobalRunMap[msg.WebID];
                                     F(msg.Result, msg.ResultStr);
                                     break;
                                 }
@@ -302,11 +306,12 @@ function StartChildProcess(Item)
             
             try
             {
-                ITEM.Worker.send({cmd:"call", id:GlobalRunID, Name:Name, Params:Params});
                 GlobalRunMap[GlobalRunID] = F;
+                ITEM.Worker.send({cmd:"call", id:GlobalRunID, Name:Name, Params:Params});
             }
             catch(e)
             {
+                delete GlobalRunMap[GlobalRunID];
             }
         }
         else

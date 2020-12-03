@@ -163,13 +163,13 @@ function ViewCurrent(Def,flag,This)
 
 function ViewConstant()
 {
-    openModal('idBlockConstSet');
+    openModal('idBlockConstSet', 'idBtnConstSave');
     $("idConstant").value = JSON.stringify(CONFIG_DATA.CONSTANTS, "", 4);
 }
 
 function ViewOpenWallet()
 {
-    openModal('idBlockPasswordGet');
+    openModal('idBlockPasswordGet', 'idBtnEnterPassword');
     itemPasswordGet.onkeydown = OnEnterPas1;
     itemPasswordGet.value = "";
     itemPasswordGet.focus();
@@ -186,7 +186,7 @@ function EditPrivateKey()
         $("idKeyNew").value = PubKeyStr;
     }
     SetVisibleItemByTypeKey();
-    openModal('idBlockEditWallet');
+    openModal('idBlockEditWallet', 'idBtnSaveKey');
 }
 function NewPrivateKey()
 {
@@ -217,7 +217,7 @@ function SetVisibleItemByTypeKey()
 function EditJSONTransaction()
 {
     CreateTransaction();
-    openModal('idBlockEditJson');
+    openModal('idBlockEditJson', 'idBtnSendJSON');
 }
 
 function TruncateBlockChain()
@@ -314,7 +314,7 @@ function SendMoneyBefore()
         
         SetVisibleBlock("idBlockOnSend", 1);
         
-        openModal('idBlockOnSend');
+        openModal('idBlockOnSend', 'idBtOnSend');
     }
 }
 
@@ -337,4 +337,31 @@ function SelectStyle(value)
     if(!Select.value)
         Select.value = Select.options[0].value;
     document.body.className = "" + Select.value;
+}
+
+function SaveEditAccount()
+{
+    var ID = $("idAccountNumEdit").value;
+    
+    var Item = MapAccounts[ID];
+    if(!Item)
+        return;
+    
+    var Name = $("idAccountNameEdit").value;
+    var PubKey = $("idPublicKeyEdit").value;
+    
+    var OperationID = GetOperationIDFromItem(Item, 1);
+    
+    var Body = [];
+    WriteByte(Body, TYPE_TRANSACTION_ACC_CHANGE);
+    WriteUint(Body, OperationID);
+    WriteUint(Body, ID);
+    
+    WriteArr(Body, GetArrFromHex(PubKey), 33);
+    WriteStr(Body, Name, 40);
+    
+    for(var i = 0; i < 10; i++)
+        Body.push(0);
+    
+    SendTrArrayWithSign(Body, ID);
 }

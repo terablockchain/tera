@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+"use strict";
 
 const crypto = require('crypto');
 
@@ -380,7 +381,7 @@ function SendTransaction(Body,TR,Wait,F)
         return;
     }
     
-    if(!global.GlobalRunID)
+    if(!global.GlobalRunID && global.PROCESS_NAME === "MAIN")
     {
         global.GlobalRunID = 1e9;
         global.GlobalRunMap = {};

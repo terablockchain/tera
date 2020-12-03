@@ -86,20 +86,33 @@ class DApp
         return 0;
     }
     
-    CheckSignAccountTx(BlockNum, Body)
+    CheckSignAccountTx(BlockNum, Body, OperationID)
     {
         var FromNum = this.GetSenderNum(BlockNum, Body);
         if(!FromNum)
-            return 0;
-        var AccountFrom = ACCOUNTS.ReadState(FromNum);
-        if(!AccountFrom)
-            return 0;
+            return {result:0, text:"Error sender num"};
+        var Item = ACCOUNTS.ReadState(FromNum);
+        if(!Item)
+            return {result:0, text:"Error read sender"};
+        
+        if(OperationID !== undefined)
+        {
+            if(OperationID < Item.Value.OperationID)
+                return {result:0, text:"Error OperationID (expected: " + Item.Value.OperationID + " for ID: " + FromNum + ")"};
+            var MaxCountOperationID = 100;
+            if(BlockNum >= global.BLOCKNUM_TICKET_ALGO)
+                MaxCountOperationID = 1000000
+            if(OperationID > Item.Value.OperationID + MaxCountOperationID)
+                return {result:0, text:"Error too much OperationID (expected max: " + (Item.Value.OperationID + MaxCountOperationID) + " for ID: " + FromNum + ")"};
+        }
         
         var hash = Buffer.from(sha3(Body.slice(0, Body.length - 64)));
         var Sign = Buffer.from(Body.slice(Body.length - 64));
-        var Result = CheckSign(hash, Sign, AccountFrom.PubKey);
-        
-        return Result;
+        var Result = CheckSign(hash, Sign, Item.PubKey);
+        if(Result)
+            return {result:1, text:"ok", ItemAccount:Item};
+        else
+            return {result:0, text:"Sign error"};
     }
     OnProcessBlockStart(Block)
     {

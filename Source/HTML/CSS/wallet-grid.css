@@ -206,3 +206,12 @@
     color: #cb763a;
 }
 
+
+.journal td.hash
+{
+    width: 135px;
+}
+.check_grid td.hash
+{
+    width: 120px;
+}

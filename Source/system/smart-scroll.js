@@ -72,6 +72,7 @@ class SmartScroll extends require("./dapp")
             var DataState = ACCOUNTS.ReadState(Data.Account);
             if(DataState)
             {
+                Data.KeyValueSize = DataState.KeyValueSize
                 Data.BaseState = ACCOUNTS.GetSmartState(DataState, Data.StateFormat)
                 if(!global.ALL_VIEW_ROWS && !bAllRow)
                     if(typeof Data.BaseState === "object" && Data.BaseState.HTMLBlock === 404)

@@ -9,6 +9,8 @@
 
 "use strict";
 
+const MAX_SIZE_ITEM = 10 * 1000000;
+
 class CDBItem extends global.CDBBase
 {
     constructor(FileName, Format, bReadOnly, EngineID, bCheckSize)
@@ -89,7 +91,7 @@ class CDBItem extends global.CDBBase
         JINN_STAT.ReadRowsDB++
         Position = Math.trunc(Position)
         var DataSize = this.ReadUint32(Position);
-        if(!DataSize)
+        if(!DataSize || DataSize > MAX_SIZE_ITEM)
             return undefined;
         
         if(this.CheckSize && this.DataSize > DataSize)
@@ -97,6 +99,7 @@ class CDBItem extends global.CDBBase
             ToLogTrace("Error #2 Read DataSize: " + DataSize + "/" + this.DataSize)
             return 0;
         }
+        
         var BufRead = this.ReadInner(Position, DataSize + 4);
         if(!BufRead)
             return undefined;

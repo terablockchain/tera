@@ -11,6 +11,7 @@
 var MAX_SUPER_VALUE_POW = (1 << 30) * 2;
 
 window.TYPE_TRANSACTION_CREATE = 100;
+window.TYPE_TRANSACTION_ACC_CHANGE = 102;
 window.TYPE_TRANSACTION_NEW_SHARD = 60;
 
 function GetHashWithValues(hash0,value1,value2,bNotCopy)

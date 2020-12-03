@@ -1124,6 +1124,8 @@ global.WriteUint32ReverseAtPos = WriteUint32ReverseAtPos;
 global.WriteUint32 = WriteUint32;
 global.ReadUint32FromArr = ReadUint32FromArr;
 
+global.ReadStrFromArr = Utf8ArrayToStrNew;
+
 if(!global.ToLog)
     global.ToLog = function (Str)
     {

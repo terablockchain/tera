@@ -21,11 +21,12 @@
   "STAT_MODE": 1,                      //enable statistics-see Counters, Monitor pages
   "MAX_STAT_PERIOD": 600,              //statistics period
 
-  //Information display
+  //Informations display
   "LOG_LEVEL":2,                       //logging details, the higher the number, the more messages
   "COUNT_VIEW_ROWS": 20,               //number of rows per page - displayed in all tables with pagination
   "ALL_VIEW_ROWS": 1,                  //view all rows of blockchain tables, even if they are blacklisted (for example, DAPs misleading)
   "START_HISTORY": 16,                 //the account number from which the transaction history is recorded
+  "SUM_PRECISION":9,                   //accuracy of visual display of accounts amount (acceptable values from 0 to 9)
 
 
   //HTTP access to the full-nodes wallet
@@ -53,7 +54,7 @@
   "MAX_TX_FROM_WEB_IP": 20,            //limit the number of tx (every 10 minutes)
   "USE_HARD_API_V2": 0,                //enabling API2 node support is not recommended for public access
   //Protocol 
-  "HTTP_HOSTING_PORT": 80, 	       // web port number, when setting port 443, the https Protocol is enabled and therefore you need to set the parameters below (HTTPS_HOSTING_DOMAIN and HTTPS_HOSTING_EMAIL) 
+  "HTTP_HOSTING_PORT": 80, 	           // web port number, when setting port 443, the https Protocol is enabled and therefore you need to set the parameters below (HTTPS_HOSTING_DOMAIN and HTTPS_HOSTING_EMAIL) 
   "HTTPS_HOSTING_DOMAIN": "",          //domain name (required for the certificate to work) 
   "HTTPS_HOSTING_EMAIL":"", 	       //email address of the domain owner (required for automatic certificate receipt) 
   //Other parameters
@@ -81,9 +82,9 @@
 * Constants are stored in JSON format
 * In logical constants, such as enabling or disabling something, we recommend using the number 0 or 1
 * Any constant can be changed from the command line as follows (run inside the ~/wallet/Source directory):
-```
-node set NAME=Value
-```
+    ```
+    node set NAME=Value
+    ```
 * After changing the constants restart the node
 
 

@@ -2080,10 +2080,12 @@ function SetSafeResponce(response)
         response._end = response.end;
         response._writeHead = response.writeHead;
         
-        if(response.socket._events && response.socket._events.error.length < 2)
+        if(response.socket && response.socket._events && response.socket._events.error.length < 2)
+        {
             response.socket.on("error", function (err)
             {
             });
+        }
         
         response.on('error', function (err)
         {

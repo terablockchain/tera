@@ -16,7 +16,7 @@
 const MAX_SUM_TER = 1e9;
 const MAX_SUM_CENT = 1e9;
 
-class AccountTR extends require("./accounts-adv-mining")
+class AccountTR extends require("./accounts-sign")
 {
     constructor(bReadOnly)
     {
@@ -308,6 +308,41 @@ class AccountTR extends require("./accounts-adv-mining")
                     return Result;
             }
         }
+        
+        return true;
+    }
+    
+    TRChangeAccount(Block, Body, BlockNum, TrNum)
+    {
+        if(BlockNum < UPDATE_CODE_SHARDING)
+            return true;
+        
+        if(Body.length < 160)
+            return "Error length transaction";
+        
+        try
+        {
+            var TR = SerializeLib.GetObjectFromBuffer(Body, FORMAT_ACC_CHANGE, {});
+        }
+        catch(e)
+        {
+            return "Error transaction format";
+        }
+        
+        if(!TR.Name.trim())
+            return "Account name required";
+        
+        var Res = this.CheckSignAccountTx(BlockNum, Body, TR.OperationID);
+        if(!Res.result)
+            return Res.text;
+        
+        var Account = Res.ItemAccount;
+        
+        Account.PubKey = TR.PubKey
+        Account.Name = TR.Name
+        Account.Value.OperationID = TR.OperationID + 1
+        
+        this.WriteStateTR(Account, BlockNum, TrNum)
         
         return true;
     }

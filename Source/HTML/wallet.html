@@ -148,13 +148,19 @@
                 Accounts
             </div>
             <div class="tab">
+                System
+            </div>
+            <div class="tab">
                 Mining
             </div>
             <div class="tab">
                 Network
             </div>
             <div class="tab">
-                Params
+                Remote
+            </div>
+            <div class="tab">
+                View
             </div>
             <div class="tab" id="idDevelopService" style="display: none">
                 Dev.service
@@ -170,13 +176,13 @@
                             <img src="./img/reload.svg" class="btn__img">
                             refresh
                         </a>
-                        <a onclick="openModal('idBlockAddAccount')" class="btn btn_margin">
+                        <a onclick="openModal('idBlockAddAccount','idBtCreateAccount')" class="btn btn_margin">
                             add account
                         </a>
                         <a onclick="EditPrivateKey()" class="btn btn_margin">
                             edit wallet
                         </a>
-                        <a onclick="openModal('idBlockPasswordSet')" class="btn btn_margin" id="idBtBlockPasswordSet">
+                        <a onclick="openModal('idBlockPasswordSet','idBtnSetPassword')" class="btn btn_margin" id="idBtBlockPasswordSet">
                             password wallet
                         </a>
                     </div>
@@ -188,7 +194,7 @@
                     <table id="grid_accounts" class="grid">
                         <tr>
                             <th id="(RetHistoryAccount(Item))" class="id">ID</th>
-                            <th id="Item.Name" data-name="Account name" class="name ">Name</th>
+                            <th id="(RetEditAccount(Item))" data-name="Account name" class="name ">Name</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum bold">Amount</th>
                             <th id="CurrencyNameItem(Item)" data-name="Currency" class="cur">Cur</th>
                             <th id="Item.Value.OperationID" data-name="Operation ID" class="snum ">OP</th>
@@ -206,17 +212,35 @@
             </div>
         </div>
 
-        <!--Mining-->
+        <!--System-->
         <div class="tab-content">
             <BR>
+            <div class="row">
+                <div class="mining__switches-left">
+                    <div class="mining__switch">
+                        <p class="mining__switch-text">Use autoupdate </p>
+                        <label for="idAutoUpdate">
+                            <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
+                            <label for="idAutoUpdate"></label>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <h3 class="h3">Blockchain hashrate</h3>
+            <canvas  width='800' height='60' id='idBlockInfo'></canvas>
+
+            <div class="division division_light"></div>
+            <h3 class="h3">Constants</h3>
+            <div class="constants">
+                <a class="btn" onclick="ViewConstant()">Edit all costants</a>
+                <p class="constants__text">only for advanced users</p>
+            </div>
+        </div>
+
+
+        <!--Mining-->
+        <div class="tab-content">
             <div class="wallet__mining mining">
-                <h3 class="h3">Blockchain hashrate</h3>
-                <canvas  width='800' height='60' id='idBlockInfo'></canvas>
-
-
-                <BR>
-                <div class="division"></div>
-                <h3 class="h3">Current node mining</h3>
                 <DIV id="idStatusMining"></DIV>
 
                 <div class="mining__switches">
@@ -259,7 +283,6 @@
 
         <!--Network-->
         <div class="tab-content">
-            <BR>
             <h3 class="h3">Network connection</h3>
             <div class="row">
                 <div class="connection__switch ">
@@ -296,25 +319,9 @@
                     <input type="number"  maxlength="9" class="input input_middle" value="-" id="idPort" onchange="SaveNetParams()">
                 </div>
             </div>
-            <div class="division"></div>
-            <h3 class="h3">Remote access</h3>
-            <div class="row">
-                <div class="connection">
-                    <p class="connection__text">HTTP port:</p>
-                    <input type="number" class="input  input_middle" id="idHTTPPort" maxlength="9" value="8000"  onchange="SaveNetParams()">
-                </div>
-                <div class="connection">
-                    <p class="connection__text">Password on HTTP: </p>
-                    <input type="password" class="input  input_middle" id="idHTTPPassword" placeholder="" onchange="SaveNetParams()">
-                </div>
-                <div class="connection">
-                    <p class="connection__text">Remote IP filter:</p>
-                    <input type="text" class="input  input_middle node-const" id="HTTP_IP_CONNECT" maxlength="40" value="" onchange="SaveNetParams()">
-                </div>
-            </div>
 
-            <div class="division"></div>
             <h3 class="h3">Cluster set</h3>
+
             <div class="myrow">
                 <div class="connection">
                     <p class="connection__text">Common key:</p>
@@ -335,10 +342,57 @@
                 </div>
             </div>
 
+            <div class="division"></div>
+
+            <h3 class="h3">Links to other nodes</h3>
+            <div class="myrowl">
+                <p> Node ip:</p>
+                <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
+                <p> Port:</p>
+                <INPUT class="input input_small" type="number" id="idChildPort" value="30000">
+                <p> Score:</p>
+                <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
+                <button onclick="AddSetNode()" class="btn">set node</button>
+            </div>
 
             <div class="division"></div>
-            <h3 class="h3">WEB-WALLET/API-1/API-2 SET</h3>
+            <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
+
+        </div>
+
+        <!--Remote-->
+        <div class="tab-content">
+            <h3 class="h3">Remote full-node access</h3>
             <div class="row">
+                <div class="connection">
+                    <p class="connection__text">HTTP port:</p>
+                    <input type="number" class="input  input_middle" id="idHTTPPort" maxlength="9" value="8000"  onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Password on HTTP: </p>
+                    <input type="password" class="input  input_middle" id="idHTTPPassword" placeholder="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <p class="connection__text">Remote IP filter:</p>
+                    <input type="text" class="input  input_middle node-const" id="HTTP_IP_CONNECT" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+            </div>
+
+            <div class="division"></div>
+
+
+
+            <h3 class="h3">RPC: Web-wallet/API-1/API-2</h3>
+            <div class="row">
+                <div class="connection__switch ">
+                    <div class="mining__switch" style="width: 285px">
+                        <p class="mining__switch-text">Web-wallet:</p>
+                        <label for="USE_API_WALLET">
+                            <input type="checkbox" class="checkbox node-const" id="USE_API_WALLET" onchange="SaveNetParams()">
+                            <label for="USE_API_WALLET"></label>
+                        </label>
+                    </div>
+                </div>
                 <div class="connection__switch ">
                     <div class="mining__switch" style="width: 285px">
                         <p class="mining__switch-text">API v1:</p>
@@ -394,53 +448,23 @@
                 </div>
             </div>
 
-
-
-            <div class="division"></div>
-            <h3 class="h3">Links to other nodes</h3>
-            <div class="myrowl">
-                <p> Node ip:</p>
-                <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
-                <p> Port:</p>
-                <INPUT class="input input_small" type="number" id="idChildPort" value="30000">
-                <p> Score:</p>
-                <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
-                <button onclick="AddSetNode()" class="btn">set node</button>
-            </div>
-
             <div class="division"></div>
             <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
 
         </div>
 
-        <!--Params-->
+        <!--View-->
         <div class="tab-content">
             <div class="row">
-                <div class="mining__switches-left">
+                <div class="connection__switch ">
                     <div class="mining__switch">
-                        <p class="mining__switch-text">Use autoupdate </p>
-                        <label for="idAutoUpdate">
-                            <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
-                            <label for="idAutoUpdate"></label>
-                        </label>
+                        <p class="mining__switch-text">Color theme:</p>
+                        <select size="1" id="idSelStyle"  onkeyup="SelectStyle();SaveValues()" onchange="SelectStyle();SaveValues()">
+                            <option value="styleDark">Dark</option>
+                            <option value="styleLight">Light</option>
+                        </select>
                     </div>
                 </div>
-
-                Select color theme:
-                <select size="1" id="idSelStyle" onkeyup="SelectStyle();SaveValues()" onchange="SelectStyle();SaveValues()">
-                    <option value="styleDark">Dark</option>
-                    <option value="styleLight">Light</option>
-                </select>
-
-<!--                <div class="theme">-->
-<!--                    <p class="h3 h3_theme">Color theme:</p>-->
-<!--                    <div class="theme__color theme__color_light" onclick="SelectTheme(1)">-->
-<!--                        <p class="theme__text">light</p>-->
-<!--                    </div>-->
-<!--                    <div class="theme__color theme__color_dark" onclick="SelectTheme(1)">-->
-<!--                        <p class="theme__text">dark</p>-->
-<!--                    </div>-->
-<!--                </div>-->
             </div>
 
             <div class="division"></div>
@@ -470,6 +494,7 @@
             <div class="myrowl">
                 <p class="text input_middle">Account history start from:</p>
                 <input type="number" class="input  input_small node-const" id="START_HISTORY" maxlength="40" value="" onchange="SaveNetParams()">
+                <p class="text input_middle">(Note:need rewrite tx)</p>
             </div>
             <div class="connection__switch ">
                 <div class="mining__switch" style="width: 400px">
@@ -493,26 +518,20 @@
             </div>
 
 
-            <div class="division division_light"></div>
-            <h3 class="h3">Constants</h3>
-            <div class="constants">
-                <a class="btn" onclick="ViewConstant()">Edit all costants</a>
-                <p class="constants__text">only for advanced users</p>
-            </div>
         </div>
 
         <!--Developer service-->
         <div class="tab-content" >
             <BR>
-            <div class="row">
+            <div class="row df_space">
+                <div class="row">
                 <button class="btn btn_margin" onclick="SetCodeVersionJSON()">CODE VERS</button>
                 <button class="btn btn_margin" onclick="SetNetConstJSON()">NET CONSTS</button>
                 <button class="btn" onclick="ConnectToAll()">All connect</button>
-            </div>
-            <TEXTAREA id="idDevService" rows="12" cols="70" class="log editdevservice"> </TEXTAREA><BR>
-            <div class="row">
+                </div>
                 <button class="btn" onclick="RunDevelopService()">SEND</button>
             </div>
+            <TEXTAREA id="idDevService" rows="12" cols="70" class="log editdevservice"> </TEXTAREA><BR>
 
         </div>
 
@@ -522,6 +541,42 @@
         <div class="division"></div>
     </section>
 
+
+    <div class="ModalDlg modal_account" id="idBlockEditAccount">
+
+        <div class="modal__container">
+            <div class="btn-close doclose">
+                <img src="./img/Close.svg">
+            </div>
+            <div class="form">
+                <h3 class="h3 h3_form">
+                    Edit account
+                </h3>
+                <div class="division division_form"></div>
+
+                <div class="form__group">
+                    <p class="connection__text">ID</p>
+                    <input type="text" class="input input_modal2" disabled value="" id="idAccountNumEdit">
+                </div>
+                <div class="form__group">
+                    <p class="connection__text">Public name</p>
+                    <input type="text" class="input input_modal2" value="" id="idAccountNameEdit">
+                </div>
+                <div class="form__group">
+                    <p class="connection__text">Public key</p>
+                    <input type="text" class="input input_modal2" value="" id="idPublicKeyEdit">
+                </div>
+
+                <BR>
+                <BR>
+                <BR>
+                <div class="form__buttons">
+                    <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
+                    <button class="btn btn_middle btn_margin doclose" id="isSaveBtEditAccount" onclick="SaveEditAccount()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="ModalDlg modal_account" id="idBlockAddAccount">
         <div class="modal__container">
@@ -567,7 +622,7 @@
                 <BR>
                 <div class="form__buttons">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                    <button class="btn btn_middle btn_margin doclose" onclick="CreateAccount(0)">Create</button>
+                    <button class="btn btn_middle btn_margin doclose" id="idBtCreateAccount" onclick="CreateAccount(0)">Create</button>
                     <button class="btn btn_middle doclose" onclick="CreateAccount(1)">to Pay</button>
                 </div>
             </div>
@@ -596,7 +651,7 @@
                 </div>
                 <div class="form__buttons">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                    <button class="btn btn_middle doclose" onclick="SavePrivateKey()">confirm</button>
+                    <button class="btn btn_middle doclose" id="idBtnSaveKey" onclick="SavePrivateKey()">confirm</button>
                 </div>
             </div>
         </div>
@@ -617,7 +672,7 @@
                 </textarea>
                 <div class="form__buttons">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                    <button class="btn btn__transparent btn_margin btn_middle doclose" onclick="SaveConstant(0)">Save</button>
+                    <button class="btn btn__transparent btn_margin btn_middle doclose" id="idBtnConstSave" onclick="SaveConstant(0)">Save</button>
                     <button class="btn btn_middle doclose" onclick="SaveConstant(1)">save and restart</button>
                 </div>
             </div>
@@ -647,7 +702,7 @@
                 <DIV class="form__group"><BR></DIV>
                 <div class="form__buttons">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                    <button class="btn btn_middle" onclick="SetPassword(); closeModal()">confirm</button>
+                    <button class="btn btn_middle" id="idBtnSetPassword" onclick="SetPassword(); closeModal()">confirm</button>
                 </div>
 
             </div>
@@ -732,7 +787,7 @@
                 <div class="form__buttons">
                     <button class="btn btn__transparent btn_middle cancel btn_margin doclose">Cancel</button>
                     <button class="btn btn__transparent btn_middle btn_margin" id="idSignJSON"  onclick="SignJSON()">Sign json</button>
-                    <button class="btn btn_middle doclose" onclick="SendMoneyJSON()">send from json</button>
+                    <button class="btn btn_middle doclose" id="idBtnSendJSON" onclick="SendMoneyJSON()">send from json</button>
                 </div>
             </div>
         </div>
@@ -788,6 +843,8 @@
                     <th id="(RetBaseAccount(Item))" class="snum">Base</th>
 
                     <th id="(RetHistoryAccount(Item,'Owner'))" class="snum">Owner</th>
+                    <th id="Item.KeyValueSize" class="snum">Storage</th>
+
 
                     <th id="RetBool(Item.TokenGenerate)" class="bool">Token</th>
                     <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
@@ -992,9 +1049,9 @@
             <div class="tab active">
                 Common
             </div>
-            <div class="tab">
-                Statistics
-            </div>
+<!--            <div class="tab">-->
+<!--                Statistics-->
+<!--            </div>-->
             <div class="tab">
                 Utilities
             </div>
@@ -1002,7 +1059,13 @@
 
         <!--Common-->
         <div class="tab-content active">
-            <BR>
+
+            <div class="myrow" style="margin-top: 20px;margin-bottom: 20px;">
+                <p class="connection__text">Find Tx:</p>
+                <INPUT type="search" class="input input_big" id="idFindTx" placeholder="Type TxID...">
+                <button class="btn" onclick="OnFindTx('idFindTx')">Find</button>
+            </div>
+
             <div class="utilities__buttons df_space">
                 <button class="btn drop_down btn_common active" onclick="ViewCurrent(DefAccounts,1,this)">
                     <p class="txt_dropdown">Accounts</p>
@@ -1132,14 +1195,14 @@
                     </div>
 
 
-                    <table id="grid_journal" class="grid">
+                    <table id="grid_journal" class="grid journal">
                         <tr>
                             <th id="Item.Num" class="num">Num</th>
                             <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
+                            <th id="GetHexFromArr(Item.AccHash)" class="hash">Acc Hash</th>
+<!--                            <th id="(RetVerify(Item.VerifyAccHash))" class="verify">A</th>-->
                             <th id="GetHexFromArr(Item.SumHash)" class="hash">Sum Hash</th>
                             <th id="(RetVerify(Item.VerifySumHash))" class="verify">S</th>
-                            <th id="GetHexFromArr(Item.AccHash)" class="hash">Acc Hash</th>
-                            <th id="(RetVerify(Item.VerifyAccHash))" class="verify">A</th>
                             <th id="Item.Tables" class="name">Tables</th>
                             <!--                            <th id="Item.TableArr.length" class="num">Tables</th>-->
                             <th id="Item.DataSize" class="num">Bytes</th>
@@ -1167,7 +1230,7 @@
                     </div>
 
 
-                    <table id="grid_hash_all" class="grid">
+                    <table id="grid_hash_all" class="grid check_grid">
                         <tr>
                             <th id="Item.Num" class="num">Num</th>
                             <th id="(RetOpenBlock(Item.BlockNum,3))" class="block">Block</th>
@@ -1183,17 +1246,18 @@
                 </DIV>
             </DIV>
 
-            <div class="myrow">
-                <p class="connection__text">Find Tx:</p>
-                <INPUT type="search" class="input input_big" id="idFindTx" placeholder="Type TxID...">
-                <button class="btn" onclick="OnFindTx('idFindTx')">Find</button>
-            </div>
 
         </div>
 
-        <!--Statistics-->
+<!--        &lt;!&ndash;Statistics&ndash;&gt;-->
+<!--        <div class="tab-content">-->
+<!--            <section class="statistics">-->
+<!--            </section>-->
+<!--        </div>-->
+
+        <!--Utilities-->
         <div class="tab-content">
-            <section class="statistics">
+            <section class="utilities">
                 <div class="statistics__buttons">
                     <button class="btn btn_explorer" onclick="window.Open('./HTML/stat.html','counters',920)">
                         <div class="df">
@@ -1209,15 +1273,7 @@
                         </div>
                         <img src="./img/arrow_right.svg">
                     </button>
-                </div>
-            </section>
-        </div>
-
-        <!--Utilities-->
-        <div class="tab-content">
-            <section class="utilities">
-                <div class="statistics__buttons">
-                    <button class="btn btn_arrow" onclick="window.Open('./HTML/console.html','console',1240)">
+                    <button class="btn btn_explorer" onclick="window.Open('./HTML/console.html','console',1240)">
                         <div class="df">
                             <img src="./img/console.svg" class="btn__img">
                             <p class="btn__arrow-text">console</p>
@@ -1287,7 +1343,7 @@
             <DIV class="form__group"><BR></DIV>
             <div class="form__buttons">
                 <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                <button class="btn btn_middle doclose" onclick="OpenWallet();">confirm</button>
+                <button class="btn btn_middle doclose" id="idBtnEnterPassword" onclick="OpenWallet();">confirm</button>
             </div>
 
         </div>

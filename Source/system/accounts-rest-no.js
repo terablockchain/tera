@@ -34,6 +34,7 @@ class AccountRest extends require("./accounts-scroll")
     
     DBStateWriteInner(Data, BlockNum)
     {
+        this.ControlStorageDeposit(Data, BlockNum)
         this.DBState.Write(Data)
         
         this.SetAMIDTab(Data, BlockNum)

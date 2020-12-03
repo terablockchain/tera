@@ -12,7 +12,8 @@
 "use strict";
 
 
-const fs = require('fs');
+
+
 
 global.GlobalRunID = 0;
 global.GlobalRunMap = {};
@@ -137,11 +138,12 @@ process.RunRPC = function (Name,Params,F)
         
         try
         {
-            process.send({cmd:"call", id:GlobalRunID, Name:Name, Params:Params});
             GlobalRunMap[GlobalRunID] = F;
+            process.send({cmd:"call", id:GlobalRunID, Name:Name, Params:Params});
         }
         catch(e)
         {
+            delete GlobalRunMap[GlobalRunID];
         }
     }
     else
@@ -230,15 +232,5 @@ process.on('unhandledRejection', function (reason,p)
     console.log("===============child unhandledRejection===============");
     ToLog('Unhandled Rejection at:' + p + 'reason:' + reason);
     ToError('Unhandled Rejection at:' + p + 'reason:' + reason);
-}
-);
-
-
-fs.watch(GetDataPath("const.lst"), {}, function (eventType,filename)
-{
-    if(filename)
-    {
-        LOAD_CONST();
-    }
 }
 );

@@ -182,7 +182,9 @@ button {
 .h3 {
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 20px; }
+  margin-bottom: 20px;
+    margin-top: 20px;
+}
   .h3_theme {
     margin: 0;
     margin-right: 56px; }
@@ -301,7 +303,7 @@ button {
     }
   .btn_explorer
   {
-      width: 270px;
+      width: 220px;
       min-width: 200px;
       -webkit-box-pack: center;
       -webkit-justify-content: center;
@@ -733,6 +735,11 @@ button {
   width: 650px;
   margin: 0 0 30px 0; }
 
+.input_modal2 {
+    width: 680px;
+    margin: 0 0 30px 0; }
+
+
 .form {
   padding-bottom: 30px; }
   .form__group {
@@ -1001,7 +1008,7 @@ button.drop_down.active img
   margin-bottom: 60px; }
 
 .statistics__buttons {
-  margin: 60px 0;
+  margin: 40px 0;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1233,7 +1240,11 @@ a
 {
      font-weight: bold;
 }
-
+#idSelStyle
+{
+    width: 100px;
+    margin-top: -2px;
+}
 
 
 ::-webkit-scrollbar {

@@ -278,7 +278,7 @@ class SmartApp extends require("./smart-tr")
     
     CheckSignTransferTx(BlockNum, Body)
     {
-        return this.CheckSignAccountTx(BlockNum, Body);
+        return this.CheckSignAccountTx(BlockNum, Body).result;
     }
     DBSmartWrite(Item)
     {

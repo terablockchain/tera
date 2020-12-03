@@ -1126,4 +1126,5 @@ if(!global.ToLog)
     global.ToLog = function (Str)
     {
         console.log(Str);
-    }
+    };
+

@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
 "use strict";
 
 
@@ -907,6 +908,35 @@ ListF.$SendMessage = function (ShardPath,Confirms,Method,Params,ParamsArr)
     
     SHARDS.AddCrossMsg(RunContext.BlockNum, RunContext.TrNum, RunContext.Account.Num, RunContext.Iteration + 1, 1, ShardPath, Confirms,
     Method, Params, ParamsArr);
+}
+
+ListF.$ReadValue = function (Key,Format)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method ReadValue");
+    
+    DO(500);
+    var ID = RunContext.Smart.Account;
+    return ACCOUNTS.ReadValue(ID, Key, Format);
+}
+ListF.$WriteValue = function (Key,Value,Format)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method WriteValue");
+    DO(2000);
+    
+    var ID = RunContext.Smart.Account;
+    return ACCOUNTS.WriteValue(ID, Key, Value, Format, RunContext.BlockNum);
+}
+
+ListF.$RemoveValue = function (Key)
+{
+    if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)
+        throw new Error("Not yet method RemoveValue");
+    
+    DO(1000);
+    var ID = RunContext.Smart.Account;
+    return ACCOUNTS.RemoveValue(ID, Key, RunContext.BlockNum);
 }
 
 function GetParsing(Str)

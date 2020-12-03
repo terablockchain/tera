@@ -212,11 +212,11 @@ function Init(Engine)
             return BaseHash;
         if(!BaseBuf.length)
             return SysHash;
-        Buf = SysHash;
+        var Buf2 = SysHash;
         for(var h = 0; h < BaseHash.length; h++)
-            Buf.push(BaseHash[h]);
+            Buf2.push(BaseHash[h]);
         
-        var arr = sha3(Buf);
+        var arr = sha3(Buf2);
         return arr;
     };
     Engine.CalcHashMaxLiderInner = function (Data,BlockNum)

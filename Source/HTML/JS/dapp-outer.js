@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
 var EmulateStorage;
 var EmulateSessionStorage;
 

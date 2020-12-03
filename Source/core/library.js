@@ -475,6 +475,16 @@ global.SAVE_CONST = function (bForce)
         global.ON_USE_CONST();
 }
 
+fs.watch(GetDataPath("const.lst"), {}, function (eventType,filename)
+{
+    if(filename)
+    {
+        LOAD_CONST();
+    }
+}
+);
+
+
 
 global.GetDeltaCurrentTime = function ()
 {

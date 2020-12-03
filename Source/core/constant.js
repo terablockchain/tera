@@ -13,7 +13,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2461;
+global.UPDATE_CODE_VERSION_NUM = 2466;
 global.MIN_JINN_VERSION_NUM = 2428;
 
 global.DEBUG_TRAFFIC = 0;
@@ -203,9 +203,9 @@ global.READ_ONLY_DB = 0;
 global.PRICE_DAO = function (BlockNum)
 {
     if(BlockNum >= UPDATE_CODE_SHARDING)
-        return {NewAccount:10, NewSmart:100, NewTokenSmart:1000, NewShard:10000};
+        return {NewAccount:10, NewSmart:100, NewTokenSmart:1000, NewShard:10000, Storage:0.01};
     else
-        return {NewAccount:10, NewSmart:100, NewTokenSmart:10000, NewShard:0};
+        return {NewAccount:10, NewSmart:100, NewTokenSmart:10000, NewShard:0, Storage:0};
 }
 
 if(global.START_NETWORK_DATE_FORCE)

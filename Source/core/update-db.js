@@ -62,11 +62,11 @@ function RunOnUpdate()
             }
         }
         
-        if(global.NETWORK === "TEST-JINN")
+        if(global.NETWORK_ID === "TEST-JINN.TERA")
         {
-            if(CurNum < 2388)
+            if(CurNum < 2462)
             {
-                if(!IsValidAccHash(3160150, "21E175D821F8C038355291F311555F61EA3CAF5441A403CF3CC5D12CF5D6F692", 0))
+                if(!IsValidAccHash(413000, "DDE70E3BAF9FFED095A9516E1C35EB5724F7194E9D0830812E41376FD8B58521", 0))
                 {
                     SendRewrteAllTx();
                 }
@@ -89,6 +89,7 @@ function DeleteOldDBFiles()
 
 function SendRewrteAllTx()
 {
+    ToLog("---------- UPD: Prepare RewriteAllTransactions");
     setTimeout(function ()
     {
         ToLog("---------- UPD: START RewriteAllTransactions");

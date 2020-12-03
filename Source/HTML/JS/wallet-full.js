@@ -918,56 +918,6 @@ function CheckCtrlEnterAndESC(e,F)
     }
     
     SaveValues();
-    
-    if(e.ctrlKey && e.keyCode === 13)
-    {
-        
-        if(CurTabName === "TabAccounts" && IsVisibleBlock("edit_keys"))
-            SavePrivateKey();
-        else
-            if(CurTabName === "TabAccounts" && IsVisibleBlock("idAccountEdit"))
-                CreateAccount(0);
-            else
-                if(CurTabName === "TabAccounts" && IsVisibleBlock("edit_mining_set"))
-                    SaveMiningSet();
-                else
-                    if(CurTabName === "TabSend")
-                    {
-                        if(IsVisibleBlock("edit_transaction"))
-                            SignAndSendFromJSON();
-                        else
-                            if(IsVisibleBlock("idBlockOnSend"))
-                                SendMoney2();
-                            else
-                                SendMoneyBefore();
-                    }
-                    else
-                        if(IsVisibleBlock("idBlockPasswordSet"))
-                            SetPassword(1);
-                        else
-                            if(IsVisibleBlock("idBlockPasswordGet"))
-                                SetPassword(1);
-                            else
-                                if(WalletOpen === false)
-                                {
-                                    ViewOpenWallet();
-                                }
-    }
-    else
-        if(e.keyCode === 27)
-        {
-            for(var i = ArrCheckEscPress.length - 1; i >= 0; i--)
-            {
-                var element = ArrCheckEscPress[i];
-                if(element.tab === CurTabName)
-                {
-                    SetVisibleBlock(element.name, false);
-                    SetImg(element.item, element.name);
-                    ArrCheckEscPress.splice(i, 1);
-                    break;
-                }
-            }
-        }
 }
 
 function LoadValues()

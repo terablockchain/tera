@@ -23,8 +23,8 @@ class CommonJournal
     {
         var bReadOnly = (global.PROCESS_NAME !== "TX");
         
-        this.FORMAT_ITEM = {Reserve1:"str2", TableArr:[{Reserve2:"arr4", Type:"byte", DataArr:[{Pos:"uint", BufZip:"tr"}]}], Reserve3:"arr4",
-            SumHash:"hash", AccHash:"hash", BlockNumStart:"uint32", BlockNumFinish:"uint32", Reserve4:"str2", }
+        this.FORMAT_ITEM = {Border1:"str2", TableArr:[{Reserve2:"arr4", Type:"byte", DataArr:[{Pos:"uint", BufZip:"tr"}]}], Reserve3:"arr4",
+            SumHash:"hash", AccHash:"hash", BlockNumStart:"uint32", BlockNumFinish:"uint32", Border2:"str2", }
         this.DBJournal = new CDBHeadBody("journal", {Position:"uint", BlockNum:"uint32"}, this.FORMAT_ITEM, bReadOnly)
         
         if(bReadOnly)
@@ -45,8 +45,17 @@ class CommonJournal
     {
         if(Num < 0)
             return undefined;
-        else
-            return this.DBJournal.Read(Num);
+        
+        var Item = this.DBJournal.Read(Num);
+        if(Item)
+        {
+            if(Item.Border1 !== "[[" || Item.Border2 !== "]]")
+            {
+                ToLog("--------- ERROR JOURNAL BORDERS at Num=" + Num)
+                Item = undefined
+            }
+        }
+        return Item;
     }
     StartInitBuffer()
     {
@@ -98,8 +107,8 @@ class CommonJournal
     
     WriteJournalToFile(BlockNumStart, BlockFinish)
     {
-        var FixData = {BlockNum:BlockFinish.BlockNum, Reserve1:"[[", TableArr:[], SumHash:BlockFinish.SumHash, AccHash:ACCOUNTS.GetCalcHash(),
-            BlockNumStart:BlockNumStart, BlockNumFinish:BlockFinish.BlockNum, Reserve4:"]]", };
+        var FixData = {BlockNum:BlockFinish.BlockNum, Border1:"[[", TableArr:[], SumHash:BlockFinish.SumHash, AccHash:ACCOUNTS.GetCalcHash(),
+            BlockNumStart:BlockNumStart, BlockNumFinish:BlockFinish.BlockNum, Border2:"]]", };
         
         for(var i = 0; i < this.TableArr.length; i++)
         {
@@ -108,6 +117,7 @@ class CommonJournal
                 FixData.TableArr.push(Table)
         }
         
+        this.DBJournal.DeleteFromBlock(BlockFinish.BlockNum, "BlockNum")
         if(!this.DBJournal.Write(FixData))
             ToLog("Error write FixData on BlockNum=" + FixData.BlockNum)
         this.TableArr = []

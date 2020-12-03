@@ -123,8 +123,8 @@ require("../core/html-server");
 var JinnLib = require("../jinn/tera");
 require("../system");
 
-RunServer();
 require("./childs-run");
+RunServer();
 
 
 var idRunOnce;
