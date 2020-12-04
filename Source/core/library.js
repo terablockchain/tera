@@ -475,14 +475,20 @@ global.SAVE_CONST = function (bForce)
         global.ON_USE_CONST();
 }
 
-fs.watch(GetDataPath("const.lst"), {}, function (eventType,filename)
+function WathConstFile()
 {
-    if(filename)
+    if(!fs.existsSync(GetDataPath("const.lst")))
     {
-        LOAD_CONST();
+        SAVE_CONST(1);
     }
+    fs.watch(GetDataPath("const.lst"), {}, function (eventType,filename)
+    {
+        if(filename)
+        {
+            LOAD_CONST();
+        }
+    });
 }
-);
 
 
 
@@ -666,3 +672,6 @@ global.SetBit = SetBit;
 global.GetBit = GetBit;
 global.ResetBit = ResetBit;
 
+
+
+WathConstFile();
