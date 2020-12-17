@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Explorer</title>
+
+    <link rel="stylesheet" href="./CSS/mobile-wallet.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
+    <script type="text/javascript" src="../HTML/JS/client.js"></script>
+    <script type="text/javascript" src="../HTML/JS/diagram.js"></script>
+
+    <script>
+        //Pagination
+        var CONFIG_DATA={};
+        var CountViewRows=20;
+        var DefAccounts={BlockName:"idPaginationAccount", NumName:"idViewAccountNum", TabName:"grid_accounts_all",APIName:"GetAccountList"};
+        var DefBlock={BlockName:"idPaginationBlock", NumName:"idViewBlockNum", TabName:"grid_block_all",APIName:"GetBlockList"};
+        function SaveValues() {};
+        function SetImg() {};
+
+        function UpdatesConfigData(bFirst)
+        {
+            window.MainServer=undefined;
+
+            GetData("GetCurrentInfo",{Diagram:IsVisibleBlock("idStatBlock")?1:0}, function (Data)
+            {
+                if(!Data)
+                    return;
+
+                SetConfigData(Data,bFirst);
+
+                var arr=Data.arr;
+                for(var i=0;arr && i<arr.length;i++)
+                {
+                    var ItemServer=arr[i];
+                    var ItemClient=DiagramMap[ItemServer.name];
+                    if(!ItemClient || ItemClient.Extern)
+                        continue;
+
+
+                    ItemClient.arr=ItemServer.arr;
+                    ItemClient.AvgValue=ItemServer.AvgValue;
+                    ItemClient.steptime=ItemServer.steptime;
+                    //ItemClient.fillStyle="#c7c7c7";
+
+
+
+                    DrawDiagram(ItemClient);
+                }
+
+            });
+        }
+        function SetConfigData(Data,bFirst)
+        {
+            if(!Data || !Data.result)
+                return;
+            CONFIG_DATA=Data;
+            window.FIRST_TIME_BLOCK=Data.FIRST_TIME_BLOCK;
+            window.UPDATE_CODE_JINN=Data.UPDATE_CODE_JINN;
+            window.CONSENSUS_PERIOD_TIME=Data.CONSENSUS_PERIOD_TIME;
+            if(bFirst)
+            {
+                ViewEnd(DefAccounts,CONFIG_DATA.MaxAccID,1);
+                ViewEnd(DefBlock,CONFIG_DATA.MaxNumBlockDB,1);
+                InitDiagram();
+            }
+
+            var StrVersion=""+Data.VersionNum;
+            $("idBHeight").innerText=Data.MaxNumBlockDB;
+            $("idBCurrent").innerText=Data.CurBlockNum;
+            $("idBVersion").innerText=StrVersion;
+
+        }
+
+        window.onload=function()
+        {
+            InitMainServer();
+
+            UpdatesConfigData(1);
+            setInterval(UpdatesConfigData,3000);
+            if(!Storage.getItem("idSelStyle"))
+                Storage.setItem("idSelStyle","styleDark");
+
+            //COMMON MOUSE MOVING
+            window.onmousemove = function(event)
+            {
+                SetDiagramMouseX(event);
+            }
+
+            //delete localStorage["MainServer"];
+
+        };
+    </script>
+
+    <script>
+        var DiagramArr=
+            [
+                {name:"MAX:ALL_NODES",text:"All nodes count",value:0,red:"#1d506b",MouseText:" nodes"},
+                {name:"MAX:HASH_RATE_B",text:"HashRate, Tera hash/s",value:0,red:"#286b16",MathPow:2,MathDiv:1024*1024*1024*1024,KPrecision:10,NoTextMax:1,MouseText:" T h/s"},
+        ];
+
+
+        function InitDiagram()
+        {
+            InitDiagramByArr(DiagramArr,1120);
+        }
+
+        function ViewCounters(This)
+        {
+            var BlockName="idStatBlock";
+            var element=$(BlockName);
+
+            var bVisible=IsVisibleBlock(BlockName);
+            if(!bVisible)
+                MoveUp(element);
+            SetVisibleBlock(BlockName,!bVisible);
+            var ResVisible=IsVisibleBlock(BlockName);
+            if(This && This.className)
+            {
+                This.className=This.className.replace("btpress", "");
+                if(ResVisible)
+                    This.className+=" btpress";
+            }
+
+            if(!bVisible)
+            {
+                UpdatesConfigData(1);
+            }
+
+        }
+    </script>
+
+</head>
+<body>
+
+    <header class="header">
+        <div class="header__wrapper">
+            <div class="header__logo">
+                <a href="/" class="header__logo-link" id="MTabWelcome">
+                    <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+                    <p class="header__logo-name">Explorer</p>
+                </a>
+            </div>
+            <div class="header__right">
+                <select size="1" id="idLang" onchange="ChangeLang()" class="bigs" >
+                    <option value="ENG">ENG</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="explorer-page">
+            <div class="findtxid"><span style="padding-top: 8px">Find Tx: </span><INPUT type="search" class="radius" id="idFindTx" placeholder="Type TxID..."><button style="margin-left: 5px" onclick="OnFindTx('idFindTx')">Find</button></div>
+            <div id="idCurrentBlockNum" class="currentBlockNum">
+                <p><span>Blockchain height:</span> <b id="idBHeight">xxxxxxx</b></p>
+                <p><span>Current create:</span> <b id="idBCurrent">yyyyyyy</b></p>
+                <p><span>Protocol ver:</span> <b id="idBVersion">zzzzzz</b></p>
+            </div>
+
+            <button onclick="ViewCurrent(DefAccounts,1,this);" class="btview explorer-page__explore btn btn--white btn--full-width">Accounts</button>
+
+            <div class="explorer-page__table">
+                <div id="idPaginationAccount" style="display: none">
+                    <div class="page-pagination">
+                        <button onclick="ViewBegin(DefAccounts)" class="btnav btn">|&lt;</button>
+                        <button onclick="ViewPrev(DefAccounts)" class="btnav btn">&lt;</button>
+                        <INPUT type="number" id="idViewAccountNum" style="text-align: center" value="0" min=0 onchange="ViewCurrent(DefAccounts)">
+                        <button onclick="ViewNext(DefAccounts,CONFIG_DATA.MaxAccID)" class="btnav btn">&gt;</button>
+                        <button onclick="ViewEnd(DefAccounts,CONFIG_DATA.MaxAccID)" class="btnav btn">&gt;|</button>
+                    </div>
+                    <div class="explorer-page__table-wrap">
+                        <table id="grid_accounts_all" class="grid">
+                            <tr>
+                                <th id="(RetHistoryAccount(Item))" class="num">ID</th>
+                                <th id="SUM_TO_STRING(Item.Value)" class="sum">Amount</th>
+                                <th id="CurrencyNameItem(Item)" class="cur">Cur</th>
+                                <th id="Item.Name" class="accname">Name</th>
+                                <th id="Item.PubKeyStr" class="hash">PubKey</th>
+                                <th id="Item.Value.OperationID" class="minwidth">Operation</th>
+                                <th id="Item.Value.Smart" class="minwidth">Smart</th>
+                                <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="minwidth">Block Num</th>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <button onclick="ViewCurrent(DefBlock,1,this)" class="btview explorer-page__explore btn btn--white btn--full-width">Blocks & Tx</button>
+            
+            <div class="explorer-page__table">
+                <div id="idPaginationBlock" style="display: none">
+                    <div class="page-pagination">
+                        <!-- <div>Blocks<BR></div> -->
+                        <button onclick="ViewBegin(DefBlock)" class="btnav btn">|&lt;</button>
+                        <button onclick="ViewPrev(DefBlock)" class="btnav btn">&lt;</button>
+                        <INPUT type="number" id="idViewBlockNum" style="text-align: center" value="0" min=0 onchange="ViewCurrent(DefBlock)">
+                        <button onclick="ViewNext(DefBlock,CONFIG_DATA.MaxNumBlockDB)" class="btnav btn">&gt;</button>
+                        <button onclick="ViewEnd(DefBlock,CONFIG_DATA.MaxNumBlockDB)" class="btnav btn">&gt;|</button>
+                    </div>
+
+                    <div class="explorer-page__table-wrap">
+                        <table id="grid_block_all" class="grid">
+                            <tr>
+                                <th id="(RetOpenBlock(Item.BlockNum,Item.TrDataLen))" class="num">Num</th>
+                                <th id="(DateFromBlock(Item.BlockNum,1))" class="date">Date</th>
+                                <th id="GetHexFromArr(Item.TreeHash)" class="hash">Data Hash</th>
+                                <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
+                                <th id="GetHexFromArr(Item.Hash)" class="hash">Block Hash</th>
+                                <th id="Item.TrDataLen" class="minwidth">Bytes</th>
+                                <th id="Item.Power" class="minwidth">Pow</th>
+                                <th id="Item.Miner" class="minwidth">Miner</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!--<button onclick="ViewCurrent(DefBlock,1,this)" class="btview">DApps</button>-->
+            <button onclick="ViewCounters(this)" class="btview explorer-page__explore btn btn--white btn--full-width">Counters</button>
+            <div class="explorer-page__diagramms">
+                <div id="idStatBlock" style="display: none">
+                    <BR>
+
+                    <div id="diagr_content" align='center'>
+                        <div id="diargams" align='center'>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </section>
+    </main>
+</body>
+</html>

@@ -919,6 +919,7 @@ ListF.$ReadValue = function (Key,Format)
     var ID = RunContext.Smart.Account;
     return ACCOUNTS.ReadValue(ID, Key, Format);
 }
+
 ListF.$WriteValue = function (Key,Value,Format)
 {
     if(!RunContext || RunContext.BlockNum < global.UPDATE_CODE_SHARDING)

@@ -104,7 +104,7 @@ switch(global.MODE_RUN)
         
         global.UPDATE_CODE_NEW_ACCHASH = 0;
         
-        global.UPDATE_CODE_SHARDING = 1000000000;
+        global.UPDATE_CODE_SHARDING = 68500000000;
         
         break;
         

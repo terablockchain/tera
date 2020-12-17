@@ -85,6 +85,6 @@
     ```
     node set NAME=Value
     ```
-* After changing the constants restart the node
+* Some constants (such as the node port number) are only used when the node starts, so they need to be restarted to apply them
 
 

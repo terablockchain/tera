@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map network</title>
+
+    <script type="text/javascript" src="../HTML/JS/client.js"></script>
+
+    <script>
+        var WasMapDisplay=0;
+        var PointC;
+        var glMouse,glMoveMouse;
+        var NodesMap={};
+        function DrawMap()
+        {
+            var CurTime=Date.now();
+
+            var obj = $("idMap");
+            var ctx     = obj.getContext('2d');
+            ctx.fillStyle = "#030a29";
+            ctx.fillRect(0, 0, obj.width, obj.height);
+
+            var KX=1050/1000;
+            var KY=490/500;
+            PointC={x:556,y:380};
+
+            //PointC={x:obj.width/2,y:obj.height/2};
+//            if(glMouse)
+//                PointC=glMouse;
+//            if(glMouse)
+//                KX=glMouse.x/1000;
+//            if(glMouse)
+//                KY=glMouse.y/500;
+
+            var wasname=0;
+
+            var map={};
+            var Count=0;
+            var ArrForDelete=[];
+            for(var key in NodesMap)
+            {
+                var Item=NodesMap[key];
+                var DeltaTime=CurTime-Item.Time;
+                if(DeltaTime>600*1000)
+                {
+                    ArrForDelete.push(key);
+                    continue;
+                }
+
+                Count++;
+                if(Item.latitude===undefined)
+                {
+                    // var x = 400;
+                    // var y = 300;
+                    continue;
+                }
+                else
+                {
+                    var y=Math.floor(obj.height-(obj.height-PointC.y+KY*obj.height*(Item.latitude/10000-90)/180));
+                    var x=Math.floor(PointC.x+KX*obj.width*(Item.longitude/10000-180)/360);
+                    if(Item.longitude/10000-180<-20)
+                        x+=25;
+                }
+
+                var strxy=""+x+":"+y;
+                if(!map[strxy])
+                    map[strxy]={count:0,name:"-"};
+                var point=map[strxy];
+                point.count++;
+                point.x=x;
+                point.y=y;
+                if(Item.name)
+                    point.name=Item.name;
+
+
+            }
+
+            //arc
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            for(var key in map)
+            {
+                var point=map[key];
+                ctx.beginPath();
+                var r=Math.sqrt(point.count);
+                if(r>=10)
+                {
+                    ctx.strokeStyle = "#ff971b";
+                    r=6.7+Math.log2(r);
+                }
+                else
+                {
+                    ctx.strokeStyle = "#fff546";
+                }
+                ctx.fillStyle=ctx.strokeStyle;
+
+                ctx.arc(point.x,point.y,r,0,2 * Math.PI);
+//              ctx.fillText(point.count,point.x,point.y);
+                ctx.stroke();
+                ctx.fill();
+            }
+
+            //name
+            ctx.fillStyle="#1b9031";
+            for(var key in map)
+            {
+                var point=map[key];
+                if(!wasname && glMoveMouse)
+                {
+                    var dx=point.x-glMoveMouse.x;
+                    var dy=point.y-glMoveMouse.y;
+                    var dl2=dx*dx+dy*dy;
+                    if(dl2<17+point.count)
+                    {
+                        ctx.beginPath();
+                        ctx.fillText(point.name+":"+point.count,point.x,point.y-20);
+                        ctx.stroke();
+                        wasname=1;
+                    }
+                }
+            }
+
+
+            if(0 && glMouse)
+            {
+                ctx.beginPath();
+                ctx.arc(glMouse.x,glMouse.y,4,0,2 * Math.PI);
+                ctx.fillText("x="+glMouse.x+" y="+glMouse.y,glMouse.x,glMouse.y-20);
+                ctx.stroke();
+            }
+
+            SetStatus("Nodes count: "+Count);
+
+            if(!WasMapDisplay)
+                SetVisibleBlock("idMapAll",true);
+            WasMapDisplay=1;
+
+            for(var i=0;i<ArrForDelete.length;i++)
+            {
+                //console.log("Delete "+ArrForDelete[i]);
+                delete NodesMap[ArrForDelete[i]];
+            }
+        }
+        function $(id)
+        {
+            return document.getElementById(id);
+        }
+        function SetVisibleBlock(name,bSet)
+        {
+            var Item=$(name);
+            if(bSet && typeof bSet==="string")
+                Item.style.display = bSet;
+            else
+            if(bSet)
+            {
+                Item.style.display = 'block';
+                DoStableScroll();
+            }
+            else
+            {
+                Item.style.display = 'none';
+            }
+            return Item;
+        }
+
+        function SetStatus(Str)
+        {
+            var id = $("idStatus");
+            id.innerHTML=Str;
+        }
+
+        function GetNodeListAll()
+        {
+            GetData("GetNodeList",{All:1,Geo:1}, function (Data)
+            {
+                if(Data && Data.result)
+                {
+                    var CurTime=Date.now();
+                    for(var i=0;i<Data.arr.length;i++)
+                    {
+                        var Item=Data.arr[i];
+                        Item.Time=CurTime;
+                        NodesMap[Item.ip+":"+Item.port]=Item;
+                    }
+
+                    DrawMap();
+                }
+            });
+        }
+
+        window.onload=function ()
+        {
+            DrawMap();
+            setInterval(GetNodeListAll,1000);
+
+            window.addEventListener('mousedown',function (event)
+            {
+                SetDiagramMouseX(event,"down");
+            }, false);
+            window.addEventListener('mouseup',function (event)
+            {
+                SetDiagramMouseX(event,"up");
+            }, false);
+
+            window.onmousemove = function(event)
+            {
+                SetDiagramMouseX(event);
+            }
+        }
+
+
+        var LMouseOn=false;
+        function SetDiagramMouseX(event,mode)
+        {
+            if(event.srcElement && event.srcElement.className.indexOf("map")>=0)
+            {
+                if(mode==="down")
+                    LMouseOn=true;
+                else
+                if(mode==="up")
+                    LMouseOn=false;
+
+                event.preventDefault();
+                var obj = event.srcElement;
+                glMoveMouse=getMouse(obj,event);
+                if(LMouseOn===true)
+                {
+                    glMouse=glMoveMouse;
+                    DrawMap();
+                }
+            }
+        }
+
+
+        //LIB
+        //LIB
+        //LIB
+        //LIB
+
+        function getMouse(canvas,e)
+        {
+
+            var x = e.clientX - getTrueOffsetLeft(canvas);
+            if(window.pageXOffset)
+                x=x+window.pageXOffset;
+
+            var y = e.clientY - getTrueOffsetTop(canvas);
+            if(window.pageYOffset)
+                y=y+window.pageYOffset
+            var coord= {x:x,y:y};
+            return coord;
+        };
+        function getTrueOffsetLeft(ele)
+        {
+            var n = 0;
+            while (ele)
+            {
+                n += ele.offsetLeft || 0;
+                ele = ele.offsetParent;
+            }
+            return n;
+        }
+
+        function getTrueOffsetTop(ele)
+        {
+            var n = 0;
+            while (ele)
+            {
+                n += ele.offsetTop || 0;
+                ele = ele.offsetParent;
+            }
+            return n;
+        }
+
+    </script>
+    <style>
+        .basemap
+        {
+            width:1244px;
+            background:url('https://terafoundation.org/files/world.jpg') no-repeat;
+            border:1px solid rgba(204, 198, 198, 0.97);
+        }
+        #idMap
+        {
+            z-index: 100;
+            opacity: 0.7;
+        }
+
+        #idStatus
+        {
+            height: 20px;
+            color: white;
+        }
+        body
+        {
+            background-color: #030a29;
+        }
+    </style>
+</head>
+<body>
+<DIV align='center'>
+    <DIV id="idStatus"></DIV>
+    <DIV id="idMapAll" style="display: none">
+        <DIV class="basemap">
+            <canvas class="map" width="1244" height="658" id='idMap'></canvas>
+        </DIV>
+        <DIV style="color: gray; text-align: center">The location of the nodes on the map is very approximate...</DIV>
+    </DIV>
+</DIV>
+</body>
+</html>

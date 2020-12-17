@@ -537,7 +537,7 @@ button {
 
 .tab {
   color: rgba(var(--colorT), var(--colorT), var(--colorT), 0.8);
-  margin-right: 60px;
+  margin-right: 30px;
   margin-top: 42px;
   cursor: pointer;
   padding: 0 30px 13px 30px; }
