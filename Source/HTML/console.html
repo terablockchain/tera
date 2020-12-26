@@ -20,13 +20,8 @@
 <script>
     function SetStatus(Str)
     {
-        var id = $("status");
-        id.innerHTML=Str;
-    }
-    function SetStatus2(Str)
-    {
-        var id = $("status2");
-        id.innerHTML=Str;
+        // var id = $("status");
+        // id.innerHTML=Str;
     }
 
     function UpdateData()
@@ -219,7 +214,7 @@
 
     function ToResult(Str)
     {
-        $("result").value=Str;
+        $("result").value=JSON.stringify(Str,"",4);
     }
     //***********************************************
     var idSendServer=undefined;
@@ -334,12 +329,8 @@
             return;
 
         $("idConsoleSend").value=localStorage["idConsoleSend"];
-        // $("idConsoleDeltaBlockNum").value=localStorage["idConsoleDeltaBlockNum"];
-        $("idNode").value=localStorage["idConsoleNode"];
         if(localStorage["ConsoleCodeList2"])
             CodeList=JSON.parse(localStorage["ConsoleCodeList2"]);
-        // if(localStorage["idConsolePow"])
-        //     $("idPow").value=localStorage["idConsolePow"];
 
 
         $("idProcessTX").checked=(localStorage["idConsoleProcessTX"]==="true");
@@ -352,11 +343,7 @@
         localStorage["WasSaveConsole"]=1;
 
         localStorage["idConsoleSend"]=$("idConsoleSend").value;
-        // localStorage["idConsoleDeltaBlockNum"]=$("idConsoleDeltaBlockNum").value;
-        localStorage["idConsoleNode"]=$("idNode").value;
         localStorage["ConsoleCodeList2"]=JSON.stringify(CodeList);
-        //localStorage["idConsolePow"]=$("idPow").value;
-        //localStorage["idConsoleSendAll"]=$("idSendAll").checked;
 
         localStorage["idConsoleProcessTX"]=$("idProcessTX").checked;
         localStorage["idConsoleProcessWEB"]=$("idProcessWEB").checked;
@@ -405,10 +392,9 @@
 
 <body>
 <DIV align='center'>
-    <B>CONSOLE</B>
+    <B>CONSOLE</B><BR>
 
-    <DIV id="status2"></DIV><BR>
-    <DIV id="status"> ... </DIV><BR>
+<!--    <DIV id="status"> ... </DIV><BR>-->
 
 
     Mode:
@@ -425,7 +411,7 @@
 
     <BR>
 
-    <DIV align='left' style="border: 1px solid #39519b;width:1198px;height:800px;">
+    <DIV align='left' style="border: 1px solid #39519b;width:1198px;height:770px;">
         <DIV style="width: 200px;height:100%; float:left;">
             <select size="45" id="idConsoleIndex" style="width:100%;height:97%;" onchange="SetConsoleText()" ondblclick="SetAndRun()">
             </select>
@@ -444,12 +430,9 @@
                     Name:<INPUT type="string" id="idName" style="width: 72%;" value="">
                     <INPUT type="button" onclick="SaveToList(1)" class="bt" value="Save">
                 </DIV>
-                <textarea id="idConsoleText"  style="width: 99%;height: 95%;" rows="22" cols="98" autofocus>
+                <textarea id="idConsoleText"  style="width: 99%;height: 95%;" rows="25" cols="98" autofocus>
                 </textarea>
             </DIV>
-
-            <textarea rows="5" cols="98"  name="result" id="idNode" style="width: 99%;">
-            </textarea>
 
             <INPUT type="button" onclick="SendToServer()" class="bt btdoit" id="idBtRun" value="Send">
             <!--All<input type="checkbox" id="idSendAll" onchange = "SaveValues()"/>-->
@@ -457,11 +440,11 @@
             <INPUT type="number" id="idPeriodRun" style="width: 50px;" onchange="SaveValues();" value="1"> sec
 
 
-            <BR>
+
 
             <BR>
 
-            <textarea rows="18" cols="98"  name="result" id="result" style="width: 99%;">
+            <textarea rows="19" cols="98"  name="result" id="result" style="width: 99%;">
             </textarea>
         </DIV>
     </DIV>

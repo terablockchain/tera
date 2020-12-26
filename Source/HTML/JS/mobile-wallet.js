@@ -348,6 +348,11 @@ function OnGenerateKeyNew()
 {
     GenerateKeyNew();
 }
+function DoHashing()
+{
+    var Str = GetHexFromArr(sha3($("idPrivKeyEdit").value));
+    $("idPrivKeyEdit").value = Str;
+}
 function OnEditPrivKey()
 {
 }

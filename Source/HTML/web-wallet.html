@@ -91,11 +91,14 @@
             </textarea>
         </div>
 
-         <div class="wallet-wrapper">
-            <button class="btn btn--full-width4 wallet-settings__generate4" onclick="OnGenerateKeyNew()">New</button>
 
-
+         <div class="wallet-wrapper df_space">
+             <button class="btn btn--full-width4 wallet-settings__generate4" onclick="OnGenerateKeyNew()">New</button>
+             <button class="btn" style="margin-left: 20px;" onclick="DoHashing()">Hashing</button>
         </div>
+
+
+
         <div class="wallet-settings__ok-btns">
             <button class="btn wallet-settings__btn-270" id="okEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyOK()">OK</button>
             <button class="btn btn--white wallet-settings__btn-270" id="cancelEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyCancel()">Cancel</button>
