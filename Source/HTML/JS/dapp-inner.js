@@ -864,6 +864,7 @@ function UpdateDappInfo()
             for(var i = 0; i < Data.ArrEvent.length; i++)
             {
                 var Item = Data.ArrEvent[i];
+                
                 Item.cmd = "OnEvent";
                 OnMessage({data:Item});
             }

@@ -85,6 +85,9 @@ function SetSmartToDialog(Smart,bSaveToArr,bNoSetPos)
         
         editCode.WasReload = 1;
         editHTML.WasReload = 1;
+        
+        if(!Smart.HTML)
+            editHTML.NeedReplay = 1;
     }
     else
     {
@@ -163,19 +166,15 @@ function SetDialogEnabled()
     return !bDisabled;
 }
 
-var StrSmartPath = "";
 var LastBaseState = undefined;
 function LoadSmart(Path)
 {
     LastBaseState = undefined;
     SetStatus("");
-    if(!Path)
-        Path = prompt("Enter smart number or string of blockchain file path (example: /file/12345/10)", StrSmartPath);
     if(Path !== null)
     {
         if(Path == "" + parseInt(Path))
         {
-            StrSmartPath = Path;
             LastBaseState = undefined;
             
             GetData("DappSmartList", {StartNum:parseInt(Path), CountNum:1, GetAllData:1, AllRow:1}, function (SetData)
@@ -218,7 +217,6 @@ function LoadSmart(Path)
                 SetError("Error file path: " + Path);
                 return;
             }
-            StrSmartPath = Path;
             GetData("DappBlockFile", Param, function (SetData)
             {
                 if(SetData && SetData.result)
@@ -375,12 +373,16 @@ function SetCurrentProject(bSet)
 }
 function DelProject()
 {
-    DoConfirm("Are you sure?", function ()
+    var SmartValue = $("idProjectList").value;
+    if(!SmartValue)
+        return;
+    var Index = parseInt(SmartValue);
+    Smart = ProjectArray[Index];
+    
+    DoConfirm("Are you sure?", "Remove project <B>" + Smart.Name + "</B>", function ()
     {
-        var SmartValue = $("idProjectList").value;
         if(SmartValue)
         {
-            var Index = parseInt(SmartValue);
             ProjectArray.splice(Index, 1);
             
             FillProject();
@@ -426,40 +428,83 @@ function GetBlankSmart()
     Smart.CrossMsgConfirms = 0;
     return Smart;
 }
+
 function NewProject()
 {
+    openModal("idNewSmart");
+}
+function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML)
+{
+    var CodeSmart = "", CodeHTML = "";
+    if(typeof FCodeTemplate === "function")
+    {
+        CodeSmart = GetTextFromF(FCodeTemplate);
+    }
+    else
+        if(typeof FCodeTemplate === "object")
+        {
+            for(var i = 0; i < FCodeTemplate.length; i++)
+            {
+                var Str = "" + FCodeTemplate[i];
+                CodeSmart += Str + "\n";
+                if(Str.length > 8)
+                    CodeSmart += "\n";
+            }
+        }
+        else
+        {
+            CodeSmart = FCodeTemplate;
+        }
+    
+    CodeHTML = GetTextFromF(FHTMLTemplate);
+    
+    NewDappNext(Mode, CodeSmart, CodeHTML, idHTML);
+}
+
+function GetTextFromF(F)
+{
+    if(!F)
+        return "";
+    var Str = "" + F;
+    var Index = Str.indexOf("{");
+    Str = Str.substr(Index + 1);
+    Str = Str.substr(0, Str.length - 1);
+    return Str;
+}
+
+function NewDappNext(Mode,CodeSmart,CodeHTML,idHTML)
+{
+    closeModal();
+    
     var NewSmartNum = 0;
     var Smart = GetBlankSmart();
-    BlockNum:
+    
+    LBlockNum:
     while(true)
     {
         NewSmartNum++;
-        var Name = "New " + NewSmartNum;
+        var Name = Mode + " " + NewSmartNum;
         for(var i = 0; i < ProjectArray.length; i++)
         {
             var Smart2 = ProjectArray[i];
             if(Smart2.Name === Name)
-                continue BlockNum;
+                continue LBlockNum;
         }
         break;
     }
     Smart.Name = Name;
     
-    if($("idUseTemplate").checked)
+    if(CodeSmart)
     {
         Smart.Code = "//Smart-contract: " + Name + "\n\n";
-        for(var i = 0; i < CodeTemplate.length; i++)
-        {
-            var Str = "" + CodeTemplate[i];
-            Smart.Code += Str + "\n";
-            if(Str.length > 8)
-                Smart.Code += "\n";
-        }
-        
-        var Str = "" + HTMLTemplate;
-        Str = Str.replace("function HTMLTemplate(){", "<script>");
-        Smart.HTML = Str.substr(0, Str.length - 1) + "<\/script>\n\n";
-        Smart.HTML += $("idHTMLTemplate").innerHTML + "\n";
+        Smart.Code += CodeSmart;
+    }
+    if(CodeHTML)
+    {
+        var Str = "" + CodeHTML;
+        Str = "<script>\n" + Str + "\n<\/script>\n\n";
+        if(idHTML)
+            Smart.HTML = Str + $(idHTML).innerHTML + "\n";
         
         Smart.StateFormat = "{HTMLBlock:uint,HTMLTr:uint16}";
     }
@@ -471,6 +516,16 @@ function NewProject()
     SetSmartToDialog(Smart, 0, 1);
     
     $("idName").focus();
+}
+
+function LoadFromDapp()
+{
+    var Num = $("idLoadDapp").value;
+    if(Num)
+    {
+        NewDappNext("Blank");
+        LoadSmart(Num);
+    }
 }
 
 function TrimStr(Str)
@@ -535,4 +590,13 @@ function SelectScreenStyle()
 {
     var Select = $("idScreenStyle");
     $("idPreview").className = Select.value;
+}
+
+function DoPlaySend()
+{
+    var SendFrom = ParseNum($("idSendFrom").value);
+    var SendTo = ParseNum($("idSendTo").value);
+    var fSum = parseFloat($("idSendSum").value);
+    
+    PlaySend(SendFrom, SendTo, fSum, $("idSendDesc").value);
 }

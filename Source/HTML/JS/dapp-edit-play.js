@@ -12,12 +12,12 @@
 
 var LexerJS = global.LexerJS;
 
-var MaxAccCreate = 102;
-var VM_VALUE = {CurBlockNum:1000, MaxDappsID:1, };
+var MaxAccCreate = 106;
+var VM_VALUE = {CurBlockNum:1000, MaxDappsID:3, };
 
-var VM_VLOCKS = [];
-var VM_ACCOUNTS = [];
+var VM_BLOCKS = [];
 var VM_SMARTS = [];
+var VM_ACCOUNTS = [];
 var VM_KEY_VALUE = {};
 InitVMArrays();
 
@@ -33,6 +33,30 @@ var _ListF = window.ListF;
 
 var UPDATE_CODE_1 = 0;
 var UPDATE_CODE_2 = 0;
+
+var VM_ATOM_MAP = {};
+var WasRollBack = 0;
+function BEGINTRANSACTION()
+{
+    WasRollBack = 0;
+    VM_ATOM_MAP.VM_ACCOUNTS = JSON.stringify(VM_ACCOUNTS);
+    VM_ATOM_MAP.VM_KEY_VALUE = JSON.stringify(VM_KEY_VALUE);
+    VM_ATOM_MAP.ArrWallet = JSON.stringify(VM_VALUE.ArrWallet);
+}
+function COMMITRANSACTION()
+{
+    if(WasRollBack)
+    {
+        VM_ACCOUNTS = JSON.parse(VM_ATOM_MAP.VM_ACCOUNTS);
+        VM_KEY_VALUE = JSON.parse(VM_ATOM_MAP.VM_KEY_VALUE);
+        VM_VALUE.ArrWallet = JSON.parse(VM_ATOM_MAP.ArrWallet);
+    }
+}
+
+function ROLLBACKRANSACTION()
+{
+    WasRollBack = 1;
+}
 
 function RunFrame(Code,Parent,bRecreate)
 {
@@ -80,15 +104,22 @@ function RunFrame(Code,Parent,bRecreate)
         if(SMART.TokenGenerate)
             Currency = glSmart;
         
-        VM_VALUE.WalletAccount = GetNewAccount(100, "TEST", 1000, glSmart, Currency);
-        VM_VALUE.WalletAccount2 = GetNewAccount(101, "TEST USD", 2000, glSmart, 1);
-        VM_VALUE.OwnerAccount = GetNewAccount(102, "OWNER ACCOUNT", 3000, glSmart, Currency);
+        VM_VALUE.WalletAccount = GetNewAccount(100, "TEST", 100000, glSmart, Currency);
+        VM_VALUE.ArrWallet = [VM_VALUE.WalletAccount];
         
-        VM_VALUE.ArrWallet = [VM_VALUE.WalletAccount, VM_VALUE.WalletAccount2, VM_VALUE.OwnerAccount];
+        VM_VALUE.ArrWallet.push(GetNewAccount(101, "Some USD", 1500, glSmart, 1));
+        VM_VALUE.ArrWallet.push(GetNewAccount(102, "Some BTC", 10, glSmart, 2));
+        VM_VALUE.ArrWallet.push(GetNewAccount(103, "Some DAO", 3000, glSmart, 3));
+        
+        VM_VALUE.ArrWallet.push(GetNewAccount(104, "Test USD", 0, glSmart, 1));
+        VM_VALUE.ArrWallet.push(GetNewAccount(105, "Test DAO", 0, glSmart, 3));
+        
+        VM_VALUE.OwnerAccount = GetNewAccount(106, "OWNER", 4000, glSmart, Currency);
+        VM_VALUE.ArrWallet.push(VM_VALUE.OwnerAccount);
         
         for(var i = 0; i < SMART.AccountLength; i++)
         {
-            var Item = GetNewAccount(103 + i, "Smart base", i === 0 ? 10000 : 0, glSmart, Currency);
+            var Item = GetNewAccount(107 + i, "Smart base", i === 0 ? 10000 : 0, glSmart, Currency);
             if(SMART.OwnerPubKey)
                 VM_VALUE.ArrWallet.push(Item);
             if(i === 0)
@@ -178,14 +209,16 @@ function InitVMArrays()
     {
         var Block = {Type:1, Body:"0101020304AABBCCDD", Params:"{}"};
         AddHash(Block);
-        VM_VLOCKS[Num] = Block;
+        VM_BLOCKS[Num] = Block;
     }
     
     for(var Num = 8; Num <= VM_VALUE.MaxDappsID; Num++)
     {
         VM_SMARTS[Num] = {Num:Num, Name:"SMART#" + Num, ShortName:"TST"};
     }
-    VM_SMARTS[1] = {Num:1, Name:"USD TOKEN" + Num, ShortName:"USD", TokenGenerate:1};
+    VM_SMARTS[1] = {Num:1, Name:"USD TOKEN", ShortName:"USD", TokenGenerate:1};
+    VM_SMARTS[2] = {Num:2, Name:"BTC TOKEN", ShortName:"BTC", TokenGenerate:1};
+    VM_SMARTS[3] = {Num:3, Name:"DAO TOKEN", ShortName:"DAO", TokenGenerate:1};
     
     for(var Num = 0; Num <= MaxAccCreate; Num++)
     {
@@ -205,6 +238,7 @@ function AddHash(Block)
     Block.AddrHash = sha3(JSON.stringify(Block));
     Block.Hash = sha3(JSON.stringify(Block));
 }
+
 function GetVMAccount(Num)
 {
     var Item = VM_ACCOUNTS[Num];
@@ -214,6 +248,7 @@ function GetVMAccount(Num)
     else
         return Item;
 }
+
 function GetVMSmart(Num)
 {
     var Item = VM_SMARTS[Num];
@@ -275,6 +310,7 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,b
         Block.BlockNum = 0;
     ToLogDebug("" + Block.BlockNum + ". CallMethod " + MethodName + " " + ToNum + "<-" + FromNum);
     
+    BEGINTRANSACTION();
     try
     {
         return RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params, ParamsArr,
@@ -282,14 +318,17 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,b
     }
     catch(e)
     {
-        
+        ROLLBACKRANSACTION();
         Data.Type = 0;
         Data.Account = 0;
         Data.Params = undefined;
         Data.MethodName = undefined;
         
         SendMessageError("" + e);
-        console.log(e);
+    }
+    finally
+    {
+        COMMITRANSACTION();
     }
 }
 
@@ -307,7 +346,7 @@ function CreateNewBlock(Data)
     VM_VALUE.CurBlockNum++;
     var Block = {BlockNum:VM_VALUE.CurBlockNum, TrNum:0, TxArray:[Data]};
     AddHash(Block);
-    VM_VLOCKS[VM_VALUE.CurBlockNum] = Data;
+    VM_BLOCKS[VM_VALUE.CurBlockNum] = Data;
     VM_VALUE.CurrentBlock = Block;
     return Block;
 }
@@ -331,7 +370,7 @@ function DoGetData(Name,Params,Func)
             SetData.Body = GetHTMLCode();
             break;
         case "DappBlockFile":
-            SetData.Body = VM_VLOCKS[Params.BlockNum];
+            SetData.Body = VM_BLOCKS[Params.BlockNum];
             SetData.result = !!SetData.Body;
             break;
         case "DappAccountList":
@@ -344,7 +383,7 @@ function DoGetData(Name,Params,Func)
             break;
         case "DappBlockList":
             SetData.result = 1;
-            SetData.arr = VM_VLOCKS.slice(Params.StartNum, Params.StartNum + Params.CountNum);
+            SetData.arr = VM_BLOCKS.slice(Params.StartNum, Params.StartNum + Params.CountNum);
             break;
         case "DappTransactionList":
             break;
@@ -495,24 +534,11 @@ function MoveCoin(FromID,ToID,CoinSum,Description,SmartMode)
         throw "Different currencies. Accounts: " + FromData.Num + " and " + ToData.Num;
     }
     
-    if(FromData.Value.Smart !== RunContext.Smart.Num)
-    {
-        throw "The account: " + FromID + " does not belong to the smart-contract: " + RunContext.Smart.Num + ", access is denied";
-    }
-    
-    if(FromData.Currency && (CoinSum.SumCOIN || CoinSum.SumCENT))
-    {
-        if(FromData.Value.SumCOIN >= 1e12 || ToData.Value.SumCOIN >= 1e12)
+    if(SmartMode)
+        if(FromData.Value.Smart !== RunContext.Smart.Num)
         {
-            
-            if(!FromData.Value.SumCOIN)
-                throw "There is no token on the account ID:" + FromID;
-            if(ToData.Value.SumCOIN)
-                throw "The token is already on the account ID:" + ToID;
-            
-            CoinSum = {SumCOIN:FromData.Value.SumCOIN, SumCENT:FromData.Value.SumCENT};
+            throw "The account: " + FromID + " does not belong to the smart-contract: " + RunContext.Smart.Num + ", access is denied";
         }
-    }
     
     var Value = {SumCOIN:FromData.Value.SumCOIN, SumCENT:FromData.Value.SumCENT};
     if(!SUB(Value, CoinSum))
@@ -533,6 +559,49 @@ function MoveCoin(FromID,ToID,CoinSum,Description,SmartMode)
     }
 }
 
+const $SetValue = function (ID,CoinSum)
+{
+    DO(3000);
+    ID = ParseNum(ID);
+    
+    if(!RunContext.Smart.TokenGenerate)
+    {
+        throw "The smart-contract is not token generate, access to change values is denied";
+    }
+    
+    var ToData = GetVMAccount(ID);
+    if(!ToData)
+    {
+        throw "Account does not exist.Error id number: " + ID;
+    }
+    
+    if(ToData.Currency !== RunContext.Smart.Num)
+    {
+        throw "The account currency does not belong to the smart-contract, access to change values is denied";
+    }
+    
+    if(typeof CoinSum === "number")
+    {
+        CoinSum = COIN_FROM_FLOAT(CoinSum);
+    }
+    
+    CHECKSUM(CoinSum);
+    
+    if(CoinSum.SumCENT >= 1e9)
+    {
+        throw "ERROR SumCENT>=1e9";
+    }
+    if(CoinSum.SumCOIN < 0 || CoinSum.SumCENT < 0)
+    {
+        throw "ERROR Sum<0";
+    }
+    
+    ToData.Value.SumCOIN = Math.trunc(CoinSum.SumCOIN);
+    ToData.Value.SumCENT = Math.trunc(CoinSum.SumCENT);
+    
+    return true;
+}
+
 const $Send = function (ToID,CoinSum,Description)
 {
     DO(3000);
@@ -550,6 +619,10 @@ const $Event = function (Description)
     var Data = {cmd:"OnEvent", Description:Description, Smart:RunContext.Smart.Num, Account:RunContext.Account.Num, BlockNum:RunContext.BlockNum,
         TrNum:RunContext.TrNum};
     SendMessage(Data);
+    if(typeof Description === "string")
+        SetStatus(Description);
+    else
+        ToLog(Description);
 }
 
 const $ReadAccount = function (ID)
@@ -617,18 +690,72 @@ ListF.$SendMessage = function ()
 const $ReadValue = function (Key,Format)
 {
     DO(900);
-    return VM_KEY_VALUE[Key];
+    var Value;
+    var Buf = VM_KEY_VALUE[Key];
+    if(Buf)
+    {
+        if(Format)
+        {
+            Value = SerializeLib.GetObjectFromBuffer(Buf, Format, {});
+        }
+        else
+        {
+            var Str = ReadStrFromArr(Buf);
+            Value = JSON.parse(Str);
+        }
+    }
+    
+    return Value;
 }
+
 const $WriteValue = function (Key,Value,Format)
 {
     DO(3000);
-    VM_KEY_VALUE[Key] = Value;
+    
+    var Buf;
+    if(Format)
+    {
+        Buf = SerializeLib.GetBufferFromObject(Value, Format, {});
+    }
+    else
+    {
+        var Str = JSON.stringify(Value);
+        Buf = toUTF8Array(Str);
+    }
+    
+    if(Buf.length > 65535)
+        Buf.length = 65535;
+    
+    VM_KEY_VALUE[Key] = Buf;
 }
+
 const $RemoveValue = function (Key)
 {
     DO(1000);
     delete VM_KEY_VALUE[Key];
 }
+
+function PlaySend(From,To,fSum,Desc)
+{
+    global.SetTickCounter(35000);
+    
+    BEGINTRANSACTION();
+    try
+    {
+        MoveCoin(From, To, COIN_FROM_FLOAT(fSum), Desc, 0);
+    }
+    catch(e)
+    {
+        ROLLBACKRANSACTION();
+        SendMessageError("" + e);
+    }
+    finally
+    {
+        COMMITRANSACTION();
+        window.RunContext = undefined;
+    }
+}
+
 
 
 function ToLogDebug(Str)
@@ -645,6 +772,7 @@ function SendMessageError(Str)
     Data.cmd = "OnEvent";
     Data.Description = Str;
     Data.Error = 1;
+    SetError(Str);
     SendMessage(Data);
 }
 

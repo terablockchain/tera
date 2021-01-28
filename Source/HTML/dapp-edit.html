@@ -16,6 +16,7 @@
 <script type="text/javascript" src="./JS/sha3.js"></script>
 <script type="text/javascript" src="./JS/crypto-client.js"></script>
 <script type="text/javascript" src="./JS/terahashlib.js"></script>
+<script type="text/javascript" src="./JS/terabuf.js"></script>
 
 <script>
     module={};
@@ -77,7 +78,12 @@
     </DIV>
 </section>
 
-<DIV id="idHTMLTemplate" style="display: none">
+
+
+
+<!--TEMPLATES  TEMPLATES  TEMPLATES-->
+
+<DIV id="idDappTemplate" style="display: none">
 <BR>
 <select size="1" id="idTestAccount" style="width: 300px">
     <option value="0">Loading...</option>
@@ -85,6 +91,15 @@
 <BR><BR>
 <BUTTON onclick="SendMethod('Method1')">Method1</BUTTON>
 </DIV>
+
+<DIV id="idDappTemplate1" style="display: none">
+<BR>
+<button onclick="SendKey()">Send name</button>
+<button onclick="GotKeyValue()">Get name</button>
+<button onclick="SendDel()">Del name</button>
+</DIV>
+<!--TEMPLATES  TEMPLATES  TEMPLATES-->
+
 
 
 <body>
@@ -107,7 +122,7 @@
                 <DIV style="width: 15%;min-width:140px; float:left;" class="resizable">
                     <INPUT type="button" onclick="NewProject()" class="bt btool" value="New">
                     <INPUT type="button" onclick="DelProject()" class="bt btool" value="Del">
-                    <INPUT type="button" onclick="LoadSmart()" class="bt btool" value="Load">
+<!--                    <INPUT type="button" onclick="LoadSmart()" class="bt btool" value="Load">-->
                     <div style="padding-left: 2px; ">PROJECTS:</div>
                     <select size="2" id="idProjectList" style="width:100%;height:calc(50vh - 67px - 10px)"  onchange="SetCurrentProject(1)" onclick="SetCurrentProject(2)">
                     </select>
@@ -141,7 +156,7 @@
                             <th><DIV id="MTabMain" onclick="SelectTab('TabMain')" class="tab2">Main properties</DIV></th>
                             <th><DIV id="MTabSmart" onclick="SelectTab('TabSmart')" class="tab2">Smart-code</DIV></th>
                             <th><DIV id="MTabHTML" onclick="SelectTab('TabHTML')" class="tab2">HTML-code</DIV></th>
-                            <th><DIV id="MTabPlay" onclick="SelectTab('TabPlay')" class="tab2">Play</DIV></th>
+                            <th><DIV id="MTabPlay" onclick="SelectTab('TabPlay')" class="tab2">Sandbox</DIV></th>
                             <th><DIV id="MTabUpload" onclick="SelectTab('TabUpload')" class="tab2">Upload to blockchain</DIV></th>
                         </tr>
                     </table>
@@ -245,8 +260,6 @@
 
                     <DIV id="TabPlay" style="display: none;" class="layer layer2" align2='center'>
                         <div style="float: left">
-                            <DIV class="t-holder"><input type="checkbox" class="" id="idAutoPlay"/>Automatic play</DIV>
-                            <DIV class="t-holder"><input type="checkbox" class="" id="idDebugLog"/>Log debug</DIV>
                             SCREEN DEFINITION:<BR>
 
                             <select size="1" id="idScreenStyle" onkeyup="SelectScreenStyle();" onchange="SelectScreenStyle()" class="radius t-holder" style="height: 40px;">
@@ -257,8 +270,24 @@
                                 <option value="size768x1024">768 * 1024</option>
                             </select>
 
-                            <BR><INPUT type="button" onclick="DoPlay()" class="bt radius t-holder" style="height: 40px;" value="PLAY HTML">
                             <BR><INPUT type="button" onclick="DoPlay(1)" class="bt radius t-holder" style="height: 40px;" value="RECREATE">
+                            <BR><INPUT type="button" onclick="DoPlay()" class="bt radius t-holder marginbottom0" style="height: 40px;" value="PLAY HTML">
+                            <DIV class="t-holder"><input type="checkbox" class="" id="idAutoPlay"/>Automatic play</DIV>
+                            <DIV class="t-holder"><input type="checkbox" class="" id="idDebugLog"/>Log debug</DIV>
+                            Wallet test sending:<BR>
+                            <DIV class="t-holder t-holder2">
+                                From:<INPUT  id="idSendFrom" value="100" class="dsmall">
+                                To<INPUT id="idSendTo" value="107" class="dsmall">
+                                Sum:<INPUT id="idSendSum" value="1000" class="dsmall dsmall2">
+
+                                <textarea id="idSendDesc"  rows="5" cols="21"></textarea>
+                                <INPUT type="button" onclick="DoPlaySend()" class="bt bsend radius" style="height: 40px;" value="Send">
+                                <span style="margin-left: 5px">Accounts:</span>
+                                <select size="1" id="idPlayAccount" style="width: 220px;height: 26px; margin: 5px">
+                                    <option value="0">Loading...</option>
+                                </select>
+
+                            </DIV>
                         </div>
                         <DIV style="padding-left:260px;">
                             <DIV id="idPreview"></DIV>
@@ -277,6 +306,8 @@
                         <a onclick="OpenWalletPage()" class="bt btdoit radius" style="padding: 3px;">OPEN WALLET</a>
                         <BR><BR>
                         <input type="checkbox" class="" id="idTrimCode"/>Automatic trim code
+                        <BR>
+                        <input type="checkbox" class="" id="idNoSendHTML"/>Not send HTML
                         <BR>
                         <INPUT type="button" onclick="SendToBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendSmart" value="SEND TO BLOCKCHAIN">
                         <BR>
@@ -351,7 +382,7 @@
         <!--Config-->
 
         <DIV id="TabConfig" style="display: none">
-            <BR><input type="checkbox" checked id="idUseTemplate"/>Create new projects from template
+<!--            <BR><input type="checkbox" checked id="idUseTemplate"/>Create new projects from template-->
             <BR><BR><span style="padding-left: 5px">Style:</span>
             <select size="1" id="idSelStyle" onkeyup="SelectStyle();SaveValues()" onchange="SelectStyle();SaveValues()">
                 <option value="styleLight">Light</option>
@@ -409,6 +440,10 @@
         transform: translate(-50%, -50%);
         max-width: 250px;
     }
+    .MenuDlg
+    {
+        transform: translate(-50%, -40%);
+    }
 
     .bt-confirm
     {
@@ -428,17 +463,36 @@
         color: #cb763a;
         cursor: pointer;
     }
+    .bt-white
+    {
+        background-color: transparent;
+        color:black;
+    }
 </style>
+
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
 <section id="idConfirm" class="ModalDlg" style="display: none;">
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>
-        <button class="bt-confirm"  onclick="closeModal()">Cancel</button>
+        <button class="bt-confirm bt-white"  onclick="closeModal()">Cancel</button>
         <button class="bt-confirm"  onclick="OnConfirmOK()">OK</button>
     </DIV>
 </section>
 
+<section id="idNewSmart" class="ModalDlg MenuDlg" style="display: none;">
+    <DIV align='center'>
+        <h3>New smart contract</h3>
+        <button class="smart-menu" onclick="NewDapp('Blank','','')">Blank</button><BR>
+        <BR>Example code with:<BR>
+        <button class="smart-menu" onclick="NewDapp('Smart',CodeTemplateSmart,'')">Standart event functions</button><BR>
+        <button class="smart-menu" onclick="NewDapp('SmartTest',CodeTemplateSmart2,'')">Smart: OnSend & OnGet</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Storage',SmartTemplate1,DappTemplate1,'idDappTemplate1')">Dapp: Key storage</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Dapp',CodeTemplateDapp,DappTemplate,'idDappTemplate')">Dapp: User list</button><BR>
 
+        <button class="smart-menu smart-load" onclick="LoadFromDapp()">Load from Dapp:</button><input style="width: 80px" id="idLoadDapp"><BR>
+        <button class="smart-menu bt-white"  onclick="closeModal()">Cancel</button>
+    </DIV>
+</section>
 
 </html>

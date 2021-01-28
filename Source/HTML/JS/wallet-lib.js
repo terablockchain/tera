@@ -82,14 +82,14 @@ function SetAccountsData(Data,AccountsDataStr)
         dataList.appendChild(Options);
     }
     
-    var CurentValue = LoadMapAfter["idAccount"];
-    if(CurentValue)
+    var CurrentValue = LoadMapAfter["idAccount"];
+    if(CurrentValue)
     {
-        Select.value = CurentValue;
+        Select.value = CurrentValue;
         delete LoadMapAfter["idAccount"];
     }
     
-    SetCurCurencyName();
+    SetCurCurrencyName();
 }
 
 function CurTransactionToForm(bForce)
@@ -185,10 +185,10 @@ function OnEditTransactionFields()
 {
     if(IsVisibleBlock("edit_transaction"))
         CreateTransaction();
-    SetCurCurencyName();
+    SetCurCurrencyName();
     SaveValues();
 }
-function SetCurCurencyName()
+function SetCurCurrencyName()
 {
     var idCoin = $("idCoinName");
     if(!idCoin)

@@ -451,6 +451,8 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
         var Item = ArrLogClient[i];
         if(!Item.final)
             continue;
+        if(ArrLog.length > 100)
+            break;
         ArrLog.push(Item);
     }
     
@@ -813,9 +815,9 @@ HTTPCaller.SendTransactionHex = function (Params)
     if(Res === 1)
         Result.text = TR_MAP_RESULT[Res] + " on Block " + Result.BlockNum;
     
-    var final = false;
+    var final = 0;
     if(Res <= 0 && Res !==  - 3)
-        final = true;
+        final =  - 1;
     ToLogClient("Send: " + Result.text, GetHexFromArr(sha3(body, 29)), final);
     return Result;
 }
@@ -836,7 +838,6 @@ HTTPCaller.SendDirectCode = function (Params,response)
             RunProcess.RunRPC("EvalCode", Params.Code, function (Err,Ret)
             {
                 Result = {result:!Err, sessionid:sessionid, text:Ret, };
-                
                 var Str = JSON.stringify(Result);
                 response.end(Str);
             });

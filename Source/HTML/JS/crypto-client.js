@@ -260,6 +260,15 @@ function ComputeSecretWithCheck(PubKey,StrPrivKey,SmartNum,F)
 
 function ComputeSecretWithSmartNum(PubKey,PrivKey,SmartNum)
 {
+    
+    if(PubKey && !(PubKey instanceof Array) && PubKey.data)
+        PubKey = PubKey.data;
+    
+    if(!(PubKey instanceof Buffer))
+        PubKey = Buffer.from(PubKey);
+    if(!(PrivKey instanceof Buffer))
+        PrivKey = Buffer.from(PrivKey);
+    
     var Result;
     if(SmartNum && SmartNum > 90)
     {
@@ -269,8 +278,10 @@ function ComputeSecretWithSmartNum(PubKey,PrivKey,SmartNum)
     }
     else
     {
+        
         Result = sha3(SignLib.ecdh(PubKey, PrivKey));
     }
+    
     return Result;
 }
 

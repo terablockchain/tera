@@ -586,12 +586,12 @@ ListF.$Move = function (FromID,ToID,CoinSum,Description)
     var FromData = ACCOUNTS.ReadStateTR(FromID);
     if(!FromData)
     {
-        throw "Error FromID - the account number does not exist.";
+        throw "Error FromID - the account number: " + FromID + " does not exist.";
     }
     var ToData = ACCOUNTS.ReadStateTR(ToID);
     if(!ToData)
     {
-        throw "Error ToID - the account number does not exist.";
+        throw "Error ToID - the account number: " + ToID + " does not exist.";
     }
     if(FromData.Currency !== ToData.Currency)
     {
@@ -635,13 +635,7 @@ ListF.$Event = function (Description)
     
     ToLogTx("Block: " + RunContext.BlockNum + " TxNum:" + RunContext.TrNum + " Event: " + JSON.stringify(Description), 4);
     
-    if(global.DebugEvent)
-        DebugEvent(Description);
-    
-    if(global.CurTrItem)
-    {
-        ToLogClient(JSON.stringify(Description), global.CurTrItem, false);
-    }
+    SendUserEvent(Description);
 }
 
 ListF.$ReadAccount = function (ID)
@@ -1070,6 +1064,8 @@ function RunSmartMethod(Block,TR,SmartOrSmartID,Account,BlockNum,TrNum,PayContex
         if(Block.BlockNum >= global.UPDATE_CODE_SHARDING && RunContext)
             EvalContext.funclist.SetContext(RunContext.context);
     }
+    
+    global.LOG_LEVEL >= 10 && ToLog("CALL:" + MethodName + " Least: " + TickCounter);
     
     return RetValue;
 }

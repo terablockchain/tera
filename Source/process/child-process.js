@@ -107,10 +107,6 @@ process.on('message', function (msg)
                 break;
             }
             
-        case "Eval":
-            EvalCode(msg.Code);
-            break;
-            
         case "UpdateConst":
             {
                 LOAD_CONST();
@@ -154,18 +150,9 @@ process.RunRPC = function (Name,Params,F)
 
 global.EvalCode = function (Code)
 {
-    var Result;
-    try
-    {
-        var ret = eval(Code);
-        Result = JSON.stringify(ret, "", 4);
-    }
-    catch(e)
-    {
-        Result = "" + e;
-    }
-    return Result;
+    return eval(Code);
 }
+
 
 global.WasEnterChildProcessErr = 0;
 

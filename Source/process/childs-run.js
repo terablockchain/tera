@@ -88,9 +88,9 @@ function AddTransactionFromWeb(Params)
     var Tx0 = {body:body};
     var Res = SERVER.AddTransaction(Tx0, 1);
     var text = TR_MAP_RESULT[Res];
-    var final = false;
+    var final = 0;
     if(Res <= 0 && Res !==  - 3)
-        final = true;
+        final =  - 1;
     ToLogClient("Send: " + text, GetHexFromArr(sha3(body)), final);
     
     return {Result:Res, _BlockNum:Tx0._BlockNum, _TxID:Tx0._TxID};
@@ -236,7 +236,7 @@ function StartChildProcess(Item)
                             ToLog(msg.message, msg.level, msg.nofile);
                             break;
                         case "ToLogClient":
-                            if(WebProcess && WebProcess.Worker)
+                            if(!msg.NoWeb && WebProcess && WebProcess.Worker)
                             {
                                 
                                 WebProcess.Worker.send(msg);
@@ -263,7 +263,6 @@ function StartChildProcess(Item)
                                     if(msg.Web)
                                         break;
                                 }
-                            
                             ToLogClient(msg.ResultStr, msg.TX, msg.bFinal);
                             
                             break;
@@ -271,6 +270,7 @@ function StartChildProcess(Item)
                             if(ITEM.Worker)
                                 ToLog("RUNNING " + ITEM.Name + " : " + msg.message + " pid: " + ITEM.Worker.pid);
                             break;
+                            
                         default:
                             if(ITEM.OnMessage)
                             {

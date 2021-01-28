@@ -80,8 +80,7 @@ process.on('message', function (msg)
                     }
                 }
                 
-                global.ArrLogCounter++;
-                ArrLogClient.push({id:global.ArrLogCounter, text:msg.ResultStr, key:msg.TX, final:msg.bFinal, time:Date.now(), });
+                AddToArrClient(msg.ResultStr, msg.TX, msg.bFinal, Date.now());
                 
                 break;
             }
@@ -138,14 +137,13 @@ if(global.HTTPS_HOSTING_DOMAIN && HTTP_HOSTING_PORT === 443)
     RedirectServer.listen(80);
     
     const CSertificate = require("./web-sert");
-    var Sert = new CSertificate(greenlock);
+    global.glSertEngine = new CSertificate(greenlock);
+    glSertEngine.StartCheck();
     
-    Sert.StartCheck();
-    
-    if(Sert.HasValidSertificate(0))
+    if(glSertEngine.HasValidSertificate(0))
     {
-        ToLog("*************** USE EXIST SERT. ExpiresAt: " + new Date(Sert.certs.expiresAt));
-        HostingServer = require('https').createServer(Sert.tlsOptions, MainHTTPFunction);
+        ToLog("*************** USE EXIST SERT. ExpiresAt: " + new Date(glSertEngine.certs.expiresAt));
+        HostingServer = require('https').createServer(glSertEngine.tlsOptions, MainHTTPFunction);
         RunListenServer();
     }
 }

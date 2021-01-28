@@ -365,3 +365,29 @@ function SaveEditAccount()
     
     SendTrArrayWithSign(Body, ID);
 }
+
+function GotNewSertificate()
+{
+    RunServerCode("global.glSertEngine.GetNewSertificate()", 0, 1);
+}
+
+function GotSertificateDate()
+{
+    GetData("SendDirectCode", {Code:"global.glSertEngine && glSertEngine.GetDateSertificate()", WEB:1}, function (Data)
+    {
+        if(Data && Data.text)
+        {
+            var SertDate = ParseNum(Data.text);
+            if(SertDate)
+            {
+                SetVisibleBlock("idSertifGroup", 1);
+                ToLog("HTTPS sertificate expires at: " + formatDate(new Date(SertDate)));
+                $("idSertifDays").innerText = "" + Math.floor((SertDate - new Date()) / 3600 / 24 / 1000) + " days";
+            }
+            else
+            {
+                SetVisibleBlock("idSertifGroup", 0);
+            }
+        }
+    });
+}

@@ -175,36 +175,6 @@
         }
 
         //LIB
-        function SetArrLog(arr)
-        {
-            var Str="";
-            if(arr)
-            for(var i=0;i<arr.length;i++)
-            {
-                var Item=arr[i];
-                if(!Item.final)
-                    continue;
-                if(Item.text.indexOf("Add to blockchain")>=0)
-                    continue;
-
-
-                var TR=MapSendTransaction[Item.key];
-                if(TR && !TR.WasSend && Item.final)
-                {
-                    var Data={};
-                    Data.cmd="OnEvent";
-                    if(isMobile())
-                        Data.Description=Item.text;
-                    else
-                        Data.Description="Error: "+Item.text;
-                    Data.Error=1;
-                    //ToLog(JSON.stringify(Item));
-                    SendMessage(Data);
-                    TR.WasSend=1;
-                }
-            }
-         }
-
         function IsPrivateMode(PrivKeyStr)
         {
             if(Storage.getItem(WALLET_KEY_EXIT))
@@ -217,17 +187,24 @@
         }
 
 
-        function SetStatus(Str)
+        function SetStatus(Str,bNoEscape)
         {
             var id = $("idStatus");
+            if(!bNoEscape)
+            {
+                if(Str)
+                    console.log(Str);
+                Str = escapeHtml(Str);
+            }
             id.innerHTML=Str;
-            if(Str)
-                ToLog(id.innerText);
+
         }
 
         function SetError(Str,bNoSound)
         {
-            SetStatus("<DIV style='color:red'><B>"+Str+"</B></DIV>");
+            if(Str)
+                console.log(Str);
+            SetStatus("<DIV style='color:red'><B>"+escapeHtml(Str)+"</B></DIV>",1);
         }
 
 

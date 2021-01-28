@@ -24,6 +24,16 @@ class CSertificate
         this.file_sert = GetDataPath("sertif.lst")
     }
     
+    GetDateSertificate()
+    {
+        if(fs.existsSync(this.file_sert))
+        {
+            
+            this.certs = LoadParams(this.file_sert, {})
+            return this.certs.expiresAt;
+        }
+        return 0;
+    }
     HasValidSertificate(DeltaDays)
     {
         if(fs.existsSync(this.file_sert))
@@ -47,7 +57,7 @@ class CSertificate
         if(!global.HTTPS_HOSTING_EMAIL)
         {
             ToLog("ERROR: Not set constant HTTPS_HOSTING_EMAIL - pls set any your email and reload node")
-            return;
+            return 0;
         }
         
         var opts = {domains:[global.HTTPS_HOSTING_DOMAIN], email:global.HTTPS_HOSTING_EMAIL, agreeTos:true, communityMember:true, };
@@ -55,12 +65,23 @@ class CSertificate
         let SELF = this;
         this.greenlock.register(opts).then(function (certs)
         {
+            var WasDate = SELF.GetDateSertificate();
+            if(WasDate === certs.expiresAt)
+            {
+                ToLog("*************** GOT NOT NEW SERTIFICATE (DATE=" + formatDate(new Date(certs.expiresAt)) + ")")
+                return;
+            }
             SaveParams(SELF.file_sert, certs)
-            ToLog("*************** GOT NEW SERTIFICATE OK")
+            
+            ToLog("*************** GOT NEW SERTIFICATE (DATE=" + formatDate(new Date(certs.expiresAt)) + ")")
+            
+            setTimeout(Exit, 3000)
         }, function (err)
         {
             ToError(err)
         })
+        
+        return 1;
     }
     
     StartCheck()

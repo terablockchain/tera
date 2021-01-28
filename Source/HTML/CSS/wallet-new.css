@@ -623,6 +623,10 @@ button {
   font-size: 12px;
 }
 
+.connection__btn
+{
+    margin-top: 28px;
+}
 .connection__switch {
   margin-top: 20px; }
 

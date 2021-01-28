@@ -27,7 +27,7 @@ class SmartTR extends require("./smart-scroll")
             return "Error length transaction (min size)";
         
         if(Body.length > 16000)
-            return "Error length transaction (max size)";
+            return "Error length transaction (max size), Body.length=" + Body.length;
         
         if(BlockNum < SMART_BLOCKNUM_START)
             return "Error block num";

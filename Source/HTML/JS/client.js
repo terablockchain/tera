@@ -1888,21 +1888,30 @@ function ParseFileName(Str)
 window.MapSendTransaction = {};
 function SendTransactionNew(Body,TR,SumPow,F)
 {
-    if(Body.length > 12000)
+    var MaxLength = 12000;
+    if(IsFullNode())
+    {
+        if(Body[0] === 111)
+            MaxLength = 16000;
+        else
+            MaxLength = 0;
+    }
+    
+    if(MaxLength && Body.length > MaxLength)
     {
         if(window.SetError)
-            SetError("Error length transaction =" + Body.length + " (max size=12000)");
+            SetError("Error length transaction = " + Body.length + ". Can max size=" + MaxLength);
         if(F)
             F(1, TR, Body);
         
         return;
     }
+    
     var StrHex = GetHexFromArr(Body);
     GetData("SendHexTx", {Hex:StrHex}, function (Data)
     {
         if(Data)
         {
-            
             var key = GetHexFromArr(sha3(Body));
             if(Data.ResultSend <= 0)
             {
@@ -1914,6 +1923,7 @@ function SendTransactionNew(Body,TR,SumPow,F)
             if(window.SetStatus)
                 SetStatus("Send '" + key.substr(0, 12) + "' result:" + Data.text);
             
+            TR.BlockNum = Data.BlockNum;
             MapSendTransaction[key] = TR;
             if(F)
                 F(0, TR, Body);
@@ -2018,7 +2028,7 @@ function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum
     }
     else
     {
-        WriteUint(Body, 0);
+        WriteUint(Body, random(1000000000));
         Body.push(4);
         WriteTr(Body, ParamsArr);
         for(var i = 0; i < 7; i++)
@@ -2495,6 +2505,11 @@ function closeModal()
         item.style.display = "none";
     });
     overlay.style.display = "none";
+    
+    setTimeout(function ()
+    {
+        glConfirmF = undefined;
+    }, 100);
 }
 
 function DoConfirm(StrTitle,StrText,F,bDirect)
@@ -2618,9 +2633,9 @@ function ConfirmationFromBlock(BlockNum)
         return "";
 }
 
-function RunServerCode(Code)
+function RunServerCode(Code,bTX,bWEB)
 {
-    GetData("SendDirectCode", {Code:Code}, function (Data)
+    GetData("SendDirectCode", {Code:Code, TX:bTX, WEB:bWEB}, function (Data)
     {
         if(Data)
         {
@@ -2717,4 +2732,21 @@ function MyXMLHttpRequest()
             SELF.onreadystatechange();
         });
     };
+}
+
+function IsFullNode()
+{
+    return localStorage["BIGWALLET"];
+}
+
+var LastErrorBlockNum = 0;
+function SerErrorBlockNum(Str,BlockNum)
+{
+    SetError(Str);
+    LastErrorBlockNum = BlockNum;
+}
+function SetStatusBlockNum(Str,BlockNum)
+{
+    if(LastErrorBlockNum !== BlockNum)
+        SetStatus(Str);
 }

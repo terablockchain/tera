@@ -10,6 +10,8 @@
 
 "use strict";
 
+require("./common-event");
+
 var BufHashTree = new RBTree(CompareArr);
 BufHashTree.LastAddNum = 0;
 
@@ -115,49 +117,20 @@ function BLOCK_PROCESS_TX(Block)
     var arr = Block.arrContent;
     for(var TxNum = 0; arr && TxNum < arr.length; TxNum++)
     {
-        var HASH = sha3(arr[TxNum], 37);
+        var Body = arr[TxNum];
+        var HASH = sha3(Body, 37);
         
         if(BufHashTree.find(HASH))
         {
             continue;
         }
-        
-        var type = arr[TxNum][0];
+        var type = Body[0];
         var App = DAppByType[type];
         if(App)
         {
-            var StrHex = GetHexFromArr(HASH);
-            var WathItem = undefined;
-            global.CurTrItem = undefined;
-            if(global.TreeFindTX)
-            {
-                WathItem = global.TreeFindTX.LoadValue(StrHex);
-                if(WathItem)
-                {
-                    global.CurTrItem = WathItem.TX;
-                }
-            }
-            
-            var SetResult = RunOneTX(App, Block, arr[TxNum], BlockNum, TxNum);
-            
+            SetCurTrackItem(HASH);
+            var SetResult = RunOneTX(App, Block, Body, BlockNum, TxNum);
             arrContentResult[TxNum] = SetResult;
-            if(WathItem)
-            {
-                var ResultStr = SetResult;
-                if(SetResult === true || typeof SetResult === "number")
-                {
-                    ResultStr = "Add to blockchain on Block " + BlockNum;
-                    if(type === global.TYPE_TRANSACTION_FILE)
-                        ResultStr += ": file/" + BlockNum + "/" + TxNum;
-                }
-                
-                WathItem.cmd = "RetFindTX";
-                WathItem.ResultStr = "" + ResultStr;
-                WathItem.bFinal = 1;
-                WathItem.Result = SetResult;
-                process.send(WathItem);
-            }
-            global.CurTrItem = undefined;
             if(App.CrossRunArr)
             {
                 var Arr = App.CrossRunArr;
@@ -209,11 +182,11 @@ function RunOneTX(App,Block,Tx,BlockNum,TxNum,bCrossRun)
     catch(e)
     {
         Result = "" + e;
-        if(global.WATCHDOG_DEV || global.DEV_MODE)
+        if(LOG_LEVEL >= 3 && (global.WATCHDOG_DEV || global.DEV_MODE))
+        {
             if(e.stack)
                 ToLogStack("\n" + e.stack, "BlockNum :" + BlockNum + ":" + e);
-            else
-                ToLog("BlockNum :" + BlockNum + ":" + e);
+        }
     }
     
     var SetResult;
@@ -235,6 +208,10 @@ function RunOneTX(App,Block,Tx,BlockNum,TxNum,bCrossRun)
         ROLLBACK_TRANSACTION();
         SetResult = 0;
     }
+    
+    if(!bCrossRun)
+        SendTrackResult(Block, TxNum, Tx, SetResult, Result);
+    
     return SetResult;
 }
 
@@ -242,6 +219,7 @@ global.BLOCK_DELETE_TX = function (BlockNum)
 {
     BlockRestore(BlockNum);
     BlockTruncate(BlockNum);
+    
     return 0;
 }
 

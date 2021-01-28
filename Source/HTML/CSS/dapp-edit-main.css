@@ -237,7 +237,10 @@ input,select
     padding-top: 10px;
     padding-bottom: 10px;
     background-color: var(--color2);
-    color2:var(--color3);
+}
+.marginbottom0
+{
+    margin-bottom: 0px;
 }
 
 /*main tab*/
@@ -302,6 +305,33 @@ body.univers .bt:hover[disabled]
     border: 1px solid black;
 }
 
+.t-holder2
+{
+    height: 220px;
+}
+
+.dsmall
+{
+    width: 30px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.dsmall2
+{
+    width: 40px;
+}
+#idSendDesc
+{
+    width: 93%;
+    margin: 5px;
+}
+.bsend
+{
+    height: 20px;
+    width: 96%;
+    margin: 5px;
+}
 
 
 
@@ -324,6 +354,32 @@ textarea:hover, select:hover
     overflow-y: auto;
 }
 
+
+.smart-menu
+{
+    width: 232px;
+    height: 36px;
+    margin: 5px 10px;
+    border-radius: 4px;
+    min-height: 14px;
+
+    color:white;
+    background-color: #566884;
+    border-color: #445368;
+}
+
+.smart-menu:hover
+{
+    color: #cb763a;
+    cursor: pointer;
+}
+.smart-load
+{
+    width: 120px;
+    height:28px;
+    background-color: #7796af;
+    border-color: #576b83;
+}
 
 
 /*::-webkit-scrollbar*/

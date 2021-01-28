@@ -55,6 +55,10 @@
 
             //DoConfirm("Confirm Enter","Pls confirm Enter to wallet");
 
+            setTimeout(function ()
+            {
+                GotSertificateDate();
+            },5*1000)
         };
     </script>
 
@@ -133,6 +137,10 @@
                 <h4 class="h4">max</h4>
                 <p id="idSpeedSignLib" class="config__number"></p>
             </div>
+            <div class="config__group" id="idSertifGroup" style="display:none;">
+                <h4 class="h4">https</h4>
+                <p id="idSertifDays" class="config__number"></p>
+            </div>
         </div>
         <div class="config__parameters">
             <div class="config__parameter">
@@ -185,6 +193,7 @@
                         <a onclick="openModal('idBlockPasswordSet','idBtnSetPassword')" class="btn btn_margin" id="idBtBlockPasswordSet">
                             password wallet
                         </a>
+                        <p id="infoWALLET_DESCRIPTION"></p>
                     </div>
                 </div>
 
@@ -424,6 +433,9 @@
                 <div class="connection">
                     <p class="connection__text">Sertificate Email:</p>
                     <input type="text" class="input  input_middle node-const" id="HTTPS_HOSTING_EMAIL" maxlength="40" value="" onchange="SaveNetParams()">
+                </div>
+                <div class="connection">
+                    <button onclick="GotNewSertificate()" class="btn connection__btn">Got new sertificate</button>
                 </div>
             </div>
             <div class="connection">

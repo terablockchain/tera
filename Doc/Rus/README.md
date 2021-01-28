@@ -245,13 +245,14 @@ node update.js
 * Discord [RUS]: https://discord.gg/dzSGKyR
 * [Ютуб-канал](https://www.youtube.com/channel/UCGQeUCUKZgH0DfbakD7gjqQ)
 * [Документация по смарт-контрактам на русском](https://docs.google.com/document/d/1SkD4yc_POaGRMJRC6yGkDfdJUuKbcyq3JpG0cBXeYGM/edit?usp=sharing)
-* [Руководство по созданию ордеров на Tera DEX](https://docs.google.com/document/d/1rWGOrx9gabsu866zqJ2so6Mp0WUGh9t0BIWjz4kAIBw/edit?usp=sharing)
-* [Токен BTC для торговли на Tera DEX](https://docs.google.com/document/d/1ERPdSizarqYzwb5AA4R8mfUVFnSc-Amm7xCg3q4zUhA/edit?usp=sharing)
-* [Техническое WP - черновик](https://docs.google.com/document/d/1B6_qlAp2xs4aHkqOwyvRMCDJTjgeNiOJiGpIeT0VAzY/edit?usp=sharing)
+* [Новые функции](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Rus/release2468.md)
 * [API](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/API.md)
 * [API-2](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/API2.md)
 * [CONSTANTS](https://gitlab.com/terafoundation/tera/blob/master/Doc/Rus/CONSTANTS.MD)
 * [Презентация - Проблематика блокчейна и пути решения](https://docs.google.com/presentation/d/1NvaGQTUpeP3y7CmHpaqFmaqWlCEMMoPdvCyylFVJ3lk/edit?usp=sharing)
+* [Руководство по созданию ордеров на Tera DEX](https://docs.google.com/document/d/1rWGOrx9gabsu866zqJ2so6Mp0WUGh9t0BIWjz4kAIBw/edit?usp=sharing)
+* [Токен BTC для торговли на Tera DEX](https://docs.google.com/document/d/1ERPdSizarqYzwb5AA4R8mfUVFnSc-Amm7xCg3q4zUhA/edit?usp=sharing)
+* [Техническое WP - черновик](https://docs.google.com/document/d/1B6_qlAp2xs4aHkqOwyvRMCDJTjgeNiOJiGpIeT0VAzY/edit?usp=sharing)
 
 ## Блокчейн:
 * [Веб-Кошелек](https://terawallet.org)

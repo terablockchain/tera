@@ -8,8 +8,8 @@
  * Telegram:  https://t.me/terafoundation
 */
 
-
-var SaveIdArr = ["idUser", "idSmartStart", "idText", "idType", "idSelStyle", "idAutoPlay", "idDebugLog", "idScreenStyle", "idUseTemplate"];
+var SaveIdArr = ["idUser", "idSmartStart", "idText", "idType", "idSelStyle", "idAutoPlay", "idDebugLog", "idScreenStyle", "idSendFrom",
+"idSendTo", "idSendSum", "idSendDesc", "idNoSendHTML", "idTrimCode", "idLoadDapp"];
 
 var WasOKLoaded = 0;
 var bWasPlay = 0;
@@ -95,16 +95,21 @@ function SetVisibleTab()
 
 InitWalletKeyName();
 
-function SetStatus(Str)
+function SetStatus(Str,bNoEscape)
 {
     var id = $("idStatus");
+    if(!bNoEscape)
+    {
+        if(Str)
+            console.log(Str);
+        Str = escapeHtml(Str);
+    }
     id.innerHTML = Str;
-    if(id.innerText)
-        console.log(id.innerText);
 }
 function SetError(Str,bNoSound)
 {
-    SetStatus("<DIV  align='left' style='color:red'><B>" + Str + "</B></DIV>");
+    console.log(Str);
+    SetStatus("<DIV  align='left' style='color:#b50000'><B>" + escapeHtml(Str) + "</B></DIV>", 1);
 }
 
 var WasFirstUpdate = 0;
@@ -307,6 +312,8 @@ function SendToBlockchain2()
     
     var Code = Smart.Code;
     var HTML = Smart.HTML;
+    if($("idNoSendHTML").checked && Smart.HTML)
+        HTML = "-";
     
     if($("idTrimCode").checked)
     {
@@ -556,7 +563,7 @@ function SendText(TR,type,Str)
         return;
     
     var view = GetArrFromStr(Str);
-    if(view.length > 16000)
+    if(view.length > 16000 && !IsFullNode())
     {
         SetStatus("Error length file = " + view.length + " (max size=16000)");
         return;
@@ -686,3 +693,19 @@ function DoLoadingConfig(Str,Meta)
     localStorage["SMART-ProjectArray"] = Str;
     LoadValues();
 }
+
+function UpdatePlayInfo()
+{
+    if(!VM_ACCOUNTS)
+        return;
+    var Arr = [];
+    for(var i = 100; i < VM_ACCOUNTS.length; i++)
+    {
+        var Item = VM_ACCOUNTS[i];
+        var Value = {value:Item.Num, text:Item.Num + "." + Item.Name + "  " + SUM_TO_STRING(Item.Value, Item.Currency, 1)};
+        Arr.push(Value);
+    }
+    FillSelect("idPlayAccount", Arr);
+}
+
+setInterval(UpdatePlayInfo, 1000);

@@ -99,6 +99,7 @@ function COIN_FROM_FLOAT2(Sum)
     var Coin = {SumCOIN:SumCOIN, SumCENT:SumCENT};
     return Coin;
 }
+
 if(typeof window === "object")
     window.COIN_FROM_FLOAT = COIN_FROM_FLOAT2;
 

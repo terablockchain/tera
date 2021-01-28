@@ -5,8 +5,8 @@
 
 #### Storage
 
-* ReadValue(Key,Format) to read the value by string key, unless you specify the format to use JSON sterilisatie 
-* WriteValue(Key,Value,Format) - record the value for a string key if you do not specify a format for sterilisatie JSON is used, the maximum size servletmanager value is 65535 bytes
+* ReadValue(Key,Format) to read the value by string key, unless you specify the format to use JSON serilize 
+* WriteValue(Key,Value,Format) - record the value for a string key if you do not specify a format for serilize JSON is used, the maximum size stored value is 65535 bytes
 * RemoveValue(Key) - delete the value with the specified key
 
 ```

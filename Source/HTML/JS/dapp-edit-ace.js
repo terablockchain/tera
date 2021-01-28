@@ -60,15 +60,15 @@ function SetAutocomplete()
     const langTools = ace.require("ace/ext/language_tools");
     
     window.context = GetSmartContext({BlockNum:100}, 200, undefined, {}, 2, {Num:300, Value:{SumCOIN:0, SumCENT:0}}, 7, 1);
-    let SmartList1 = [];
-    let SmartList2 = ["context"];
+    let SmartListEvents = [];
+    let SmartListContext = ["context", "JSON", "Math"];
     let DappList = ["SendCall", "Call", "GetWalletAccounts", "GetAccountList", "GetSmartList", "GetBlockList", "GetTransactionList",
     "DappSmartHTMLFile", "DappBlockFile", "SetStatus", "SetError", "SetLocationPath", "CreateNewAccount", "OpenLink", "SetMobileMode",
     "ComputeSecret", "CheckInstall", "ReloadDapp", "CurrencyName", "GetState", "GetDappBlock", "OpenRefFile", "SetStorage", "GetStorage",
     "SetCommon", "GetCommon", "GetInfo"];
-    for(var i = 0; i < CodeTemplate.length; i++)
+    for(var i = 0; i < CodeTemplateSmart.length; i++)
     {
-        var Item = CodeTemplate[i];
+        var Item = CodeTemplateSmart[i];
         var Str = "" + Item;
         if(Str.substr(0, 11) === "function On")
         {
@@ -79,7 +79,7 @@ function SetAutocomplete()
                 var Name = StrF.substr(9);
                 Name = Name.replace("//", " - ");
                 
-                SmartList1.push(StrF + "\n{\n    \n}\n");
+                SmartListEvents.push(StrF + "\n{\n    \n}\n");
             }
         }
     }
@@ -89,12 +89,13 @@ function SetAutocomplete()
         {
             var Name = key.substr(1);
             var Value = _ListF[key];
-            SmartList2.push('' + Name + (typeof Value === "function" ? '(' : ""));
+            SmartListContext.push('' + Name + (typeof Value === "function" ? '(' : ""));
         }
     }
     
     var MyCompleter = {getCompletions:function (editor,session,pos,prefix,callback)
         {
+            var WordScore = 0;
             var wordMeta;
             if(editor === editCode)
                 wordMeta = "smart";
@@ -113,18 +114,27 @@ function SetAutocomplete()
             var lastToken = curTokens[curTokens.length - 1];
             var wordList = [];
             
-            var Arr = lastToken.split('.');
+            var Arr = ToWordsArray(lastToken);
             if(Arr.length > 1)
             {
                 var Obj = window;
                 for(var i = 0; i < Arr.length - 1; i++)
                 {
-                    Obj = Obj[Arr[i]];
+                    var Name = Arr[i];
+                    if(!Name)
+                        continue;
+                    
+                    var Obj2 = Obj[Name];
+                    
+                    if(!Obj2)
+                        break;
+                    Obj = Obj2;
                 }
                 if(Obj)
                 {
-                    var Arr = Object.getOwnPropertyNames(Obj);
-                    for(var key of Arr)
+                    WordScore = 1000;
+                    var Arr2 = Object.getOwnPropertyNames(Obj);
+                    for(var key of Arr2)
                     {
                         wordList.push(key);
                     }
@@ -136,12 +146,12 @@ function SetAutocomplete()
                 {
                     if(pos.column === 1)
                     {
-                        wordList = SmartList1;
+                        wordList = SmartListEvents;
                         wordMeta = "event";
                     }
                     else
                     {
-                        wordList = SmartList2;
+                        wordList = SmartListContext;
                     }
                 }
                 else
@@ -151,7 +161,7 @@ function SetAutocomplete()
             
             callback(null, wordList.map(function (word)
             {
-                return {caption:word, value:word, score:0, meta:wordMeta};
+                return {caption:word, value:word, score:WordScore, meta:wordMeta};
             }));
         }};
     
@@ -346,4 +356,32 @@ function FillEditorsPos(Item)
     {
         Item.EditorHTML = {Pos:editHTML.getCursorPosition()};
     }
+}
+
+function ToWordsArray(Str)
+{
+    var Arr = [];
+    var Word = "";
+    for(var i = Str.length - 1; i >= 0; i--)
+    {
+        var CurC = Str.substring(i, i + 1);
+        var BigC = CurC.toUpperCase();
+        if(BigC === ".")
+        {
+            Arr.unshift(Word);
+            Word = "";
+        }
+        else
+            if(BigC >= 'A' && BigC <= 'Z' || CurC >= '0' && CurC <= '9' || CurC === "_" || CurC === "$")
+            {
+                Word = CurC + Word;
+            }
+            else
+            {
+                break;
+            }
+    }
+    if(Word)
+        Arr.unshift(Word);
+    return Arr;
 }

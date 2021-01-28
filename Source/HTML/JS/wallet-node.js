@@ -10,47 +10,33 @@
 
 function SavePrivateKey()
 {
-    var Select = $("idTypeKey");
-    if(!Select)
-        Select = {value:"private"};
-    if(Select.value === "brain")
-    {
-        ConvertToPrivateKey();
-        return;
-    }
     
     var Str = $("idKeyNew").value;
     Str = Str.trim();
-    if(Select.value === "private" && (Str.length !== 64 || !IsHexStr(Str)))
+    if(!IsHexStr(Str))
     {
-        SetError("Error: Length must 64 HEX chars. (Length=" + Str.length + ")");
+        SetError("Error: Need HEX chars only");
         return;
     }
-    else
-        if(Select.value !== "private" && (Str.length !== 66 || Str.substr(0, 1) !== "0" || !IsHexStr(Str)))
-        {
-            SetError("Error: Length must 66 HEX chars. (Length=" + Str.length + ")");
-            return;
-        }
     
-    if(Select.value === "private" && PrivKeyStr !== Str)
-        SetStatus("Private key changed");
-    else
-        if(Select.value === "public" && PubKeyStr !== Str)
-            SetStatus("Public key changed");
+    if(Str.length !== 64 && Str.length !== 66)
+    {
+        SetError("Error: Length must 64 or 66 HEX chars. (Length=" + Str.length + ")");
+        return;
+    }
     
     GetData("SetWalletKey", Str, function (Data)
     {
         if(Data && Data.result === 1)
         {
-            if(Select.value === "private")
-                SelectStyle("styleContrast1");
-            else
-                if(Select.value === "public")
-                    SelectStyle("styleContrast2");
-            
             SetVisibleEditKeys(0);
             UpdatesData();
+            
+            if(Str.length === 64 && PrivKeyStr !== Str)
+                SetStatus("Private key changed");
+            else
+                if(Str.length === 66 && PubKeyStr !== Str)
+                    SetStatus("Public key changed");
         }
     });
 }
@@ -293,11 +279,22 @@ function SetArrLog(arr)
         if(tr_text)
             info += " (" + tr_text + ")";
         
+        var TR = MapSendTransaction[Item.key];
         if(Item.final)
         {
-            var TR = MapSendTransaction[Item.key];
             if(TR)
             {
+                if(Item.final < 0 && !TR.WasError)
+                {
+                    TR.WasError = 1;
+                    SetError(Item.text);
+                }
+                if(Item.final > 0 && !TR.WasSetStatus && !TR.WasError)
+                {
+                    TR.WasSetStatus = 1;
+                    SetStatus(Item.text);
+                }
+                
                 if(Item.text.indexOf("Add to blockchain") >= 0)
                 {
                     if(TR.bFindAcc)

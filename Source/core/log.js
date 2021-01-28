@@ -69,27 +69,37 @@ setInterval(function ()
 
 global.ArrLogClient = [];
 global.ArrLogCounter = 0;
-function ToLogClient(Str,StrKey,bFinal,bNoFile)
+function ToLogClient(Str,StrKey,bFinal,bNoFile,bToWeb)
 {
     if(!Str)
         return;
     
     if(!bNoFile)
-        ToLogFile(file_name_log, Str);
+        ToLogFile(file_name_log, Str, 0, StrKey, bFinal);
     
     if(global.PROCESS_NAME === "MAIN")
     {
         if(!StrKey)
             StrKey = "";
-        global.ArrLogCounter++;
-        ArrLogClient.push({id:global.ArrLogCounter, time:GetStrOnlyTime(), text:Str, key:StrKey, final:bFinal, });
-        
-        if(ArrLogClient.length > 13)
-            ArrLogClient.shift();
+        AddToArrClient(Str, StrKey, bFinal, GetStrOnlyTime());
+    }
+    else
+    {
+        process.send({cmd:"ToLogClient", Str:Str, StrKey:StrKey, bFinal:bFinal, NoWeb:1});
     }
 }
 global.ToLogClient = ToLogClient;
 global.ToLogClient0 = ToLogClient;
+
+function AddToArrClient(text,key,final,time)
+{
+    global.ArrLogCounter++;
+    ArrLogClient.push({id:global.ArrLogCounter, text:text, key:key, final:final, time:time, });
+    if(ArrLogClient.length > 13)
+        ArrLogClient.shift();
+}
+
+global.AddToArrClient = AddToArrClient;
 
 
 global.ToLogWeb = function (Str)
@@ -170,7 +180,7 @@ global.ToLogTx = function (Str,LogLevel)
     ToLog(Str, LogLevel);
 }
 
-function ToLogFile(file_name,Str,bNoFile)
+function ToLogFile(file_name,Str,bNoFile,bNoSend)
 {
     if(Str instanceof Error)
     {
@@ -186,6 +196,9 @@ function ToLogFile(file_name,Str,bNoFile)
         console.log("" + JINN_PORT + ": " + GetStrOnlyTime() + ": " + Str);
     else
         console.log(Str);
+    
+    if(bNoSend)
+        return;
     
     if(global.PROCESS_NAME !== "MAIN" && process.send)
     {

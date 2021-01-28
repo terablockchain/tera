@@ -173,15 +173,18 @@
     {
         SetStatus("");
         var Result;
+        var Err;
         try
         {
+            Err=0;
             Result=eval(Value);
         }
         catch (e)
         {
+            Err=1;
             Result=e;
         }
-        ToResult(Result);
+        ToResult(Result,Err);
     }
 
     function SendServerCode(Value)
@@ -195,7 +198,7 @@
         {
             if(Data)
             {
-                ToResult(Data.text);
+                ToResult(Data.text,!Data.result);
             }
         });
     }
@@ -212,9 +215,12 @@
     }
 
 
-    function ToResult(Str)
+    function ToResult(Str,Err)
     {
-        $("result").value=JSON.stringify(Str,"",4);
+        if(Err)
+            $("result").value=Str;
+        else
+            $("result").value=JSON.stringify(Str,"",4);
     }
     //***********************************************
     var idSendServer=undefined;

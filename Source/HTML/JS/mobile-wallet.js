@@ -625,10 +625,10 @@ function SetAccountsCard(Data,AccountsDataStr)
     }
     $("idTotalList").innerHTML = StrTotal;
     
-    var CurentValue = LoadMapAfter["idAccount"];
-    if(CurentValue)
+    var CurrentValue = LoadMapAfter["idAccount"];
+    if(CurrentValue)
     {
-        Select.value = CurentValue;
+        Select.value = CurrentValue;
         delete LoadMapAfter["idAccount"];
     }
 }
@@ -772,16 +772,28 @@ function SetArrLog(arr)
     if(!arr)
         return;
     
+    arr.sort(function (a,b)
+    {
+        return a.id - b.id;
+    });
+    
     for(var i = 0; i < arr.length; i++)
     {
         var Item = arr[i];
         if(!Item.final)
             continue;
         var TR = MapSendTransaction[Item.key];
+        if(TR && !TR.WasError && Item.final < 0)
+        {
+            TR.WasError = 1;
+            SetError(Item.text);
+        }
+        
         if(TR && !TR.WasProcess && Item.final)
         {
             TR.WasProcess = 1;
-            SetStatus(Item.text);
+            if(Item.final > 0 && !TR.WasError)
+                SetStatus(Item.text);
             
             if(Item.text.indexOf("Add to blockchain") >= 0)
             {

@@ -614,14 +614,6 @@ function SetConfigData(Data)
     $("idWalletVersion").innerText = StrVersion;
     $("idSpeedSignLib").innerText = Data.SpeedSignLib;
     
-    var MIN_SPEED = 700;
-    if(CONFIG_DATA.SpeedSignLib < MIN_SPEED)
-        $("idSpeedSignLib").className = "red";
-    else
-        $("idSpeedSignLib").className = "";
-    if(CONFIG_DATA.SpeedSignLib)
-        SetVisibleBlock("idSignLibError", (CONFIG_DATA.SpeedSignLib < MIN_SPEED));
-    
     SetArrLog(Data.ArrLog);
     
     if($("idDataPath").innerText !== Data.DATA_PATH)
@@ -711,6 +703,12 @@ function SetConstValue(IdName,ConstName)
     else
     {
         Item.value = Value;
+        
+        var info = $("info" + Item.id);
+        if(info)
+        {
+            info.innerText = Value;
+        }
     }
 }
 
@@ -814,19 +812,22 @@ function SetMainStatus(Str,bCanClear)
     StrMainStatus = Str;
     ViewStatus();
 }
-function SetStatus(Str,bError)
+function SetStatus(Str,bError,bNoEscape)
 {
     if(bError)
         return SetError(Str);
     
-    StrNormalStatus = Str;
+    if(bNoEscape)
+        StrNormalStatus = Str;
+    else
+        StrNormalStatus = escapeHtml(Str);
+    
     ViewStatus();
 }
 
 function ViewStatus()
 {
     var Str = "<B>Shard: " + window.SHARD_NAME + " </B>" + StrNormalStatus + StrMainStatus;
-    
     var id = $("idStatus");
     id.innerHTML = Str;
 }
@@ -834,7 +835,7 @@ function SetError(Str,bNoSound)
 {
     if(!bNoSound)
         $("sound_err").play();
-    SetStatus("<span  align='center' style='color:red;align-content: center'><B>" + Str + "</B></span>");
+    SetStatus("<span  align='center' style='color:red;align-content: center'><B>" + escapeHtml(Str) + "</B></span>", 0, 1);
 }
 function SetStatusMining(Str)
 {

@@ -78,6 +78,11 @@ function CreateFrame(Code,Parent)
     
     iframe.srcdoc = Code;
     Parent.appendChild(iframe);
+    
+    setTimeout(function ()
+    {
+        SetVisibleBlock("idFrame", 1);
+    }, 2000);
 }
 
 function SendMessage(Data)
@@ -244,12 +249,12 @@ function DappListener(event)
             
         case "SetStatus":
             {
-                SetStatus(escapeHtml(Data.Message));
+                SetStatus(Data.Message);
                 break;
             }
         case "SetError":
             {
-                SetError(escapeHtml(Data.Message));
+                SetError(Data.Message);
                 break;
             }
         case "CheckInstall":
@@ -311,7 +316,6 @@ function DoDappInfo(Data)
     {
         if(SetData)
         {
-            
             Data.Err = !SetData.result;
             if(SetData.result)
             {
@@ -326,9 +330,8 @@ function DoDappInfo(Data)
                     CONFIG_DATA = SetData;
                     SMART = SetData.Smart;
                     BASE_ACCOUNT = SetData.Account;
-                    
-                    SetArrLog(SetData.ArrLog);
                 }
+                SetArrLog(SetData.ArrLog);
                 
                 NumDappInfo = SetData.NumDappInfo;
                 SetBlockChainConstant(SetData);
@@ -349,9 +352,51 @@ function DoDappInfo(Data)
                 Data.CanReloadDapp = 1;
             }
             
+            if(Data.ArrEvent)
+            {
+                for(var i = 0; i < Data.ArrEvent.length; i++)
+                {
+                    var Item = Data.ArrEvent[i];
+                    if(typeof Item.Description === "string")
+                    {
+                        SetStatusBlockNum(Item.Description, Item.BlockNum);
+                    }
+                }
+            }
+            
             SendMessage(Data);
         }
     });
+}
+
+function SetArrLog(arr)
+{
+    if(!arr)
+        return;
+    for(var i = 0; i < arr.length; i++)
+    {
+        var Item = arr[i];
+        if(!Item.final)
+            continue;
+        if(Item.text.indexOf("Add to blockchain") >= 0)
+            continue;
+        
+        var TR = MapSendTransaction[Item.key];
+        if(TR && !TR.WasSend && Item.final < 1)
+        {
+            var Data = {};
+            Data.cmd = "OnEvent";
+            if(isMobile())
+                Data.Description = Item.text;
+            else
+                Data.Description = "Error: " + Item.text;
+            Data.Error = 1;
+            
+            SerErrorBlockNum(Item.text, TR.BlockNum);
+            SendMessage(Data);
+            TR.WasSend = 1;
+        }
+    }
 }
 
 function DoGetData(Name,Data,Func)

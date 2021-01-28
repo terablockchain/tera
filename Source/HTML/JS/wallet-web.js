@@ -92,17 +92,23 @@ function SaveServerMap()
     Storage.setItem(NETWORK_ID + "NodesArrayList", JSON.stringify(Arr2));
 }
 
-function SetStatus(Str)
+function SetStatus(Str,bNoEscape)
 {
     var id = $("idStatus");
+    if(!bNoEscape)
+    {
+        if(Str)
+            console.log(Str);
+        Str = escapeHtml(Str);
+    }
     id.innerHTML = Str;
-    if(Str)
-        console.log(id.innerText);
 }
 
 function SetError(Str,bNoSound)
 {
-    SetStatus("<DIV  align='left' style='color:red'><B>" + Str + "</B></DIV>");
+    if(Str)
+        console.log(Str);
+    SetStatus("<DIV  align='left' style='color:red'><B>" + escapeHtml(Str) + "</B></DIV>", 1);
 }
 
 var CountConnect = 0;
