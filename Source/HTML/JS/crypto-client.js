@@ -131,6 +131,8 @@ window.NEW_SIGN_TIME = 25500000;
 
 window.SetBlockChainConstant = function (Data)
 {
+    window.SERVER_VERSION = Data.VersionNum;
+    
     window.NETWORK_NAME = Data.NETWORK;
     if(window.NETWORK_NAME === "LOCAL")
         window.LOCAL_RUN = 1;

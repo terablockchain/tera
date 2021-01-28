@@ -790,6 +790,18 @@ HTTPCaller.GetSignFromHEX = function (Params)
     return {Sign:Sign, result:1};
 }
 
+HTTPCaller.GetSignFromHash = function (Params)
+{
+    var Sign;
+    var Hash = GetArrFromHex(Params.Hash);
+    if(Params.Account)
+        Sign = WALLET.GetSignFromHash(Hash, WALLET.AccountMap[Params.Account]);
+    else
+        Sign = WALLET.GetSignFromHash(Hash);
+    
+    return {Sign:Sign, result:1};
+}
+
 HTTPCaller.SendHexTx = function (Params)
 {
     if(typeof Params === "object" && typeof Params.Hex === "string")

@@ -719,10 +719,14 @@ function SetConstValueAuto()
     {
         SetConstValue(Item.id, Item.id);
     });
+    
+    $("idCanSaveConst").value = 1;
 }
 
 function SaveNetParams()
 {
+    if(!$("idCanSaveConst").value)
+        return;
     
     var Const = {};
     Const.HTTP_PORT_NUMBER = ParseNum($("idHTTPPort").value);

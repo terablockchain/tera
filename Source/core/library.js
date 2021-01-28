@@ -447,6 +447,7 @@ global.LOAD_CONST = function ()
 var WasStartSaveConst = false;
 function SaveConst()
 {
+    
     var constants = {};
     for(var i = 0; i < CONST_NAME_ARR.length; i++)
     {

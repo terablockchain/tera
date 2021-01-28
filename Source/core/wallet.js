@@ -21,6 +21,8 @@ const WalletPath = "WALLET";
 const CONFIG_NAME = GetDataPath(WalletPath + "/config.lst");
 global.HIDDEN_ACC_PATH = GetDataPath(WalletPath + "/hidden.lst");
 
+const ZeroStr64 = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 class CApp
 {
     constructor()
@@ -287,21 +289,25 @@ class CApp
         return KeyPair.getPrivateKey();
     }
     
-    GetSignFromArr(Arr, Num)
+    GetSignFromHash(Hash, Num)
     {
         if(!this.KeyPair.WasInit)
-            return "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            return ZeroStr64;
         
         var PrivKey = this.GetPrivateKey(Num);
-        
-        var sigObj = secp256k1.sign(SHA3BUF(Arr), Buffer.from(PrivKey));
+        var sigObj = secp256k1.sign(Buffer.from(Hash), Buffer.from(PrivKey));
         return GetHexFromArr(sigObj.signature);
+    }
+    
+    GetSignFromArr(Arr, Num)
+    {
+        return this.GetSignFromHash(SHA3BUF(Arr), Num);
     }
     
     GetSignTransaction(TR)
     {
         if(!this.KeyPair.WasInit)
-            return "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            return ZeroStr64;
         try
         {
             var PrivKey = this.GetPrivateKey(this.AccountMap[TR.FromID]);
@@ -311,7 +317,7 @@ class CApp
         catch(e)
         {
             ToLog(e)
-            return "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            return ZeroStr64;
         }
     }
 };

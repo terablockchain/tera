@@ -10,6 +10,7 @@
 
 
 window.CLIENT_VERSION = 20;
+window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
 window.SUM_PRECISION = 9;
@@ -2040,26 +2041,27 @@ function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum
 
 function SendTrArrayWithSign(Body,Account,TR)
 {
-    if(MainServer || CanClientSign())
+    if(window.SignLib && !Storage.getItem("BIGWALLET"))
     {
-        var Sign = GetSignFromArr(Body);
-        var Arr = GetArrFromHex(Sign);
-        WriteArr(Body, Arr, 64);
-        SendTransactionNew(Body, TR);
-    }
-    else
-    {
-        var StrHex = GetHexFromArr(Body);
-        GetData("GetSignFromHEX", {Hex:StrHex, Account:Account}, function (Data)
+        if(MainServer || CanClientSign())
         {
-            if(Data && Data.result)
-            {
-                var Arr = GetArrFromHex(Data.Sign);
-                WriteArr(Body, Arr, 64);
-                SendTransactionNew(Body, TR);
-            }
-        });
+            var Sign = GetSignFromArr(Body);
+            var Arr = GetArrFromHex(Sign);
+            WriteArr(Body, Arr, 64);
+            return SendTransactionNew(Body, TR);
+        }
     }
+    
+    var StrHex = GetHexFromArr(Body);
+    GetData("GetSignFromHEX", {Hex:StrHex, Account:Account}, function (Data)
+    {
+        if(Data && Data.result)
+        {
+            var Arr = GetArrFromHex(Data.Sign);
+            WriteArr(Body, Arr, 64);
+            SendTransactionNew(Body, TR);
+        }
+    });
 }
 
 function GetTrCreateAcc(Currency,PubKey,Description,Adviser,Smart)
@@ -2139,6 +2141,21 @@ function GetSignTransaction(TR,StrPrivKey,F)
     }
     else
     {
+        if(window.SERVER_VERSION >= 2481 && TR.Version === 4)
+        {
+            var Body = GetArrFromTR(TR);
+            var Hash = GetHexFromArr(SHA3BUF(Body));
+            GetData("GetSignFromHash", {Hash:Hash, Account:TR.FromID}, function (Data)
+            {
+                if(Data && Data.result === 1)
+                {
+                    TR.Sign = GetArrFromHex(Data.Sign);
+                    F(TR);
+                }
+            });
+            return;
+        }
+        
         GetData("GetSignTransaction", TR, function (Data)
         {
             if(Data && Data.result === 1)
