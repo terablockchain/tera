@@ -227,7 +227,6 @@ pm2 start run-jinn.js
 ## Refs:
 * Web: https://terafoundation.org
 * Btt: https://bitcointalk.org/index.php?topic=4573801.0
-* Twitter: https://twitter.com/terafoundation
 * Telegram: https://t.me/terafoundation
 * Discord: https://discord.gg/CvwrbeG
 * [White Paper](https://docs.google.com/document/d/1EaqFg1ncIxsrNE2M9xJOSzQu8z3ANwMuNyTX0z_A1ow/edit?usp=sharing)
@@ -238,6 +237,7 @@ pm2 start run-jinn.js
 * [CONSTANTS](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/CONSTANTS.MD)
 * [DEX-guide](https://docs.google.com/document/d/1qvVRfLq3qcYYF6dcsAAAqoGyBFF4njXUYZXZfTPWd2w/edit?usp=sharing)
 * [BTC for DEX](https://docs.google.com/document/d/19vRY6tkbTP8tubZxM01llwnMyz4P6IzY0zvnargrU6k/edit?usp=sharing)
+* [DApps repo](https://gitlab.com/terafoundation/dapps)
 
 
 

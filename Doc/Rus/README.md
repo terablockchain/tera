@@ -240,7 +240,6 @@ node update.js
 # Ссылки:
 * Веб-сайт: http://terafoundation.org
 * Btt: https://bitcointalk.org/index.php?topic=4573801.0
-* Twitter: https://twitter.com/terafoundation
 * Telegram: https://t.me/terafoundation
 * Discord [RUS]: https://discord.gg/dzSGKyR
 * [Ютуб-канал](https://www.youtube.com/channel/UCGQeUCUKZgH0DfbakD7gjqQ)
