@@ -286,7 +286,16 @@ class CApp
         {
             KeyPair = this.KeyPair
         }
-        return KeyPair.getPrivateKey();
+        var PrivKey = KeyPair.getPrivateKey();
+        if(PrivKey.length < 32)
+        {
+            var Delta = 32 - PrivKey.length;
+            var Arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for(var i = 0; i < PrivKey.length; i++)
+                Arr[i + Delta] = PrivKey[i]
+            PrivKey = Arr
+        }
+        return PrivKey;
     }
     
     GetSignFromHash(Hash, Num)
@@ -295,6 +304,8 @@ class CApp
             return ZeroStr64;
         
         var PrivKey = this.GetPrivateKey(Num);
+        if(!PrivKey)
+            return ZeroStr64;
         var sigObj = secp256k1.sign(Buffer.from(Hash), Buffer.from(PrivKey));
         return GetHexFromArr(sigObj.signature);
     }

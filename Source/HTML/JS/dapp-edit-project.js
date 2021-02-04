@@ -531,12 +531,19 @@ function LoadFromDapp()
 function TrimStr(Str)
 {
     var Arr = Str.split("\n");
-    
+    var StrAll = "";
     for(var i = 0; i < Arr.length; i++)
     {
-        Arr[i] = Arr[i].trim();
+        var Str2 = Arr[i].trim();
+        if(Str2.substring(0, 2) === "//")
+        {
+            Str2 = null;
+        }
+        if(Str2)
+            StrAll += Str2 + "\n";
     }
-    return Arr.join("\n");
+    
+    return StrAll;
 }
 
 function TrimRows(StrID)

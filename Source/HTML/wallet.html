@@ -239,11 +239,13 @@
             <canvas  width='800' height='60' id='idBlockInfo'></canvas>
 
             <div class="division division_light"></div>
-            <h3 class="h3">Constants</h3>
-            <div class="constants">
-                <a class="btn" onclick="ViewConstant()">Edit all constants</a>
-                <p class="constants__text">only for advanced users</p>
+
+            <div class="statistics__buttons">
+                <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
+                <button class="btn btn_explorer btn_utils" onclick="ViewConstant()">Edit all constants</button>
             </div>
+
+
         </div>
 
 
@@ -337,7 +339,7 @@
                     <input type="text" class="input  input_big node-const" id="COMMON_KEY" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
                 <div class="connection">
-                    <p class="connection__text">Node name:</p>
+                    <p class="connection__text">Unique node name:</p>
                     <input type="text" class="input  input_middle node-const" id="NODES_NAME" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
             </div>
@@ -353,20 +355,17 @@
 
             <div class="division"></div>
 
-            <h3 class="h3">Links to other nodes</h3>
-            <div class="myrowl">
-                <p> Node ip:</p>
-                <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
-                <p> Port:</p>
-                <INPUT class="input input_small" type="number" id="idChildPort" value="30000">
-                <p> Score:</p>
-                <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
-                <button onclick="AddSetNode()" class="btn">set node</button>
+            <div class="statistics__buttons">
+                <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
+                <button class="btn btn_explorer" onclick="window.Open('./HTML/network.html','network',1200)">
+                    <div class="df">
+                        <img src="./img/network.svg" class="btn__img">
+                        <p class="btn__arrow-text">Network</p>
+                    </div>
+                    <img src="./img/arrow_right.svg">
+                </button>
+
             </div>
-
-            <div class="division"></div>
-            <button class="btn btn_explorer btn_utils" onclick="RestartNode()" >Restart node</button>
-
         </div>
 
         <!--Remote-->
@@ -1292,13 +1291,7 @@
                         </div>
                         <img src="./img/arrow_right.svg">
                     </button>
-                    <button class="btn btn_explorer" onclick="window.Open('./HTML/network.html','network',1200)">
-                        <div class="df">
-                            <img src="./img/network.svg" class="btn__img">
-                            <p class="btn__arrow-text">Network</p>
-                        </div>
-                        <img src="./img/arrow_right.svg">
-                    </button>
+
                 </div>
 
                 <div class="division division_light"></div>

@@ -417,6 +417,9 @@ function DoCommandNew(request,response,Type,Path,Params)
         case "smart":
             DappSmartCodeFile(response, ArrPath[1]);
             break;
+        case "account":
+            DappAccount(response, ArrPath[1]);
+            break;
         case "client":
             DappClientCodeFile(response, ArrPath[1]);
             break;
@@ -1013,6 +1016,16 @@ HostingCaller.DappAccountList = function (Params)
     var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum, undefined, 1);
     return {arr:arr, result:1};
 }
+
+function DappAccount(response,StrNum)
+{
+    var Num = parseInt(StrNum);
+    var arr = ACCOUNTS.GetRowsAccounts(Num, 1, undefined, 1);
+    var Data = {Item:arr[0], result:1};
+    response.writeHead(200, {'Content-Type':"text/plain", "X-Content-Type-Options":"nosniff"});
+    response.end(JSON.stringify(Data));
+}
+
 HostingCaller.DappSmartList = function (Params)
 {
     if(typeof Params !== "object")

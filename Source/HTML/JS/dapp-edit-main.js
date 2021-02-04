@@ -9,7 +9,7 @@
 */
 
 var SaveIdArr = ["idUser", "idSmartStart", "idText", "idType", "idSelStyle", "idAutoPlay", "idDebugLog", "idScreenStyle", "idSendFrom",
-"idSendTo", "idSendSum", "idSendDesc", "idNoSendHTML", "idTrimCode", "idLoadDapp"];
+"idSendTo", "idSendSum", "idSendDesc", "idNoSendHTML", "idTrimCode", "idLoadDapp", "idChildIP", "idChildPort", "idChildScore"];
 
 var WasOKLoaded = 0;
 var bWasPlay = 0;
@@ -702,8 +702,13 @@ function UpdatePlayInfo()
     for(var i = 100; i < VM_ACCOUNTS.length; i++)
     {
         var Item = VM_ACCOUNTS[i];
-        var Value = {value:Item.Num, text:Item.Num + "." + Item.Name + "  " + SUM_TO_STRING(Item.Value, Item.Currency, 1)};
-        Arr.push(Value);
+        if(Item && Item.Value)
+        {
+            var Value = {value:Item.Num, text:Item.Num + "." + Item.Name + "  " + SUM_TO_STRING(Item.Value, Item.Currency, 1)};
+            Arr.push(Value);
+        }
+        if(i > 150)
+            break;
     }
     FillSelect("idPlayAccount", Arr);
 }

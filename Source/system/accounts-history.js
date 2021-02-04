@@ -101,7 +101,11 @@ class AccountHistory extends require("./accounts-rest-no")
                     continue;
                 }
             }
-            
+            if(Num === 226012)
+            {
+                var Acc = this.ReadState(Item.CorrID);
+                Item.PubKey = GetHexFromArr(Acc.PubKey)
+            }
             arr.push(Item)
         }
         return arr;

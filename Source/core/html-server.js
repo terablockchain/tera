@@ -145,6 +145,9 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
         case "smart":
             DappSmartCodeFile(response, params[1]);
             break;
+        case "account":
+            DappAccount(response, params[1]);
+            break;
         case "client":
             DappClientCodeFile(response, params[1]);
             break;
@@ -493,11 +496,22 @@ HTTPCaller.DappWalletList = function (Params)
     var Ret = {result:1, arr:arr, };
     return Ret;
 }
+
 HTTPCaller.DappAccountList = function (Params)
 {
     var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, undefined, 1);
     return {arr:arr, result:1};
 }
+
+function DappAccount(response,StrNum)
+{
+    var Num = parseInt(StrNum);
+    var arr = ACCOUNTS.GetRowsAccounts(Num, 1, undefined, 1);
+    var Data = {Item:arr[0], result:1};
+    response.writeHead(200, {'Content-Type':"text/plain", "X-Content-Type-Options":"nosniff"});
+    response.end(JSON.stringify(Data));
+}
+
 HTTPCaller.DappSmartList = function (Params)
 {
     var arr = SMARTS.GetRows(Params.StartNum,  + Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate,

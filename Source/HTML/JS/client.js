@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 20;
+window.CLIENT_VERSION = 21;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -332,7 +332,8 @@ function SUM_TO_STRING(Value,Currency,bFloat,bLocal)
             var SumCOIN = Value.SumCOIN;
             if(bLocal)
                 SumCOIN = SumCOIN.toLocaleString();
-            Str = "" + SumCOIN + "." + Rigth("000000000" + Value.SumCENT, window.SUM_PRECISION);
+            var StrCent = Rigth("000000000" + Value.SumCENT, 9);
+            Str = "" + SumCOIN + "." + Left(StrCent, window.SUM_PRECISION);
         }
     }
     else
@@ -396,6 +397,10 @@ function Rigth(Str,Count)
         return Str;
     else
         return Str.substr(Str.length - Count);
+}
+function Left(Str,Count)
+{
+    return Str.substr(0, Count);
 }
 
 function toUTF8Array(str)

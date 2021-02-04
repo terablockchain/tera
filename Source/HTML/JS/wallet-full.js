@@ -30,7 +30,7 @@ var CurTabName;
 var TabArr = [{name:"TabAccounts", log:1}, {name:"TabSend", log:1}, {name:"TabDapps"}, {name:"TabSharding"}, {name:"TabExplorer"}];
 var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idSelStyle", "idViewAccountNum", "idViewBlockNum", "idViewJournNum",
 "idViewCrossOutNum", "idViewCrossInNum", "idViewHashNum", "idViewDappNum", "idViewShardNum", "idRunText", "idViewAccountFilter",
-"idBlockCount", "idBlockCount2", "idWN", "idCurTabName", "idChildIP", "idChildPort", "idChildScore"];
+"idBlockCount", "idBlockCount2", "idWN", "idCurTabName"];
 
 var MaxAccID = 0;
 var MaxDappsID = 0;

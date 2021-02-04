@@ -5,8 +5,12 @@
     <title>Network</title>
     <link rel="shortcut icon" href="/HTML/PIC/network.png" type="image/png">
 
-    <link rel="stylesheet" type="text/css" href="../HTML/CSS/buttons.css">
-    <!--<link rel="stylesheet" type="text/css" href="../HTML/CSS/style.css">-->
+    <link rel="stylesheet" href="./CSS/wallet-new.css"> <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
+
+
+<!--    <link rel="stylesheet" type="text/css" href="../HTML/CSS/buttons.css">-->
+
 </head>
 
 
@@ -204,9 +208,9 @@
         if(Node.DeltaTime)
             Str+=Node.DeltaTime+"ms";
         if(Node.Name)
-            strClass="mnode";
+            strClass="btn mnode";
         else
-            strClass="node";
+            strClass="btn node";
 
         if(Node.Active)
             strClass+=" open";
@@ -228,21 +232,21 @@
         {
             Str+="<DIV style='float: left'>"
             if(!Node.Hot)
-                Str+='<INPUT type="button" class="edit" onclick="AddHot('+Node.ID+')" value="Add"><BR>';
+                Str+='<INPUT type="button" class="btn edit" onclick="AddHot('+Node.ID+')" value="Add"><BR>';
 
             if(!Node.Name)
-                Str+='<INPUT type="button" class="edit" onclick="AddBan('+Node.ID+')" value="Ban">';
+                Str+='<INPUT type="button" class="btn edit" onclick="AddBan('+Node.ID+')" value="Ban">';
             Str+="</DIV>"
         }
         else
         {
-            Str+='<INPUT type="button" class="connect" onclick="AddConnect('+Node.ID+')" value="Con...">';
+            Str+='<INPUT type="button" class="btn connect" onclick="AddConnect('+Node.ID+')" value="Con...">';
         }
 
         Str += '<input type="checkbox" class="checkbox" id="D' + Node.ID + '" '+(Node.Debug?' checked':'')+' onchange = "SetDebug(' + Node.ID + ')"/>';
 
         if(Node.Hot || Node.Cross)
-            Str+='<INPUT type="button" class="edit" onclick="DeleteNode('+Node.ID+')" value="Del">';
+            Str+='<INPUT type="button" class="btn edit" onclick="DeleteNode('+Node.ID+')" value="Del">';
         Str+="<BR>";
 
         return Str;
@@ -270,7 +274,7 @@
         if(Node.DeltaTime>500)
             StrDelta="<B style='color:#df7a59'>"+Node.DeltaTime+"</B>";
         else
-            StrDelta="<B style='color:#1727ff'>"+Node.DeltaTime+"</B>";
+            StrDelta="<B style='color:#2b9dff'>"+Node.DeltaTime+"</B>";
 
         if(!Node.BlockProcessCount)
             Node.BlockProcessCount=0;
@@ -409,9 +413,38 @@
 
 </script>
 
+<script>
+    function OpenAddSetNode()
+    {
+        openModal("idNetAdd");
+    }
 
+    function AddSetNode()
+    {
+        closeModal();
+
+        var Params=
+            {
+                ip:$("idChildIP").value,
+                port:+$("idChildPort").value,
+                Score:+$("idChildScore").value,
+            };
+        GetData("AddSetNode",Params, function (Data)
+        {
+            if(Data)
+            {
+                if(!Data.result)
+                    SetStatus("Error AddSetNode",1);
+                else
+                    SetStatus("OK AddSetNode");
+            }
+        });
+    }
+
+</script>
 
 <style type="text/css">
+
     table
     {
         border-collapse: collapse;
@@ -473,7 +506,7 @@
     .edit
     {
         float: left;
-        width: 55px;
+        width: 35px;
         font-size: 9pt;
     }
     .connect
@@ -482,12 +515,6 @@
         font-size: 9pt;
     }
 
-    #idNodeName
-    {
-        height: 20px;
-        width: 100%;
-        text-align: center;
-    }
 
 
     #idNodeGrid
@@ -508,25 +535,47 @@
         text-align: left
     }
 
+    #idNodeName
+    {
+        position: fixed;
+        height: 20px;
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        width: 460px;
+        left: 50%;
+        transform: translateX(64px);
+
+    }
+
     #idNodeProperty
     {
-        height: 426px;
-        width: 100%;
+        position: fixed;
+        margin: 0;
+        height: 430px;
+        width: 460px;
+        top:62px;
+        left: 50%;
+        transform: translateX(64px);
     }
     #idNodeLog
     {
-        margin-top: -5px;
-        height: 401px;
-        width: 100%;
+        position: fixed;
+        height: 408px;
+        width: 460px;
+        top:486px;
+        left: 50%;
+        transform: translateX(64px);
     }
 
     #idBtLogClear
     {
-        position: relative;
-        bottom: 30px;
-        right: -400px;
+        position2: relative;
+        position: fixed;
+        top:500px;
+        left: 50%;
+        transform: translateX(460px);
         width: 50px;
-        height: 20px;
     }
 
     .focusnowrite:focus
@@ -540,6 +589,25 @@
         border-color: #1a2ec1;
     }
 
+    .btn
+    {
+        padding: 3px;
+        margin: 2px;
+        align-content: center;
+        text-align: center;
+    }
+
+    .confirm__container
+    {
+        border-radius: 5px;
+        border: 1px solid #727473;
+        box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+        min-width: 300px;
+        min-height: 200px;
+        padding: 20px;
+        margin: 0 auto;
+    }
+
 </style>
 
 
@@ -548,9 +616,8 @@
 <DIV align="center">
     <DIV style="width: 1050px">
     <B>NETWORK</B><BR>
-
-    <DIV id="idStatus" style="height: 20px;"></DIV><BR>
-
+        <button onclick="OpenAddSetNode()" class="btn" style="float: left"> Add node</button>
+    <DIV id="idStatus" style="text-align:left;padding-top:8px;padding-left:150px;height: 26px;"></DIV><BR>
     <DIV id="idNodeGrid" style="float: left;" align='left'>
         <table id="grid_hot" class="hot_nodes">
             <tr>
@@ -564,14 +631,54 @@
     </DIV>
     <DIV id="idNodeInfo">
         <DIV id="idNodeName"></DIV>
-        <textarea wrap="off"  rows="20" cols="150"  id="idNodeProperty" class="focusnowrite" style="width: 99%;">
+        <textarea wrap="off"  rows="20" cols="150"  id="idNodeProperty" class="log focusnowrite" >
         </textarea>
-        <textarea wrap="off"  rows="5" cols="1000"  id="idNodeLog" class="focusnowrite" style="width: 99%;">
+        <textarea wrap="off"  rows="5" cols="1000"  id="idNodeLog" class="log  focusnowrite" >
         </textarea>
-        <button id="idBtLogClear" onclick="ClearChildLog()">Clear</button>
+        <button id="idBtLogClear" class="btn connect" onclick="ClearChildLog()">Clear</button>
     </DIV>
     </DIV>
 </DIV>
 
+
+
+
+
+
+
+
+
 </body>
+
+
+
 </html>
+
+
+<div id="idOverlay" onclick="closeModal();" style="display: none;"></div>
+
+<div id="idNetAdd" class="ModalDlg" style="display: none;">
+    <div class="modal__container confirm__container"  style="display: block">
+        <div class="btn-close doclose" onclick="closeModal()">
+            <img src="./img/Close.svg">
+        </div>
+        <DIV align='center'>
+            <h3 id="idConfirmTitle" style="margin-right: 30px" class="h3">Add node</h3>
+            <div class="division"></div>
+            <div class="myrowl">
+                <p> Node ip:</p>
+                <INPUT class="input input_middle" maxlength="40" id="idChildIP" value="0.0.0.0">
+                <p> Port:</p>
+                <INPUT class="input input_small" type="number" id="idChildPort" value="30000">
+                <p> Score:</p>
+                <INPUT class="input input_small" type="number" id="idChildScore" value="10000">
+            </div>
+            <BR>
+            <BR>
+            <div class="row df_space" style="width: 250px">
+                <button class="btn btn_middle btn__transparent" onclick="closeModal()">Cancel</button>
+                <button class="btn btn_middle"  onclick="AddSetNode()">Add node</button>
+            </div>
+        </DIV>
+    </div>
+</div>

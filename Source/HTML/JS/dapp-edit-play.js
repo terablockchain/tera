@@ -36,21 +36,29 @@ var UPDATE_CODE_2 = 0;
 
 var VM_ATOM_MAP = {};
 var WasRollBack = 0;
-function BEGINTRANSACTION()
+function BEGINTRANSACTION(M)
 {
     WasRollBack = 0;
-    VM_ATOM_MAP.VM_ACCOUNTS = JSON.stringify(VM_ACCOUNTS);
     VM_ATOM_MAP.VM_KEY_VALUE = JSON.stringify(VM_KEY_VALUE);
-    VM_ATOM_MAP.ArrWallet = JSON.stringify(VM_VALUE.ArrWallet);
+    VM_ATOM_MAP.VM_ACCOUNTS = JSON.stringify(VM_ACCOUNTS);
 }
 function COMMITRANSACTION()
 {
     if(WasRollBack)
     {
-        VM_ACCOUNTS = JSON.parse(VM_ATOM_MAP.VM_ACCOUNTS);
         VM_KEY_VALUE = JSON.parse(VM_ATOM_MAP.VM_KEY_VALUE);
-        VM_VALUE.ArrWallet = JSON.parse(VM_ATOM_MAP.ArrWallet);
+        VM_ACCOUNTS = JSON.parse(VM_ATOM_MAP.VM_ACCOUNTS);
+        for(var i = 0; i < VM_ACCOUNTS.length; i++)
+        {
+            var Item = VM_ACCOUNTS[i];
+            if(Item && Item.PubKey.data)
+            {
+                Item.PubKey = Item.PubKey.data;
+            }
+        }
     }
+    
+    FillOwnWalletAccount();
 }
 
 function ROLLBACKRANSACTION()
@@ -97,34 +105,32 @@ function RunFrame(Code,Parent,bRecreate)
     if(bRecreate || VM_VALUE.PrevName !== SMART.Name || VM_VALUE.PrevStateFormat !== SMART.StateFormat)
     {
         bRecreate = 1;
-        
+        VM_ACCOUNTS = [];
         VM_VALUE.SmartBlock = CreateNewBlock({Type:130});
         
         var Currency = 0;
         if(SMART.TokenGenerate)
             Currency = glSmart;
         
-        VM_VALUE.WalletAccount = GetNewAccount(100, "TEST", 100000, glSmart, Currency);
-        VM_VALUE.ArrWallet = [VM_VALUE.WalletAccount];
+        GetNewAccount(100, "TEST", 100000, glSmart, Currency, 1);
+        GetNewAccount(101, "Some USD", 1500, glSmart, 1, 1);
+        GetNewAccount(102, "Some BTC", 10, glSmart, 2, 1);
+        GetNewAccount(103, "Some DAO", 3000, glSmart, 3, 1);
         
-        VM_VALUE.ArrWallet.push(GetNewAccount(101, "Some USD", 1500, glSmart, 1));
-        VM_VALUE.ArrWallet.push(GetNewAccount(102, "Some BTC", 10, glSmart, 2));
-        VM_VALUE.ArrWallet.push(GetNewAccount(103, "Some DAO", 3000, glSmart, 3));
+        GetNewAccount(104, "Test USD", 0, glSmart, 1, 1);
+        GetNewAccount(105, "Test DAO", 0, glSmart, 3, 1);
         
-        VM_VALUE.ArrWallet.push(GetNewAccount(104, "Test USD", 0, glSmart, 1));
-        VM_VALUE.ArrWallet.push(GetNewAccount(105, "Test DAO", 0, glSmart, 3));
-        
-        VM_VALUE.OwnerAccount = GetNewAccount(106, "OWNER", 4000, glSmart, Currency);
-        VM_VALUE.ArrWallet.push(VM_VALUE.OwnerAccount);
+        GetNewAccount(106, "OWNER", 4000, glSmart, Currency, 1);
         
         for(var i = 0; i < SMART.AccountLength; i++)
         {
-            var Item = GetNewAccount(107 + i, "Smart base", i === 0 ? 10000 : 0, glSmart, Currency);
-            if(SMART.OwnerPubKey)
-                VM_VALUE.ArrWallet.push(Item);
+            var Item = GetNewAccount(107 + i, "Smart base", i === 0 ? 10000 : 0, glSmart, Currency, SMART.OwnerPubKey);
             if(i === 0)
                 VM_VALUE.BaseAccount = Item;
         }
+        
+        FillOwnWalletAccount();
+        
         BASE_ACCOUNT = VM_VALUE.BaseAccount;
         
         VM_KEY_VALUE = {};
@@ -174,7 +180,7 @@ function InitStorageEmulate()
     EmulateSessionStorage = StorageEmulate;
 }
 
-function GetNewAccount(Num,Name,Sum,Smart,Currency)
+function GetNewAccount(Num,Name,Sum,Smart,Currency,bWalletPubKey)
 {
     if(!Smart)
         Smart = 0;
@@ -193,15 +199,34 @@ function GetNewAccount(Num,Name,Sum,Smart,Currency)
     Item.Value = {SumCOIN:Sum, SumCENT:0, Smart:Smart};
     Item.SmartState = InitSmartState(Num, Smart);
     Item.Currency = Currency;
-    Item.PubKey = DefPubKeyArr;
     
     if(Smart)
-    {
-        Item.PubKey = VM_VALUE.PubKey;
         Item.SmartObj = VM_SMARTS[Smart];
-    }
+    
+    if(bWalletPubKey)
+        Item.PubKey = VM_VALUE.PubKey;
+    else
+        Item.PubKey = DefPubKeyArr;
+    
     return Item;
 }
+
+function FillOwnWalletAccount()
+{
+    VM_VALUE.ArrWallet = [];
+    VM_VALUE.WalletAccount = VM_ACCOUNTS[100];
+    VM_VALUE.OwnerAccount = VM_ACCOUNTS[106];
+    for(var i = 100; i < 150; i++)
+    {
+        var Item = VM_ACCOUNTS[i];
+        if(Item)
+            if(GetHexFromArr(Item.PubKey) === GetHexFromArr(VM_VALUE.PubKey))
+            {
+                VM_VALUE.ArrWallet.push(Item);
+            }
+    }
+}
+
 var WasStartBlock;
 function InitVMArrays()
 {
@@ -241,7 +266,29 @@ function AddHash(Block)
 
 function GetVMAccount(Num)
 {
-    var Item = VM_ACCOUNTS[Num];
+    var Item = undefined;
+    
+    if(VM_ACCOUNTS[Num] === undefined)
+    {
+        var strresult = GetData("/account/" + Num);
+        var result;
+        try
+        {
+            ToLog("Load:");
+            result = JSON.parse(strresult);
+            Item = result.Item;
+        }
+        catch(e)
+        {
+            ToLog(e);
+        }
+        ToLog(Item);
+        VM_ACCOUNTS[Num] = Item;
+    }
+    else
+    {
+        Item = VM_ACCOUNTS[Num];
+    }
     
     if(!Item)
         throw "Error account num=" + Num;
@@ -276,8 +323,7 @@ function CheckInstall()
 function CreateNewAccount(Currency)
 {
     ToLogDebug("Run:CreateNewAccount");
-    var Item = GetNewAccount(VM_ACCOUNTS.length, SMART.Name, 0, glSmart, Currency);
-    VM_VALUE.ArrWallet.push(Item);
+    GetNewAccount(VM_ACCOUNTS.length, SMART.Name, 0, glSmart, Currency, 1);
 }
 function ReloadDapp()
 {
@@ -310,11 +356,12 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,b
         Block.BlockNum = 0;
     ToLogDebug("" + Block.BlockNum + ". CallMethod " + MethodName + " " + ToNum + "<-" + FromNum);
     
-    BEGINTRANSACTION();
+    var Result;
     try
     {
-        return RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params, ParamsArr,
-        1, StrCode);
+        BEGINTRANSACTION(1);
+        Result = RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params,
+        ParamsArr, 1, StrCode);
     }
     catch(e)
     {
@@ -330,6 +377,7 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,b
     {
         COMMITRANSACTION();
     }
+    return Result;
 }
 
 function RunPublicMethod(MethodName,Block,Account,PayContext)
@@ -690,6 +738,7 @@ ListF.$SendMessage = function ()
 const $ReadValue = function (Key,Format)
 {
     DO(900);
+    
     var Value;
     var Buf = VM_KEY_VALUE[Key];
     if(Buf)
@@ -739,9 +788,9 @@ function PlaySend(From,To,fSum,Desc)
 {
     global.SetTickCounter(35000);
     
-    BEGINTRANSACTION();
     try
     {
+        BEGINTRANSACTION(2);
         MoveCoin(From, To, COIN_FROM_FLOAT(fSum), Desc, 0);
     }
     catch(e)
