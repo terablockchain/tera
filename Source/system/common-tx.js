@@ -204,7 +204,7 @@ function RunOneTX(App,Block,Tx,BlockNum,TxNum,bCrossRun)
     }
     else
     {
-        ToLogTx("THROW on Block=" + BlockNum + " TxNum=" + TxNum + " : " + Result, global.DEV_MODE ? 3 : 4);
+        ToLogTx("THROW on Block=" + BlockNum + " TxNum=" + TxNum + " : " + Result, global.DEV_MODE ? 4 : 5);
         ROLLBACK_TRANSACTION();
         SetResult = 0;
     }

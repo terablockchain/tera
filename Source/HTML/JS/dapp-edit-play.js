@@ -13,7 +13,7 @@
 var LexerJS = global.LexerJS;
 
 var MaxAccCreate = 106;
-var VM_VALUE = {CurBlockNum:1000, MaxDappsID:3, };
+var VM_VALUE = {CONSENSUS_PERIOD_TIME:1000, FIRST_TIME_BLOCK:0, CurBlockNum:500, MaxDappsID:3, };
 
 var VM_BLOCKS = [];
 var VM_SMARTS = [];
@@ -230,12 +230,17 @@ function FillOwnWalletAccount()
 var WasStartBlock;
 function InitVMArrays()
 {
+    window.FIRST_TIME_BLOCK = VM_VALUE.FIRST_TIME_BLOCK;
+    window.CONSENSUS_PERIOD_TIME = VM_VALUE.CONSENSUS_PERIOD_TIME;
+    
     for(var Num = 0; Num <= VM_VALUE.CurBlockNum; Num++)
     {
         var Block = {Type:1, Body:"0101020304AABBCCDD", Params:"{}"};
         AddHash(Block);
         VM_BLOCKS[Num] = Block;
     }
+    
+    VM_VALUE.FIRST_TIME_BLOCK = Date.now() - VM_BLOCKS.length * CONSENSUS_PERIOD_TIME;
     
     for(var Num = 8; Num <= VM_VALUE.MaxDappsID; Num++)
     {
@@ -274,7 +279,6 @@ function GetVMAccount(Num)
         var result;
         try
         {
-            ToLog("Load:");
             result = JSON.parse(strresult);
             Item = result.Item;
         }
@@ -282,7 +286,6 @@ function GetVMAccount(Num)
         {
             ToLog(e);
         }
-        ToLog(Item);
         VM_ACCOUNTS[Num] = Item;
     }
     else
@@ -468,8 +471,8 @@ function DoDappInfo(Data)
     Data.CanReloadDapp = 0;
     Data.result = 1;
     Data.DELTA_CURRENT_TIME = 0;
-    Data.FIRST_TIME_BLOCK = 0;
-    Data.CONSENSUS_PERIOD_TIME = 1000;
+    Data.FIRST_TIME_BLOCK = VM_VALUE.FIRST_TIME_BLOCK;
+    Data.CONSENSUS_PERIOD_TIME = VM_VALUE.CONSENSUS_PERIOD_TIME;
     Data.PRICE_DAO = {NewAccount:10, NewSmart:100, NewTokenSmart:10000, Storage:0.01};
     Data.NEW_SIGN_TIME = 0;
     Data.NETWORK = Network_Name;

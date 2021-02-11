@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 21;
+window.CLIENT_VERSION = 22;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1539,6 +1539,9 @@ function InitMapCurrency()
     {
         MapCurrency[16] = "BTC";
         MapCurrencyIcon[16] = "./PIC/B.svg";
+        
+        MapCurrency[110] = "USD";
+        MapCurrency[111] = "DAO";
     }
     else
         if(window.NETWORK_ID === "TEST-JINN.TEST")

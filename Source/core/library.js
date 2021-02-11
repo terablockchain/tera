@@ -553,7 +553,6 @@ global.GetCurrentTime = function (Delta_Time)
     return Time;
 }
 
-
 function formatDate(now)
 {
     var year = now.getFullYear();
@@ -565,6 +564,7 @@ function formatDate(now)
     return year + "-" + String(month).padStart(2, "0") + "-" + String(date).padStart(2, "0") + "  " + String(hour).padStart(2,
     "0") + ":" + String(minute).padStart(2, "0") + ":" + String(second).padStart(2, "0");
 }
+
 function DateFromBlock(BlockNum)
 {
     var Str;

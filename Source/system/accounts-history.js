@@ -101,7 +101,7 @@ class AccountHistory extends require("./accounts-rest-no")
                     continue;
                 }
             }
-            if(Num === 226012)
+            if(Num === 226012 || Num === 226241)
             {
                 var Acc = this.ReadState(Item.CorrID);
                 Item.PubKey = GetHexFromArr(Acc.PubKey)
