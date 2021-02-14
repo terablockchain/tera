@@ -228,10 +228,15 @@ function FillOwnWalletAccount()
 }
 
 var WasStartBlock;
+
+function GetBlockNumByTimePlay(CurrentTime)
+{
+    var CurTimeNum = CurrentTime - VM_VALUE.FIRST_TIME_BLOCK;
+    return Math.floor(CurTimeNum / VM_VALUE.CONSENSUS_PERIOD_TIME + 0.999999);
+}
+
 function InitVMArrays()
 {
-    window.FIRST_TIME_BLOCK = VM_VALUE.FIRST_TIME_BLOCK;
-    window.CONSENSUS_PERIOD_TIME = VM_VALUE.CONSENSUS_PERIOD_TIME;
     
     for(var Num = 0; Num <= VM_VALUE.CurBlockNum; Num++)
     {
@@ -240,7 +245,7 @@ function InitVMArrays()
         VM_BLOCKS[Num] = Block;
     }
     
-    VM_VALUE.FIRST_TIME_BLOCK = Date.now() - VM_BLOCKS.length * CONSENSUS_PERIOD_TIME;
+    VM_VALUE.FIRST_TIME_BLOCK = Date.now() - VM_BLOCKS.length * VM_VALUE.CONSENSUS_PERIOD_TIME;
     
     for(var Num = 8; Num <= VM_VALUE.MaxDappsID; Num++)
     {
@@ -354,17 +359,16 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,b
     var PayContext = {FromID:ParseNum(FromNum), ToID:Account.Num, Description:"", Value:{SumCOIN:0, SumCENT:0}};
     
     var Data = {Type:135, Account:Account.Num, MethodName:MethodName, FromNum:FromNum, Params:JSON.stringify(Params)};
-    var Block = CreateNewBlock(Data);
-    if(bStatic)
-        Block.BlockNum = 0;
+    var Block = CreateNewBlock(Data, bStatic);
+    var BlockNum = Block.BlockNum;
     ToLogDebug("" + Block.BlockNum + ". CallMethod " + MethodName + " " + ToNum + "<-" + FromNum);
     
     var Result;
     try
     {
         BEGINTRANSACTION(1);
-        Result = RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, Block.BlockNum, Block.TrNum, PayContext, MethodName, Params,
-        ParamsArr, 1, StrCode);
+        Result = RunSmartMethod(Block, Data, VM_VALUE.Smart, Account, BlockNum, Block.TrNum, PayContext, MethodName, Params, ParamsArr,
+        1, StrCode);
     }
     catch(e)
     {
@@ -392,19 +396,35 @@ function RunPublicMethod(MethodName,Block,Account,PayContext)
     0, StrCode);
 }
 
-function CreateNewBlock(Data)
+function CreateNewBlock(Data,bStat)
 {
-    VM_VALUE.CurBlockNum++;
-    var Block = {BlockNum:VM_VALUE.CurBlockNum, TrNum:0, TxArray:[Data]};
+    var Block;
+    if(bStat)
+    {
+        Block = {BlockNum:0, TrNum:0, TxArray:[Data]};
+    }
+    else
+    {
+        VM_VALUE.CurBlockNum++;
+        Block = {BlockNum:VM_VALUE.CurBlockNum, TrNum:0, TxArray:[Data]};
+        VM_BLOCKS[VM_VALUE.CurBlockNum] = Data;
+        VM_VALUE.CurrentBlock = Block;
+    }
     AddHash(Block);
-    VM_BLOCKS[VM_VALUE.CurBlockNum] = Data;
-    VM_VALUE.CurrentBlock = Block;
+    
     return Block;
 }
 function AddNewBlock()
 {
-    var Block = CreateNewBlock({Type:0});
-    ToLogDebug("Block: " + Block.BlockNum);
+    for(var i = 0; i < 10; i++)
+    {
+        var CurBlockTime = GetBlockNumByTimePlay(new Date());
+        if(VM_VALUE.CurBlockNum > CurBlockTime)
+            break;
+        
+        var Block = CreateNewBlock({Type:0});
+        ToLogDebug("Block: " + Block.BlockNum);
+    }
 }
 
 function DoGetData(Name,Params,Func)

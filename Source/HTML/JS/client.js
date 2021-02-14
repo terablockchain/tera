@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 24;
+window.CLIENT_VERSION = 25;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -283,6 +283,8 @@ function IsIPAddres(Str)
 
 function GetProtocolServerPath(Item)
 {
+    if(!Item)
+        return ".";
     if(Item.port === 443)
         return "https://" + Item.ip;
     else

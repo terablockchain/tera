@@ -253,7 +253,7 @@ function CheckNewMoney()
 }
 function DoRestartWallet()
 {
-    SetStatus("<H1 align='center' style='color:blue'>Restarting program...</H1>");
+    SetStatus("<H1 align='center' style='color:blue'>Restarting program...</H1>", 0, 1);
     if(!WasSetRestart)
     {
         WasSetRestart = 1;
