@@ -390,7 +390,12 @@ textarea {
 .fixed-status__status {
 	max-width: 330px;
 	margin-right: auto;
-	padding-right: 10px;
+	padding-left: 10px;
+}
+.fixed-button
+{
+    display: flex;
+    right: 2px;
 }
 .fixed-status .grey-btn {
 	padding-left: 3px;
@@ -407,6 +412,13 @@ textarea {
 	width: 27px;
 	margin-left: 5px;
 }
+/*.select-network*/
+/*{*/
+/*    width: 55px;*/
+/*}*/
+
+
+
 .reconnect span {
 	display: none;
 }
@@ -1090,11 +1102,21 @@ textarea {
 	margin-right: 10px;
 }
 @media (max-width: 440px) {
-	.dapp-modal .modal__close {
+	.dapp-modal .modal__close
+    {
 		left: -15px;
 		top: -15px;
 	}
+
+    .select-network
+    {
+        width: 55px;
+    }
+
+
 }
+
+
 @media (max-width: 960px) {
 	.modal__title-wrap {
 		margin-right: auto;
@@ -2064,7 +2086,9 @@ td.hash {
 	    margin-left: 15px;
 	    background-position: 11px 11px;
 	}
-	.fixed-status__status {
+
+
+    .fixed-status__status {
 		font-size: 14px;
 		max-width: none;
 	}
@@ -2425,7 +2449,13 @@ td.hash {
 	    padding-left: 39px;
 	    background-position: 11px 11px;
 	}
-	.explorer-page {
+    .select-network
+    {
+        width: 140px;
+    }
+
+
+    .explorer-page {
 		padding-right: 40px;
 		padding-left: 40px;
 	}

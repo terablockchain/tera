@@ -64,7 +64,6 @@ function TestSignLib(MaxTime)
         deltaTime = Time[0] * 1000 + Time[1] / 1e6;
         if(deltaTime > MaxTime)
         {
-            global.SpeedSignLib = Num;
             break;
         }
     }

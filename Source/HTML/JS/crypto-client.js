@@ -199,6 +199,7 @@ function CreateHashBodyPOWInnerMinPower(arr)
 
 function LoadLib(Path)
 {
+    
     if(window.PROTOCOL_SERVER_PATH)
     {
         var StrPath = GetProtocolServerPath(window.PROTOCOL_SERVER_PATH);

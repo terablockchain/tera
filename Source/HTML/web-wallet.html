@@ -147,7 +147,7 @@
         <div class="wallet-wrapper" style="padding-top: 10px;">
             <button class="btn btn--full-width4 wallet-settings__generate4" id="idKeyEdit" onclick="SelectTab('TabWalletSet')">Edit</button>
 
-            <div class="wallet-settings__btns-wrapper nomobile2">
+            <div class="wallet-settings__btns-wrapper nomobile">
                 <button class="btn btn--white" onclick="downloadKey('idPrivKeyEdit')" id="idSave2">Save key</button>
                 <label for="load-key2" class="btn btn--white" onchange="UploadKey('load-key2')" id="idLoad2">
                     <input class="hidden" id="load-key2" type="file">
@@ -654,12 +654,18 @@
 
 <div class="fixed-status">
     <div class="fixed-status__wrap">
+        <div class="fixed-button">
+            <select  class="grey-btn select-network" id="idCurNetwork" onchange="ChangeNetwork(1)">
+                <option value="MAIN-JINN.TERA">MAIN-JINN.TERA</option>
+                <option value="TEST-JINN.TEST">TEST-JINN.TEST</option>
+            </select>
+            <button class="grey-btn reconnect" onclick="ChangeNetwork()" title="Reconnect"><span>RECONNECT</span></button>
+            <button class="grey-btn" style="margin-left: 5px;display: none" id="idMobile" onclick="DoMobile(1)" title="Logs"><span>Logs</span></button>
+        </div>
         <div id="idStatus" class="fixed-status__status">&nbsp;</div>
-        <select  class="grey-btn" id="idCurNetwork" onchange="ChangeNetwork(1)">
-            <option value="MAIN-JINN.TERA">MAIN-JINN.TERA</option>
-            <option value="TEST-JINN.TEST">TEST-JINN.TEST</option>
-        </select>
-        <button class="grey-btn reconnect" onclick="ChangeNetwork()" title="Reconnect"><span>RECONNECT</span></button>
+
+
+
         <!--рудименты-->
         <span id="idNetwork" style="display: none"></span>
         <span id="idSignJSON"></span>
@@ -676,8 +682,6 @@
     </DIV>
 </DIV>
 
-<!--<iframe id="idHistoryPage" name="HistoryPage" style="display: none" src="./history.html"></iframe>-->
-<!--<iframe id="idBlockViewerPage" name="BlockViewerPage" style="display: none" src="./blockviewer.html"></iframe>-->
 
 </body>
 </html>

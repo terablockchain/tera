@@ -40,6 +40,7 @@ function OnResetPage()
 
 window.onload = function ()
 {
+    InitMobileInterface();
     DoNewSession();
     
     InitAccountsCard();

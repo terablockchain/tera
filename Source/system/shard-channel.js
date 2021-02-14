@@ -23,14 +23,10 @@ delete CROSS_MSG_VBLOCK.ShardFrom;
 delete CROSS_MSG_VBLOCK.ShardTo;
 
 
-
-
 global.TYPE_TRANSACTION_VBLOCK = 201;
 global.FORMAT_VBLOCK = {Type:"byte", ShardName:SHARD_STR_TYPE, Confirms:"uint32", PrevRowHash:"hash", PrevRowNum:"uint", CrossTx:[{Msg:CROSS_MSG_VBLOCK}],
     StartRun:"byte", Reserve:"arr4", };
 global.WorkStructVBlock = {};
-
-
 
 class ShardApp extends ChardCross
 {

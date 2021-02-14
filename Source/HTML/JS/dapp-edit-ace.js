@@ -8,6 +8,7 @@
  * Telegram:  https://t.me/terafoundation
 */
 
+
 function InitCommonEdit()
 {
     SetVisibleBlock("idCode", 1);

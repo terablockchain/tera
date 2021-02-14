@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 22;
+window.CLIENT_VERSION = 24;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -226,6 +226,10 @@ else
                 {
                     if(Func)
                     {
+                        if(serv.responseText.substr(0, 1) !== "{")
+                        {
+                            return;
+                        }
                         var Data;
                         try
                         {
@@ -276,6 +280,7 @@ function IsIPAddres(Str)
             return 0;
     return 1;
 }
+
 function GetProtocolServerPath(Item)
 {
     if(Item.port === 443)
@@ -2775,3 +2780,21 @@ function SetStatusBlockNum(Str,BlockNum)
     if(LastErrorBlockNum !== BlockNum)
         SetStatus(Str);
 }
+
+function InitMobileInterface()
+{
+    SetVisibleBlock("idMobile", !!window.MobileInterface);
+}
+function DoMobile(Param)
+{
+    window.MobileInterface.DoMobile(Param);
+}
+
+function IsLocalAllowed()
+{
+    if(window.MobileInterface && window.MobileInterface.getAndroidVersion() >= 30)
+        return 0;
+    
+    return 1;
+}
+

@@ -57,17 +57,21 @@ function CreateFrame(Code,Parent)
         if(isMobile())
             StrPath = ".";
     }
+    if(isMobile())
+    {
+        StrPath = GetProtocolServerPath(MainServer);
+    }
     
-    Code = '\
+    Code = SriptLW + '\
     <meta charset="UTF-8">\
     <meta http-equiv="X-Frame-Options" value="sameorigin">\
     <script type="text/javascript" src="' + StrPath + '/JS/sha3.js"><\/script>\
+    <script type="text/javascript" src="' + StrPath + '/JS/client.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/crypto-client.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/coinlib.js"><\/script>\
-    <script type="text/javascript" src="' + StrPath + '/JS/client.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/dapp-inner.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/terahashlib.js"><\/script>\
-    ' + SriptLW + Code;
+    ' + Code;
     
     if($("idModalCSS"))
     {
