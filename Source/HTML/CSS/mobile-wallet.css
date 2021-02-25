@@ -2908,3 +2908,27 @@ td.num
     -ms-flex-pack: justify;
     justify-content: space-between; }
 
+
+.red
+{
+    color: #EE1A1A;
+}
+.green
+{
+    color: #2AD300;
+}
+.coral
+{
+    color:coral;
+}
+
+.direct
+{
+    margin: 0;
+    padding: 2px 12px;
+}
+.direct:hover
+{
+    cursor: pointer;
+    border: 1px solid #bfc1c0;
+}

@@ -239,6 +239,8 @@ class SmartTR extends require("./smart-scroll")
         var Has = global.TreeFindTX.LoadValue("Smart:" + Data.Smart, 1);
         if(Has)
         {
+            Data.key = global.GetCurTxKey()
+            
             process.send({cmd:"DappEvent", Data:Data})
         }
     }

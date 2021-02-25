@@ -20,8 +20,7 @@
         function OnMessage(event)
         {
             var Data=event.data;
-            console.log("Data:");
-            console.log(Data);
+            console.log("Data:",Data);
         }
         function InitDappInner()
         {
@@ -159,12 +158,12 @@
 
         function RunCheckInstall()
         {
-            if(CONFIG_DATA && CONFIG_DATA.ArrWallet && CONFIG_DATA.ArrWallet.length===0)
-            {
-                var StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
-                var Str='<DIV style="background-color: #c8ecff;">For install this app press: <button class="btcreate" onclick="InstallApp()">Create account</button><DIV>';
-                SetStatus(Str);
-            }
+            // if(CONFIG_DATA && CONFIG_DATA.ArrWallet && CONFIG_DATA.ArrWallet.length===0)
+            // {
+            //     var StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
+            //     var Str='<DIV style="background-color: #c8ecff;">For install this app press: <button class="btcreate" onclick="InstallApp()">Create account</button><DIV>';
+            //     SetStatus(Str);
+            // }
         }
         function OpenWalletPage()
         {
@@ -181,10 +180,7 @@
             if(Storage.getItem(WALLET_KEY_EXIT))
                 return 0;
 
-            if(PrivKeyStr  && PrivKeyStr.length===64)
-                return 1;
-            else
-                return 0;
+            return IsPrivateKey(PrivKeyStr);
         }
 
 
@@ -676,8 +672,8 @@
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>
-        <button class="bt-confirm"  onclick="closeModal()">Cancel</button>
         <button class="bt-confirm"  onclick="OnConfirmOK()">OK</button>
+        <button class="bt-confirm"  onclick="closeModal()">Cancel</button>
     </DIV>
 </section>
 

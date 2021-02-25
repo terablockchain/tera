@@ -321,6 +321,10 @@ function SignJSON(F)
 function CheckSending(bToStatus)
 {
     MaxBlockNum = GetCurrentBlockNumByTime();
+    
+    if(!$("idSendButton"))
+        return;
+    
     var CanSend = IsPrivateMode();
     var StrButton = "Send";
     var StrButtonSign = "Sign JSON";
@@ -555,7 +559,7 @@ function SendMoneyTR(TR)
     var Body = GetArrFromTR(TR);
     WriteArr(Body, TR.Sign, 64);
     
-    SendTransactionNew(Body, TR, undefined, function (Err,TR,Body)
+    SendTransactionNew(Body, TR, function (Err,TR,Body)
     {
         if(Err)
             return;

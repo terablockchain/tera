@@ -330,33 +330,56 @@ function ActivateEditor(editor)
     }
 }
 
-function SetEditorsPos(Item)
+function SmartToOneEditor(ItemEditor,editor)
+{
+    if(!ItemEditor)
+        return;
+    
+    if(ItemEditor.Pos)
+        editor.PosToSet = ItemEditor.Pos;
+    
+    var sesion = editor.getSession();
+    sesion.clearBreakpoints();
+    
+    var arr = ItemEditor.Arr;
+    for(var i = 0; arr && i < arr.length; i++)
+        sesion.setBreakpoint(arr[i]);
+}
+function OneEditorToSmart(Item,name,editor)
+{
+    
+    var sesion = editor.getSession();
+    var arr = sesion.getBreakpoints();
+    var Arr = [];
+    for(var i = 0; i < arr.length; i++)
+    {
+        if(arr[i])
+            Arr.push(i);
+    }
+    
+    if(editor.PosToSet)
+        Item[name] = {Pos:editor.PosToSet, Arr:Arr};
+    else
+        Item[name] = {Pos:editor.getCursorPosition(), Arr:Arr};
+}
+
+function SmartToEditors(Item)
 {
     if(!window.ace)
         return;
     
-    if(Item.EditorCode && Item.EditorCode.Pos)
-        editCode.PosToSet = Item.EditorCode.Pos;
-    if(Item.EditorHTML && Item.EditorHTML.Pos)
-        editHTML.PosToSet = Item.EditorHTML.Pos;
+    SmartToOneEditor(Item.EditorCode, editCode);
+    SmartToOneEditor(Item.EditorHTML, editHTML);
 }
 
-function FillEditorsPos(Item)
+function EditorsToSmart(Item)
 {
+    
     if(!window.ace)
         return;
-    if(editCode.PosToSet)
-        Item.EditorCode = {Pos:editCode.PosToSet};
-    else
-        Item.EditorCode = {Pos:editCode.getCursorPosition()};
-    if(editHTML.PosToSet)
-    {
-        Item.EditorHTML = {Pos:editHTML.PosToSet};
-    }
-    else
-    {
-        Item.EditorHTML = {Pos:editHTML.getCursorPosition()};
-    }
+    
+    OneEditorToSmart(Item, "EditorCode", editCode);
+    OneEditorToSmart(Item, "EditorHTML", editHTML);
 }
 
 function ToWordsArray(Str)

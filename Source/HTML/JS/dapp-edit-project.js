@@ -33,7 +33,7 @@ function SetDialogToSmart(Smart)
     Smart.IconBlockNum = IconParam.BlockNum;
     Smart.IconTrNum = IconParam.TrNum;
     
-    FillEditorsPos(Smart);
+    EditorsToSmart(Smart);
     
     Smart.Code = GetSmartCode();
     Smart.HTML = GetHTMLCode();
@@ -121,7 +121,7 @@ function SetSmartToDialog(Smart,bSaveToArr,bNoSetPos)
     
     if(!bNoSetPos)
     {
-        SetEditorsPos(Smart);
+        SmartToEditors(Smart);
         SetVisibleTab();
     }
     
@@ -433,7 +433,7 @@ function NewProject()
 {
     openModal("idNewSmart");
 }
-function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML)
+function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML,idHTMLBefor)
 {
     var CodeSmart = "", CodeHTML = "";
     if(typeof FCodeTemplate === "function")
@@ -458,7 +458,7 @@ function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML)
     
     CodeHTML = GetTextFromF(FHTMLTemplate);
     
-    NewDappNext(Mode, CodeSmart, CodeHTML, idHTML);
+    NewDappNext(Mode, CodeSmart, CodeHTML, idHTML, idHTMLBefor);
 }
 
 function GetTextFromF(F)
@@ -472,7 +472,7 @@ function GetTextFromF(F)
     return Str;
 }
 
-function NewDappNext(Mode,CodeSmart,CodeHTML,idHTML)
+function NewDappNext(Mode,CodeSmart,CodeHTML,idHTML,idHTMLBefor)
 {
     closeModal();
     
@@ -501,8 +501,12 @@ function NewDappNext(Mode,CodeSmart,CodeHTML,idHTML)
     }
     if(CodeHTML)
     {
-        var Str = "" + CodeHTML;
-        Str = "<script>\n" + Str + "\n<\/script>\n\n";
+        var Str = "";
+        
+        if(idHTMLBefor)
+            Str += $(idHTMLBefor).innerHTML + "\n";
+        
+        Str += "<script>\n" + CodeHTML + "\n<\/script>\n\n";
         if(idHTML)
             Smart.HTML = Str + $(idHTML).innerHTML + "\n";
         

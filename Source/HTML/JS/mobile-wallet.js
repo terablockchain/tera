@@ -9,7 +9,7 @@
 */
 
 
-var WEB_WALLET_VERSION = "1." + window.CLIENT_VERSION;
+var WEB_WALLET_VERSION = "" + window.CLIENT_VERSION;
 
 var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idCurTabName", "idViewBlockNum", "idViewAccountNum", "idViewDappNum",
 "idLang"];
@@ -28,6 +28,8 @@ function SetImg()
 var CONNECT_STATUS = 0;
 var NotModalClose = 0;
 
+var ClosePasswordOnExit = 0;
+
 function OnResetPage()
 {
     var HasPassword = IsLockedWallet();
@@ -38,7 +40,32 @@ function OnResetPage()
     }
 }
 
-window.onload = function ()
+window.addEventListener('keydown', function (e)
+{
+    if(e.keyCode === 27)
+    {
+        if(IsVisibleBlock("overlay"))
+            closeModal();
+        if(IsVisibleBlock("idCloseButton"))
+            window.close();
+    }
+    else
+        if(e.keyCode === 13)
+        {
+            if(glConfirmF)
+                OnConfirmOK();
+        }
+}
+);
+
+window.addEventListener('beforeunload', function (e)
+{
+    if(ClosePasswordOnExit)
+        DoExitWallet();
+}
+);
+
+window.addEventListener('load', function ()
 {
     InitMobileInterface();
     DoNewSession();
@@ -71,33 +98,22 @@ window.onload = function ()
         });
     }
     
-    var HasPassword = IsLockedWallet();
-    if(HasPassword)
+    ClosePasswordOnExit = IsLockedWallet();
+    if(ClosePasswordOnExit)
     {
         NotModalClose = 1;
         OpenPasswordForm();
     }
     else
     {
-        OpenWalletKey();
+        if(!IsPrivateKey(GetPrivKey()))
+            OpenWalletKey();
         Storage.setItem(WALLET_KEY_EXIT, "");
     }
-    SetUsePassword(HasPassword);
+    SetUsePassword(IsPresentWalletPassword());
     
-    window.onkeydown = function (e)
-    {
-        if(e.keyCode === 27)
-        {
-            if(IsVisibleBlock("overlay"))
-                closeModal();
-        }
-        else
-            if(e.keyCode === 13)
-            {
-                if(glConfirmF)
-                    OnConfirmOK();
-            }
-    };
+    if(!$("idAccountsList"))
+        return;
     
     $("idAccountsList").addEventListener("click", MyToggleList);
     
@@ -116,6 +132,7 @@ window.onload = function ()
         AddFrame("BlockViewerPage", "./blockviewer.html");
     }
 }
+);
 
 function SetServerList(NameID)
 {
@@ -165,6 +182,22 @@ function OnLoad()
             SelectTab(LocationPath);
         }
     }
+    
+    FromCopyOnLoad();
+}
+function FromCopyOnLoad()
+{
+    var Str = sessionStorage["COPY-TX"];
+    if(Str && Str !== "undefined")
+    {
+        var Data = JSON.parse(Str);
+        $("idAccount").value = Data.From;
+        $("idTo").value = Data.To;
+        $("idSumSend").value = Data.Sum;
+        $("idDescription").value = Data.Description;
+        SetVisibleBlock("idCloseButton", 1);
+    }
+    delete sessionStorage["COPY-TX"];
 }
 
 function ChangeNetwork(bStart)
@@ -312,15 +345,15 @@ function SetVisibleTab()
 function IsPrivateMode()
 {
     var PrivKeyStr = GetPrivKey();
-    if(PrivKeyStr && PrivKeyStr.length === 64)
-        return 1;
-    else
-        return 0;
+    return IsPrivateKey(PrivKeyStr);
 }
 
 
 function SetVisiblePrivKey()
 {
+    if(!$("idPrivKeyStatic"))
+        return;
+    
     if(bShowPrivKey)
         $("idPrivKeyStatic").innerText = GetPrivKey();
     else
@@ -335,7 +368,8 @@ function OnVisiblePrivKey()
 
 function SetPubKeyHTML()
 {
-    $("idPubKeyStatic").innerText = GetPubKey();
+    if($("idPubKeyStatic"))
+        $("idPubKeyStatic").innerText = GetPubKey();
 }
 
 function GenerateKeyNew()
@@ -507,6 +541,9 @@ function SetAccountsCard(Data,AccountsDataStr)
         }
     }
     var Select = $("idAccount");
+    if(!Select.options)
+        return;
+    
     if(arr.length !== Select.options.length)
     {
         var options = Select.options;
@@ -749,6 +786,9 @@ function SetExplorerData(Data)
 {
     if(!Data || !Data.result)
         return;
+    if(!$("idBHeight"))
+        return;
+    
     CONFIG_DATA = Data;
     window.FIRST_TIME_BLOCK = Data.FIRST_TIME_BLOCK;
     window.CONSENSUS_PERIOD_TIME = Data.CONSENSUS_PERIOD_TIME;
@@ -968,7 +1008,8 @@ function InitPrivKey()
     $("idPrivKeyEdit").value = GetPrivKey();
     SetPubKeyHTML();
     SetVisiblePrivKey();
-    $("idSave2").disabled = !IsPrivateMode();
+    if($("idSave2"))
+        $("idSave2").disabled = !IsPrivateMode();
 }
 
 function SendMobileBefore()
@@ -1454,6 +1495,9 @@ function DoLangScript()
 
 function ChangeLang()
 {
+    if(!$("idLang"))
+        return;
+    
     var key = $("idLang").value;
     if(!key)
     {

@@ -71,6 +71,7 @@ function OnSend()//sending coins
     ];
 
 
+
 var CodeTemplateDapp=
     [
 function OnGet()//getting coins
@@ -105,72 +106,72 @@ function Method1(Params,ParamsArr)
 function DappTemplate()
 {
 
-//-------------
-//Events
-//-------------
-//ALL_ACCOUNTS=1;
-window.addEventListener('Init',function ()
-{
-//        ToLog("Init:");
-//        ToLog("OPEN_PATH: "+OPEN_PATH);
-//        ToLog("NETWORK:"+INFO.NETWORK);
-//        ToLog("INFO:\n"+JSON.stringify(INFO));
-//        ToLog("BASE_ACCOUNT:\n"+JSON.stringify(BASE_ACCOUNT));
-//        ToLog("SMART:\n"+JSON.stringify(SMART));
-});
-window.addEventListener('History',function (e)
-{
-    var Data=e.detail;
-    ToLog("History: "+Data.OPEN_PATH);
-});
-
-window.addEventListener('Event',function(e)
-{
-    var Data=e.detail;
-    var Description=Data.Description;
-    if(Data.Error)
+    //-------------
+    //Events
+    //-------------
+    //ALL_ACCOUNTS=1;
+    window.addEventListener('Init',function ()
     {
-        SetError(Description);
-    }
-    else
+    //        ToLog("Init:");
+    //        ToLog("OPEN_PATH: "+OPEN_PATH);
+    //        ToLog("NETWORK:"+INFO.NETWORK);
+    //        ToLog("INFO:\n"+JSON.stringify(INFO));
+    //        ToLog("BASE_ACCOUNT:\n"+JSON.stringify(BASE_ACCOUNT));
+    //        ToLog("SMART:\n"+JSON.stringify(SMART));
+    });
+    window.addEventListener('History',function (e)
     {
-        ToLog("Event:"+JSON.stringify(Description));
-        SetStatus(Description);
-    }
-});
+        var Data=e.detail;
+        ToLog("History: "+Data.OPEN_PATH);
+    });
 
-window.addEventListener('UpdateInfo',function ()
-{
-    //ToLog("USER_ACCOUNT:\n"+JSON.stringify(USER_ACCOUNT));
-    UpdateFillUser();
-});
-function UpdateFillUser()
-{
-    var Arr=[];
-    for(var i=0;i<USER_ACCOUNT.length;i++)
+    window.addEventListener('Event',function(e)
     {
-        var Item=USER_ACCOUNT[i];
-        var Value={value:Item.Num, text:Item.Num+"."+Item.Name+"  "+SUM_TO_STRING(Item.Value,Item.Currency,1)};
-        Arr.push(Value);
-    }
-    FillSelect("idTestAccount",Arr);
-}
+        var Data=e.detail;
+        var Description=Data.Description;
+        if(Data.Error)
+        {
+            SetError(Description);
+        }
+        else
+        {
+            ToLog("Event:"+JSON.stringify(Description));
+            SetStatus(Description);
+        }
+    });
 
-//-------------
-//Users methods
-//-------------
-
-function SendMethod(Name)
-{
-    if(!USER_ACCOUNT.length)
+    window.addEventListener('UpdateInfo',function ()
     {
-        SetError("Not have user accounts");
-        return;
+        //ToLog("USER_ACCOUNT:\n"+JSON.stringify(USER_ACCOUNT));
+        UpdateFillUser();
+    });
+    function UpdateFillUser()
+    {
+        var Arr=[];
+        for(var i=0;i<USER_ACCOUNT.length;i++)
+        {
+            var Item=USER_ACCOUNT[i];
+            var Value={value:Item.Num, text:Item.Num+"."+Item.Name+"  "+SUM_TO_STRING(Item.Value,Item.Currency,1)};
+            Arr.push(Value);
+        }
+        FillSelect("idTestAccount",Arr);
     }
-    var UserAcc=+$("idTestAccount").value;
-    var Params={Sum:10};
-    SendCall(UserAcc,Name,Params,[],UserAcc);
-}
+
+    //-------------
+    //Users methods
+    //-------------
+
+    function SendMethod(Name)
+    {
+        if(!USER_ACCOUNT.length)
+        {
+            SetError("Not have user accounts");
+            return;
+        }
+        var UserAcc=+$("idTestAccount").value;
+        var Params={Sum:10};
+        SendCall(UserAcc,Name,Params,[],UserAcc);
+    }
 
 }
 
@@ -202,26 +203,96 @@ function GetKey(Params)
 }
 }
 
+
 function DappTemplate1()
 {
-function SendKey()
-{
-    SendCall(0,"SetKey",{Key:"Name",Value:"Ilon Mask"},[],0);
-}
-function SendDel()
-{
-    SendCall(0,"RemoveKey",{Key:"Name"},[],0);
+    function SendKey()
+    {
+        SendCall(0,"SetKey",{Key:"Name",Value:"Ilon Mask"},[],0);
+    }
+    function SendDel()
+    {
+        SendCall(0,"RemoveKey",{Key:"Name"},[],0);
+    }
+
+    function GotKeyValue()
+    {
+        Call(0,"GetKey",{Key:"Name"},[],function (Err,Value)
+        {
+            if(Err)
+                return;
+            DoConfirm("Got value:",JSON.stringify(Value));
+        });
+
+    }
 }
 
-function GotKeyValue()
+
+function SiteTemplateSmart()
 {
-    Call(0,"GetKey",{Key:"Name"},[],function (Err,Value)
+//for static call
+"public"
+function CheckAccess(Path)
+{
+    if(Path==="http://example.com/")
+        return 1;
+    else
+        return 0;
+}
+}
+
+function SiteTemplateHTML()
+{
+    //use its code in extern www page
+
+    function StaticCall()
     {
-        if(Err)
-            return;
-        DoConfirm("Got value:",JSON.stringify(Value));
+        web3.tera.StaticCall({From:0, To:209, Method:"MiningList", Params:{}},function (Data)//223295
+        {
+            if(Data.result)
+                idResult.value="OK, MiningList="+Data.RetValue.length;
+        });
+    }
+
+    function SendTx()
+    {
+        web3.tera.Send({To:20, Sum:1.5, Description:"Test only"});
+    }
+
+    function SendMethod()
+    {
+        web3.tera.SendCall({From:113, To:113, Method:"Method1", Params:{Sum:5}},function (Data)
+        {
+            idResult.value="Send Method result = "+Data.result;
+        });
+    }
+
+    function Create()
+    {
+        web3.tera.CreateAccount({Currency:0, Description:"Test"},function (Data)
+        {
+            idResult.value="Send CreateAccount result = "+Data.result;
+        });
+    }
+
+    web3.tera.OnInfo(function ()
+    {
+        idInfo.value=JSON.stringify(web3.tera.INFO);
     });
 
-}
+    web3.tera.OnEvent(function (Data)
+    {
+        idEvents.value=JSON.stringify(Data);
+    });
+
+    web3.tera.OnLogin(function (Result)
+    {
+        idBlockSend.style.display=Result?"inline-block":"none";
+    });
+
+    window.addEventListener('load',function ()
+    {
+        web3.tera.InjectHTML();
+    });
 }
 

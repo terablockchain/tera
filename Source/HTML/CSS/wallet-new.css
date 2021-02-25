@@ -833,6 +833,10 @@ button {
     width: 100%;
 }
 
+.coral
+{
+    color:coral;
+}
 select
 {
     color: var(--colorText);
@@ -1258,4 +1262,13 @@ a
 
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
+}
+
+.bt-paste
+{
+    cursor: pointer;
+}
+.bt-paste:hover
+{
+    border: 1px solid #bfc1c0;
 }

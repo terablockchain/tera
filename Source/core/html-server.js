@@ -833,13 +833,13 @@ HTTPCaller.SendTransactionHex = function (Params)
     var Tx = {body:body, ToAll:1};
     var Res = SERVER.AddTransactionOwn(Tx);
     Result.sessionid = sessionid;
-    Result.TxID = Tx._TxID;
-    Result.BlockNum = Tx._BlockNum;
+    Result._TxID = Tx._TxID;
+    Result._BlockNum = Tx._BlockNum;
     Result.text = TR_MAP_RESULT[Res];
     Result.ResultSend = Res;
     
     if(Res === 1)
-        Result.text = TR_MAP_RESULT[Res] + " on Block " + Result.BlockNum;
+        Result.text = TR_MAP_RESULT[Res] + " on Block " + Result._BlockNum;
     
     var final = 0;
     if(Res <= 0 && Res !==  - 3)
@@ -1529,6 +1529,7 @@ HTTPCaller.GetBlockChain = function (type)
 
 HTTPCaller.GetHistoryTransactions = function (Params)
 {
+    
     if(typeof Params === "object" && Params.AccountID)
     {
         var Account = ACCOUNTS.ReadState(Params.AccountID);
@@ -1537,7 +1538,11 @@ HTTPCaller.GetHistoryTransactions = function (Params)
         
         if(!Params.Count)
             Params.Count = 100;
-        var arr = ACCOUNTS.GetHistory(Params.AccountID, Params.Count, Params.NextPos);
+        
+        if(global.PROCESS_NAME !== "MAIN")
+            Params.GetPubKey = 0;
+        
+        var arr = ACCOUNTS.GetHistory(Params.AccountID, Params.Count, Params.NextPos, 0, Params.GetPubKey);
         if(Params.GetTxID || Params.GetDescription)
         {
             for(var i = 0; i < arr.length; i++)
@@ -1773,8 +1778,11 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
     var Headers = {};
     if(StrContentType === "text/html")
     {
+        Headers['Content-Type'] = 'text/html';
         
-        Headers = {'Content-Type':'text/html', "X-Frame-Options":"sameorigin"};
+        if(Path !== "./HTML/web3-wallet.html")
+            Headers["X-Frame-Options"] = "sameorigin";
+        
         if(StrCookie)
             Headers['Set-Cookie'] = StrCookie;
     }

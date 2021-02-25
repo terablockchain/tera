@@ -45,10 +45,7 @@ var WasSetRestart = 0;
 
 function IsPrivateMode()
 {
-    if(PrivKeyStr && PrivKeyStr.length === 64 && PrivKeyStr !== "0000000000000000000000000000000000000000000000000000000000000000")
-        return true;
-    else
-        return false;
+    return IsPrivateKey(PrivKeyStr);
 }
 
 function NewPrivateKey()

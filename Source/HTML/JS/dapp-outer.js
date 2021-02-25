@@ -215,13 +215,12 @@ function DappListener(event)
         case "DappBlockList":
         case "DappTransactionList":
             {
-                
+                var StrKeyStorage = undefined;
                 if(Data.cmd === "DappBlockFile" && Data.Params.BlockNum <= CONFIG_DATA.CurBlockNum - MAX_DELTA_IGNORE_BUFFER)
                 {
-                    var StrKeyStorage = Data.Params.BlockNum + "-" + Data.Params.TrNum;
+                    StrKeyStorage = Data.Params.BlockNum + "-" + Data.Params.TrNum;
                     
-                    var Storage2 = CurSessionStorage;
-                    var SavedTextData = Storage2[StrKeyStorage];
+                    var SavedTextData = CurSessionStorage[StrKeyStorage];
                     if(SavedTextData)
                     {
                         var SetData = JSON.parse(SavedTextData);
@@ -244,7 +243,7 @@ function DappListener(event)
                         SendMessage(Data);
                         if(StrKeyStorage && SetData.result)
                         {
-                            Storage2[StrKeyStorage] = responseText;
+                            CurSessionStorage[StrKeyStorage] = responseText;
                         }
                     }
                 });

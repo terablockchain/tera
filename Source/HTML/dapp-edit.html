@@ -98,6 +98,33 @@
 <button onclick="GotKeyValue()">Get name</button>
 <button onclick="SendDel()">Del name</button>
 </DIV>
+
+
+<DIV id="idSiteTemplate1" style="display: none">
+Uncomment script in real project <!--<script type="text/javascript" src="https://terawallet.org/JS/web3-tera.js"></script>-->
+
+</DIV>
+
+<DIV id="idSiteTemplate2" style="display: none">
+<BR>
+<button onclick="web3.tera.Login(11111)">Connect...</button>
+<button onclick="SendTx()">Send money</button>
+<span id="idBlockSend" style="display: none">
+<button onclick="SendMethod()">Method</button>
+<button onclick="Create()">Create account</button>
+</span>
+<button onclick="StaticCall()">Static method</button>
+
+<button onclick="web3.tera.Logout()">Logout</button>
+<BR>RESULT:<BR>
+<textarea id="idResult" cols="80" rows="5"></textarea>
+<BR>EVENTS:<BR>
+<textarea id="idEvents" cols="80" rows="10"></textarea>
+<BR>INFO:<BR>
+<textarea id="idInfo" cols="80" rows="20"></textarea>
+</body>
+
+</DIV>
 <!--TEMPLATES  TEMPLATES  TEMPLATES-->
 
 
@@ -475,8 +502,8 @@
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>
-        <button class="bt-confirm bt-white"  onclick="closeModal()">Cancel</button>
         <button class="bt-confirm"  onclick="OnConfirmOK()">OK</button>
+        <button class="bt-confirm bt-white"  onclick="closeModal()">Cancel</button>
     </DIV>
 </section>
 
@@ -485,9 +512,10 @@
         <h3>New smart contract</h3>
         <button class="smart-menu" onclick="NewDapp('Blank','','')">Blank</button><BR>
         <BR>Example code with:<BR>
-        <button class="smart-menu" onclick="NewDapp('Smart',CodeTemplateSmart,'')">Standart event functions</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Smart',CodeTemplateSmart,'')">Smart: All events</button><BR>
         <button class="smart-menu" onclick="NewDapp('SmartTest',CodeTemplateSmart2,'')">Smart: OnSend & OnGet</button><BR>
         <button class="smart-menu" onclick="NewDapp('Storage',SmartTemplate1,DappTemplate1,'idDappTemplate1')">Dapp: Key storage</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Web',SiteTemplateSmart,SiteTemplateHTML,'idSiteTemplate2','idSiteTemplate1')">WWW-page</button><BR>
         <button class="smart-menu" onclick="NewDapp('Dapp',CodeTemplateDapp,DappTemplate,'idDappTemplate')">Dapp: User list</button><BR>
 
         <button class="smart-menu smart-load" onclick="LoadFromDapp()">Load from Dapp:</button><input style="width: 80px" id="idLoadDapp"><BR>

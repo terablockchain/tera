@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-Frame-Options" value="deny">
     <title>TERA WALLET</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -328,6 +329,7 @@
             <div class="send-page__btns-wrap">
                 <button class="btn" onclick="SendMobileBefore()" id="idSendButton">Send</button>
                 <button class="btn btn--white" onclick="ClearSend()" id="idClearButton">Clear</button>
+                <button class="btn" onclick="window.close()" style="display: none" id="idCloseButton">Exit</button>
             </div>
         </div>
 

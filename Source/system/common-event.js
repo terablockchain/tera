@@ -11,9 +11,11 @@
 "use strict";
 
 var CurTrackItem;
+var CurTxKey;
 function SetCurTrackItem(HASH)
 {
     var StrHex = GetHexFromArr(HASH);
+    CurTxKey = StrHex;
     
     if(global.TreeFindTX)
     {
@@ -66,6 +68,11 @@ function SendTrack(Str,bFinal)
     CurTrackItem.Result = Str;
     
     process.send(CurTrackItem);
+}
+
+global.GetCurTxKey = function ()
+{
+    return CurTxKey;
 }
 
 global.SendUserEvent = SendUserEvent;

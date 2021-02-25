@@ -67,7 +67,7 @@ class AccountHistory extends require("./accounts-rest-no")
         return this.DBBodyHistory.Write(BufWrite);
     }
     
-    GetHistory(Num, Count, StartPos, MinConfirm)
+    GetHistory(Num, Count, StartPos, MinConfirm, GetPubKey)
     {
         if(!MinConfirm)
             MinConfirm = 0
@@ -100,6 +100,11 @@ class AccountHistory extends require("./accounts-rest-no")
                 {
                     continue;
                 }
+            }
+            if(GetPubKey)
+            {
+                var Acc = this.ReadState(Item.CorrID);
+                Item.PubKey = GetHexFromArr(Acc.PubKey)
             }
             arr.push(Item)
         }

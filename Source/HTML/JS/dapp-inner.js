@@ -124,6 +124,7 @@ function DappBlockFile(BlockNum,TrNum,F)
     var Data = {cmd:"DappBlockFile", Params:{BlockNum:BlockNum, TrNum:TrNum}};
     SendData(Data, F);
 }
+
 function SetStatus(Str)
 {
     SendData({cmd:"SetStatus", Message:Str});

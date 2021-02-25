@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-Frame-Options" value="deny">
     <title>WALLET</title>
     <link rel="shortcut icon" href="/HTML/PIC/wallet.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -206,12 +207,12 @@
                             <th id="(RetEditAccount(Item))" data-name="Account name" class="name ">Name</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum bold">Amount</th>
                             <th id="CurrencyNameItem(Item)" data-name="Currency" class="cur">Cur</th>
-                            <th id="Item.Value.OperationID" data-name="Operation ID" class="snum ">OP</th>
                             <th id="Item.Adviser" data-name="Adviser" class="">Adv</th>
 
                             <th id="(RetChangeSmart(Item))" data-name="Smart contract (DApp)" class="">Smart</th>
                             <th id="Item.WN" class="num" style="width: 30px;"></th>
                             <th id="GetStateItem(Item)" class="code">State</th>
+<!--                            <th id="Item.Value.OperationID" data-name="Operation ID" class="snum ">OP</th>-->
                         </tr>
                     </table>
                     <BR>
@@ -725,15 +726,18 @@
 
 <DIV id="TabSend" style="display: none">
     <BR>
-    <h3 class="h3_form">
+    <h3 class="h3_form" style="margin-bottom: 0">
         Sending coins
     </h3>
 
     <section class="tokens wrapper">
-        <BR>
+
         <DIV class="row" id="idSendList"> </DIV>
         <div class="input-group">
+            <div class="input-group__row">
             <p class="input-group__text">From:</p>
+            <p class="input-group__text bt-paste" onclick="PasteRow()">Paste</p>
+            </div>
             <div class="select">
                 <select class="select__item input_send" size="1" id="idAccount" onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
                 </select>
@@ -761,7 +765,7 @@
                     </a>
                 </div>
             </div>
-            <input type="number" class="input input_send" placeholder="Input amount..." id="idSumSend" value="" step=0 min=0 max=1000000000 onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
+            <input type="number" class="input input_send coral" placeholder="Input amount..." id="idSumSend" value="" step=0 min=0 max=1000000000 onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
         </div>
         <div class="input-group">
             <div class="input-group__row">
@@ -1347,8 +1351,8 @@
             </div>
             <DIV class="form__group"><BR></DIV>
             <div class="form__buttons">
-                <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                <button class="btn btn_middle doclose" id="idBtnEnterPassword" onclick="OpenWallet();">confirm</button>
+                <button class="btn btn_middle btn_margin doclose" id="idBtnEnterPassword" onclick="OpenWallet();">confirm</button>
+                <button class="btn btn__transparent cancel btn_margin btn_middle doclose" >Cancel</button>
             </div>
 
         </div>
@@ -1380,7 +1384,7 @@
             <DIV align="center">
                 Send
                 <B id="idOnSendText"></B>
-                <B id="idOnSendSum" style='color:#ff4534'></B> <span id="idOnSendCoinName"></span> <span id="idOnSendToName"></span>
+                <B id="idOnSendSum" class="coral"></B> <span id="idOnSendCoinName"></span> <span id="idOnSendToName"></span>
 
                 <BR><DIV id="idOnSendWarning" style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>
 

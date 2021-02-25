@@ -186,10 +186,7 @@ function GetPrice(Smart)
 
 function IsPrivateMode(PrivKeyStr)
 {
-    if(PrivKeyStr && PrivKeyStr.length === 64)
-        return 1;
-    else
-        return 0;
+    return IsPrivateKey(PrivKeyStr);
 }
 
 function SendStateHTML(Name)
@@ -245,7 +242,7 @@ function SendTx(FromID,ToID,Price,Description,Body)
         var Body = GetArrFromTR(TR);
         WriteArr(Body, TR.Sign, 64);
         
-        SendTransactionNew(Body, TR, undefined, function (Err,TR,Body)
+        SendTransactionNew(Body, TR, function (Err,TR,Body)
         {
             if(Err)
                 return;

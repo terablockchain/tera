@@ -762,6 +762,14 @@ HostingCaller.GetNodeList = function (Params)
 
 var AccountKeyMap = {};
 var LastMaxNum = 0;
+
+setInterval(function ()
+{
+    AccountKeyMap = {};
+    LastMaxNum = 0;
+}
+, 3600 * 1000);
+
 HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
 {
     if(typeof Params !== "object" || !Params.Key)

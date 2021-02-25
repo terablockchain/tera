@@ -409,7 +409,8 @@ function SetHTMLDiagramItem(Item,width,Param)
     else
     {
         var diargams = document.getElementById("diargams");
-        diargams.innerHTML = toStaticHTML(diargams.innerHTML + "<DIV id='B" + Item.id + "'>" + Str + "</DIV>");
+        if(diargams)
+            diargams.innerHTML = toStaticHTML(diargams.innerHTML + "<DIV id='B" + Item.id + "'>" + Str + "</DIV>");
     }
 }
 

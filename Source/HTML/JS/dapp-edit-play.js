@@ -109,8 +109,12 @@ function RunFrame(Code,Parent,bRecreate)
         VM_VALUE.SmartBlock = CreateNewBlock({Type:130});
         
         var Currency = 0;
+        var SumBase = 10000;
         if(SMART.TokenGenerate)
+        {
             Currency = glSmart;
+            SumBase =  + SMART.StartValue;
+        }
         
         GetNewAccount(100, "TEST", 100000, glSmart, Currency, 1);
         GetNewAccount(101, "Some USD", 1500, glSmart, 1, 1);
@@ -124,7 +128,7 @@ function RunFrame(Code,Parent,bRecreate)
         
         for(var i = 0; i < SMART.AccountLength; i++)
         {
-            var Item = GetNewAccount(107 + i, "Smart base", i === 0 ? 10000 : 0, glSmart, Currency, SMART.OwnerPubKey);
+            var Item = GetNewAccount(107 + i, "Smart base", i === 0 ? SumBase : 0, glSmart, Currency, SMART.OwnerPubKey);
             if(i === 0)
                 VM_VALUE.BaseAccount = Item;
         }

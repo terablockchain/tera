@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 25;
+window.CLIENT_VERSION = 27;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -29,6 +29,14 @@ var MAX_CLIENT_LOG_SIZE = 64000;
 function $(id)
 {
     return document.getElementById(id);
+}
+function SetStatus(Str)
+{
+    console.log(Str);
+}
+function SetError(Str)
+{
+    console.log(Str);
 }
 
 
@@ -67,6 +75,8 @@ window.onstorage = function (event)
                 var PrivKeyArr = GetArrFromHex(event.newValue);
                 sessionStorage[WALLET_KEY_NAME] = event.newValue;
                 sessionStorage[WALLET_PUB_KEY_NAME] = GetHexFromArr(SignLib.publicKeyCreate(PrivKeyArr, 1));
+                if(window.OnOpenWallet)
+                    window.OnOpenWallet();
             }
             break;
         case WALLET_KEY_EXIT:
@@ -75,6 +85,8 @@ window.onstorage = function (event)
                 SetStatus("Wallet closed");
                 sessionStorage[WALLET_KEY_NAME] = "";
                 sessionStorage[WALLET_PUB_KEY_NAME] = "";
+                if(window.OnCloseWallet)
+                    window.OnCloseWallet();
             }
             break;
     }
@@ -885,7 +897,9 @@ function ViewCurrentInner(Def,flag,This)
 
 function ViewPrev(Def)
 {
-    var item = document.getElementById(Def.NumName);
+    var item = $(Def.NumName);
+    if(!item)
+        return;
     var Num = ParseNum(item.value);
     Num -= GetCountViewRows(Def);
     if(Num < 0)
@@ -896,16 +910,18 @@ function ViewPrev(Def)
 }
 function ViewNext(Def,MaxNum)
 {
+    var item = $(Def.NumName);
+    if(!item)
+        return;
     MaxNum =  + MaxNum;
-    var item = document.getElementById(Def.NumName);
     var Num = ParseNum(item.value);
     Num +=  + GetCountViewRows(Def);
     
     if(Def.FilterName)
     {
-        if(document.getElementById(Def.FilterName).value)
+        if($(Def.FilterName).value)
         {
-            Num = document.getElementById(Def.TabName).MaxNum + 1;
+            Num = $(Def.TabName).MaxNum + 1;
         }
     }
     
@@ -921,12 +937,19 @@ function ViewNext(Def,MaxNum)
 }
 function ViewBegin(Def)
 {
-    document.getElementById(Def.NumName).value = 0;
+    var id = $(Def.NumName);
+    if(!id)
+        return;
+    id.value = 0;
     ViewCurrent(Def);
 }
 function ViewEnd(Def,MaxNum,bInitOnly)
 {
-    document.getElementById(Def.NumName).value = MaxNum - MaxNum % GetCountViewRows(Def);
+    var id = $(Def.NumName);
+    if(!id)
+        return;
+    
+    id.value = MaxNum - MaxNum % GetCountViewRows(Def);
     if(bInitOnly)
         return;
     ViewCurrent(Def);
@@ -971,7 +994,7 @@ var CUR_ROW;
 function SetGridData(arr,id_name,TotalSum,bclear,revert)
 {
     
-    var htmlTable = document.getElementById(id_name);
+    var htmlTable = $(id_name);
     if(!htmlTable)
     {
         console.log("Error id_name: " + id_name);
@@ -988,6 +1011,7 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
     }
     
     var map = htmlTable.ItemsMap;
+    htmlTable.Arr = arr;
     
     glWorkNum++;
     var ValueTotal = {SumCOIN:0, SumCENT:0};
@@ -1067,7 +1091,7 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
     }
     if(TotalSum)
     {
-        var id = document.getElementById(TotalSum);
+        var id = $(TotalSum);
         if(id)
         {
             if(!ISZERO(ValueTotal))
@@ -1224,19 +1248,36 @@ function RetOpenDapps(Item,bNum,AccountNum)
     }
 }
 
-function RetDirect(Value)
+function RetDirect(Item)
 {
-    if(Value === "-")
+    if(Item)
     {
-        return "<B style='color:#EE1A1A'>-</B>";
-    }
-    else
-        if(Value === "+")
+        var color = "";
+        if(Item.Direct === "-")
         {
-            return "<B style='color:#2AD300;'>+</B>";
+            color = "red";
         }
         else
-            return "";
+            if(Item.Direct === "+")
+            {
+                color = "green";
+            }
+        return "<B onclick='CopyRow(" + Item.Num + ")' class='direct " + color + "'>" + Item.Direct + "</B>";
+    }
+    return "";
+}
+
+function PasteRow()
+{
+    var Str = localStorage["COPY"];
+    if(Str && Str.substr(0, 1) === "{")
+    {
+        var Item = JSON.parse(Str);
+        $("idAccount").value = Item.From;
+        $("idTo").value = Item.To;
+        $("idSumSend").value = FLOAT_FROM_COIN(Item.Value);
+        $("idDescription").value = Item.Description;
+    }
 }
 
 function RetCategory(Item)
@@ -1422,7 +1463,7 @@ function AddDiagramToArr(Arr,Item)
 
 function SetVisibleBlock(name,bSet)
 {
-    var Item = document.getElementById(name);
+    var Item = $(name);
     if(!Item)
         return;
     
@@ -1443,7 +1484,7 @@ function SetVisibleBlock(name,bSet)
 
 function IsVisibleBlock(name)
 {
-    var Item = document.getElementById(name);
+    var Item = $(name);
     if(Item && (Item.style.display === 'block' || Item.style.display === "table-row"))
         return true;
     else
@@ -1460,7 +1501,6 @@ function SetVisibleClass(Arr,Visible)
         var item = document.querySelector(Arr[i]);
         if(!item)
         {
-            ToLog("Error class name: " + Arr[i]);
             continue;
         }
         
@@ -1473,6 +1513,9 @@ function SetVisibleClass(Arr,Visible)
 function IsVisibleClass(name)
 {
     var List = document.querySelector(name);
+    if(!List)
+        return;
+    
     if(List.className.indexOf(" hidden") >= 0)
         return 0;
     else
@@ -1489,7 +1532,7 @@ function LoadValuesByArr(Arr,DopStr)
     for(var i = 0; i < Arr.length; i++)
     {
         var name = Arr[i];
-        var Item = document.getElementById(name);
+        var Item = $(name);
         if(!Item)
             continue;
         var name2 = DopStr + name;
@@ -1754,6 +1797,9 @@ function GetCurrencyByName(Value)
 function FillSelect(IdName,arr,bNatural)
 {
     var Select = $(IdName);
+    if(!Select || !Select.options)
+        return;
+    
     var Value = Select.value;
     var Options = Select.options;
     
@@ -1900,9 +1946,25 @@ function ParseFileName(Str)
     return Ret;
 }
 
+function RetError(F,TR,Body,Str)
+{
+    if(window.SetError)
+        SetError(Str);
+    if(F)
+        F(1, TR, Body, Str);
+    return 0;
+}
+function RetResult(F,TR,Body,Str)
+{
+    if(window.SetStatus)
+        SetStatus(Str);
+    if(F)
+        F(0, TR, Body, Str);
+    return 1;
+}
 
 window.MapSendTransaction = {};
-function SendTransactionNew(Body,TR,SumPow,F)
+function SendTransactionNew(Body,TR,F)
 {
     var MaxLength = 12000;
     if(IsFullNode())
@@ -1915,12 +1977,7 @@ function SendTransactionNew(Body,TR,SumPow,F)
     
     if(MaxLength && Body.length > MaxLength)
     {
-        if(window.SetError)
-            SetError("Error length transaction = " + Body.length + ". Can max size=" + MaxLength);
-        if(F)
-            F(1, TR, Body);
-        
-        return;
+        return RetError(F, TR, Body, "Error length transaction = " + Body.length + ". Can max size=" + MaxLength);
     }
     
     var StrHex = GetHexFromArr(Body);
@@ -1931,23 +1988,20 @@ function SendTransactionNew(Body,TR,SumPow,F)
             var key = GetHexFromArr(sha3(Body));
             if(Data.ResultSend <= 0)
             {
-                if(window.SetError)
-                    SetError("Error: " + Data.text);
-                return;
+                return RetError(F, TR, Body, "Error: " + Data.text);
             }
+            if(!TR)
+                return;
             
-            if(window.SetStatus)
-                SetStatus("Send '" + key.substr(0, 12) + "' result:" + Data.text);
-            
-            TR.BlockNum = Data.BlockNum;
+            TR.BlockNum = Data._BlockNum;
+            TR.TxID = Data._TxID;
             MapSendTransaction[key] = TR;
-            if(F)
-                F(0, TR, Body);
+            
+            return RetResult(F, TR, Body, "Send '" + key.substr(0, 12) + "' result:" + Data.text);
         }
         else
         {
-            if(window.SetError)
-                SetError("Error Data");
+            return RetError(F, TR, Body, "Error Data");
         }
     });
 }
@@ -1988,7 +2042,7 @@ function GetOperationIDFromItem(Item,CheckErr)
     return OperationID;
 }
 
-function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum)
+function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum,F)
 {
     
     var TR = {Type:135};
@@ -2004,30 +2058,22 @@ function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum
         {
             if(!Data || Data.result !== 1 || !Data.Item)
             {
-                if(window.SetError)
-                    SetError("Error account number: " + Account);
-                return;
+                return RetError(F, TR, Body, "Error account number: " + Account);
             }
             if(Data.Item.Value.Smart !== FromSmartNum)
             {
-                if(window.SetError)
-                    SetError("Error - The account:" + Account + " does not belong to a smart contract:" + FromSmartNum + " (have: " + Data.Item.Value.Smart + ")");
-                return;
+                return RetError(F, TR, Body, "Error - The account:" + Account + " does not belong to a smart contract:" + FromSmartNum + " (have: " + Data.Item.Value.Smart + ")");
             }
             
             GetData("GetAccount", FromNum, function (Data)
             {
                 if(!Data || Data.result !== 1 || !Data.Item)
                 {
-                    if(window.SetError)
-                        SetError("Error account number: " + FromNum);
-                    return;
+                    return RetError(F, TR, Body, "Error account number: " + FromNum);
                 }
                 if(Data.Item.Num != FromNum)
                 {
-                    if(window.SetError)
-                        SetError("Error read from account number: " + FromNum + " read data=" + Data.Item.Num);
-                    return;
+                    return RetError(F, TR, Body, "Error read from account number: " + FromNum + " read data=" + Data.Item.Num);
                 }
                 
                 var OperationID = GetOperationIDFromItem(Data.Item, 1);
@@ -2038,7 +2084,7 @@ function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum
                 for(var i = 0; i < 7; i++)
                     Body.push(0);
                 
-                SendTrArrayWithSign(Body, FromNum, TR);
+                SendTrArrayWithSign(Body, FromNum, TR, F);
             });
         });
     }
@@ -2050,11 +2096,11 @@ function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum
         for(var i = 0; i < 7; i++)
             Body.push(0);
         Body.length += 64;
-        SendTransactionNew(Body, TR);
+        SendTransactionNew(Body, TR, F);
     }
 }
 
-function SendTrArrayWithSign(Body,Account,TR)
+function SendTrArrayWithSign(Body,Account,TR,F)
 {
     if(window.SignLib && !Storage.getItem("BIGWALLET"))
     {
@@ -2063,7 +2109,7 @@ function SendTrArrayWithSign(Body,Account,TR)
             var Sign = GetSignFromArr(Body);
             var Arr = GetArrFromHex(Sign);
             WriteArr(Body, Arr, 64);
-            return SendTransactionNew(Body, TR);
+            return SendTransactionNew(Body, TR, F);
         }
     }
     
@@ -2074,7 +2120,7 @@ function SendTrArrayWithSign(Body,Account,TR)
         {
             var Arr = GetArrFromHex(Data.Sign);
             WriteArr(Body, Arr, 64);
-            SendTransactionNew(Body, TR);
+            SendTransactionNew(Body, TR, F);
         }
     });
 }
@@ -2331,7 +2377,8 @@ function OpenWalletKey()
     
     return RetKey;
 }
-function IsLockedWallet()
+
+function IsPresentWalletPassword()
 {
     var Key = Storage.getItem(WALLET_KEY_NAME);
     if(Key && Key.substr(0, 1) === "!")
@@ -2339,6 +2386,24 @@ function IsLockedWallet()
     else
         return 0;
 }
+function IsLockedWallet()
+{
+    var Key = GetPrivKey();
+    if(Key && Key.substr(0, 1) === "!")
+        return 1;
+    else
+        return 0;
+}
+
+function IsPrivateKey(KeyStr)
+{
+    
+    if(KeyStr && KeyStr.length === 64 && KeyStr !== "0000000000000000000000000000000000000000000000000000000000000000")
+        return 1;
+    else
+        return 0;
+}
+
 function GetPrivKey()
 {
     var Key;
@@ -2799,4 +2864,5 @@ function IsLocalAllowed()
     
     return 1;
 }
+
 

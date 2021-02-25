@@ -174,6 +174,28 @@
             return Str;
         }
 
+        function CopyRow(Num)
+        {
+            var Arr=$("grid_history").Arr;
+            for(var i=0;i<Arr.length;i++)
+            {
+                var Item=Arr[i];
+                if(Item.Num===Num)
+                {
+                    //ToLog(Item);
+                    var Obj=
+                        {
+                            From:Item.Direct==="-"?AccountID:Item.CorrID,
+                            To:Item.Direct==="-"?Item.CorrID:AccountID,
+                            Value:Item.Value,
+                            Description:Item.Description,
+                        };
+                    //ToLog(Obj);
+                    localStorage["COPY"]=JSON.stringify(Obj);
+                    SetStatus("Copied: "+localStorage["COPY"]);
+                }
+            }
+        }
 
         var FrameData;
         function ClosePage()
@@ -264,7 +286,7 @@
                 <div class="history-page__table-wrap">
                     <table id="grid_history" class="grid">
                         <tr>
-                            <th id="(RetDirect(Item.Direct))" class="direct">...</th>
+                            <th id="(RetDirect(Item))" class="direct">...</th>
                             <th id="(GetCorrID(Item,'+'))" class="num">From</th>
                             <th id="(GetCorrID(Item,'-'))" class="num">To</th>
                             <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>

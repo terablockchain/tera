@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<link rel="stylesheet" href="./CSS/mobile-wallet.css">
+
+
+<script type="text/javascript" src="./JS/coinlib.js"></script>
+<script type="text/javascript" src="./JS/client.js"></script>
+<script type="text/javascript" src="./JS/sha3.js"></script>
+<script type="text/javascript" src="./JS/terabuf.js"></script>
+<script type="text/javascript" src="./JS/crypto-client.js"></script>
+<script type="text/javascript" src="./JS/terahashlib.js"></script>
+<script type="text/javascript" src="./JS/diagram.js"></script>
+<script type="text/javascript" src="./JS/sign-lib-min.js"></script>
+
+<script>
+    //---------------login
+    var WasLogin;
+    var ReadyDappNum;
+    var WishDappNum;
+    var TCodeMode;
+    var SESSION_TOKEN;
+    var LoginEnter;
+    var LastLoginEvent;
+    //---------------send tx
+    var SendData;
+
+    //--------------dappinfo
+    var CONFIG_DATA={};
+    var SMART={},BASE_ACCOUNT={};
+    var NumDappGet=0;
+    var NumDappInfo=0;
+
+    //dapp-api
+    var MAX_DELTA_IGNORE_BUFFER=10;
+
+    function InitInputForm()
+    {
+        SendData=undefined;
+        LoginEnter=0;
+        //$("idCodeI").value="";
+        $("idPassword").value="";
+    }
+    function InitTCode()
+    {
+        InitInputForm();
+        TCodeMode=1;
+        WasLogin=0;
+    }
+    function Logout()
+    {
+        InitInputForm();
+        TCodeMode=1;
+        WishDappNum=0;
+        ReadyDappNum=0;
+        sessionStorage.clear();
+
+        SendMessage({cmd:"onlogin", result:0});
+    }
+    function ConnectToWallet(bOk)
+    {
+        if(bOk)
+        {
+            if(TCodeMode)
+            {
+                // if(+$("idCodeI").value!==WishDappNum)
+                // {
+                //     return ToLog("Error Code");
+                // }
+            }
+            else
+            {
+                //check password
+                SetWalletPassword($("idPassword").value);
+                OpenWalletKey();
+                if(!IsPrivateKey(GetPrivKey()))
+                    return ToLog("Error password");
+
+            }
+            sessionStorage[SESSION_TOKEN]=1;
+        }
+        LoginEnter=0;
+        WasLogin=bOk;
+        if(WasLogin)
+            ReadyDappNum=WishDappNum;
+        else
+            Logout();
+        SendMessage({cmd:"onlogin", result:bOk});
+    }
+
+    function SendMessage(Data)
+    {
+        Data.type="web3-tera";
+        window.parent.postMessage(Data, "*");
+    }
+
+
+    function OnMessage(event)
+    {
+        var Data=event.data;
+        //console.log("Frame:",JSON.parse(JSON.stringify(Data)));
+
+        switch (Data.cmd)
+        {
+            case "login":
+                LastLoginEvent=event;
+                Login(event.data,event.origin,event.currentTarget.name);
+                break;
+            case "logout":
+                InitTCode();
+                Logout();
+                break;
+             case "send":
+                SendTx(Data,event.origin);
+                break;
+            case "sendcall":
+                SendCall(Data);
+                break;
+            case "staticcall":
+                StaticCall(Data);
+                break;
+            case "sendcreate":
+                SendCreate(Data);
+                break;
+
+            // case "dappinfo":
+            //     DoDappInfo(Data);
+            //     break;
+
+            //----------------------------------------------------------------------------------------------------------
+            //dapp-api-lib
+            case "DappWalletList":
+                var Key=GetPubKey();
+                Data.Params={Smart:ReadyDappNum,Key:Key};
+            case "DappSmartHTMLFile":
+            case "DappBlockFile":
+            case "DappAccountList":
+            case "DappSmartList":
+            case "DappBlockList":
+            case "DappTransactionList":
+
+                var StrKeyStorage=undefined;
+                if(Data.cmd==="DappBlockFile"
+                    && Data.Params.BlockNum<=CONFIG_DATA.CurBlockNum-MAX_DELTA_IGNORE_BUFFER)
+                {
+                    //check storage
+                    StrKeyStorage=Data.Params.BlockNum+"-"+Data.Params.TrNum;
+
+                    var SavedTextData=sessionStorage[StrKeyStorage];
+                    if(SavedTextData)
+                    {
+                        var SetData=JSON.parse(SavedTextData);
+                        Data.result=SetData.result;
+                        Data.Err=!SetData.result;
+                        Data.arr=SetData.arr;
+                        Data.Body=SetData.Body;
+                        Data.cmd="retcall";
+                        SendMessage(Data);
+                        return;
+                    }
+                }
+
+                Data.Params.Session=glSession;
+                DoGetData(Data.cmd, Data.Params, function (SetData,responseText)
+                {
+                    if(SetData)
+                    {
+                        Data.result=SetData.result;
+                        Data.Err=!SetData.result;
+                        Data.arr=SetData.arr;
+                        Data.Body=SetData.Body;
+                        Data.cmd="retcall";
+                        SendMessage(Data);
+                        if(StrKeyStorage && SetData.result)
+                        {
+                            sessionStorage[StrKeyStorage]=responseText;
+                        }
+                    }
+                });
+
+                break;
+
+            case "ComputeSecret":
+            {
+                ComputeSecret(Data.Params.Account, Data.Params.PubKey, ReadyDappNum, function (Result)
+                {
+                    Data.Result=Result;
+                    Data.cmd="retcall";
+                    SendMessage(Data);
+                });
+
+                break;
+            }
+
+        }
+
+    }
+
+    function FillFormFromEvent(FromSite)
+    {
+        $("idAccess1").innerText=location.host;
+        $("idSrc").innerText=FromSite;
+        $("idAccess2").innerText=WishDappNum;
+    }
+
+    function Login(Data,FromSite,name)
+    {
+        SetVisibleBlock("idDappNum",1);
+        InitInputForm();
+        SetVisiblePage();
+
+
+        SESSION_TOKEN=""+name+":"+Data.smart+":"+FromSite;
+
+        TCodeMode=IsPrivateKey(GetPrivKey());
+        if(TCodeMode && !WasLogin)
+        {
+            //Find login in sessionStorage
+            if(sessionStorage[SESSION_TOKEN])
+            {
+                ReadyDappNum=Data.smart;
+                WasLogin=1;
+            }
+        }
+        if(!TCodeMode)
+            WasLogin=0;
+
+
+        if(WasLogin && Data.smart===ReadyDappNum && !Data.Forse)
+            return SendMessage({cmd:"onlogin", result:1});
+
+        WasLogin=0;
+        ReadyDappNum=0;
+        WishDappNum = +Data.smart;
+
+        if(!WishDappNum)
+            return SendMessage({cmd:"onlogin", result:0});
+
+        FillFormFromEvent(FromSite);
+
+
+        SetVisibleBlock("idCodeD",TCodeMode);
+        SetVisibleBlock("idPasswordD",!TCodeMode);
+
+        GetData("DappSmartList",{StartNum:WishDappNum,CountNum:1,AllRow:1}, function (SetData)
+        {
+            //ToLog(SetData);
+            if (SetData && SetData.result && SetData.arr.length)
+            {
+                for (var i = 0; i < SetData.arr.length; i++)
+                {
+                    var Smart = SetData.arr[i];
+                    GetData("DappStaticCall",{Account:Smart.Account, MethodName:"CheckAccess",Params:FromSite}, function (SetData)
+                    {
+                        if(SetData && SetData.RetValue && SetData.result)
+                        {
+                            SetVisiblePage("idEnter");
+                            LoginEnter=1;
+                            return SendMessage({cmd:"onvisible"});
+                        }
+
+                        console.log("Access is prohibited from site:",FromSite);
+                        SendMessage({cmd:"onlogin", result:0});
+                    });
+                }
+            }
+            else
+            {
+                SendMessage({cmd:"onlogin", result:0});
+            }
+        });
+
+    }
+
+    function CheckLogin(Data)
+    {
+        Data.cmd="retcall";
+
+        if(!WasLogin || !ReadyDappNum)
+        {
+            Data.result=0;
+            Data.text="Error Send. Not was login";
+            SendMessage(Data);
+            return 0;
+        }
+        return 1;
+    }
+
+    function SendTx(Data,FromSite)
+    {
+        FillFormFromEvent(FromSite);
+        SetVisiblePage("idTxPage");
+        SetVisibleBlock("idDappNum",0);
+
+        SendData=Data.Item;
+        sessionStorage["COPY-TX"]=JSON.stringify(SendData);
+
+
+        //$("idFrom").innerText=SendData.From;
+        $("idTo").innerText=SendData.To;
+        $("idSum").innerText=SendData.Sum;
+        $("idDescription").innerText=SendData.Description;
+    }
+
+    function BtOpenSendTx(btSend)
+    {
+        if(btSend && SendData)
+        {
+            window.open("/web-wallet.html#TabSend");
+        }
+        else
+        {
+            delete sessionStorage["COPY-TX"];
+        }
+        SendMessage({cmd:"unvisible"});
+    }
+
+
+    function SendCall(Data)
+    {
+        if(!CheckLogin(Data))
+            return 0;
+
+        var Item=Data.Item;
+        SendCallMethod(Item.To,Item.Method,Item.Params,Item.ParamsArr,Item.From,ReadyDappNum,function (Err,TR,Body,Str)
+        {
+            Data.result=Err?0:1;
+            Data.text=Str;
+            Data.TR=TR;
+            return SendMessage(Data);
+        });
+    }
+    function SendCreate(Data)
+    {
+        if(!CheckLogin(Data))
+            return 0;
+
+        var Item=Data.Item;
+        var PubKey=GetPubKey();
+        var TR=GetTrCreateAcc(Item.Currency,PubKey,Item.Description,0,ReadyDappNum);
+        var Body=GetBodyCreateAcc(TR);
+        TR.bFindAcc=1;
+        SendTransactionNew(Body,TR,function (Err,TR,Body,Str)
+        {
+            Data.result=Err?0:1;
+            Data.text=Str;
+            Data.TR=TR;
+            return SendMessage(Data);
+        });
+    }
+
+    function StaticCall(Data)
+    {
+        Data.cmd="retcall";
+        var Item=Data.Item;
+        GetData("DappStaticCall",{Account:Item.To,MethodName:Item.Method,Params:Item.Params,ParamsArr:Item.ParamsArr}, function (SetData)
+        {
+            if(SetData)
+            {
+                Data.result=SetData.result;
+                Data.RetValue=SetData.RetValue;
+            }
+            else
+            {
+                Data.result=0;
+            }
+            return SendMessage(Data);
+        });
+    }
+
+    function DoDappInfo()
+    {
+        if(!ReadyDappNum)
+            return;
+
+
+        var AllData=0;
+        if(!NumDappGet || NumDappGet%60===0)
+            AllData=1;
+        NumDappGet++;
+
+        var Key=GetPubKey();
+        GetData("DappInfo",{Smart:ReadyDappNum,Key:Key,Session:glSession,NumDappInfo:NumDappInfo,AllData:AllData,AllAccounts:1}, function (SetData)
+        {
+            if(SetData)
+            {
+
+                if(SetData.cache)
+                {
+                    for(var key in SetData)
+                        CONFIG_DATA[key]=SetData[key];
+                    SetData=CONFIG_DATA;
+                }
+                else
+                {
+                    CONFIG_DATA=SetData;
+                    SMART=SetData.Smart;
+                    BASE_ACCOUNT=SetData.Account;
+                }
+                SetArrLog(SetData.ArrLog);
+
+
+                NumDappInfo=SetData.NumDappInfo;
+                SetBlockChainConstant(SetData);
+
+
+
+                if(SetData.ArrEvent && SetData.ArrEvent.length)
+                {
+                    //console.log(SetData.ArrLog);
+                    //console.log(SetData.ArrEvent);
+                    //console.log(MapSendTransaction);
+                    for (var i = 0; i < SetData.ArrEvent.length; i++)
+                    {
+                        var Item = SetData.ArrEvent[i];
+                        var TR=MapSendTransaction[Item.key];
+                        SendEvent(Item,TR,Item);
+
+                        //SendMessage({cmd:"onevent", Description:Item});
+
+                    }
+                }
+
+                SetData.cmd="oninfo";
+                return SendMessage(SetData);
+
+            }
+
+        });
+    }
+
+
+    function SetArrLog(arr)
+    {
+        if(!arr)
+            return;
+        for(var i=0;i<arr.length;i++)
+        {
+            var Item=arr[i];
+            if(!Item.final)
+                continue;
+            // if(Item.text.indexOf("Add to blockchain")>=0)
+            //     continue;
+            if(Item.final>0)
+                continue;
+
+            var TR=MapSendTransaction[Item.key];
+            if(TR)
+            {
+                SendEvent(Item.text,TR,TR,1);
+            }
+        }
+    }
+
+    function SendEvent(Description,TR,ObjControl, Err)
+    {
+        if(ObjControl && ObjControl.WasSend)
+            return;
+
+        var Data={cmd:"onevent",Description:Description};
+
+        if(TR)
+            Data.TR=TR;
+        if(Err)
+            Data.Error=1;
+        SendMessage(Data);
+
+        if(ObjControl)
+            ObjControl.WasSend=1;
+    }
+
+
+    function DoMoreInfo()
+    {
+        SetVisiblePage("idInfo");
+        $("idDescInfo").innerText=
+            "- Call a function in dapp "+WishDappNum+"\n"+
+            "- Create a new account with dapp "+WishDappNum;
+    }
+    function DoBack()
+    {
+        SetVisiblePage("idEnter");
+    }
+
+    function SetVisiblePage(name)
+    {
+        SetVisibleBlock("idEnter",0);
+        SetVisibleBlock("idTxPage",0);
+        SetVisibleBlock("idInfo",0);
+        if(!name)
+            return;
+
+        SetVisibleBlock(name,1);
+    }
+
+
+    window.addEventListener("message", OnMessage);
+    window.addEventListener('keydown',function (e)
+    {
+        if (e.keyCode === 13)
+            ConnectToWallet(1);
+        if (e.keyCode === 27)
+            ConnectToWallet(0);
+    });
+    window.addEventListener('load',function (e)
+    {
+        DoNewSession();
+        setInterval(DoDappInfo,1000);
+    });
+
+    window.OnOpenWallet=function ()
+    {
+        var event=LastLoginEvent;
+        if(event && LoginEnter)
+            Login(event.data,event.origin,event.currentTarget.name);
+
+    };
+    window.OnCloseWallet=function ()
+    {
+        OnOpenWallet();
+        SendMessage({cmd:"onlogin", result:0});
+    };
+
+
+</script>
+<style>
+    *
+    {
+        line-height: 1.5;
+    }
+
+    .tcode
+    {
+        display: block;
+        margin: 10px;
+    }
+    .tcode2
+    {
+        display: block;
+        margin: 21px;
+    }
+
+
+
+    .codeInput
+    {
+        display: block;
+        margin: 10px;
+        font-size: 20px;
+    }
+    .codeInput
+    {
+        text-align: center;
+        font-weight: bold;
+        width: 90px;
+    }
+
+    #idPassword
+    {
+        width: 120px;
+    }
+    .bt
+    {
+        cursor: pointer;
+        height: 40px;
+        width: 120px;
+        color: white;
+        background-color: #445368;
+        border-radius: 5px;
+    }
+    .bt:hover
+    {
+        box-shadow: 0 0 5px rgb(0 0 0);
+    }
+
+    .btdeny
+    {
+        color: #445368;
+        background-color: white;
+    }
+
+
+    .btinfo
+    {
+        display: block;
+        margin: 5px;
+        border: 1px;
+        color: #445368;
+        padding: 10px;
+        background-color: transparent;
+    }
+    .descinfo1
+    {
+        padding: 10px 10px 10px 10px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .descinfo2
+    {
+        padding: 10px;
+        text-align: left;
+    }
+    .curwallet
+    {
+        margin: 5px;
+    }
+
+    table
+    {
+        border-collapse: collapse;
+        width: 90%;
+        margin: 10px;
+        padding: 10px;
+    }
+
+    td
+    {
+        padding: 5px;
+        border: 1px solid gray;
+        max-width: 200px;
+        overflow: hidden;
+    }
+    td:first-child
+    {
+        width: 100px;
+    }
+
+    #idTo,#idSum
+    {
+        font-weight: bold;
+    }
+
+    .header
+    {
+        display: flex;
+        height: 40px;
+    }
+    .main-logo
+    {
+        padding: 5px;
+        height: 35px;
+    }
+</style>
+
+<body>
+<div align="center">
+    <div style="height: 100%; width: 100%;">
+        <div class="header">
+            <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+            <div class="curwallet"><span>Wallet: </span><b id="idAccess1" class=""></b></div>
+        </div>
+        <BR><BR>
+        <div><span>Connect from: </span><b id="idSrc"></b></div>
+
+        <div id="idDappNum"><span>Dapp num: </span><b id="idAccess2" class="coral"></b></div>
+        <div id="idEnter">
+            <A class="bt btinfo" onclick="DoMoreInfo()">More info...</A>
+
+            <div id="idCodeD">
+<!--                <div class="tcode">Retype the dapp number:</div>-->
+<!--                <input type="number" id="idCodeI" class="codeInput">-->
+                <div class="tcode2">Remember that dapp controls all the accounts to which it is linked.</div>
+            </div>
+            <div id="idPasswordD">
+                <div class="tcode">Type wallet password:</div>
+                <input type="password" id="idPassword" class="codeInput">
+            </div>
+
+            <button class="bt" onclick="ConnectToWallet(1)">Login</button>
+            <button class="bt btdeny" onclick="ConnectToWallet(0)">Deny</button>
+
+            <A href="/web-wallet.html" class="bt btinfo" target="_blank">Open wallet...</A>
+        </div>
+        <div id="idInfo" style="display: none">
+            <button class="bt btinfo" onclick="DoBack()">Back...</button>
+            <div class="descinfo1">Allow the following actions:</div>
+            <div class="descinfo2" id="idDescInfo"></div>
+        </div>
+        <div id="idTxPage" style="display: none">
+
+            <b class="coral">Coins transfer</b>
+
+            <table>
+<!--                <tr><td>From:</td><td id="idFrom">100</td></tr>-->
+                <tr><td>To:</td><td id="idTo">000</td></tr>
+                <tr><td>Sum:</td><td id="idSum">0000</td></tr>
+                <tr><td>Description:</td><td id="idDescription">---</td></tr>
+            </table>
+
+            <button class="bt" onclick="BtOpenSendTx(1)">Go to wallet...</button>
+            <button class="bt btdeny" onclick="BtOpenSendTx(0)">Cancel</button>
+        </div>
+    </div>
+
+
+<!--    <input type="hidden" id="idAccount">-->
+<!--    <input type="hidden" id="idTo">-->
+<!--    <input type="hidden" id="idSumSend">-->
+<!--    <input type="hidden" id="idDescription">-->
+
+<!--    <input type="hidden" id="idCurNetwork">-->
+<!--    <input type="hidden" id="idPrivKeyEdit">-->
+
+
+</div>
+</body>
+</html>

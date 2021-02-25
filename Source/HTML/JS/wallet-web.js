@@ -51,7 +51,8 @@ function StartWebWallet()
         BLOCKNUM_TICKET_ALGO = 0;
     }
     
-    $("idNetwork").innerText = NETWORK_ID;
+    if($("idNetwork"))
+        $("idNetwork").innerText = NETWORK_ID;
     OnInitWebWallet();
     ConnectWebWallet();
 }
@@ -94,14 +95,15 @@ function SaveServerMap()
 
 function SetStatus(Str,bNoEscape)
 {
-    var id = $("idStatus");
     if(!bNoEscape)
     {
         if(Str)
             console.log(Str);
         Str = escapeHtml(Str);
     }
-    id.innerHTML = Str;
+    var id = $("idStatus");
+    if(id)
+        id.innerHTML = Str;
 }
 
 function SetError(Str,bNoSound)
