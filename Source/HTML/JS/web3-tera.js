@@ -50,10 +50,9 @@
         }, OnEvent:function (F)
         {
             web3.tera._OnEvent = F;
-        }, InjectHTML:InjectHTML, _CounterId:0, _MapId:{}, GetWalletList:function (F)
+        }, InjectHTML:InjectHTML, _CounterId:0, _MapId:{}, GetPubKey:function (F)
         {
-            var Data = {cmd:"DappWalletList"};
-            return SendMessage(Data, F);
+            return SendMessage({cmd:"GetPubKey"}, F);
         }, GetAccountList:function (Params,F)
         {
             var Data = {cmd:"DappAccountList", Params:Params};

@@ -130,17 +130,31 @@
             //     DoDappInfo(Data);
             //     break;
 
+
+            //----------------------------------------------------------------------------------------------------------
+            case "GetPubKey":
+                Data.cmd="retcall";
+                Data.result=WasLogin;
+                if(Data.result)
+                    Data.RetValue=GetPubKey();
+                SendMessage(Data);
+                break;
             //----------------------------------------------------------------------------------------------------------
             //dapp-api-lib
-            case "DappWalletList":
-                var Key=GetPubKey();
-                Data.Params={Smart:ReadyDappNum,Key:Key};
             case "DappSmartHTMLFile":
-            case "DappBlockFile":
-            case "DappAccountList":
-            case "DappSmartList":
-            case "DappBlockList":
-            case "DappTransactionList":
+            case "DappBlockFile"://
+            case "DappAccountList"://
+            case "DappSmartList"://
+            case "DappBlockList"://
+            case "DappTransactionList"://
+
+                if(!WasLogin)
+                {
+                    Data.result=0;
+                    Data.cmd="retcall";
+                    return SendMessage(Data);
+                }
+
 
                 var StrKeyStorage=undefined;
                 if(Data.cmd==="DappBlockFile"
@@ -164,7 +178,7 @@
                 }
 
                 Data.Params.Session=glSession;
-                DoGetData(Data.cmd, Data.Params, function (SetData,responseText)
+                GetData(Data.cmd, Data.Params, function (SetData,responseText)
                 {
                     if(SetData)
                     {
@@ -185,9 +199,17 @@
 
             case "ComputeSecret":
             {
+                if(!WasLogin)
+                {
+                    Data.result=0;
+                    Data.cmd="retcall";
+                    return SendMessage(Data);
+                }
+
                 ComputeSecret(Data.Params.Account, Data.Params.PubKey, ReadyDappNum, function (Result)
                 {
-                    Data.Result=Result;
+                    Data.result=Result?1:0;
+                    Data.RetValue=Result;
                     Data.cmd="retcall";
                     SendMessage(Data);
                 });

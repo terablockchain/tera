@@ -303,6 +303,49 @@ function DappListener(event)
                 ReloadDapp();
                 break;
             }
+        case "ethereum-installed":
+            {
+                Data.cmd = "Result";
+                Data.Result = Boolean(window.ethereum && window.ethereum.isMetaMask);
+                SendMessage(Data);
+                break;
+            }
+            
+        case "ethereum-request":
+            {
+                ethereum.request(Data.Params).then(function (Result)
+                {
+                    Data.cmd = "Result";
+                    Data.Result = Result;
+                    SendMessage(Data);
+                }).catch(function (Result)
+                {
+                    Data.cmd = "Result";
+                    Data.Result = Result;
+                    Data.Err = 1;
+                    SendMessage(Data);
+                });
+                break;
+            }
+            
+        case "ethereum-on":
+            {
+                ethereum.on(Data.Name, function (Result)
+                {
+                    Data.cmd = "ResultOn";
+                    Data.Result = Result;
+                    SendMessage(Data);
+                });
+                break;
+            }
+            
+        case "ethereum-selected":
+            {
+                Data.cmd = "Result";
+                Data.Result = window.ethereum.selectedAddress;
+                SendMessage(Data);
+                break;
+            }
     }
 }
 
