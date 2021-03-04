@@ -34,36 +34,7 @@ WebApi2.CreateAccount = function (Params,response)
         var Body = BufLib.GetBufferFromObject(TR, FORMAT_CREATE, 1000, {}, 1);
         Body = Body.slice(0, Body.len + 12);
         
-        if(Params.Confirm === undefined)
-            Params.Confirm = 8;
-        
-        var Confirm = ParseNum(Params.Confirm);
-        
-        SendTransaction(Body, TR, Confirm, function (result,text)
-        {
-            var Result = {result:result, text:text, TxID:TR._TxID, BlockNum:TR._BlockNum, Meta:Params.Meta, };
-            if(typeof Params.F === "function")
-                Params.F(Result);
-            if(!Confirm || !result)
-            {
-                response.end(JSON.stringify(Result));
-            }
-            else
-            {
-                var DeltaTime = Confirm * global.CONSENSUS_PERIOD_TIME;
-                setTimeout(function ()
-                {
-                    var RetFind = GetTransactionByID(Result);
-                    
-                    if(RetFind.result)
-                        response.end(JSON.stringify(Result));
-                    else
-                        response.end(JSON.stringify({result:0, Meta:Params.Meta}));
-                }, DeltaTime);
-            }
-        });
-        
-        return null;
+        return SendTransactionAndResponce(Params, Body, TR, response);
     }
     
     return {result:0, Meta:Params ? Params.Meta : undefined};
@@ -90,11 +61,6 @@ WebApi2.Send = function (Params,response,A,request,nJsonRet)
         return {result:0, Meta:Params.Meta, text:"Params.FromID required"};
     if(!Params.ToID)
         return {result:0, Meta:Params.Meta, text:"Params.ToID required"};
-    
-    if(Params.Confirm === undefined)
-        Params.Confirm = 8;
-    
-    var Confirm = ParseNum(Params.Confirm);
     
     var ToPubKeyArr = [];
     var ToID = 0;
@@ -145,32 +111,7 @@ WebApi2.Send = function (Params,response,A,request,nJsonRet)
         return {result:1, Tx:TR, Body:Body};
     }
     
-    SendTransaction(Body, TR, Confirm, function (result,text)
-    {
-        var TxID = TR._TxID;
-        var Result = {result:result, text:text, TxID:TxID, BlockNum:TR._BlockNum, Meta:Params.Meta, };
-        if(typeof Params.F === "function")
-            Params.F(Result);
-        if(!Confirm || !result)
-        {
-            response.end(JSON.stringify(Result));
-        }
-        else
-        {
-            var DeltaTime = Confirm * global.CONSENSUS_PERIOD_TIME;
-            setTimeout(function ()
-            {
-                var RetFind = GetTransactionByID(Result);
-                
-                if(RetFind.result)
-                    response.end(JSON.stringify(Result));
-                else
-                    response.end(JSON.stringify({result:0, Meta:Params.Meta}));
-            }, DeltaTime);
-        }
-    });
-    
-    return null;
+    return SendTransactionAndResponce(Params, Body, TR, response);
 }
 
 WebApi2.GetBalance = function (Params,response)
@@ -313,15 +254,7 @@ WebApi2.SendRawTransaction = function (Params,response)
         var Body = BufLib.GetBufferFromObject(TR, FORMAT_MONEY_TRANSFER3, GetTxSize(TR), {}, 1);
         Body = Body.slice(0, Body.len + 12);
         
-        SendTransaction(Body, TR, Params.Wait, function (result,text)
-        {
-            var Result = {result:result, text:text, TxID:TR._TxID, BlockNum:TR._BlockNum, Meta:Params.Meta, };
-            
-            var Str = JSON.stringify(Result);
-            response.end(Str);
-        });
-        
-        return null;
+        return SendTransactionAndResponce(Params, Body, TR, response);
     }
     return {result:0, Meta:Params ? Params.Meta : undefined};
 }
@@ -371,13 +304,13 @@ function PrepareTxID(TR,arr)
     return 0;
 }
 
-function SendTransaction(Body,TR,Wait,F)
+function SendTransaction(Body,TR,Confirm,F)
 {
     if(Body.length > 16000)
     {
         TR._result = 0;
         TR._text = "Error length transaction =" + Body.length + " (max size=16000)";
-        F(1, TR, Body);
+        F(TR._result, TR._text);
         return;
     }
     
@@ -388,22 +321,23 @@ function SendTransaction(Body,TR,Wait,F)
     }
     
     global.GlobalRunID++;
-    let WebID = global.GlobalRunID;
+    TR.WebID = global.GlobalRunID;
     let FCALLBACK = F;
     
-    var Params = {WebID:WebID, HexValue:GetHexFromArr(Body)};
-    if(!process.RunRPC)
+    var Params = {WebID:TR.WebID, HexValue:GetHexFromArr(Body)};
+    if(process.RunRPC)
+    {
+        process.RunRPC("AddTransactionFromWeb", Params, DoResult);
+    }
+    else
     {
         var Data = AddTransactionFromWeb(Params);
         DoResult(0, Data);
     }
-    else
-    {
-        process.RunRPC("AddTransactionFromWeb", Params, DoResult);
-    }
     
     function DoResult(Err,Data)
     {
+        
         var Result = Data.Result;
         var text = TR_MAP_RESULT[Result];
         
@@ -411,16 +345,99 @@ function SendTransaction(Body,TR,Wait,F)
             TR._TxID = Data._TxID;
         if(Data._BlockNum)
             TR._BlockNum = Data._BlockNum;
+        
         TR._result = (Result > 0) ? 1 : 0;
         TR._text = text;
         
-        if(Wait && TR._result)
+        if(Confirm && TR._result)
         {
-            global.GlobalRunMap[WebID] = FCALLBACK;
+            global.GlobalRunMap[TR.WebID] = FCALLBACK;
         }
         else
         {
-            F(TR._result, text);
+            F(TR._result, TR._text);
         }
     };
+}
+
+function SendTransactionAndResponce(Params,Body,TR,response)
+{
+    if(Params.Confirm === undefined)
+        Params.Confirm = 8;
+    let Confirm = ParseNum(Params.Confirm);
+    
+    SendTransaction(Body, TR, 0, function (result,text)
+    {
+        var TxID = TR._TxID;
+        let Result = {result:result, text:text, TxID:TxID, BlockNum:TR._BlockNum, Meta:Params.Meta, };
+        if(typeof Params.F === "function")
+            Params.F(Result);
+        if(!Confirm || !result)
+        {
+            response.end(JSON.stringify(Result));
+        }
+        else
+        {
+            global.GlobalRunMap[TR.WebID] = function (result,text,bEvent)
+            {
+                if(bEvent)
+                    return;
+                
+                Result.result = result;
+                Result.text = text;
+            };
+            var DeltaTime = (Confirm + 4) * global.CONSENSUS_PERIOD_TIME;
+            setTimeout(function ()
+            {
+                if(Result.result)
+                {
+                    var RetFind = GetTransactionByID(Result);
+                    Result.result = RetFind.result;
+                    
+                    if(!Result.result)
+                        Result.text = "Error";
+                }
+                
+                response.end(JSON.stringify(Result));
+            }, DeltaTime);
+        }
+    });
+    
+    return null;
+}
+
+function SendTransactionAndResponceOld(Params,Body,TR,response)
+{
+    if(Params.Confirm === undefined)
+        Params.Confirm = 8;
+    var Confirm = ParseNum(Params.Confirm);
+    
+    SendTransaction(Body, TR, Confirm, function (result,text,bEvent)
+    {
+        if(bEvent)
+            return;
+        var TxID = TR._TxID;
+        let Result = {result:result, text:text, TxID:TxID, BlockNum:TR._BlockNum, Meta:Params.Meta, };
+        if(typeof Params.F === "function")
+            Params.F(Result);
+        if(!Confirm || !result)
+        {
+            response.end(JSON.stringify(Result));
+        }
+        else
+        {
+            var DeltaTime = Confirm * global.CONSENSUS_PERIOD_TIME;
+            setTimeout(function ()
+            {
+                var RetFind = GetTransactionByID(Result);
+                
+                if(RetFind.result)
+                    response.end(JSON.stringify(Result));
+                else
+                    response.end(JSON.stringify({result:0, Meta:Params.Meta}));
+            }, DeltaTime);
+        }
+    });
+    
+    return null;
 }

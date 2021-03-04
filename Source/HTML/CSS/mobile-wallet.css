@@ -134,6 +134,11 @@ textarea {
 	background: #718CAF;
 	color: #fff;
 }
+.btn:active
+ {
+    box-shadow: inset 4px 4px 4px  rgba(68, 83, 104, 0.5);
+ }
+
 
 .btn[disabled],
 .btn.disabled {

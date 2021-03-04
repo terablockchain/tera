@@ -431,6 +431,7 @@ function GetBlankSmart()
 
 function NewProject()
 {
+    SavePrevProject();
     openModal("idNewSmart");
 }
 function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML,idHTMLBefor)

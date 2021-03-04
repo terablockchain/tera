@@ -494,7 +494,6 @@ function SetConfigData(Data)
     {
         
         WasInitCurrency = 1;
-        
         FillCurrencyAsync("idCurrencyList");
     }
     

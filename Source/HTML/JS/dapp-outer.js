@@ -338,6 +338,16 @@ function DappListener(event)
                 });
                 break;
             }
+        case "ethereum-off":
+            {
+                ethereum.removeListener(Data.Name, function (Result)
+                {
+                    Data.cmd = "Result";
+                    Data.Result = Result;
+                    SendMessage(Data);
+                });
+                break;
+            }
             
         case "ethereum-selected":
             {

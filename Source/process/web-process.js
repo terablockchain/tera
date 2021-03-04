@@ -74,8 +74,9 @@ process.on('message', function (msg)
                     var F = global.GlobalRunMap[msg.WebID];
                     if(F)
                     {
-                        delete global.GlobalRunMap[msg.WebID];
-                        F(msg.Result, msg.ResultStr);
+                        if(!msg.bEvent)
+                            delete global.GlobalRunMap[msg.WebID];
+                        F(msg.Result, msg.ResultStr, msg.bEvent);
                         break;
                     }
                 }

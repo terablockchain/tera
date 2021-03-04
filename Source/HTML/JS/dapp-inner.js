@@ -57,6 +57,8 @@ function Call(Account, MethodName,Params, A,B)
     var Data={cmd:"DappStaticCall",MethodName:MethodName,Params:Params,ParamsArr:ParamsArr, Account:Account}
     SendData(Data,F)
 }
+const StaticCall=Call;
+
 function SendCall(Account, MethodName,Params, A,B)
 {
     if(!INFO.WalletCanSign)
@@ -1148,6 +1150,10 @@ window.ethereum=
     on: function (Name,F)
     {
         SendData({cmd:"ethereum-on",Name:Name},F);
+    },
+    removeListener: function (Name,F)
+    {
+        SendData({cmd:"ethereum-off",Name:Name},F);
     },
     GetSelectedAddress: async function()
     {

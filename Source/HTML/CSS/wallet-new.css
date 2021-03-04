@@ -17,7 +17,7 @@ body.styleDark
 
     --colorContainer:#202731;
     --colorButton:#445368;
-    --colorMenuActive:#55657C;
+    --colorMenuActive: #3f4c5f;
     --colorDivision:#27303C;
     --colorBGCheckbox:#1D232C;
 
@@ -287,9 +287,16 @@ button {
   transition: 0.4s ease;
   -webkit-box-shadow: 0px 3px 5px rgba(14, 20, 53, 0.3);
           box-shadow: 0px 3px 5px rgba(14, 20, 53, 0.3); }
+
   .btn:hover {
     background-color: var(--colorMenuActive);
     color: var(--colorText); }
+    .btn:active
+    {
+        border-radius: 6px;
+        background-color: rgb(81, 97, 120);
+        box-shadow: inset 3px 3px 3px  rgb(70, 86, 108);
+    }
   .btn__transparent {
     background-color: transparent;
       color: var(--colorText);
@@ -301,6 +308,8 @@ button {
     .btn__transparent:hover {
       background-color: var(--colorDivision);
     }
+
+
   .btn_explorer
   {
       width: 220px;

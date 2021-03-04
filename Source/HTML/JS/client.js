@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 28;
+window.CLIENT_VERSION = 29;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1205,9 +1205,16 @@ function RetNumDapp(Item)
 
 function RetIconPath(Item,bCurrency)
 {
-    if(bCurrency && MapCurrencyIcon[Item.Num])
+    var PathIcon = MapCurrencyIcon[Item.Num];
+    if(bCurrency && PathIcon)
     {
-        return MapCurrencyIcon[Item.Num];
+        if(typeof PathIcon === "string")
+            return PathIcon;
+        else
+        {
+            Item.IconTrNum = PathIcon % 100;
+            Item.IconBlockNum = Math.floor(PathIcon / 100);
+        }
     }
     
     var StrPath = "";
@@ -1582,9 +1589,12 @@ function InitMapCurrency()
 {
     window.NETWORK_ID = window.NETWORK_NAME + "." + window.SHARD_NAME;
     
+    var AccCoinList = 0;
+    
     MapCurrency = {};
     MapCurrency[0] = window.SHARD_NAME;
     MapCurrencyIcon[0] = "./PIC/T.svg";
+    
     if(window.NETWORK_ID === "MAIN-JINN.TERA")
     {
         MapCurrency[16] = "BTC";
@@ -1592,6 +1602,8 @@ function InitMapCurrency()
         
         MapCurrency[110] = "USD";
         MapCurrency[111] = "DAO";
+        
+        AccCoinList = 226857;
     }
     else
         if(window.NETWORK_ID === "TEST-JINN.TEST")
@@ -1599,6 +1611,8 @@ function InitMapCurrency()
             MapCurrency[9] = "BTC";
             MapCurrency[10] = "USD";
             MapCurrencyIcon[9] = "./PIC/B.svg";
+            
+            AccCoinList = 571;
         }
         else
             if(window.NETWORK_NAME === "LOCAL-JINN")
@@ -1606,17 +1620,65 @@ function InitMapCurrency()
                 MapCurrency[9] = "BTC";
                 MapCurrency[10] = "USD";
                 MapCurrencyIcon[9] = "./PIC/B.svg";
+                
+                AccCoinList = 234;
             }
             else
             {
                 return;
             }
     
+    WasAccountsDataStr = "";
     if(!bWasCodeSys)
+    {
         for(var key in MapCurrency)
             MapCurrencyCodeSys[MapCurrency[key]] = ParseNum(key);
-    bWasCodeSys = 1;
+        
+        if(AccCoinList)
+        {
+            StaticCall(AccCoinList, "GetList", {}, [], function (Err,Arr)
+            {
+                if(!Arr)
+                    return;
+                for(var i = 0; i < Arr.length; i++)
+                {
+                    var Item = Arr[i];
+                    var Key = NormalizeCurrencyName(Item.Name);
+                    MapCurrency[Item.Num] = Item.Name;
+                    if(Item.Flag)
+                    {
+                        if(Item.Flag & 1)
+                            MapCurrencyCodeSys[Key] = Item.Num;
+                        
+                        MapCurrencyIcon[Item.Num] = Math.floor(Item.Flag / 10);
+                    }
+                }
+                WasAccountsDataStr = "";
+                FillDataList("idCurrencyList", MapCurrency);
+            });
+        }
+        
+        bWasCodeSys = 1;
+    }
 }
+function NormalizeCurrencyName(Name)
+{
+    const LETTER = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+    var Str = "";
+    for(var i = 0; i < Name.length; i++)
+    {
+        var C = Name.substr(i, 1);
+        var Index = LETTER.indexOf(C);
+        if(Index < 0)
+            continue;
+        if(i === 0 && Index < 1)
+            continue;
+        Str = Str + C;
+    }
+    
+    return Str;
+}
+
 InitMapCurrency();
 
 var MapCategory = {};
@@ -1723,10 +1785,12 @@ function CurrencyName(Num)
 
 function FillCurrencyAsync(IdName,StartNum)
 {
+    
     InitMapCurrency();
     
     if(!StartNum)
         StartNum = 8;
+    
     FillDataList(IdName, MapCurrency);
 }
 
@@ -1787,7 +1851,7 @@ function ValidateCurrency(Element)
 }
 function GetCurrencyByName(Value)
 {
-    var Value = String(Value).toUpperCase();
+    Value = NormalizeCurrencyName(String(Value).toUpperCase());
     var Num = MapCurrencyCodeSys[Value];
     if(Num !== undefined)
         return Num;

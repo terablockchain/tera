@@ -30,7 +30,7 @@ function SetCurTrackItem(HASH)
 function SendUserEvent(Obj)
 {
     if(CurTrackItem && typeof Obj === "string")
-        SendTrack(Obj, 2);
+        SendTrack(1, Obj, 2, 1);
     
     if(global.DebugEvent)
         DebugEvent(Obj);
@@ -40,7 +40,6 @@ function SendTrackResult(Block,TxNum,Body,SetResult,Result)
 {
     if(!CurTrackItem)
         return;
-    
     var ResultStr = SetResult;
     if(SetResult)
     {
@@ -54,10 +53,10 @@ function SendTrackResult(Block,TxNum,Body,SetResult,Result)
         ResultStr = Result;
     }
     
-    SendTrack(ResultStr, SetResult ? 1 :  - 1);
+    SendTrack(SetResult, ResultStr, SetResult ? 1 :  - 1);
 }
 
-function SendTrack(Str,bFinal)
+function SendTrack(Result,Str,bFinal,bEvent)
 {
     if(!CurTrackItem)
         return;
@@ -65,7 +64,8 @@ function SendTrack(Str,bFinal)
     CurTrackItem.cmd = "RetFindTX";
     CurTrackItem.ResultStr = Str;
     CurTrackItem.bFinal = bFinal;
-    CurTrackItem.Result = Str;
+    CurTrackItem.Result = Result;
+    CurTrackItem.bEvent = bEvent;
     
     process.send(CurTrackItem);
 }

@@ -818,3 +818,27 @@ function CheckLengthAccDesription(name,Length)
     else
         SetStatus("Lost: " + Len + " bytes");
 }
+
+function PasueBt(btn)
+{
+    btn.disabled = true;
+    setTimeout(function ()
+    {
+        btn.disabled = false;
+    }, 1000);
+}
+
+function StaticCall(Account,MethodName,Params,ParamsArr,F)
+{
+    GetData("DappStaticCall", {Account:Account, MethodName:MethodName, Params:Params, ParamsArr:ParamsArr}, function (SetData)
+    {
+        if(SetData)
+        {
+            F(!SetData.result, SetData.RetValue);
+        }
+        else
+        {
+            F(1);
+        }
+    });
+}

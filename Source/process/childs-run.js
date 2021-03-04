@@ -247,12 +247,12 @@ function StartChildProcess(Item)
                         case "RetFindTX":
                             if(msg.WebID >= 1e9)
                             {
-                                
                                 var F = GlobalRunMap[msg.WebID];
                                 if(F)
                                 {
-                                    delete GlobalRunMap[msg.WebID];
-                                    F(msg.Result, msg.ResultStr);
+                                    if(!msg.bEvent)
+                                        delete GlobalRunMap[msg.WebID];
+                                    F(msg.Result, msg.ResultStr, msg.bEvent);
                                     break;
                                 }
                             }

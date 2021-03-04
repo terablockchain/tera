@@ -328,7 +328,7 @@
                 </div>
                 <div class="connection">
                     <p class="connection__text">Port</p>
-                    <input type="number"  maxlength="9" class="input input_middle" value="-" id="idPort" onchange="SaveNetParams()">
+                    <input type="number"  maxlength="9" class="input input_middle" value="0" id="idPort" onchange="SaveNetParams()">
                 </div>
             </div>
 
@@ -782,7 +782,7 @@
             </a>
             <div class="wallet__btn-group">
                 <button class="btn btn__transparent btn_wide btn_margin" onclick="ClearTransaction()">Clear</button>
-                <button class="btn btn_wide" id="idSendButton" onclick="SendMoneyBefore()">SEND</button>
+                <button class="btn btn_wide" id="idSendButton" onclick="SendMoneyBefore();PasueBt(this)">SEND</button>
             </div>
         </div>
         <div class="division"></div>
