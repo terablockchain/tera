@@ -16,25 +16,34 @@ const crypto = require('crypto');
 require("./library");
 require("./crypto-library");
 
-const WalletPath = "WALLET";
-
-const CONFIG_NAME = GetDataPath(WalletPath + "/config.lst");
-global.HIDDEN_ACC_PATH = GetDataPath(WalletPath + "/hidden.lst");
 
 const ZeroStr64 = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
-class CApp
+class CWalletApp
 {
-    constructor()
+    Start()
     {
-        CheckCreateDir(GetDataPath(WalletPath))
+        CheckCreateDir(GetDataPath(this.GetWalletPath()))
         
-        var bReadOnly = (global.PROCESS_NAME !== "TX");
+        this.Init()
         
+        if(global.LOCAL_RUN)
+        {
+            let SELF = this;
+            setTimeout(function ()
+            {
+                SELF.FindMyAccounts(1)
+            }, 5000)
+        }
+    }
+    
+    Init()
+    {
         this.Password = ""
         this.WalletOpen = undefined
         
-        var Params = LoadParams(CONFIG_NAME, undefined);
+        var FName = this.GetConfigFileName();
+        var Params = LoadParams(FName, undefined);
         if(!Params)
         {
             Params = {}
@@ -69,16 +78,8 @@ class CApp
         {
             this.SetPrivateKey(Params.Key)
         }
-        
-        if(global.LOCAL_RUN)
-        {
-            let SELF = this;
-            setTimeout(function ()
-            {
-                SELF.FindMyAccounts(1)
-            }, 5000)
-        }
     }
+    
     SetPrivateKey(KeyStr, bSetNew)
     {
         var bGo = 1;
@@ -244,7 +245,7 @@ class CApp
         }
         
         Params.AccountMap = this.AccountMap
-        SaveParams(CONFIG_NAME, Params)
+        SaveParams(this.GetConfigFileName(), Params)
     }
     
     OnCreateAccount(Data)
@@ -257,7 +258,7 @@ class CApp
         if(IsZeroArr(this.PubKeyArr))
             return 0;
         
-        var HiddenMap = LoadParams(HIDDEN_ACC_PATH, {});
+        var HiddenMap = LoadParams(this.GetHiddenFileName(), {});
         
         if(bClean)
             this.AccountMap = {}
@@ -331,11 +332,22 @@ class CApp
             return ZeroStr64;
         }
     }
+    
+    GetWalletPath()
+    {
+        return "WALLET";
+    }
+    
+    GetConfigFileName()
+    {
+        return GetDataPath(this.GetWalletPath() + "/config.lst");
+    }
+    
+    GetHiddenFileName()
+    {
+        return GetDataPath(this.GetWalletPath() + "/hidden.lst");
+    }
 };
 
-global.WALLET = new CApp;
+global.WALLET = new CWalletApp;
 
-if(fs.existsSync(GetCodePath("EXPERIMENTAL/_run.js")))
-{
-    require(GetCodePath("EXPERIMENTAL/_run.js"));
-}

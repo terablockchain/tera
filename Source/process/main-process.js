@@ -124,6 +124,9 @@ var JinnLib = require("../jinn/tera");
 require("../system");
 
 require("./childs-run");
+
+require("../core/wallet");
+
 RunServer();
 
 
@@ -155,7 +158,7 @@ function StartJinn()
     {
         JinnLib.Create();
         SERVER.CanSend = 2;
-        require("../core/wallet");
+        global.WALLET.Start();
         setTimeout(SERVER.CheckStartedBlocks, 800);
     });
 }

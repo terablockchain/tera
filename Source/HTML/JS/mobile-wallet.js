@@ -590,8 +590,7 @@ function SetAccountsCard(Data,AccountsDataStr)
             }
             else
             {
-                Str1 = Item.Value.SumCOIN;
-                Str2 = "," + Right("000000000" + Item.Value.SumCENT, 9);
+                Str1 = STRING_FROM_COIN(Item.Value);
             }
         }
         else

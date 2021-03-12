@@ -24,7 +24,7 @@
 //            id.innerHTML=Str;
         }
 
-        window.onload=function()
+        window.addEventListener('load',function ()
         {
             try
             {
@@ -34,8 +34,8 @@
             {
                 SetStatus("Error: "+e);
             }
+        });
 
-        }
         function OnLoad()
         {
             InitMainServer();
@@ -49,13 +49,13 @@
                 ViewHistory(1);
             }
 
-            window.onkeydown = function (e)
+            window.addEventListener("keydown", function (e)
             {
                 if(e.keyCode===27)
                 {
                     ClosePage();
                 }
-            };
+            });
 
             window.addEventListener("popstate", function(event)
             {
@@ -211,6 +211,7 @@
 
         function OnMessage(event)
         {
+            //console.log(event.data);
             var Data=event.data;
             if(!Data || typeof Data!=="object")
                 return;

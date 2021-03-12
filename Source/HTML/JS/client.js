@@ -9,7 +9,7 @@
 */
 
 
-window.CLIENT_VERSION = 29;
+window.CLIENT_VERSION = 30;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1663,6 +1663,11 @@ function InitMapCurrency()
 }
 function NormalizeCurrencyName(Name)
 {
+    if(!Name)
+    {
+        console.log("Name", Name);
+        return;
+    }
     const LETTER = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
     var Str = "";
     for(var i = 0; i < Name.length; i++)
