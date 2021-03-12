@@ -1344,10 +1344,7 @@ function RetHistoryAccount(Item,Name)
         return "" + Num;
     
     var Str;
-    if(UseInnerPage() || window.NWMODE)
-        Str = "<a class='olink' target='_blank' onclick='OpenHistoryPage(" + Num + ")'>" + Num + "</a>";
-    else
-        Str = "<a class='olink' target='_blank' href='./history.html#" + Num + "'>" + Num + "</a>";
+    Str = "<a class='olink' target='_blank' onclick='OpenHistoryPage(" + Num + ")'>" + Num + "</a>";
     
     return Str;
 }
