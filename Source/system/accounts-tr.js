@@ -470,6 +470,8 @@ class AccountTR extends require("./accounts-sign")
         }
         
         this.WriteStateTR(ToData, BlockNum, TrNum)
+        if(!ISZERO(CoinSum) && FromData.Currency !== ToData.Currency)
+            throw "Different currencies. Accounts: " + FromID + " and " + ToID;
         
         if(FromData.Value.Smart)
         {

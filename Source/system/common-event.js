@@ -31,7 +31,6 @@ function SendUserEvent(Obj)
 {
     if(CurTrackItem && typeof Obj === "string")
         SendTrack(1, Obj, 2, 1);
-    
     if(global.DebugEvent)
         DebugEvent(Obj);
 }

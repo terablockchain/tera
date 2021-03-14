@@ -568,10 +568,12 @@ ListF.$Send = function (ToID,CoinSum,Description)
     {
         throw "Error ToID - the account number does not exist.";
     }
-    if(RunContext.Account.Currency !== ToData.Currency)
-    {
-        throw "Different currencies. Accounts: " + RunContext.Account.Num + " and " + ToID;
-    }
+    
+    if(RunContext.BlockNum < global.UPDATE_CODE_8)
+        if(RunContext.Account.Currency !== ToData.Currency)
+        {
+            throw "Different currencies. Accounts: " + RunContext.Account.Num + " and " + ToID;
+        }
     
     ACCOUNTS.SendMoneyTR(RunContext.Block, RunContext.Account.Num, ToID, CoinSum, RunContext.BlockNum, RunContext.TrNum, Description,
     Description, 1, 1);
@@ -593,10 +595,12 @@ ListF.$Move = function (FromID,ToID,CoinSum,Description)
     {
         throw "Error ToID - the account number: " + ToID + " does not exist.";
     }
-    if(FromData.Currency !== ToData.Currency)
-    {
-        throw "Different currencies. Accounts: " + FromID + " and " + ToID;
-    }
+    
+    if(RunContext.BlockNum < global.UPDATE_CODE_8)
+        if(FromData.Currency !== ToData.Currency)
+        {
+            throw "Different currencies. Accounts: " + FromID + " and " + ToID;
+        }
     
     if(FromData.Value.Smart !== RunContext.Smart.Num)
     {

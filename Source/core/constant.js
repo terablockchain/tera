@@ -13,7 +13,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2497;
+global.UPDATE_CODE_VERSION_NUM = 2499;
 global.MIN_JINN_VERSION_NUM = 0;
 
 global.DEBUG_TRAFFIC = 0;
@@ -88,6 +88,7 @@ global.UPDATE_CODE_4 = 0;
 global.UPDATE_CODE_5 = 0;
 global.UPDATE_CODE_6 = 0;
 global.UPDATE_CODE_7 = 0;
+global.UPDATE_CODE_8 = 0;
 global.UPDATE_CODE_NEW_ACCHASH = 1;
 global.UPDATE_CODE_JINN = 0;
 global.UPDATE_CODE_JINN_KTERA = 0;
