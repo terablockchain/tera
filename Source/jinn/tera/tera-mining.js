@@ -42,9 +42,8 @@ function Init(Engine)
     
     Engine.AddToMiningInner = function (Block)
     {
-        
         var CurBlockNum = Engine.CurrentBlockNum;
-        if(global.USE_MINING)
+        if(global.USE_MINING || global.USE_API_MINING)
         {
             var Delta = CurBlockNum - Block.BlockNum;
             ToLog("Run mining BlockNum=" + Block.BlockNum + ", Delta=" + Delta, 5);
@@ -55,7 +54,7 @@ function Init(Engine)
         }
     };
     
-    SERVER.MiningProcess = function (msg)
+    SERVER.MiningProcess = function (msg,bExtern)
     {
         var MiningBlock;
         var PrevHash = msg.PrevHash;
@@ -108,7 +107,7 @@ function Init(Engine)
             }
         }
         
-        if(bWas && MiningBlock)
+        if(bWas && MiningBlock && !bExtern)
         {
             Engine.ToLog("Mining Block = " + BlockInfo(MiningBlock) + " Total=" + (msg.TotalCount / 1000000) + " M Power=" + MiningBlock.Power + "  Mode=" + bWas,
             5);

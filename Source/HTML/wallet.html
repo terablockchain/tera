@@ -226,9 +226,9 @@
         <div class="tab-content">
             <BR>
             <div class="row">
-                <div class="mining__switches-left">
-                    <div class="mining__switch">
-                        <p class="mining__switch-text">Use autoupdate </p>
+                <div class="switches-left">
+                    <div class="switch">
+                        <p class="switch-text">Use autoupdate </p>
                         <label for="idAutoUpdate">
                             <input type="checkbox" class="checkbox" id="idAutoUpdate" onchange = "UseAutoUpdate()">
                             <label for="idAutoUpdate"></label>
@@ -255,10 +255,10 @@
             <div class="wallet__mining mining">
                 <DIV id="idStatusMining"></DIV>
 
-                <div class="mining__switches">
-                    <div class="mining__switches-left">
-                        <div class="mining__switch">
-                            <p class="mining__switch-text">Use mining </p>
+                <div class="switches">
+                    <div class="switches-left">
+                        <div class="switch">
+                            <p class="switch-text">Use mining </p>
                             <label for="idUseMining">
                                 <input type="checkbox" class="checkbox" id="idUseMining" onchange = "UseMining()">
                                 <label for="idUseMining"></label>
@@ -266,11 +266,11 @@
                         </div>
                         <DIV style="width: 600px;">
                             <div class="row">
-                                <div class="mining__switch" >
+                                <div class="switch" >
                                     <p>Mining account:</p>
                                     <input type="number" class="input input_mining" id="idMiningAccount" min=0 max=1000000000000 value="0" onchange="SaveMiningSet()">
                                 </div>
-                                <div class="mining__switch">
+                                <div class="switch">
                                     <p>CPU use:</p>
                                     <input class="input input_mining" type="number" min=0 max=100 id="idPercentMining" onchange="SetPercentMining()"/>
                                     <p>%</p>
@@ -298,8 +298,8 @@
             <h3 class="h3">Network connection</h3>
             <div class="row">
                 <div class="connection__switch ">
-                    <div class="mining__switch">
-                        <p class="mining__switch-text">Autodetect IP </p>
+                    <div class="switch">
+                        <p class="switch-text">Autodetect IP </p>
                         <label for="idAutoDetectIP">
                             <input type="checkbox" class="checkbox" id="idAutoDetectIP" onchange="SaveNetParams()">
                             <label for="idAutoDetectIP"></label>
@@ -307,8 +307,8 @@
                     </div>
                 </div>
                 <div class="connection__switch ">
-                    <div class="mining__switch">
-                        <p class="mining__switch-text">Client mode only</p>
+                    <div class="switch">
+                        <p class="switch-text">Client mode only</p>
                         <label for="CLIENT_MODE">
                             <input type="checkbox" class="checkbox  node-const" id="CLIENT_MODE" onchange="SaveNetParams()">
                             <label for="CLIENT_MODE"></label>
@@ -345,8 +345,8 @@
                 </div>
             </div>
             <div class="connection__switch ">
-                <div class="mining__switch" style="width: 400px">
-                    <p class="mining__switch-text">Correct time from cluster node (linux):</p>
+                <div class="switch" style="width: 400px">
+                    <p class="switch-text">Correct time from cluster node (linux):</p>
                     <label for="CLUSTER_TIME_CORRECT">
                         <input type="checkbox" class="checkbox node-const" id="CLUSTER_TIME_CORRECT" onchange="SaveNetParams()">
                         <label for="CLUSTER_TIME_CORRECT"></label>
@@ -394,8 +394,8 @@
             <h3 class="h3">RPC: Web-wallet/API-1/API-2</h3>
             <div class="row">
                 <div class="connection__switch ">
-                    <div class="mining__switch" style="width: 285px">
-                        <p class="mining__switch-text">Web-wallet:</p>
+                    <div class="switch" style="width: 225px">
+                        <p class="switch-text">Web-wallet:</p>
                         <label for="USE_API_WALLET">
                             <input type="checkbox" class="checkbox node-const" id="USE_API_WALLET" onchange="SaveNetParams()">
                             <label for="USE_API_WALLET"></label>
@@ -403,8 +403,8 @@
                     </div>
                 </div>
                 <div class="connection__switch ">
-                    <div class="mining__switch" style="width: 285px">
-                        <p class="mining__switch-text">API v1:</p>
+                    <div class="switch" style="width: 225px">
+                        <p class="switch-text">API v1:</p>
                         <label for="USE_API_V1">
                             <input type="checkbox" class="checkbox node-const" id="USE_API_V1" onchange="SaveNetParams()">
                             <label for="USE_API_V1"></label>
@@ -412,8 +412,17 @@
                     </div>
                 </div>
                 <div class="connection__switch ">
-                    <div class="mining__switch" style="width: 285px">
-                        <p class="mining__switch-text">API v2:</p>
+                    <div class="switch" style="width: 225px">
+                        <p class="switch-text">API mining:</p>
+                        <label for="USE_API_MINING">
+                            <input type="checkbox" class="checkbox node-const" id="USE_API_MINING" onchange="SaveNetParams()">
+                            <label for="USE_API_MINING"></label>
+                        </label>
+                    </div>
+                </div>
+                <div class="connection__switch ">
+                    <div class="switch" style="width: 225px">
+                        <p class="switch-text">API v2:</p>
                         <label for="USE_HARD_API_V2">
                             <input type="checkbox" class="checkbox node-const" id="USE_HARD_API_V2" onchange="SaveNetParams()">
                             <label for="USE_HARD_API_V2"></label>
@@ -451,8 +460,8 @@
                 <input type="number" class="input  input_middle node-const" id="MAX_TX_FROM_WEB_IP" maxlength="40" value="" onchange="SaveNetParams()">
             </div>
             <div class="connection__switch ">
-                <div class="mining__switch" style="width: 195px">
-                    <p class="mining__switch-text">Web log:</p>
+                <div class="switch" style="width: 195px">
+                    <p class="switch-text">Web log:</p>
                     <label for="WEB_LOG">
                         <input type="checkbox" class="checkbox node-const" id="WEB_LOG" onchange="SaveNetParams()">
                         <label for="WEB_LOG"></label>
@@ -469,8 +478,8 @@
         <div class="tab-content">
             <div class="row">
                 <div class="connection__switch ">
-                    <div class="mining__switch">
-                        <p class="mining__switch-text">Color theme:</p>
+                    <div class="switch">
+                        <p class="switch-text">Color theme:</p>
                         <select size="1" id="idSelStyle"  onkeyup="SelectStyle();SaveValues()" onchange="SelectStyle();SaveValues()">
                             <option value="styleDark">Dark</option>
                             <option value="styleLight">Light</option>
@@ -510,8 +519,8 @@
                 <p class="text input_middle">(Note:need rewrite tx)</p>
             </div>
             <div class="connection__switch ">
-                <div class="mining__switch" style="width: 400px">
-                    <p class="mining__switch-text">View all table rows:</p>
+                <div class="switch" style="width: 400px">
+                    <p class="switch-text">View all table rows:</p>
                     <label for="ALL_VIEW_ROWS">
                         <input type="checkbox" class="checkbox node-const" id="ALL_VIEW_ROWS" onchange="SaveNetParams()">
                         <label for="ALL_VIEW_ROWS"></label>
@@ -521,8 +530,8 @@
 
 
             <div class="connection__switch ">
-                <div class="mining__switch" style="width: 400px">
-                    <p class="mining__switch-text">Debug dapps state (need reload page)</p>
+                <div class="switch" style="width: 400px">
+                    <p class="switch-text">Debug dapps state (need reload page)</p>
                     <label for="DEBUG_WALLET">
                         <input type="checkbox" class="checkbox node-const" id="DEBUG_WALLET" onchange="SaveNetParams()">
                         <label for="DEBUG_WALLET"></label>
@@ -1389,8 +1398,8 @@
 
                 <BR><DIV id="idOnSendWarning" style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>
 
-                <div class="mining__switch" ID="idCheckOnSend" style="margin-top: 30px">
-                    <p class="mining__switch-text">Add to white list</p>
+                <div class="switch" ID="idCheckOnSend" style="margin-top: 30px">
+                    <p class="switch-text">Add to white list</p>
                     <label for="idWhiteOnSend">
                         <input type="checkbox" class="checkbox" id="idWhiteOnSend">
                         <label for="idWhiteOnSend"></label>

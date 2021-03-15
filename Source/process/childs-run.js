@@ -271,6 +271,10 @@ function StartChildProcess(Item)
                                 ToLog("RUNNING " + ITEM.Name + " : " + msg.message + " pid: " + ITEM.Worker.pid);
                             break;
                             
+                        case "POW":
+                            SERVER.MiningProcess(msg, 1);
+                            break;
+                            
                         default:
                             if(ITEM.OnMessage)
                             {

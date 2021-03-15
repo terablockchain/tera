@@ -1,5 +1,5 @@
 ﻿## API v1
-Works with update version 2500 or above
+Works with update version 1263
 
 Official public gateways supporting this API:
 * https://teraexplorer.org
@@ -367,7 +367,6 @@ Note: The transaction in hex format can be obtained if you use a functions from 
 
 Note: for the correct operation of the examples, make sure that the OperationID is not lower than the current value in the user's account
 
-## GetSupply
 
 12)**/GetSupply**  - returns a single number-the sum of the mined coins
 
@@ -379,73 +378,4 @@ http://127.0.0.1/GetSupply
 return value:
 ```
 643000000
-```
-
-
-
-
-## GetWork
-
-13)**/GetWork**  - returns the parameters of the current block for the possibility of mining (POW-search for the most suitable hash)
-
-
-Fields of the returned result (response):
-* result - integer, if greater than 0 then OK, 0 or less than 0 an error occurred (the text field can contain its description)
-* BlockNum - current block number
-* PrevHash - hash of the previous block
-* SeqHash - hash of the current block data
-* Period  - the time in ms that has already passed since the start of mining this block (you need to have time to send the work before the block formation period expires = CONSENSUS_PERIOD_TIME)
-
-* Time - reference: integer current server time
-* FIRST_TIME_BLOCK - for reference: an integer is the start time of the first block in this network
-* CONSENSUS_PERIOD_TIME - for reference: integer - block formation period in ms for this network
-
-
-Example
-```js
-http://127.0.0.1/api/v1/GetWork
-```
-
-Result:
-```
-{
-    "result": 1,
-    "BlockNum": 70794163,
-    "PrevHash": "F3DABBDDD2455278315279D3196B3F83DB7E676860E8C4101DB956E1ED0D578B",
-    "SeqHash": "A60BE71A6F5688F4AE87E5E5CA725061378F1B7009728E4592C756A1ABDC617A",
-    "Period": 1335,
-    "Time": 1615808893738,
-    "FIRST_TIME_BLOCK": 1403426400000,
-    "CONSENSUS_PERIOD_TIME": 3000
-}
-```
-
-## SubmitWork
-
-14)**/SubmitWork**  - sending the result of POW mining - the most suitable hash
-#### Parameters:
-* BlockNum - current block number
-* PrevHash - hash of the previous block
-* SeqHash - hash of the current block data
-* AddrHash - the value of the work performed (nonce and account for the award)
-
-
-Fields of the returned result (response):
-* result - integer, if greater than 0 then OK, 0 or less than 0 an error occurred (the text field can contain its description)
-
-
-Example
-```js
-http://127.0.0.1/api/v1/SubmitWork
-{
-    "BlockNum": 70794576,
-    "PrevHash": "AEFFA4F9F9AF8498372D037D4855372787F4248D3CE3923755EF75E8BBCCE901",
-    "SeqHash": "E60C700B6E966C6B55C9C2157F2D734365D81E52A445FAC3A2F2BC1C303FD634",
-    "AddrHash": "0090048547BDAC8A000082446E000000000000493918B230000A085000000000"
-}
-```
-
-Result:
-```
-{"result":1}
 ```

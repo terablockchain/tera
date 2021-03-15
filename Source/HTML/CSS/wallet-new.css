@@ -558,7 +558,7 @@ button {
 .h3_mining {
   margin: 30px 0; }
 
-.mining__switches {
+.switches {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -572,14 +572,14 @@ button {
       -ms-flex-align: center;
           align-items: center; }
 
-.mining__switches-left {
+.switches-left {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex; }
 
 
-.mining__switch {
+.switch {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -598,7 +598,7 @@ button {
   margin-right: 30px; }
 
 
-.mining__switch-text {
+.switch-text {
   color: rgba(var(--colorT), var(--colorT), var(--colorT), 0.8); }
 
 

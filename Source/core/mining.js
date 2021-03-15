@@ -138,7 +138,6 @@ function RunStopPOWProcess(Mode)
     ProcessMemorySize = Math.floor(Memory / GetCountMiningCPU());
     var StrProcessMemorySize = Math.floor(ProcessMemorySize / 1024 / 1024 * 1000) / 1000;
     ToLog("START MINER PROCESS COUNT: " + GetCountMiningCPU() + " Memory: " + StrProcessMemorySize + " Mb for each process");
-    global.WasStartMiningProcess = 1;
     
     for(var R = 0; R < GetCountMiningCPU(); R++)
     {
@@ -198,6 +197,13 @@ function RunStopPOWProcess(Mode)
 var GlSendMiningCount = 0;
 function SetCalcPOW(Block,cmd)
 {
+    //RPC Mining support
+    if(global.USE_API_MINING && global.WEB_PROCESS && global.WEB_PROCESS.Worker)
+    {
+        global.WEB_PROCESS.Worker.send({cmd:"MiningBlock", Value:{result:0, BlockNum:Block.BlockNum, PrevHash:GetHexFromArr(Block.PrevHash),
+                SeqHash:GetHexFromArr(Block.SeqHash), Period:0, Time:Date.now(), }});
+    }
+    
     if(!global.USE_MINING)
         return;
     
@@ -223,6 +229,7 @@ function SetCalcPOW(Block,cmd)
             continue;
         
         GlSendMiningCount++;
+        
         CurWorker.send({id:GlSendMiningCount, cmd:cmd, BlockNum:Block.BlockNum, Account:GetMiningAccount(), MinerID:GetMiningAccount(),
             SeqHash:Block.SeqHash, Hash:Block.Hash, PrevHash:Block.PrevHash, Time:Date.now(), Num:CurWorker.Num, RunPeriod:global.POWRunPeriod,
             RunCount:global.POW_RUN_COUNT, Percent:global.POW_MAX_PERCENT, CountMiningCPU:GetCountMiningCPU(), ProcessMemorySize:ProcessMemorySize,

@@ -2703,4 +2703,4 @@ function GetCookieHash(cookies_hash,Password)
 }
 
 
-require("../process/api-exchange.js");
+require("../rpc/api-v2-exchange.js");
