@@ -18,7 +18,9 @@ To do this, set the constants (from the full node interface or in the file: cons
 "HTTP_HOSTING_PORT":80,
 "USE_API_V1":1,
 ```
-After setting the constants, you need to restart the node.
+After setting the constants, you may need to restart the node.
+
+
 
 
 Although the API is designed for use in POST requests, it can be used for GET requests in a limited mode.
@@ -381,6 +383,19 @@ return value:
 643000000
 ```
 
+
+
+# Mining API
+
+
+This API is available if the fullnode is running public http-access. Set the constant HTTP_HOSTING_PORT and USE_API_MINING
+
+To do this, set the constants (from the full node interface or in the file: const.lst):
+```js
+"HTTP_HOSTING_PORT":80,
+"USE_API_MINING":1,
+```
+After setting the constants, you may need to restart the node.
 
 
 
