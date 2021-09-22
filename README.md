@@ -1,7 +1,7 @@
 ﻿# TERA PLATFORM
 
 
-This is a public blockchain whose main feature is true decentralization through the use of pow consensus and very high performance.
+This is a public blockchain, the main feature of which is full decentralization through the use of pow consensus and serverless dapps, as well as very fast operation speed (peak performance of 1000 tps without sharding and more than 1 million with its use).
 
 
 * To learn more about this project, we recommend reading the review article: [Decentralized applications on TERA platform](https://medium.com/@evkara777/decentralized-applications-on-tera-platform-2aa56b597ae9)
