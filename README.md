@@ -15,17 +15,21 @@ https://terawallet.org
 * Note: the light wallet has a decentralized core - i.e. it works with all available nodes in the network
 
 
-## Installing light wallet from setup on Windows:
-* https://gitlab.com/terafoundation/terarun/raw/master/Bin/Light/tera_light_setup.exe
-* [Light client (zip)](https://gitlab.com/terafoundation/terarun/raw/master/Bin/Light/Tera-light.zip)
+[//]: # (## Installing light wallet from setup on Windows:)
+
+[//]: # (* https://gitlab.com/terafoundation/terarun/raw/master/Bin/Light/tera_light_setup.exe)
+
+[//]: # (  *Light client: https://gitlab.com/terafoundation/terarun/raw/master/Bin/Light/Tera-light.zip )
+
+[//]: # (## Installing full node from setup on Windows:)
+
+[//]: # (https://gitlab.com/terafoundation/terarun/raw/master/Bin/Full/tera_full_setup.exe)
+
 
 ## Mobile wallet apk-file for Android:
 * https://gitlab.com/terafoundation/terarun/raw/master/Bin/Mobile/app-release.apk
 
 
-
-~~## Installing full node from setup on Windows:~~
-~~https://gitlab.com/terafoundation/terarun/raw/master/Bin/Full/tera_full_setup.exe~~
 
 
 ## Installing full node from source code by steps:
