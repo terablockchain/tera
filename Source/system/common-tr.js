@@ -27,10 +27,15 @@ global.REGISTER_TR_DB = function (DB,Num)
         throw "REGISTER_TR_DB: Error Num=" + Num;
     
     if(ListTRDB[Num])
-        throw "Not unique Num=" + Num;
+    {
+        console.log(ListTRDB[Num])
+        ToLogTrace("Not unique");
+        throw "Not unique Num=" + Num+" WAS: ";
+    }
+    //console.log("Num="+Num)
     
     ListTRDB[Num] = DB;
-}
+};
 
 function BeginTransactionDB(Name)
 {
@@ -81,14 +86,14 @@ global.START_BLOCK = function ()
 {
     SetRollBackTransaction = 0;
     BeginTransactionDB("Block");
-}
+};
 global.BEGIN_TRANSACTION = function ()
 {
     BeginTransactionDB("TX");
     SetTickCounter(35000);
     
     SetRollBackTransaction = 0;
-}
+};
 
 global.ROLLBACK_TRANSACTION = function ()
 {
@@ -98,7 +103,7 @@ global.ROLLBACK_TRANSACTION = function ()
     RollbackTransactionDB("TX");
     
     SetRollBackTransaction = 1;
-}
+};
 
 global.COMMIT_TRANSACTION = function (BlockNum,TrNum)
 {

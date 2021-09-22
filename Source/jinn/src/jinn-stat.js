@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -22,7 +22,8 @@ var StatKeys = {BlockTx:"BlockTx", TXSend:"TxSend", TTSend:"TtSend", HeaderLoad:
     TxReceive:"-TxReceive", TxReceiveErr:"-TxReceiveErr", BanCount:"-BanCount", MainDelta:"MainDelta", ErrTt1:"-ErrTt1", ErrTt2:"-ErrTt2",
     ErrTx1:"-ErrTx1", ErrTx2:"-ErrTx2", TxCache1:"-TxCache1", TxCache2:"-TxCache2", TxCacheErr:"-TxCacheErr", TTTXSend:"-TTTXSend",
     TTTXReceive:"-TtTxReceive", ErrTxSend:"-ErrTxSend", TXReq:"-TxReq", BreakUploadTime:"-BreakUploadTime", MinDTransfer:"-MinDTransfer",
-    MaxDTransfer:"-MaxDTransfer", };
+    MaxDTransfer:"-MaxDTransfer", HeaderLoadOK:"HeaderLoadOK", MaxHeaderLoad:"MaxHeaderLoad", MaxSendCountItem:"MaxSendCountItem",
+};
 
 for(var num = 1; num <= 10; num++)
     StatKeys["GetTx" + num] = "-GetTx" + num;

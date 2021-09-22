@@ -7,25 +7,33 @@
     <link rel="shortcut icon" href="/HTML/PIC/wallet.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="./CSS/wallet-grid.css">
-    <link rel="stylesheet" href="./CSS/wallet-new.css"> <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="./CSS/wallet-new.css">
     <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
+    <link rel="stylesheet" href="./CSS/wallet-multicoin.css">
+    <link rel="stylesheet" href="./CSS/wallet-common.css">
 
 
 
     <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
     <script type="text/javascript" src="/HTML/JS/client.js"></script>
+    <script type="text/javascript" src="/HTML/JS/client-promise.js"></script>
+    <script type="text/javascript" src="/HTML/JS/client-tokens.js"></script>
+    <script type="text/javascript" src="/HTML/JS/client-tx.js"></script>
     <script type="text/javascript" src="/HTML/JS/sha3.js"></script>
     <script type="text/javascript" src="/HTML/JS/sign-lib-min.js"></script>
     <script type="text/javascript" src="/HTML/JS/crypto-client.js"></script>
 
     <script type="text/javascript" src="/HTML/JS/wallet-lib.js"></script>
     <script type="text/javascript" src="/HTML/JS/wallet-node.js"></script>
+    <script type="text/javascript" src="/HTML/JS/terabuf.js"></script>
     <script type="text/javascript" src="/HTML/JS/terahashlib.js"></script>
 
     <script type="text/javascript" src="/HTML/JS/wallet-hash-info.js"></script>
 
     <script type="text/javascript" src="/HTML/JS/wallet-full.js"></script>
     <script type="text/javascript" src="/HTML/JS/wallet-full-new.js"></script>
+    <script type="text/javascript" src="/HTML/JS/wallet-multicoin.js"></script>
+
 
 
     <script>
@@ -116,7 +124,7 @@
         <div class="config__desc">
             <div class="config__group">
                 <h4 class="h4">Block</h4>
-                <p id="idCurBlockNum" class="config__number">32416782</p>
+                <p id="idCurBlockNum" class="config__number">000000</p>
             </div>
             <div class="config__group">
                 <h4 class="h4">DB delta</h4>
@@ -206,7 +214,8 @@
                             <th id="(RetHistoryAccount(Item))" class="id">ID</th>
                             <th id="(RetEditAccount(Item))" data-name="Account name" class="name ">Name</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum bold">Amount</th>
-                            <th id="CurrencyNameItem(Item)" data-name="Currency" class="cur">Cur</th>
+                            <th id="ACurrencyNameItem(Item)" data-name="Currency" class="cur">Cur</th>
+                            <th id="(RetCountERC(Item))" class="">ERC</th>
                             <th id="Item.Adviser" data-name="Adviser" class="">Adv</th>
 
                             <th id="(RetChangeSmart(Item))" data-name="Smart contract (DApp)" class="">Smart</th>
@@ -285,7 +294,7 @@
                     <input type="number" class="input  input_big node-const" min=0 max=200 id="COUNT_MINING_CPU" maxlength="5" value="" onchange="SaveNetParams()">
                 </div>
                     <div class="connection">
-                        <p class="connection__text">size mining memory:</p>
+                        <p class="connection__text">size mining memory (bytes):</p>
                         <input type="number" class="input  input_big node-const" id="SIZE_MINING_MEMORY" maxlength="20" value="" onchange="SaveNetParams()">
                     </div>
                 </div>
@@ -491,7 +500,7 @@
             <div class="division"></div>
             <h3 class="h3">Wallet view set</h3>
 
-            <div class="row" id="idRowViewSet">
+            <div class="row">
                 <div class="connection">
                     <p class="connection__text">Window name:</p>
                     <input type="text" class="input  input_middle node-const" id="WALLET_NAME" maxlength="40" value="" onchange="SaveNetParams()">
@@ -500,7 +509,10 @@
                     <p class="connection__text">Description:</p>
                     <input type="text" class="input  input_middle node-const" id="WALLET_DESCRIPTION" maxlength="40" value="" onchange="SaveNetParams()">
                 </div>
-
+                <a  onclick="FindMyAccounts();" class="btn btn_margin btn__transparent" style="width: 150px">
+                    <img src="./img/reload.svg" class="btn__img">
+                    refresh
+                </a>
             </div>
             <BR>
             <div class="myrowl">
@@ -518,26 +530,52 @@
                 <input type="number" class="input  input_small node-const" id="START_HISTORY" maxlength="40" value="" onchange="SaveNetParams()">
                 <p class="text input_middle">(Note:need rewrite tx)</p>
             </div>
-            <div class="connection__switch ">
-                <div class="switch" style="width: 400px">
-                    <p class="switch-text">View all table rows:</p>
-                    <label for="ALL_VIEW_ROWS">
-                        <input type="checkbox" class="checkbox node-const" id="ALL_VIEW_ROWS" onchange="SaveNetParams()">
-                        <label for="ALL_VIEW_ROWS"></label>
-                    </label>
+
+            <div class="row">
+                <div class="connection__switch ">
+                    <div class="switch" style="width: 400px">
+                        <p class="switch-text">View all table rows:</p>
+                        <label for="ALL_VIEW_ROWS">
+                            <input type="checkbox" class="checkbox node-const" id="ALL_VIEW_ROWS" onchange="SaveNetParams()">
+                            <label for="ALL_VIEW_ROWS"></label>
+                        </label>
+                    </div>
+                </div>
+
+
+<!--                <div class="connection__switch ">-->
+<!--                    <div class="switch" style="width: 400px">-->
+<!--                        <p class="switch-text">Debug dapps state (need reload page)</p>-->
+<!--                        <label for="DEBUG_WALLET">-->
+<!--                            <input type="checkbox" class="checkbox node-const" id="DEBUG_WALLET" onchange="SaveNetParams()">-->
+<!--                            <label for="DEBUG_WALLET"></label>-->
+<!--                        </label>-->
+<!--                    </div>-->
+<!--                </div>-->
+            </div>
+            <div class="row">
+                <div class="connection__switch ">
+                    <div class="switch" style="width: 400px">
+                        <p class="switch-text">Edit accounts (beta version)</p>
+                        <label for="USE_EDIT_ACCOUNT">
+                            <input type="checkbox" class="checkbox node-const" id="USE_EDIT_ACCOUNT" onchange="SaveNetParams()">
+                            <label for="USE_EDIT_ACCOUNT"></label>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="connection__switch ">
+                    <div class="switch" style="width: 400px">
+                        <p class="switch-text">Block form when sending Tx</p>
+                        <label for="USE_BLOCK_SEND_TX">
+                            <input type="checkbox" class="checkbox node-const" id="USE_BLOCK_SEND_TX" onchange="SaveNetParams()">
+                            <label for="USE_BLOCK_SEND_TX"></label>
+                        </label>
+                    </div>
                 </div>
             </div>
 
 
-            <div class="connection__switch ">
-                <div class="switch" style="width: 400px">
-                    <p class="switch-text">Debug dapps state (need reload page)</p>
-                    <label for="DEBUG_WALLET">
-                        <input type="checkbox" class="checkbox node-const" id="DEBUG_WALLET" onchange="SaveNetParams()">
-                        <label for="DEBUG_WALLET"></label>
-                    </label>
-                </div>
-            </div>
 
 
         </div>
@@ -549,6 +587,7 @@
                 <div class="row">
                 <button class="btn btn_margin" onclick="SetCodeVersionJSON()">CODE VERS</button>
                 <button class="btn btn_margin" onclick="SetNetConstJSON()">NET CONSTS</button>
+                <button class="btn btn_margin" onclick="SetSysCoreJSON()">SYS CORE</button>
 <!--                <button class="btn" onclick="ConnectToAll()">All connect</button>-->
                 </div>
                 <button class="btn" onclick="RunDevelopService()">SEND</button>
@@ -748,11 +787,28 @@
             <p class="input-group__text">From:</p>
             <p class="input-group__text bt-paste" onclick="PasteRow()">Paste</p>
             </div>
-            <div class="select">
-                <select class="select__item input_send" size="1" id="idAccount" onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
+            <div class="select row">
+                <select class="select__item input_send" size="1" id="idAccount" oninput="OnSelectAccountFrom()">
                 </select>
+<!--                <select class="select__item" size="1" id="idERCMode" oninput="OnSelectAccountFrom()">-->
+<!--                    <option value="0">Coin</option>-->
+<!--                    <option value="1">ERC</option>-->
+<!--                </select>-->
             </div>
         </div>
+
+        <div class="row" id="idTokenNFT" style="display:none">
+            <div>
+                <div class="input-group__row">
+                    <p class="input-group__text t_choos_coin">Choose a coin:</p>
+                </div>
+                <grid_nft id="idListNFT">
+                    <item_nft>Loading...</item_nft>
+                </grid_nft>
+            </div>
+        </div>
+
+
         <div class="input-group">
             <div class="input-group__row">
                 <p class="input-group__text">Pay to:</p>
@@ -770,7 +826,7 @@
             <div class="input-group__row">
                 <p class="input-group__text">Amount <span id="idCoinName"></span></p>
                 <div class="input-group__right">
-                        <a onclick="SetAllSum()" class="input-group__link">
+                        <a onclick="SetAllSum()" class="input-group__link set_all_sum">
                         <img src="./img/load.svg">
                     </a>
                 </div>
@@ -784,11 +840,13 @@
             <textarea id="idDescription" rows="4" class="input input_send" onkeyup="CheckLengthAccDesription('idDescription',200);OnEditTransactionFields()" onchange="OnEditTransactionFields()"></textarea>
         </div>
         <DIV id="idAttach"> </DIV>
+
+
         <div class="wallet__buttons">
-            <a onclick="EditJSONTransaction()" class="btn btn__transparent btn_wide" id="json">
-                <img src="./img/edit.svg" class="btn__img">
-                <p>Edit json</p>
-            </a>
+<!--            <a onclick="EditJSONTransaction()" class="btn btn__transparent btn_wide" id="json">-->
+<!--                <img src="./img/edit.svg" class="btn__img">-->
+<!--                <p>Edit json</p>-->
+<!--            </a>-->
             <div class="wallet__btn-group">
                 <button class="btn btn__transparent btn_wide btn_margin" onclick="ClearTransaction()">Clear</button>
                 <button class="btn btn_wide" id="idSendButton" onclick="SendMoneyBefore();PasueBt(this)">SEND</button>
@@ -871,8 +929,11 @@
                     <th id="Item.KeyValueSize" class="snum">Storage</th>
 
 
-                    <th id="RetBool(Item.TokenGenerate)" class="bool">Token</th>
+<!--                    <th id="RetBool(Item.TokenGenerate)" class="bool">Token</th>-->
+                    <th id="Item.Version" class="">Version</th>
+
                     <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
+
 
                 </tr>
 
@@ -1133,10 +1194,11 @@
                         <tr>
                             <th id="(RetHistoryAccount(Item))" class="id">ID</th>
                             <th id="SUM_TO_STRING(Item.Value)" class="sum smallbold">Amount</th>
-                            <th id="CurrencyNameItem(Item)" class="cur">Cur</th>
+                            <th id="ACurrencyNameItem(Item)" class="cur">Cur</th>
                             <th id="Item.Name" class="name">Name</th>
                             <th id="Item.PubKeyStr" class="pubkey">PubKey</th>
                             <th id="Item.Value.OperationID" class="num">Operation</th>
+                            <th id="(RetCountERC(Item))" class="">ERC</th>
                             <th id="Item.Adviser" class="num">Adv</th>
                             <th id="Item.Value.Smart" class="num">Smart</th>
                             <th id="(RetOpenBlock(Item.BlockNumCreate,1))" class="block">Block</th>
@@ -1173,19 +1235,19 @@
                             <th id="GetHexFromArr(Item.PowHash)" class="hash">PowHash</th>
                             <th id="GetHexFromArr(Item.Hash)" class="hash">Hash</th>
 
-                            <!--                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>-->
-                            <!--                            <th id="GetHexFromArr(Item.SeqHash)" class="hash">SeqHash</th>-->
-                            <!--                            <th id="GetHexFromArr(Item.SumHash)" class="hash">SumHash</th>-->
-                            <!--                            <th id="GetHexFromArr(Item.AddrHash)" class="hash">AddrHash</th>-->
-                            <!--                            <th id="Item.SumPow" class="num">SumPow</th>-->
+<!--                            <th id="GetHexFromArr(Item.PrevHash)" class="hash">PrevHash</th>-->
+<!--                            <th id="GetHexFromArr(Item.Hash1)" class="hash">Hash1</th>-->
+<!--                            <th id="GetHexFromArr(Item.Hash2)" class="hash">Hash2</th>-->
+<!--                            <th id="GetHexFromArr(Item.SeqHash)" class="hash">SeqHash</th>-->
+<!--                            <th id="GetHexFromArr(Item.SumHash)" class="hash">SumHash</th>-->
+<!--                            <th id="GetHexFromArr(Item.AddrHash)" class="hash">AddrHash</th>-->
+<!--                            <th id="Item.SumPow" class="num">SumPow</th>-->
 
                             <th id="Item.TrDataLen" class="num">Count</th>
                             <th id="Item.Power" class="num">Pow</th>
                             <th id="(RetHistoryAccount(Item,'Miner')+'<BR><b>'+(Item.MinerName?Item.MinerName:''))+'</b>'" class="num">Miner</th>
 
 
-                            <!--<th id="GetHexFromArr(Item.Hash1)" class="hash">Hash1</th>-->
-                            <!--<th id="GetHexFromArr(Item.Hash2)" class="hash">Hash2</th>-->
 
                             <!--                            <th id="GetHexFromArr(Item.AddrHash)" class="hash">MinerHash</th>-->
 
@@ -1225,6 +1287,7 @@
                             <th id="Item.Num" class="num">Num</th>
                             <th id="(RetOpenBlock(Item.BlockNum,1))" class="block">Block</th>
                             <th id="GetHexFromArr(Item.AccHash)" class="hash">Acc Hash</th>
+<!--                            <th id="GetHexFromArr(Item.SmartHash)" class="hash">Smart Hash</th>-->
 <!--                            <th id="(RetVerify(Item.VerifyAccHash))" class="verify">A</th>-->
                             <th id="GetHexFromArr(Item.SumHash)" class="hash">Sum Hash</th>
                             <th id="(RetVerify(Item.VerifySumHash))" class="verify">S</th>
@@ -1395,20 +1458,24 @@
                 Send
                 <B id="idOnSendText"></B>
                 <B id="idOnSendSum" class="coral"></B> <span id="idOnSendCoinName"></span> <span id="idOnSendToName"></span>
+                <grid_nft class="grid_nft_send">
+                    <item_nft id="idTokenHolder"></item_nft>
+                </grid_nft>
 
-                <BR><DIV id="idOnSendWarning" style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>
 
-                <div class="switch" ID="idCheckOnSend" style="margin-top: 30px">
-                    <p class="switch-text">Add to white list</p>
-                    <label for="idWhiteOnSend">
-                        <input type="checkbox" class="checkbox" id="idWhiteOnSend">
-                        <label for="idWhiteOnSend"></label>
-                    </label>
-                </div>
+                <DIV id="idOnSendWarning" style='color: yellow;'>WARNING: You are about to send a very large amount!</DIV>
+
+<!--                <div class="switch" ID="idCheckOnSend" style="margin-top: 30px">-->
+<!--                    <p class="switch-text">Add to white list</p>-->
+<!--                    <label for="idWhiteOnSend">-->
+<!--                        <input type="checkbox" class="checkbox" id="idWhiteOnSend">-->
+<!--                        <label for="idWhiteOnSend"></label>-->
+<!--                    </label>-->
+<!--                </div>-->
 
                 <div class="form__buttons" style="margin-top: 30px">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
-                    <button onclick="SendMoney2()" id="idBtOnSend" class="btn btn_middle doclose">Confirm</button>
+                    <button onclick="SendMoney()" id="idBtOnSend" class="btn btn_middle doclose">Confirm</button>
                 </div>
 
             </DIV>
@@ -1488,6 +1555,29 @@
     </div>
 </div>
 
+<div class="ModalDlg" id="idShowPage" style="display: none;">
+    <div class="modal__container confirm__container"  style="display: block">
+        <div class="btn-close doclose">
+            <img src="./img/Close.svg">
+        </div>
+        <DIV align='center'>
+            <div id="idShowContent"></div>
+            <BR>
+            <button id="idCloseShow" class="btn btn_middle btn__transparent cancel doclose">Close</button>
+        </DIV>
+    </div>
+</div>
+
+<section class="modal ModalDlg" id="idSending" style="display: none;">
+    <div class="modal__container confirm__container"  style="display: block">
+        <div align='center'>
+            <h2 style="margin-bottom: 50px">Sending Tx</h2>
+
+            <p class="">Wait a few seconds, pls...</p>
+            <p class="" id="idSendingContent"></p>
+        </div>
+    </div>
+</section>
 
 
 <DIV id="_idStableScroll" align='center'>

@@ -12,7 +12,7 @@
 "use strict";
 //shard engine
 
-const ChardCross = require("./shard-cross-db");
+const ShardCross = require("./shard-cross-db");
 
 const TYPE_TRANSACTION_NEW_SHARD = 60;
 global.FORMAT_NEW_SHARD = {Type:"byte", ShardName:SHARD_STR_TYPE, Description:"str40", Confirms:"uint32", Reserve:"arr6", };
@@ -28,7 +28,7 @@ global.FORMAT_VBLOCK = {Type:"byte", ShardName:SHARD_STR_TYPE, Confirms:"uint32"
     StartRun:"byte", Reserve:"arr4", };
 global.WorkStructVBlock = {};
 
-class ShardApp extends ChardCross
+class ShardApp extends ShardCross
 {
     constructor()
     {

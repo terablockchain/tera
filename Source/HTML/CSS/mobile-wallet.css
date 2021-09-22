@@ -72,6 +72,59 @@ a:focus {
 .text-center {
 	text-align: center;
 }
+
+
+/*client.js modal support*/
+#idOverlay
+{
+	position: fixed;
+	width: 100%;
+	height: 100vh;
+	top: 0;
+	left:0;
+	display: none;
+	background: rgba(68, 83, 104, 0.65);
+}
+.ModalDlg
+{
+	z-index: 1000;
+	background: #fff;
+	border-radius: 5px;
+	border: 1px solid #727473;
+	box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+	color: #000;
+	position: fixed;
+	padding: 20px;
+	margin: 0 auto;
+	width: 90%;
+	top: 30%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	max-width: 250px;
+}
+
+.bt-confirm
+{
+	border-radius: 4px;
+	min-height: 14px;
+	margin: 5px;
+	width: 100px;
+	height: 36px;
+
+	color:white;
+	background-color: #53687e;
+	border-color: #445368;
+}
+
+.bt-confirm:hover
+{
+	color: #cb763a;
+	cursor: pointer;
+}
+
+
+
+/*mobile-wallet.js modal support*/
 #overlay {
 	background: rgba(68, 83, 104, 0.65);
 	position: fixed;
@@ -443,12 +496,12 @@ textarea {
 	justify-content: space-between;
 	font-size: 16px;
 	line-height: 18px;
-	padding-bottom: 16px;
+	padding-bottom: 4px;
 	color: #445368;
 }
 
 .key-field:first-of-type {
-	padding-top: 15px;
+	padding-top: 6px;
 }
 
 .key-field__title {
@@ -463,31 +516,34 @@ textarea {
 @media (max-width: 445px)
 {
 	.key-field__title--pay {
-		margin-bottom: 5px;
+		margin-bottom: 2px;
 	}
 }
 
 .key-field__input {
 	width: 100%;
-	/*padding: 15px 15px 13px 14px;*/
-    padding: 8px 15px 8px 14px;
-	margin: 10px 0 0;
+    padding: 4px 15px 4px 14px;
+	margin: 1px 0 0;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	font-family: inherit;
 	font-size: 16px;
 	line-height: 18px;
 	color: #445368;
+
+	max-height: 42px;
+	height: 42px;
+
 }
 .key-field__input--select {
-	padding: 11px 15px 11px 10px;
+	padding: 4px 15px 4px 10px;
 	font-size: 18px;
 	line-height: 21px;
 }
 .key-field__input--enter {
 	/*padding-top: 20px;*/
 	/*padding-bottom: 18px;*/
-    padding-top: 10px;
-    padding-bottom: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .key-field__btn {
@@ -507,8 +563,8 @@ textarea {
 	background: #FFFFFF;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	min-height: 50px;
-	padding: 21px 15px 14px 15px;
-	margin-top: 8px;
+	padding: 10px 15px 6px 15px;
+	margin-top: 1px;
 	font-family: "Roboto", "Arial", sans-serif;
 	font-size: 16px;
 	line-height: 18px;
@@ -516,7 +572,7 @@ textarea {
 }
 .key-field__textarea--mobile {
 	max-height: 50px;
-	padding-top: 15px;
+	padding-top: 10px;
 }
 
 .key-field__select::placeholder,
@@ -534,7 +590,7 @@ textarea {
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	/*padding: 12px 15px;*/
     padding: 8px 8px;
-	margin-top: 5px;
+	margin-top: 1px;
 	background: #fff;
 	font-family: inherit;
 	font-size: 16px;
@@ -550,6 +606,7 @@ textarea {
 .back-link {
 	position: relative;
 	width: 30px;
+	cursor: pointer;
 }
 .back-link span {
 	display: none;
@@ -564,7 +621,7 @@ textarea {
 	height: 18px;
 	width: 18px;
 	position: absolute;
-	left: 15px;
+	left: -15px;
 	top: 50%;
 }
 .back-link:hover::before,
@@ -888,6 +945,7 @@ textarea {
 	width: 100%;
 }
 
+
 .prod-card__link:hover:after {
 	opacity: .5;
 }
@@ -980,6 +1038,7 @@ textarea {
 	font-size: 14px;
 	line-height: 16px;
 	padding: 5px 0;
+	max-width: 360px;
 }
 
 .total-info__item dd {
@@ -1013,7 +1072,7 @@ textarea {
 .confirm-info__line {
 	display: flex;
 	align-items: flex-start;
-	padding: 15px;
+	padding: 5px;
 }
 .confirm-info__line .btn-no-bg {
 	margin-left: auto;
@@ -1037,7 +1096,7 @@ textarea {
 .send-page__btns-wrap {
 	display: flex;
 	justify-content: space-between;
-	padding: 20px 15px 80px;
+	padding: 15px 5px 5px;
 }
 .send-page__btns-wrap .btn {
 	width: 48%;
@@ -1473,14 +1532,23 @@ textarea {
 	text-align: left;
 }
 td.hash {
+	width: 145px;
+	min-width: 145px;
+	max-width: 145px!important;
+
 	font-size: 10px;
 	line-height: 12px;
 	letter-spacing: 0.02em;
-	width2: 220px;
-    width: 165px;
-    min-width: 120px;
-    word-break: break-all;
+	word-break: break-all;
+	font-family: monospace;
 }
+td.pubkey
+{
+	width: 200px;
+	min-width: 200px;
+	max-width: 200px!important;
+}
+
 .history-page__table .grid tr td.code
 {
     white-space: normal;
@@ -1490,10 +1558,7 @@ td.hash {
     font-size: small;
     word-break: break-all;
 }
-.explorer-page__table td.pubkey {
-    width: 215px;
-    min-width: 215px;
-}
+
 
 .explorer-page__table td a {
 	text-decoration: underline;
@@ -1677,14 +1742,14 @@ td.hash {
 		margin-top: 10px;
 	}
 	.key-field__input {
-		padding-top: 20px;
-    padding-bottom: 18px;
+		padding-top: 4px;
+    	padding-bottom: 4px;
 	}
 	.key-field {
-		padding-bottom: 30px;
+		padding-bottom: 6px;
 	}
 	.key-field:first-of-type {
-		padding-bottom: 16px;
+		padding-bottom: 5px;
 	}
 	.send-page__send-btn-wrp {
 		max-width: 330px;
@@ -1734,7 +1799,7 @@ td.hash {
 		height: 40px;
 	}
 	.dapps-page .key-field:first-of-type {
-		padding-bottom: 30px;
+		padding-bottom: 6px;
 	}
 	.dapps-page {
 		padding-bottom: 75px;
@@ -1771,18 +1836,18 @@ td.hash {
 		left: 0;
 	}
 	.accounts-info__add .key-field {
-		padding-bottom: 15px;
+		padding-bottom: 6px;
 	}
 
 	.accounts-info__add .key-field__input {
 		max-height: 48px;
 		height: 48px;
-		padding-top: 15px;
-    padding-bottom: 14px;
+		padding-top: 4px;
+    padding-bottom: 4px;
 	}
 	.accounts-info__add .key-field__input--select {
-		padding-top: 10px;
-		padding-bottom: 10px;
+		padding-top: 4px;
+		padding-bottom: 4px;
 	}
 	.accounts-info__add-btn {
 		margin-top: 15px;
@@ -1791,386 +1856,12 @@ td.hash {
 		padding: 0;
 	}
 	.dapps-page__field.key-field {
-		margin-top: 10px;
+		margin-top: 2px;
 	}
 	.accounts-info__to-send-link {
 		padding-left: 0;
 	}
 }
-
-
-@media (min-width: 768px) {
-	.main {
-		padding-top: 60px;
-	}
-	.main-logo {
-		width: 125px;
-		height: 30px;
-	}
-	.no-mr {
-		margin-right: 0;
-	}
-	.accounts-info__counter-wrapper .title {
-		font-size: 28px!important;
-		line-height: 33px;
-	}
-	.header__logo {
-		margin-top: 3px;
-	}
-	.header__logo-link img {
-		height: 30px;
-		width: 125px;
-	}
-	.prod-card {
-		border-radius: 4px;
-	}
-	.welcome__img .mobile {
-		display: none;
-	}	
-	.welcome__img .tablet {
-		display: block;
-		width: 410px;
-		height: 410px;
-	}
-	.wallet-settings__generate {
-		margin-bottom: 0;
-	}	
-	.title {
-		font-size: 28px;
-		line-height: 33px;
-	}
-	.welcome,
-	.wallet-settings--info,
-	.wallet-settings,
-	.accounts-info,
-	.send-page,
-	.dapps-page {
-		padding-top: 5px;
-		padding-left: 39px;
-		padding-right: 39px;
-	}
-	.send-page {
-		padding-top: 25px;
-	}
-	.welcome {
-		padding-top: 53px;
-	}
-	.welcome__title.title {
-		margin-top: -8px;
-		margin-bottom: 30px;
-	}
-	.header {
-		height: 60px;
-	}
-	.header__wrapper {
-		flex-wrap: nowrap;
-	}
-	.header__right {
-		order: 2;
-	}
-	.header__right select {
-		text-decoration: underline;
-		width: 75px;
-	}
-	.header__wallet-link {
-		display: flex;
-		align-items: center;
-		padding: 18px 17px;
-	}
-	.header__wallet-link span {
-		white-space: nowrap;
-		margin-left: 10px;
-		display: block;
-		text-transform: uppercase;
-	}
-	.header__nav {
-		max-width: 350px;
-	}
-	.nav-tabs__list {
-		font-size: 16px;
-		line-height: 18px;
-	}
-	.nav-tabs__tab {
-		background: none;
-	}
-	.nav-tabs__link {
-		padding: 21px 15px;
-
-	}
-	.welcome__link {
-		margin: 60px auto;
-	}
-	.social-list {
-		flex-wrap: wrap;
-		max-width: 550px;
-		padding-top: 0;
-		margin-top: 180px;
-	}
-	.header__right select {
-		position: absolute;
-		font-size: 14px;
-		line-height: 16px;
-		right: 165px;
-		width: 75px;
-		border-radius: 3px;
-		background: transparent;
-		color: #000;
-	}
-	.white-select {
-		display: block;
-		border: 0;
-		padding: 10px;
-		margin: 10px 15px 10px auto;
-	}
-	.back-link {
-		display: block;
-		padding-left: 34px;
-	}
-	.back-link span {
-		display: inline;
-		text-decoration: underline;
-	}
-	.back-link::before {
-		left: 0;
-	}
-	.wallet-settings__title {
-		text-align: center;
-		padding: 30px 0;
-	}
-	.wallet-settings__ok-btns {
-		display: flex;
-		flex-wrap: nowrap;
-	}
-	.wallet-settings__btns-wrapper,
-	.wallet-settings__ok-btns {
-		padding: 30px 0;
-		justify-content: space-between;
-	}
-	.wallet-settings__btns-wrapper .btn,
-	.wallet-settings__ok-btns .btn {
-		margin: 0;
-		width: calc(50% - 15px);
-		max-width: none;
-	}
-	.wallet-settings__go-btn {
-		margin: 100px auto 150px;
-		width: 100%;
-	}
-	.accounts-info__empty-img {
-		display: flex;
-		justify-content: space-between;
-		padding-bottom: 100px;
-	}
-	.accounts-info__empty-img img {
-		width: 48%;
-	}
-	.accounts-info__empty-img img:nth-child(2) {
-		display: block;
-	}
-	.accounts-info__counter {
-		text-align: center;
-		font-size: 28px;
-		line-height: 33px;
-	}
-	.accounts-info__counter-wrapper {
-		padding: 15px 0 60px;
-	}
-	.accounts-info__to-send-link {
-		order: 2;
-		border-bottom: 0;
-		width: auto;
-		margin-bottom: 0;
-		padding-right: 35px;
-	}
-	.accounts-info__accounts .prod-card {
-		font-size: 16px;
-		line-height: 19px;
-		padding: 18px 0;
-	}
-	.accounts-info__to-send-link::after {
-		right: 0;
-	}
-	.accounts-info__counter-wrapper p {
-		order: 1;
-
-	}
-	.accounts-info__counter-wrapper .btn {
-		order: 0;
-	}
-	.accounts-info__total {
-		padding-left: 0;
-	}
-	.total-info {
-		max-width: 330px;
-	}
-	.send-page .title,
-	.dapps-page .title {
-		display: block;
-		margin: 0 auto;
-		text-align: center;
-		padding-bottom: 0;
-		padding-top: 30px;
-	}
-	.send-page .title {
-		margin-bottom: 25px;
-	}
-	.send-page__send-btn-wrp {
-		padding-top: 75px;
-	}
-	.confirm-info__title {
-		min-width: 180px;
-	}
-	.confirm-info__descr {
-		margin-left: 30px;
-	}
-	.confirm-info__line .btn-no-bg {
-		margin-left: 0;
-	}
-	.send-page__btns-wrap {
-		padding-left: 0;
-		padding-right: 0;
-		justify-content: space-between;
-		padding-top: 75px;
-	}
-	.page-pagination {
-		justify-content: space-between;
-		max-width: 690px;
-		margin: 0 auto;
-	}
-	.page-pagination .btn {
-		width: 90px;
-		margin-left: 30px;
-		margin-right: 0;
-	}
-	.page-pagination .btn:first-child {
-		margin-left: 0;
-	}
-	.page-pagination input {
-		min-width: 210px;
-		margin-left: 30px;
-	}
-	.prod-card__second-line-left p {
-		white-space: normal;
-		display: block;
-		max-width: 550px;
-	}
-	.dapps-page__card .prod-card__heading {
-		justify-content: flex-start;
-	}
-	.prod-card__heading span {
-		display: inline;
-	}
-	.modal__btns-wrap .btn {
-	    margin: 0 15px;
-	    padding: 15px 10px;
-	    min-width: 210px;
-	}
-	.accounts-info__accounts .prod-card__descr {
-		margin-top: 10px;
-		max-width: none;
-	}
-	.addresses-modal__item {
-		padding: 15px 0;
-	}
-	.addresses-modal__item-name {
-		display: flex;
-		width: 100%;
-	}
-	.addresses-modal__item-name .grey-blue-text {
-		width: 50%;
-	}
-	.addresses-modal__btns-wrapper .btn {
-		padding: 6px 30px;
-	}
-	.key-field__key-place {
-		margin: 0;
-		padding: 10px 0;
-	}
-	.fixed-status .grey-btn {
-		height: 40px;
-		padding: 10px;
-	}
-	.fixed-status .grey-btn--select {
-		padding-right: 0;
-	}
-	.reconnect {
-		width: 40px;
-	    margin-left: 15px;
-	    background-position: 11px 11px;
-	}
-
-
-    .fixed-status__status {
-		font-size: 14px;
-		max-width: none;
-	}
-	.currentBlockNum {
-		padding: 60px 30px 20px;
-	}
-	.key-field__title {
-		margin-bottom: 5px;
-	}
-
-.prod-card--line .prod-card__first-line {
-		flex-wrap: nowrap;
-		justify-content: flex-start;
-		-ms-align-items: center;
-		align-items: center;
-	}
-	.accounts-info__accounts .prod-card__id {
-		width: auto;
-		margin-right: 20px;
-	}
-	.prod-card--line .prod-card__descr {
-		order: 1;
-		margin: 0;
-	}
-	.prod-card--line .prod-card__heading {
-		order: 2;
-		margin-left: auto;
-	}
-	.send-page__field .key-field__input,
-	.key-field__select {
-		max-height: 58px;
-		height: 58px;
-	}
-	.key-field:first-of-type {
-		padding-bottom: 30px;
-	}
-	.send-page__send-btn-wrp {
-		max-width: 450px;
-		width: 450px;
-		padding-top: 25px;
-	}
-	.send-page__confirm .title {
-		margin-bottom: 40px;
-	}
-	.dapps-page .title {
-		margin-bottom: 10px;
-		padding-top: 20px;
-	}
-	.dapps-page .key-field:first-of-type {
-		padding-bottom: 15px;
-	}
-	.wallet-settings__title {
-		padding: 10px;
-		margin-bottom: 30px;
-	}
-	.wallet-settings__generate {
-		max-width: 100%;
-		width: 100%;
-	}
-	.wallet-wrapper {
-		margin-top2: 90px;
-	}
-	.accounts-info__add .key-field {
-		padding-bottom: 25px;
-	}
-	.accounts-info__add-btn {
-		margin-top: 65px;
-	}
-
-} 
 
 
 @media (min-width: 768px) and (max-width: 800px) {
@@ -2180,49 +1871,11 @@ td.hash {
 }
 
 
+/*prod-card ALL time*/
+@media (max-width: 8960px) {
 
-@media (max-width: 960px) {
-	/* .prod-card--line:hover {
-		transform: scale(1.05, 1.2);
-		box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-		padding:5px 15px;
-		background: #fff;
-		display: block;
-		transition: all ease .5s;
-	}
-	.prod-card--line:hover .mob-hidden {
-		display: inline-block;
-	}
-	.prod-card--line:hover .prod-card__footer {
-		padding: 5px;
-		padding-left: 0;
-		border: 0;
-	}
-	.prod-card--line:hover .prod-card__footer-empty {
-		padding: 10px 0 10px 40px;
-	}
-	.prod-card--line:hover .prod-card__coins-count {
-		padding-top: 5px;
-	}
-	.prod-card--line:hover .prod-card__coins-count,
-	.prod-card--line:hover .prod-card__id {
-		font-weight: 500;
-	}
-	.prod-card--line:hover .small-text {
-		font-weight: normal;
-	}
-	.prod-card--line:hover .id-sign {
-		display: inline-block;
-		font-weight: 500;
-	}
-	.prod-card--line:hover .prod-card__first-line {
-		padding-right: 0;
-	} */
 
 	.prod-card--active {
-		/* transform: scale(1.05, 1.2);
-		box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-		padding:5px 15px; */
 		background: #fff;
 		display: block;
 		transition: all ease .5s;
@@ -2269,7 +1922,9 @@ td.hash {
 	}
 }
 
-@media (min-width: 960px) {	
+
+
+@media (min-width: 960px) {
 	.welcome {
 		padding-top: 22px;
 	}
@@ -2456,15 +2111,12 @@ td.hash {
 	}
 	.reconnect.grey-btn {
 		width: 130px;
-			margin-left: 15px;
-			padding-top: 12px;
-	    padding-left: 39px;
-	    background-position: 11px 11px;
+	    background-position: 5px 5px;
 	}
-    .select-network
-    {
-        width: 140px;
-    }
+    /*.select-network*/
+    /*{*/
+    /*    width: 140px;*/
+    /*}*/
 
 
     .explorer-page {
@@ -2481,8 +2133,8 @@ td.hash {
 	}
 	.key-field__textarea {
 		max-height: 58px;
-		padding-top: 21px;
-    padding-bottom: 16px;
+		padding-top: 10px;
+    padding-bottom: 6px;
 	}
 	.wallet-settings__hiding {
 		margin-bottom: 8px;
@@ -2944,3 +2596,44 @@ td.num
     cursor: pointer;
     border: 1px solid #bfc1c0;
 }
+
+.myrow
+{
+	width: 100%;
+	display: flex;
+}
+
+.grid_pages
+{
+	display: grid;
+	min-width: 360px;
+	grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+	grid-gap: 5px;
+
+	overflow:auto;
+
+	resize: both;
+	padding: 5px;
+}
+.page {
+	padding: 5px 5px;
+	border-radius: 4px;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 21px;
+}
+.currentpage
+{
+	background: var(--light-blue);
+}
+
+.btn-nft-open
+{
+	width: 80px;
+	height: 35px;
+	font-size: 14px;
+	line-height: 21px;
+	padding: 5px;
+
+}
+

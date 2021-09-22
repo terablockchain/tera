@@ -4,13 +4,15 @@ global.DATA_PATH="../DATA";
 global.CODE_PATH=process.cwd();
 
 require("./core/constant");
+
 require("./core/library");
 
 CheckCreateDir(global.DATA_PATH);
 
 
-//InitParamsArg(); было в require("./core/constant");
-//InitParamsArg(); - зачем?
+//InitParamsArg(); было в require("./core/constant"); - но тока запускается два раза!!!
+//InitParamsArg(); //пока не надо //надо чтобы прочесть передаваемы аргументы
+
 
 //ToLog("save to "+global.DATA_PATH);
 

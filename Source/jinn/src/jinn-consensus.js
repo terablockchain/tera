@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -595,8 +595,6 @@ function InitClass(Engine)
         }
         
         var Count = BlockSeed.BlockNum - BlockHead.BlockNum;
-        var Delta = Engine.CurrentBlockNum - BlockSeed.BlockNum;
-        var Miner = ReadUintFromArr(BlockSeed.MinerHash, 0);
         if(BlockSeed.BlockNum > 25 && JINN_WARNING >= 3)
         {
             var BlockSeedDB = Engine.GetBlockHeaderDB(BlockSeed.BlockNum);
@@ -614,6 +612,7 @@ function InitClass(Engine)
         }
         
         JINN_STAT.MainDelta = Math.max(JINN_STAT.MainDelta, Engine.CurrentBlockNum - BlockHead.BlockNum);
+        Engine.ResendBlockNum = Math.min(Engine.ResendBlockNum, BlockHead.BlockNum + 1);
         
         return Res;
     };

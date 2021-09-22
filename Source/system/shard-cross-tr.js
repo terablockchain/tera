@@ -189,8 +189,7 @@ class ShardCrossTR extends require("./dapp")
         try
         {
             var Params = JSON.parse(Item.Msg.Params);
-            RunSmartMethod(Block, Item.Msg, Account.Value.Smart, Account, BlockNum, TxNum, ContextFrom, Item.Msg.MethodName, Params, Item.Msg.ParamsArr,
-            2)
+            RunSmartMethod(Block, Item.Msg, Account.Value.Smart, Account, BlockNum, TxNum, ContextFrom, Item.Msg.MethodName, Params, Item.Msg.ParamsArr,2);
         }
         catch(e)
         {

@@ -189,7 +189,10 @@ button {
     margin: 0;
     margin-right: 56px; }
   .h3_form {
-    margin: 15px 0;
+
+    text-transform: uppercase;
+    font-size: 16px;
+    margin: 10px 0;
     text-align: center; }
 
 .logo
@@ -861,8 +864,7 @@ select2
 .input-group__text {
   text-transform: uppercase;
   color: rgba(var(--colorT), var(--colorT), var(--colorT), 0.8);
-  margin-bottom: 5px;
-  letter-spacing: 0.05em;
+   letter-spacing: 0.05em;
   font-size: 12px;
   margin-bottom: 5px; }
 
@@ -879,7 +881,7 @@ select2
   -webkit-align-items: center;
       -ms-flex-align: center;
           align-items: center;
-  margin: 30px 0 5px 0; }
+  margin: 15px 0 5px 0; }
 
 .input-group__right {
   display: -webkit-box;
@@ -1161,8 +1163,10 @@ a
 
 .btinvoice
 {
-    background-color: var(--colorContainer);
-    border: 1px solid var(--colorButton);
+    /*background-color: var(--colorContainer);*/
+    background-color:var(--colorButton);
+    border: 1px solid #000;
+    border-radius: 5px;
     color: rgba(var(--colorT), var(--colorT), var(--colorT), 0.9);
     display: -webkit-box;
     display: -webkit-flex;
@@ -1172,11 +1176,12 @@ a
     width: 133px;
     min-width: 133px;
     max-width: 133px;
-    height:40px;
+    height:60px;
     white-space: pre-line;
     background-image: url('/HTML/PIC/invoice.png');
     background-repeat: no-repeat;
     background-size: 16px;
+    margin: 10px;
 }
 .btinvoice_use
 {
@@ -1280,4 +1285,13 @@ input[type=number]::-webkit-inner-spin-button {
 .bt-paste:hover
 {
     border: 1px solid #bfc1c0;
+}
+
+.rotate
+{
+    background-color2:#eee;
+    width:160px;
+    height:30px;
+    margin:10px 0;
+    vertical-align:baseline;
 }

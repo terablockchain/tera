@@ -105,8 +105,8 @@
             {name:"MAX:MEMORY_FREE",text:"Mem free, Mbyte",value:0,red:"#a1c3b9"},
 
             //{name:"MAX:POWER-HASH**",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
-            // {name:"HASHRATE",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
-            // {name:"MAX:POWER",text:"MAX:POWER",value:0,red:"#95d6b9"},
+             {name:"HASHRATE",text:"Hash Rate, Mh/s",value:0,red:"#95d6b9"},
+             {name:"MAX:POWER",text:"MAX:POWER",value:0,red:"#95d6b9"},
             // {name:"POWER_MY_WIN",text:"POWER MY WIN",value:0,red:"#088a4a"},
             // {name:"POWER_BLOCKCHAIN",text:"POWER Blockchain",value:0,red:"#2b6311"},
 
@@ -702,7 +702,7 @@
         window.onmousemove = function(event)
         {
             SetDiagramMouseX(event);
-        }
+        };
 
         window.onkeydown = function (e)
         {
@@ -720,7 +720,7 @@
         LoadValues();
 
         //document.body.className="univers "+localStorage["idSelStyle"];
-    }
+    };
 
 
     var ExternDiagramItem={name:"Blockchain Hash Rate MH/s",text:"-----",value:0,red:"#078a63",KPrecision:10,Extern:1,id:"idBlockchainStat"}

@@ -41,7 +41,38 @@ function SavePrivateKey()
     });
 }
 
+async function SetNewSysCore(TR)
+{
+    if(!TR.FromNum)
+        TR.FromNum=TR.NextNum;
+    var OperationID = 0;
+    var Item = MapAccounts[TR.FromNum];
+    if(Item)
+    {
+        OperationID = Item.Value.OperationID;
+    }
+    OperationID++;
 
+    TR.Type=20;
+    TR.Version=4;
+    TR.Reserve=[];
+    TR.OperationID=OperationID;
+
+    var Format=await AGetFormat("FORMAT_SYS");
+    var Body=SerializeLib.GetBufferFromObject(TR, Format, {});
+    Body.length-=64;
+
+    //console.log("=BODY=",Body);
+    SendTrArrayWithSign(Body, TR.FromNum, TR);
+}
+
+function SetSysCoreJSON()
+{
+    var Data = JSON.parse(JSON.stringify(CONFIG_DATA.PRICE_DAO));
+    var Data2 = CopyObjKeys({Service:"SetNewSysCore"}, Data);
+    var Str = JSON.stringify(Data2, "", 2);
+    $("idDevService").value = Str;
+}
 function SetCodeVersionJSON()
 {
     var Data = JSON.parse(JSON.stringify(CONFIG_DATA.CODE_VERSION));
@@ -105,6 +136,10 @@ function RunDevelopService()
         SetError("Error format setting - not found Service");
         return;
     }
+
+    if(Data.Service=="SetNewSysCore")
+        return SetNewSysCore(Data);
+
     
     if(Data.addrArr)
         Data.addrArr = GetArrFromHex(Data.addrArr);
@@ -221,36 +256,7 @@ function CancalMiningSet()
 
 var WasHistoryMaxNum;
 var WasLastNumSound = 0;
-function CheckNewMoney()
-{
-    return;
-    
-    if(!$("idUseSoundHistory").checked)
-        return;
-    
-    if(WasHistoryMaxNum === HistoryMaxNum || !ServerBlockNumDB)
-        return;
-    
-    WasHistoryMaxNum = HistoryMaxNum;
-    
-    GetData("GetHistoryAct", {StartNum:HistoryMaxNum - 40, CountNum:40}, function (Data)
-    {
-        if(Data && Data.result)
-        {
-            var arr = Data.arr;
-            for(var i = 0; i < arr.length; i++)
-            {
-                var Item = arr[i];
-                
-                if(Item.Direct === "+" && Item.BlockNum > ServerBlockNumDB - 60 && Item.BlockNum < ServerBlockNumDB - 20 && Item.BlockNum > WasLastNumSound)
-                {
-                    WasLastNumSound = Item.BlockNum;
-                    $("sound_coin").play();
-                }
-            }
-        }
-    });
-}
+
 function DoRestartWallet()
 {
     SetStatus("<H1 align='center' style='color:blue'>Restarting program...</H1>", 0, 1);
@@ -284,6 +290,7 @@ function SetArrLog(arr)
         {
             if(TR)
             {
+                //console.log(Item);
                 if(Item.final < 0 && !TR.WasError)
                 {
                     TR.WasError = 1;
@@ -295,7 +302,7 @@ function SetArrLog(arr)
                     SetStatus(Item.text);
                 }
                 
-                if(Item.text.indexOf("Add to blockchain") >= 0)
+                if(typeof Item.text==="string" && Item.text.indexOf("Add to blockchain") >= 0)
                 {
                     if(TR.bFindAcc)
                     {

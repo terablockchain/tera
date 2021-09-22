@@ -38,13 +38,13 @@ function SetAccountsData(Data,AccountsDataStr)
     WasAccountsDataStr = AccountsDataStr;
     
     var arr = Data.arr;
-    var Select = $("idAccount");
-    if(arr.length !== Select.options.length)
-    {
-        var options = Select.options;
-        options.length = arr.length;
-    }
-    
+
+    ASetGridData(arr, "grid_accounts", "idMyTotalSum",0,0);
+    var ArrT=AccToListArr(arr);
+    FillSelect("idAccount",ArrT);
+
+    //console.log(idAccount.value);
+
     MaxBlockNum = GetCurrentBlockNumByTime();
     
     if(document.activeElement !== $("idTo"))
@@ -55,41 +55,31 @@ function SetAccountsData(Data,AccountsDataStr)
             dataList.innerHTML = "";
         }
     }
-    
-    SetGridData(arr, "grid_accounts", "idMyTotalSum");
+
+
     for(var i = 0; arr && i < arr.length; i++)
     {
         var Item = arr[i];
         Item.MyAccount = true;
-        
+
         var Num = ParseNum(Item.Num);
         if(!MapAccounts[Num])
             MapAccounts[Num] = {};
         CopyObjKeys(MapAccounts[Num], Item);
-        
-        var option = Select.options[i];
-        var StrText = GetAccountText(Item, Num, 1);
-        if(option.text !== StrText)
-            CheckNameAccTo();
-        option.value = Num;
-        option.text = StrText;
-        
-        if(!dataList)
-            continue;
-        var Options = document.createElement('option');
-        Options.value = Num;
-        Options.label = StrText;
-        dataList.appendChild(Options);
     }
-    
+
+
     var CurrentValue = LoadMapAfter["idAccount"];
     if(CurrentValue)
     {
-        Select.value = CurrentValue;
+        idAccount.value = CurrentValue;
         delete LoadMapAfter["idAccount"];
     }
     
     SetCurCurrencyName();
+    UpdateTokenList();
+
+
 }
 
 function CurTransactionToForm(bForce)
@@ -176,6 +166,49 @@ function GetAccountText(Item,Num,bGetSum)
     }
 }
 
+function OnSelectAccountFrom()
+{
+    OnEditTransactionFields();
+    UpdateTokenList();
+}
+
+//NFT
+function IsERCMode()
+{
+    return 1;
+}
+
+
+function UpdateTokenList()
+{
+    var Account=+idAccount.value;
+    var Item=MapAccounts[idAccount.value];
+    //console.log("Item.BalanceArr=",Item.BalanceArr)
+    FillListNFT(idListNFT,Item?Item.BalanceArr:undefined,Account?Account*10000:0, "", 1);
+}
+
+function GetSelectedToken()
+{
+    if(!idAccount.value)
+        return;
+
+    var CurSelect=idListNFT.CurSelect;
+    if(!CurSelect)//default mode
+        CurSelect=idListNFT.FirstSelect;
+
+    if(!CurSelect || !$(CurSelect))
+        return;
+
+    var Element=$(CurSelect);
+    return {
+        Token:Element.dataset.token,
+        Currency:+Element.dataset.currency,
+        ID:Element.dataset.id,
+        Amount:+Element.dataset.amount,
+        element_id:Element.id,
+    };
+}
+
 function OnEditIdTo()
 {
     CheckNameAccTo();
@@ -184,7 +217,7 @@ function OnEditIdTo()
 function OnEditTransactionFields()
 {
     if(IsVisibleBlock("edit_transaction"))
-        CreateTransaction();
+        CreateTransferTransaction();
     SetCurCurrencyName();
     SaveValues();
 }
@@ -193,14 +226,12 @@ function SetCurCurrencyName()
     var idCoin = $("idCoinName");
     if(!idCoin)
         return;
-    
-    var Num = ParseNum($("idAccount").value);
-    var Item = MapAccounts[Num];
-    if(Item)
-    {
-        idCoin.innerText = CurrencyName(Item.Currency);
-    }
-}
+    var CurToken=GetSelectedToken();
+    if(!CurToken)
+        return;
+
+    idCoin.innerText=CurToken.Token;
+ }
 
 function IsPublicAddr(StrTo)
 {
@@ -210,7 +241,7 @@ function IsPublicAddr(StrTo)
         return 0;
 }
 
-function CreateTransaction(F,CheckErr,Run)
+async function CreateTransferTransaction(F,CheckErr,Run)
 {
     CheckNameAccTo();
     CheckSending();
@@ -273,32 +304,79 @@ function CreateTransaction(F,CheckErr,Run)
         if(!AttachBody)
             AttachBody = [];
     }
-    var ToPubKeyArr = [];
-    if(ToPubKey)
-        ToPubKeyArr = GetArrFromHex(ToPubKey);
-    
-    var TR = {Type:111, Version:3, OperationID:OperationID, FromID:FromID, Old:0, To:[{PubKey:ToPubKeyArr, ID:ToID, SumCOIN:Coin.SumCOIN,
-            SumCENT:Coin.SumCENT}], Description:Description, Body:AttachBody, Sign:CurrentTR.Sign, };
-    TR.Version = 4;
-    
+
+    var CurToken=GetSelectedToken();
+    if(!CurToken)
+        return;
+    var Amount=FLOAT_FROM_COIN(Coin);
+    if(Amount && CurToken.Amount<Amount)
+        return SetError("Insufficient funds on the account: "+FromID)
+
+
+
+    var TR={Version:4,OperationID:OperationID, FromID:FromID,Description:Description, Body:AttachBody};
+    var BVersion=await AGetFormat("BLOCKCHAIN_VERSION");
+    var Format=await AGetFormat("FORMAT_MONEY_TRANSFER"+(BVersion>=2?"5":"3"));
+    TR.Type=await AGetFormat("TYPE_MONEY_TRANSFER"+(BVersion>=2?"5":"3"));
+    if(BVersion<2)
+    {
+        TR.To=[{PubKey:[], ID:ToID, SumCOIN:Coin.SumCOIN,SumCENT:Coin.SumCENT}];
+    }
+    else
+    {
+        TR.TxTicks=35000;
+        TR.TxMaxBlock=GetCurrentBlockNumByTime()+120;
+        TR.ToID = ToID;
+        TR.Amount=Coin;
+        TR.CodeVer=await AGetFormat("CodeVer");
+        if(Item.Currency!=CurToken.Currency)//if not tokengenerate mode
+        {
+            TR.Currency = CurToken.Currency;
+            TR.TokenID = CurToken.ID;
+        }
+    }
+
+
+
     Object.defineProperties(TR, {bFindAcc:{configurable:true, writable:true, enumerable:false, value:bFindAcc}});
     Object.defineProperties(TR, {Run:{configurable:true, writable:true, enumerable:false, value:Run}});
-    
-    if(JSON.stringify(TR) === JSON.stringify(CurrentTR))
+
+
+    // if(JSON.stringify(TR) === JSON.stringify(CurrentTR))
+    // {
+    //     if(F)
+    //         F(CurrentTR);
+    //     return;
+    // }
+    //
+    // CurrentTR = TR;
+
+
+    var Body=SerializeLib.GetBufferFromObject(TR, Format, {});
+    Body.length-=64;
+    if(F)
     {
-        if(F)
-            F(CurrentTR);
-        return;
+        SendTrArrayWithSign(Body, TR.FromID, TR, function (Err, TR, Body, Str)
+        {
+            //console.log(Str);
+            if(Err)
+                SetError(Str);
+            else
+                SetStatus(Str);
+        });
     }
-    
-    CurrentTR = TR;
-    
-    GetSignTransaction(TR, "", function (TR)
-    {
-        CurTransactionToForm(true);
-        if(F)
-            F(TR);
-    });
+
+    // return ;
+    //
+    // GetSignTransaction(TR, "", function (TR)
+    // {
+    //     console.log(TR);
+    //     return;
+    //
+    //     CurTransactionToForm(true);
+    //     if(F)
+    //         F(TR);
+    // });
 }
 function SignJSON(F)
 {
@@ -366,12 +444,12 @@ function GetSendAccTo(bAllPath)
     return "";
 }
 
-function AddWhiteList()
-{
-    var StrWhite = GetSendAccTo(1);
-    if(StrWhite && $("idWhiteOnSend").checked)
-        Storage.setItem("White:" + NETWORK_ID + ":" + StrWhite, 1);
-}
+// function AddWhiteList()
+// {
+//     var StrWhite = GetSendAccTo(1);
+//     if(StrWhite && $("idWhiteOnSend").checked)
+//         Storage.setItem("White:" + NETWORK_ID + ":" + StrWhite, 1);
+// }
 
 function SendMoneyTest()
 {
@@ -379,43 +457,12 @@ function SendMoneyTest()
     $("idAccount").value =  + $("idAccount").value + 1;
 }
 
-function SendMoneyBefore()
-{
-    if($("idSendButton").disabled)
-    {
-        return;
-    }
-    
-    var StrToID = GetSendAccTo();
-    var StrWhite = GetSendAccTo(1);
-    var Item = MapAccounts[StrToID];
-    if(Storage.getItem("White:" + NETWORK_ID + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
-    {
-        SendMoney();
-    }
-    else
-    {
-        var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
-        var StrTo = " to " + GetAccountText(Item, StrWhite);
-        $("idWhiteOnSend").checked = 0;
-        
-        $("idOnSendSum").innerText = STRING_FROM_COIN(CoinAmount);
-        $("idOnSendCoinName").innerText = $("idCoinName").innerText;
-        $("idOnSendToName").innerText = StrTo;
-        
-        SetVisibleBlock("idOnSendWarning", ($("idSumSend").value >= 100000));
-        SetVisibleBlock("idBtOnSend", Item ? "inline-block" : "none");
-        
-        SetVisibleBlock("idBlockOnSend", 1);
-        SetImg(this, 'idBlockOnSend');
-    }
-}
 
-function SendMoney2()
-{
-    AddWhiteList();
-    SendMoney();
-}
+// function SendMoney2()
+// {
+//     AddWhiteList();
+//     SendMoney();
+// }
 function SendMoney(F)
 {
     if(!CanSendTransaction)
@@ -429,11 +476,53 @@ function SendMoney(F)
         return;
     
     SetVisibleBlock("idBlockOnSend", 0);
+
+
+    // if(IsERCMode())
+    // {
+    //     return SendToken();
+    // }
+
+
     
     if(!F)
         F = ClearAttach;
-    CreateTransaction(SendMoneyTR, true, F);
+    CreateTransferTransaction(SendMoneyTR, true, F);
 }
+
+// async function SendToken()
+// {
+//     var Element=$(idListNFT.CurSelect);
+//     if(!Element || !Element.dataset || !Element.dataset.token)
+//         return SetError("Pls, select token");
+//     var Token=Element.dataset.token;
+//     var TokenID=Element.dataset.id;
+//
+//     var Params=
+//         {
+//             Token:Token,
+//             ID:TokenID,
+//             To:+idTo.value,
+//             Amount:+idSumSend.value,
+//             Description:idDescription.value,
+//         };
+//
+//     var arr = ["Token","To", "Amount"];
+//     for(var i = 0; i < arr.length; i++)
+//     {
+//         if(!Params[arr[i]])
+//             return SetError("Pls, type "+arr[i]);
+//     }
+//
+//     var Item=await AGetAccount(Params.To);
+//     if(!Item || Item.Currency)
+//         return SetError("Error: Invalid recipient account = "+Params.To);
+//
+//
+//     if(CONFIG_DATA.COIN_STORE_NUM)
+//         MSendCall(CONFIG_DATA.COIN_STORE_NUM,"Transfer",Params,[],+idAccount.value);
+// }
+
 
 function GetJSONFromTransaction(TR)
 {
@@ -577,8 +666,10 @@ function ClearTransaction()
     {
         $(arr[i]).value = "";
     }
+
+    UpdateTokenList();
     SaveValues();
-    CreateTransaction();
+    CreateTransferTransaction();
 }
 
 function StartEditTransactionJSON()
@@ -587,23 +678,23 @@ function StartEditTransactionJSON()
     Item.className = "smallbold";
 }
 
-function EditJSONTransaction()
-{
-    var name = "edit_transaction";
-    
-    var Item = $("idTransaction");
-    if(IsVisibleBlock(name))
-    {
-        SetVisibleBlock(name, false);
-        Item.className = "";
-    }
-    else
-    {
-        CreateTransaction();
-        SetVisibleBlock(name, true);
-        Item.className = "";
-    }
-}
+// function EditJSONTransaction()
+// {
+//     var name = "edit_transaction";
+//
+//     var Item = $("idTransaction");
+//     if(IsVisibleBlock(name))
+//     {
+//         SetVisibleBlock(name, false);
+//         Item.className = "";
+//     }
+//     else
+//     {
+//         CreateTransferTransaction();
+//         SetVisibleBlock(name, true);
+//         Item.className = "";
+//     }
+// }
 
 
 var glNumPayCount = 0;
@@ -627,7 +718,9 @@ function GetInvoiceHTML(item,onclick,classstr)
 
 function AddSendList(item)
 {
-    PayList.push({Data:item});
+    //PayList.push({Data:item});
+    PayList=[{Data:item}];
+    UseInvoice(0);
 }
 
 function CheckSendList(bRedraw)
@@ -655,23 +748,23 @@ function CheckSendList(bRedraw)
         Storage.setItem("InvoiceList", "");
     }
     
-    var idList = $("idSendList");
-    if(PayList.length)
-    {
-        idList.innerHTML = "<DIV id='PaiListInfo'>Select the item you want to sign (pay) and send to blockchain:</DIV>";
-        for(var i = 0; i < PayList.length; i++)
-        {
-            var item = PayList[i];
-            idList.innerHTML += GetInvoiceHTML(item, "UseInvoice(" + i + ")", "btinvoice");
-        }
-        
-        if(AttachItem === undefined)
-            UseInvoice(0);
-    }
-    else
-    {
-        idList.innerHTML = "";
-    }
+    // var idList = $("idSendList");
+    // if(PayList.length)
+    // {
+    //     idList.innerHTML = "<DIV id='PayListInfo'>Select the item for send:</DIV>";
+    //     for(var i = 0; i < PayList.length; i++)
+    //     {
+    //         var item = PayList[i];
+    //         idList.innerHTML += GetInvoiceHTML(item, "UseInvoice(" + i + ")", "btinvoice");
+    //     }
+    //
+    //     if(AttachItem === undefined)
+    //         UseInvoice(0);
+    // }
+    // else
+    // {
+    //     idList.innerHTML = "";
+    // }
 }
 setInterval(CheckSendList, 200);
 
@@ -690,7 +783,7 @@ function UseInvoice(Num)
     AttachItem = item;
     $("idAttach").innerHTML = GetInvoiceHTML(AttachItem, "OpenAttach()", "btinvoice btinvoice_use");
     
-    CheckSendList(1);
+    //CheckSendList(1);
 }
 
 function ClearAttach()
@@ -753,7 +846,7 @@ function DoChangeSmart(NumAccount,WasSmart,SmartNum)
         var Smart = parseInt(SmartNum);
         if(Smart)
         {
-            GetData("GetDappList", {StartNum:Smart, CountNum:1}, function (Data)
+            GetData("GetDappList", {StartNum:Smart, CountNum:1,Fields:["Num","ShortName"]}, function (Data)
             {
                 if(Data && Data.result && Data.arr.length === 1)
                 {
@@ -790,6 +883,8 @@ function SetSmartToAccount(NumAccount,Smart)
     if(Item)
     {
         OperationID = Item.Value.OperationID;
+        if(Item.Value.Smart===Smart)
+            return SetStatus("Smart is empty");
     }
     OperationID++;
     
@@ -808,6 +903,33 @@ function SetSmartToAccount(NumAccount,Smart)
     SendTrArrayWithSign(Body, TR.Account, TR);
 }
 
+function DoRemoveAccount(ID)
+{
+    //console.log("Remove account: "+ID);
+
+    var Item = MapAccounts[ID];
+    if(!Item)
+        return;
+    var OperationID = Item.Value.OperationID + 1;
+
+    var Name = "DEL:"+Item.Name;
+    var PubKey = "000000000000000000000000000000000000000000000000000000000000000000";
+    //var PubKey = "026A04AB98D9E4774AD806E302DDDEB63BEA16B5CB5F223EE77478E861BB583EB3";//AA
+
+    var Body = [];
+    WriteByte(Body, TYPE_TRANSACTION_ACC_CHANGE);
+    WriteUint(Body, OperationID);
+    WriteUint(Body, ID);
+
+    WriteArr(Body, GetArrFromHex(PubKey), 33);
+    WriteStr(Body, Name, 40);
+
+    for(var i = 0; i < 10; i++)
+        Body.push(0);
+
+    SendTrArrayWithSign(Body, ID);
+    SetStatus("Remove account: "+ID)
+}
 function CheckLengthAccDesription(name,Length)
 {
     var Str = $(name).value.substr(0, Length + 1);
@@ -828,17 +950,10 @@ function PasueBt(btn)
     }, 1000);
 }
 
-function StaticCall(Account,MethodName,Params,ParamsArr,F)
+
+function SetAllSum()
 {
-    GetData("DappStaticCall", {Account:Account, MethodName:MethodName, Params:Params, ParamsArr:ParamsArr}, function (SetData)
-    {
-        if(SetData)
-        {
-            F(!SetData.result, SetData.RetValue);
-        }
-        else
-        {
-            F(1);
-        }
-    });
+    var CurToken = GetSelectedToken();
+    if(CurToken)
+        $("idSumSend").value = CurToken.Amount;
 }

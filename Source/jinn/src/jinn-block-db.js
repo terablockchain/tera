@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -138,6 +138,7 @@ function InitClass(Engine)
     Engine.WriteBlockDBInner = function (Block)
     {
         JINN_STAT.MainDelta = Math.max(JINN_STAT.MainDelta, Engine.CurrentBlockNum - Block.BlockNum);
+        Engine.ResendBlockNum = Math.min(Engine.ResendBlockNum, Block.BlockNum);
         
         return Engine.DB.WriteBlockMain(Block);
     };
@@ -226,6 +227,111 @@ function DoNode(Engine)
     {
         Engine.DB.DoNode();
     }
+    
+    Engine.ResizeDBChain = function ()
+    {
+        if(!BWRITE_MODE)
+        {
+            ToLog("Error: DB not in write mode");
+            return 0;
+        }
+        
+        var DB2 = new CDBChain(Engine.ID, Engine.CalcBlockData, "_");
+        DB2.Clear();
+        
+        var EndNum = Engine.GetMaxNumBlockDB();
+        for(var BlockNum = 0; BlockNum < EndNum; BlockNum++)
+        {
+            var Block = Engine.GetBlockDB(BlockNum);
+            Block.Position = undefined;
+            Block.TxPosition = undefined;
+            
+            var Res1 = DB2.WriteBlock(Block);
+            var Res2 = DB2.WriteBlockMain(Block);
+            if(!Res1 || !Res2)
+            {
+                console.log("Error write on block: " + BlockNum);
+                return 0;
+            }
+            
+            if(BlockNum % 100000 === 0)
+                console.log("DONE: " + BlockNum);
+        }
+        
+        StopAndExit("ResizeDBChain " + DB2.GetMaxNumBlockDB());
+        
+        return DB2.GetMaxNumBlockDB();
+    };
+    
+    Engine.ReOrganizationDBChain = function ()
+    {
+        if(global.NETWORK === "MAIN-JINN")
+        {
+            ToLog("Error: NETWORK");
+            return 0;
+        }
+        
+        if(!BWRITE_MODE)
+        {
+            ToLog("Error: DB not in write mode");
+            return 0;
+        }
+        
+        var DB2 = new CDBChain(Engine.ID, Engine.CalcBlockData, "_");
+        DB2.Clear();
+        
+        var EndNum = Engine.GetMaxNumBlockDB();
+        var PrevBlock, BlockNumNew;
+        for(var BlockNum = 0; BlockNum < EndNum; BlockNum++)
+        {
+            var Block = Engine.GetBlockDB(BlockNum);
+            
+            if(BlockNum < 16 || (Block.TxCount > 1 || Block.TxCount === 1 && Block.TxData[0].body[0] !== 210))
+            {
+                var BlockNew;
+                if(BlockNum < 16)
+                {
+                    BlockNew = Block;
+                    BlockNumNew = BlockNum;
+                }
+                else
+                {
+                    BlockNumNew++;
+                    BlockNew = {};
+                    BlockNew.BlockNum = BlockNumNew;
+                    BlockNew.TxData = Block.TxData;
+                    BlockNew.LinkSumHash = ZERO_ARR_32;
+                    BlockNew.TreeHash = ZERO_ARR_32;
+                    BlockNew.MinerHash = ZERO_ARR_32;
+                    BlockNew.PrevSumHash = PrevBlock.SumHash;
+                    BlockNew.PrevSumPow = PrevBlock.SumPow;
+                    
+                    BlockNew.TxCount = BlockNew.TxData.length;
+                    BlockNew.TreeHash = Engine.CalcTreeHash(BlockNew.BlockNum, BlockNew.TxData);
+                    
+                    Engine.CalcBlockData(BlockNew);
+                }
+                BlockNew.Position = undefined;
+                BlockNew.TxPosition = undefined;
+                
+                var Res1 = DB2.WriteBlock(BlockNew);
+                var Res2 = DB2.WriteBlockMain(BlockNew);
+                if(!Res1 || !Res2)
+                {
+                    console.log("Error write on block: " + BlockNum);
+                    return 0;
+                }
+                PrevBlock = BlockNew;
+            }
+            
+            if(BlockNum % 10000 === 0)
+                console.log("DONE: " + BlockNum);
+        }
+        
+        StopAndExit("***************** STOP ReOrganizationDBChain " + DB2.GetMaxNumBlockDB());
+        
+        return DB2.GetMaxNumBlockDB();
+    };
 }
 
 function InitAfter(Engine)

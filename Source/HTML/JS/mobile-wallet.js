@@ -11,8 +11,7 @@
 
 var WEB_WALLET_VERSION = "" + window.CLIENT_VERSION;
 
-var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idCurTabName", "idViewBlockNum", "idViewAccountNum", "idViewDappNum",
-"idLang"];
+var SaveIdArr = ["idAccount", "idTo", "idSumSend", "idDescription", "idCurTabName", "idViewBlockNum", "idViewAccountNum", "idViewDappNum", "idLang","idMainServer"];
 
 var CONFIG_DATA = {PRICE_DAO:{NewAccount:10}, MaxNumBlockDB:0, MaxAccID:0, MaxDappsID:0};
 var CountViewRows = 20;
@@ -21,6 +20,7 @@ var DefBlock = {BlockName:"idPaginationBlock", NumName:"idViewBlockNum", TabName
 var DefDapps = {BlockName:"idPaginationDapps", NumName:"idViewDappNum", TabName:"dapps_list", APIName:"GetDappList", CountViewRows:10,
     FilterName:"idCategory"};
 
+var AccToggleMap={};
 function SetImg()
 {
 }
@@ -60,8 +60,8 @@ window.addEventListener('keydown', function (e)
 
 window.addEventListener('beforeunload', function (e)
 {
-    if(ClosePasswordOnExit)
-        DoExitWallet();
+    // if(ClosePasswordOnExit)
+    //     DoExitWallet(); - не нужно - иначе перестают работать даппы на других вкладках
 }
 );
 
@@ -85,9 +85,10 @@ window.addEventListener('load', function ()
         {
             if(Data && Data.result)
             {
-                window.SHARD_NAME = Data.SHARD_NAME;
-                window.NETWORK_NAME = Data.NETWORK;
-                window.NETWORK_ID = Data.NETWORK + "." + Data.SHARD_NAME;
+                // window.SHARD_NAME = Data.SHARD_NAME;
+                // window.NETWORK_NAME = Data.NETWORK;
+                // window.NETWORK_ID = Data.NETWORK + "." + Data.SHARD_NAME;
+                CheckNetworkID(Data);
                 
                 Storage.setItem("NETWORK_ID", window.NETWORK_ID);
                 console.log("Default network: " + NETWORK_ID);
@@ -224,7 +225,8 @@ function UpdateTabs()
 
 function OnFindServer()
 {
-    if(!MainServer)
+    var Item=GetMainServer();
+    if(!Item)
     {
         CONNECT_STATUS =  - 1;
         SetStatus("Server not found");
@@ -233,7 +235,12 @@ function OnFindServer()
     }
     
     CONNECT_STATUS = 2;
-    Storage.setItem("MainServer", JSON.stringify({ip:MainServer.ip, port:MainServer.port}));
+    if(IsLocalClient())
+    {
+
+        Storage.setItem("MainServer", JSON.stringify({ip: Item.ip, port: Item.port}));
+    }
+
     FillCurrencyAsync("idCurrencyList");
     
     SetDataUpdateTime(10);
@@ -394,11 +401,19 @@ function OnEditPrivKey()
 
 function OnPrivKeyOK()
 {
-    SetPrivKey($("idPrivKeyEdit").value.trim());
+    var StrKey=$("idPrivKeyEdit").value.trim();
+    if(!IsCorrectPrivKey(StrKey))
+    {
+        return SetError("Error private key hex string");
+    }
+
+    SetPrivKey(StrKey);
+
     InitPrivKey();
     SelectTab('TabKeySet');
     ClearSend();
 }
+
 
 function OnPrivKeyCancel()
 {
@@ -408,6 +423,8 @@ function OnPrivKeyCancel()
 
 
 var FirstAccountsData = 1;
+var CurrentPage = 0;
+var ROWS_ON_PAGE=20;
 var AccountsCount =  - 1;
 var DataUpdateTime = 0;
 
@@ -435,23 +452,31 @@ function UpdatesAccountsData(bGetData)
         {
             bGetData = 1;
         }
+        if(!bGetData)
+            return;
     }
     
-    if(!bGetData)
-        return;
-    
-    GetData("/GetAccountListByKey", {Key:Str, Session:glSession, AllData:FirstAccountsData}, function (Data,responseText)
+
+    GetData("/GetAccountListByKey", {Key:Str, Session:glSession, AllData:FirstAccountsData, BalanceArr:1,CurrentPage:CurrentPage}, async function (Data,responseText)
     {
-        if(!Data || !Data.result || !Data.arr)
+        if(!Data)
             return;
-        
-        if(AccountsCount === Data.arr.length)
+
+        await CheckNetworkID(Data);
+
+        AccountsCount = Data.Accounts;
+        if(!AccountsCount)
         {
-            if(IsVisibleClass(".accounts-info__add2"))
-                return;
+            if(Data.arr)
+                AccountsCount = Data.arr.length;//old version API-1
+            else
+                AccountsCount=0;
         }
-        
-        AccountsCount = Data.arr.length;
+        ROWS_ON_PAGE = Data.ROWS_ON_PAGE;
+        ViewAccountPages();
+
+        if(!Data.result || !Data.arr)
+            return;
         SetVisibleClass(".accounts-info__acc-list", AccountsCount);
         SetVisibleClass(".accounts-info__empty", !AccountsCount);
         SetVisibleClass(".accounts-info__add2", 0);
@@ -459,11 +484,32 @@ function UpdatesAccountsData(bGetData)
         {
             SetAccountsCard(Data, responseText);
         }
-        else
-        {
-        }
         FirstAccountsData = 0;
     });
+}
+
+function ViewAccountPages()
+{
+    if(!ROWS_ON_PAGE)
+        return;
+    var Str="";
+    var Pages=1+Math.floor(AccountsCount/ROWS_ON_PAGE);
+    if(Pages>1)
+    for(var i=0;i<Pages;i++)
+    {
+        Str+=`<div class="btn page ${CurrentPage===i?"currentpage":""}" onclick="OnViewPageAccount(${i})">Page ${i+1}</div>`;
+    }
+    if(idPagesList.WasinnerHTML!==Str)
+    {
+        idPagesList.WasinnerHTML=Str;
+        idPagesList.innerHTML=Str;
+    }
+}
+
+function OnViewPageAccount(Num)
+{
+    CurrentPage=Num;
+    UpdatesAccountsData(1);
 }
 
 function ViewAddAccount(Visible)
@@ -501,7 +547,7 @@ function OnAddAccount()
         return;
     }
     var Smart = 0;
-    var Currency = GetCurrencyByName($("idCurrency").value);
+    var Currency = FindCurrencyNum($("idCurrency").value);
     
     SendTrCreateAccWait(Currency, GetPubKey(), Name, Smart);
     SetVisibleClass(".accounts-info__add", 0);
@@ -520,7 +566,7 @@ function InitAccountsCard()
     }
 }
 
-function SetAccountsCard(Data,AccountsDataStr)
+async function SetAccountsCard(Data,AccountsDataStr)
 {
     
     if(!Data || !Data.result)
@@ -552,21 +598,21 @@ function SetAccountsCard(Data,AccountsDataStr)
     
     MaxBlockNum = GetCurrentBlockNumByTime();
     
-    $("idListCount").innerText = arr.length;
+    $("idListCount").innerText = AccountsCount;
     
     var StrList = "";
     
-    var ListTotal = {};
-    
+
     var dataList = $("idToList");
     if(dataList)
         dataList.innerHTML = "";
-    
+
+    var ListTotal = {};
     for(var i = 0; arr && i < arr.length; i++)
     {
         var Item = arr[i];
         Item.MyAccount = true;
-        
+        //console.log(Item)
         var Num = ParseNum(Item.Num);
         if(!MapAccounts[Num])
             MapAccounts[Num] = {};
@@ -597,7 +643,7 @@ function SetAccountsCard(Data,AccountsDataStr)
         {
             Str1 = "";
         }
-        var StrCurrencyName = CurrencyNameItem(Item);
+        var StrCurrencyName = await ACurrencyNameItem(Item);
         Str = Str.replace("$Value.SumCOIN", Str1);
         Str = Str.replace("$Value.SumCENT", Str2);
         Str = Str.replace("$Value.CurrencyName", StrCurrencyName);
@@ -620,29 +666,38 @@ function SetAccountsCard(Data,AccountsDataStr)
         Str = Str.replace("$SmartObj.Name", escapeHtml(SmartObj.Name));
         Str = Str.replace(/\$SmartObj.Num/g, SmartObj.Num);
         Str = Str.replace(/\$SmartObj.HTMLLength/g, SmartObj.HTMLLength);
-        
-        if(SmartObj.Num)
+
+        if(!Item.SmartObj)
         {
-            Str = Str.replace("prod-card__link--connect", "myhidden");
+            Str = Str.replace("prod-card__button", "prod-card__nobutton");
         }
-        else
+        Str = Str.replace("prod-card__link--connect", "myhidden");
+        //Str = Str.replace("prod-card__link--dapp", "myhidden");
+        //Str = Str.replace("prod-card__dropdown", "prod-card__dropdown nodapp");
+
+
+        var RetTotal=await CalcTotalAmountERC(Item,ListTotal);
+        var StrCountTokens="";
+        var StrOpenNFTPage="";
+        if(RetTotal.CountTokens)
+            StrCountTokens="Token count: "+RetTotal.CountTokens;
+        if(RetTotal.CountNFT)
         {
-            Str = Str.replace("prod-card__link--dapp", "myhidden");
-            Str = Str.replace("prod-card__dropdown", "prod-card__dropdown nodapp");
+            StrCountTokens+=" NFT: "+RetTotal.CountNFT;
+            StrOpenNFTPage="<button class='btn btn--white btn-nft-open' onclick='OpenTokensPage(" + Item.Num + ")'>Show NFT</button>";
         }
-        
+
+        Str = Str.replace("$Item.COUNT_TOKENS", StrCountTokens);
+        Str = Str.replace("$Item.LIST_TOKENS", RetTotal.ListTokens);
+        Str = Str.replace("$Item.OPEN_NFT_PAGE", StrOpenNFTPage);
+
+
+
+
         StrList += Str;
         Str = "";
         
-        if(Item.Value.SumCOIN >= 1e12)
-            continue;
-        var Total = ListTotal[Item.Currency];
-        if(!Total)
-        {
-            Total = {SumCOIN:0, SumCENT:0, Name:CurrencyName(Item.Currency)};
-            ListTotal[Item.Currency] = Total;
-        }
-        ADD(Total, Item.Value);
+
         
         if(!dataList)
             continue;
@@ -651,9 +706,19 @@ function SetAccountsCard(Data,AccountsDataStr)
         Options.label = StrText;
         dataList.appendChild(Options);
     }
-    $("idAccountsList").innerHTML = StrList;
+
+
+
+    idAccountsList.innerHTML = StrList;
     StrList = "";
-    
+
+    for(var key in AccToggleMap)
+        SetToggleClass($(key),1);
+
+
+
+
+
     var StrTotal = "";
     for(var key in ListTotal)
     {
@@ -668,7 +733,21 @@ function SetAccountsCard(Data,AccountsDataStr)
         Select.value = CurrentValue;
         delete LoadMapAfter["idAccount"];
     }
+
+    UpdateTokenList();
 }
+
+function ChooseToken(name)
+{
+    //todo - вызов (двойной клик) не работает в mobile
+
+    if(name==="idListNFT")
+    {
+        SendMobileBefore();
+    }
+}
+
+
 
 var glWasSmart;
 var glWasNumAccount;
@@ -708,8 +787,18 @@ function DelSmart(NumAccount,WasSmart)
 {
     SetSmartToAccount(NumAccount, 0);
 }
+function RemoveAccount(NumAccount)
+{
+    DoConfirm("Remove account","Confirm delete account: "+NumAccount);
+    glConfirmF = function OnRemoveAccount()
+    {
+        DoRemoveAccount(NumAccount);
+        HideAccount(NumAccount);
+    }
 
-function DelAccount(NumAccount)
+}
+
+function HideAccount(NumAccount)
 {
     DelList[NumAccount] = 1;
     AccountsCount = 0;
@@ -722,8 +811,9 @@ function DelAccount(NumAccount)
 function RestoreAllAccounts()
 {
     DelList = {};
-    DelAccount(0);
+    HideAccount(0);
     FirstAccountsData = 1;
+    UpdatesAccountsData(1);
 }
 
 function UpdatesExplorerData(bGetData)
@@ -835,7 +925,7 @@ function SetArrLog(arr)
             if(Item.final > 0 && !TR.WasError)
                 SetStatus(Item.text);
             
-            if(Item.text.indexOf("Add to blockchain") >= 0)
+            if(typeof Item.text==="string" && Item.text.indexOf("Add to blockchain") >= 0)
             {
                 if(TR.Run)
                 {
@@ -855,7 +945,7 @@ function SetArrLog(arr)
     CheckSending();
 }
 
-var DiagramArr = [{name:"MAX:ALL_NODES", text:"All nodes count", value:0, red:"#1d506b", MouseText:" nodes", CountNameX:10},
+var DiagramArr = [{name:"MAX:ALL_NODES", text:"Number of public nodes", value:0, red:"#1d506b", MouseText:" nodes", CountNameX:10},
     {name:"MAX:HASH_RATE_B", text:"HashRate, Tera hash/s", value:0, red:"#286b16", MathPow:2, MathDiv:1024 * 1024 * 1024 * 1024,
     KPrecision:10, NoTextMax:1, MouseText:" T h/s", CountNameX:10}, ];
 
@@ -916,6 +1006,9 @@ function ClearSend()
     $("idSumSend").value = "";
     $("idDescription").value = "";
     $("idNameTo2").innerText = "";
+
+
+    UpdateTokenList();
 }
 
 
@@ -944,18 +1037,14 @@ function openModal(id)
 }
 function closeModal()
 {
-    if(NotModalClose)
-        return;
     glConfirmF = undefined;
     
     glWasModal = 0;
-    var modals = document.querySelectorAll(".modal");
-    var overlay = document.querySelector("#overlay");
+    var modals = document.querySelectorAll(".modal,#overlay,#idConfirm,#idOverlay");
     modals.forEach(function (item)
     {
         item.style.display = "none";
     });
-    overlay.style.display = "none";
 }
 
 function showMenu(Num)
@@ -1011,11 +1100,15 @@ function InitPrivKey()
         $("idSave2").disabled = !IsPrivateMode();
 }
 
-function SendMobileBefore()
+async function SendMobileBefore()
 {
     if($("idSendButton").disabled)
         return;
-    
+
+    var CurToken=GetSelectedToken();
+    if(!CurToken)
+        return;
+
     var FromID = ParseNum($("idAccount").value);
     var Item = MapAccounts[FromID];
     if(!Item)
@@ -1024,7 +1117,7 @@ function SendMobileBefore()
         return;
     }
     $("idConfirmFromID").innerText = Item.Num;
-    $("idConfirmFromName").innerText = Item.Name + " (" + STRING_FROM_COIN(Item.Value) + " " + CurrencyNameItem(Item) + ")";
+    $("idConfirmFromName").innerText = Item.Name + " (" + STRING_FROM_COIN(Item.Value) + " " + await ACurrencyNameItem(Item) + ")";
     
     var ToID = ($("idTo").value);
     $("idConfirmToID").innerText = ToID;
@@ -1032,17 +1125,20 @@ function SendMobileBefore()
     var Item2 = MapAccounts[ToID];
     if(Item2)
     {
-        $("idConfirmToName").innerText = Item2.Name + " (" + STRING_FROM_COIN(Item2.Value) + " " + CurrencyNameItem(Item2) + ")";
+        $("idConfirmToName").innerText = Item2.Name + " (" + STRING_FROM_COIN(Item2.Value) + " " + await ACurrencyNameItem(Item2) + ")";
     }
     else
     {
         $("idConfirmToName").innerText = "";
     }
-    
+
+    $("idTokenHolder").innerHTML = GetCopyNFTCard(CurToken.element_id,CurToken.Token,CurToken.ID,idSumSend.value);
+    //SetVisibleBlock("idTokenHolder",1);
+
     var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
     $("idConfirmAmount").innerText = STRING_FROM_COIN(CoinAmount);
-    $("idConfirmCurrency").innerText = CurrencyNameItem(Item);
-    
+    $("idConfirmCurrency").innerText = CurToken.Token;
+
     $("idConfirmDescription").innerText = $("idDescription").value;
     
     SetVisibleClass(".send-page__setting", 0);
@@ -1055,7 +1151,12 @@ function SendMobileBefore()
 
 function OKSend()
 {
-    
+    // if(IsERCMode())
+    // {
+    //     SendToken();
+    //     closeModal();
+    // }
+    // else
     SendMoney(function ()
     {
         if(glWasModal)
@@ -1223,8 +1324,8 @@ function DoExitWallet()
     Storage.setItem(WALLET_KEY_EXIT, Date.now());
 }
 
-var StrDappCardTemplate;
-var StrDappRowCardTemplate;
+var StrDappCardTemplate="";
+var StrDappRowCardTemplate="";
 var CardMapList = {};
 function InitDappsCard()
 {
@@ -1267,8 +1368,8 @@ function FillDappCard(Str,Item)
     Str = Str.replace("$Item.Description", escapeHtml(Item.Description));
     Str = Str.replace("$Item.Owner", Item.Owner);
     
-    if(!Item.TokenGenerate)
-        Str = Str.replace("dapp-modal__ok-token", "myhidden");
+    //if(!Item.TokenGenerate)
+    Str = Str.replace("dapp-modal__ok-token", "myhidden");
     
     Str = Str.replace(/\$Item.HTMLLength/g, Item.HTMLLength);
     Str = Str.replace("$item.iconpath", "src='" + RetIconPath(Item, 0) + "'");
@@ -1339,21 +1440,39 @@ function MyToggleList(e)
         {
             if(item.classList.contains("prod-card--switch"))
             {
-                item.classList.add("prod-card--active");
-                item.classList.add("prod-card--toggle");
-                item.classList.remove("prod-card--switch");
+                AccToggleMap[item.id]=1;
+                SetToggleClass(item,1);
             }
             else
             {
-                item.classList.remove("prod-card--active");
-                item.classList.remove("prod-card--toggle");
-                item.classList.add("prod-card--switch");
+                delete AccToggleMap[item.id];
+
+                SetToggleClass(item,0);
             }
             
             break;
         }
         
         item = item.parentNode;
+    }
+}
+
+function SetToggleClass(item,bValue)
+{
+    if(!item)
+        return;
+
+    if(bValue)
+    {
+        item.classList.add("prod-card--active");
+        item.classList.add("prod-card--toggle");
+        item.classList.remove("prod-card--switch");
+    }
+    else
+    {
+        item.classList.remove("prod-card--active");
+        item.classList.remove("prod-card--toggle");
+        item.classList.add("prod-card--switch");
     }
 }
 
@@ -1366,7 +1485,7 @@ function OpenHistoryPage(Num)
     }
     
     SetVisibleFrame("idHistoryPage", 1);
-    SendMessage("HistoryPage", {Account:Num, FrameName:"idHistoryPage"});
+    SendMessage("HistoryPage", {IsTeraWallet:1,Account:Num, FrameName:"idHistoryPage"});
 }
 
 function OpenBlockViewerPage(Num)
@@ -1378,7 +1497,7 @@ function OpenBlockViewerPage(Num)
     }
     
     SetVisibleFrame("idBlockViewerPage", 1);
-    SendMessage("BlockViewerPage", {BlockNum:Num, FrameName:"idBlockViewerPage"});
+    SendMessage("BlockViewerPage", {IsTeraWallet:1,BlockNum:Num, FrameName:"idBlockViewerPage"});
 }
 
 function AddFrame(name,filename)
@@ -1425,6 +1544,11 @@ function OnMessage(event)
         }
 }
 
+
+
+
+
+//------------------------------------------------------------------------------ LANG SUPPORT
 
 var LangItems = [];
 
@@ -1539,7 +1663,7 @@ LangMap["RUS"] = {"TERA WALLET":"TERA КОШЕЛЕК", "Generate key":"Сген�
     "Public name":"Публичное имя", "Currency":"Валюта", "Pay to:":"Получатель:", "Amount:":"Сумма:", "Description:":"Описание:",
     "Welcome to TERA Wallet":"Добро пожаловать в кошелек TERA", "Edit your wallet":"Редактирование вашего кошелька", "Key settings":"Задание ключей",
     "KEY SETTINGS":"КЛЮЧИ", "Create an account":"Создание счета", "Sending coins":"Отправка монет", "Decentralized applications (dApps)":"Децентрализованные приложения (DApps)",
-    "Secure your wallet":"Безопасность вашего кошелька", "Wallet is secured":"Установлен пароль", "Total":"Всего", "Item.Name":"Item.Name",
+    "Secure your wallet":"Безопасность вашего кошелька", "Wallet is secured":"Установлен пароль", "Total on page":"Всего", "Item.Name":"Item.Name",
     "You have no accounts yet":"У вас нет ни одного счета", "Wait 10-15 sec":"Ждите 10-15 сек", "Creating your account":"Идет создание вашего счета",
     "From:":"Отправитель:", "Set a password for protect entry":"Установите пароль для безопасности", "Enter password to unlock wallet":"Введите пароль для разблокировки кошелька",
     "From ID:":"Отправитель:", "Pay to ID:":"Получатель:", "Account":"Счет", "Owner":"Владелец", "Block num":"Ном блока", "Private key (secret)":"Приватный ключ (секретно)",
@@ -1578,7 +1702,7 @@ LangMap["한글"] = {"TERA WALLET":"TERA 지갑", "Generate key":"개인 키 생
     "Public name":"이름", "Currency":"화폐", "Pay to:":"지불:", "Amount:":"수량:", "Description:":"묘사:", "Welcome to TERA Wallet":"TERA 지갑을 환영합니다",
     "Edit your wallet":"지갑 편집", "Key settings":"개인 키 설정", "KEY SETTINGS":"개인 키 설정", "Create an account":"계정 만들기", "Sending coins":"동전 보내기",
     "Decentralized applications (dApps)":"분산식 응용(DApps)", "Secure your wallet":"지갑 비밀번호 설정", "Wallet is secured":"지갑 비밀번호가 설정되었습니다. ",
-    "Total":"총계", "Item.Name":"Item.Name", "You have no accounts yet":"당신 아직 계정이 없다", "Wait 10-15 sec":" 10 -15초 기다리기", "Creating your account":"계정 만들기",
+    "Total on page":"총계", "Item.Name":"Item.Name", "You have no accounts yet":"당신 아직 계정이 없다", "Wait 10-15 sec":" 10 -15초 기다리기", "Creating your account":"계정 만들기",
     "From:":"부터:", "\n Item.Description\n ":"\n Item.Description\n ", "Set a password for protect entry":"접근 비밀번호 설정", "Enter password to unlock wallet":"비밀번호 잠금 풀기",
     "From ID:":" ID부터:", "Pay to ID:":"ID 에게 지불:", "Account":"계정", "Owner":"소유자", "Block num":"블록 번호", "Private key (secret)":"개인 키",
     "Load key":"개인 키 불러오기", "Create your first account and start using TERA":"첫 번째 계정 만들기, TERA 의 여정을 열고", "0 Accounts":"0계정",

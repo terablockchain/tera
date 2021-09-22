@@ -9,6 +9,9 @@
 
 <script type="text/javascript" src="./JS/coinlib.js"></script>
 <script type="text/javascript" src="./JS/client.js"></script>
+<script type="text/javascript" src="./JS/client-promise.js"></script>
+<script type="text/javascript" src="./JS/client-tokens.js"></script>
+<script type="text/javascript" src="./JS/client-tx.js"></script>
 <script type="text/javascript" src="./JS/sha3.js"></script>
 <script type="text/javascript" src="./JS/terabuf.js"></script>
 <script type="text/javascript" src="./JS/crypto-client.js"></script>
@@ -530,7 +533,7 @@
     window.addEventListener('load',function (e)
     {
         DoNewSession();
-        setInterval(DoDappInfo,1000);
+        setInterval(DoDappInfo,2000);
     });
 
     window.OnOpenWallet=function ()

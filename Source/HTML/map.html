@@ -56,6 +56,7 @@
                 }
                 else
                 {
+                    //Count++;
                     var y=Math.floor(obj.height-(obj.height-PointC.y+KY*obj.height*(Item.latitude/10000-90)/180));
                     var x=Math.floor(PointC.x+KX*obj.width*(Item.longitude/10000-180)/360);
                     if(Item.longitude/10000-180<-20)
@@ -206,7 +207,7 @@
             {
                 SetDiagramMouseX(event);
             }
-        }
+        };
 
 
         var LMouseOn=false;

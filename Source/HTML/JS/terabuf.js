@@ -41,16 +41,18 @@
 
 'use strict';
 
-global.SerializeLib = {};
-var exports = global.SerializeLib;
-exports.Write = Write;
-exports.Read = Read;
 
-exports.GetObjectFromBuffer = GetObjectFromBuffer;
-exports.GetBufferFromObject = GetBufferFromObject;
-exports.GetFormatFromObject = GetFormatFromObject;
+var root = typeof global==="object"?global:window;
 
-var glError = global.DEV_MODE;
+var lib = {};
+lib.Write = Write;
+lib.Read = Read;
+lib.GetObjectFromBuffer = GetObjectFromBuffer;
+lib.GetBufferFromObject = GetBufferFromObject;
+lib.GetFormatFromObject = GetFormatFromObject;
+root.SerializeLib = lib;
+
+var glError = root.DEV_MODE;
 
 const TEMP_BUFFER8 = new ArrayBuffer(8);
 const DATA_VIEW8 = new DataView(TEMP_BUFFER8);
@@ -290,7 +292,7 @@ function Write(buf,data,StringFormat,ParamValue,WorkStruct)
     }
 }
 
-function Read(buf,StringFormat,ParamValue,WorkStruct)
+function Read(buf,StringFormat,ParamValue,WorkStruct,bNewVer)
 {
     
     var ret;
@@ -369,6 +371,9 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                     {
                         ret = 0;
                     }
+                    if(!ret && bNewVer)
+                        ret=0;
+
                     buf.len += 8;
                     break;
                 }
@@ -491,11 +496,11 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                                 if(bIndexArr)
                                 {
                                     var index = Read(buf, "uint32");
-                                    ret[index] = Read(buf, formatNext, undefined, WorkStruct);
+                                    ret[index] = Read(buf, formatNext, undefined, WorkStruct,bNewVer);
                                 }
                                 else
                                 {
-                                    ret[i] = Read(buf, formatNext, undefined, WorkStruct);
+                                    ret[i] = Read(buf, formatNext, undefined, WorkStruct,bNewVer);
                                 }
                             }
                             else
@@ -518,7 +523,7 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
                             {
                                 var type = attrs[i];
                                 
-                                ret[type.Key] = Read(buf, type.Value, undefined, WorkStruct);
+                                ret[type.Key] = Read(buf, type.Value, undefined, WorkStruct,bNewVer);
                             }
                         }
                         else
@@ -532,7 +537,7 @@ function Read(buf,StringFormat,ParamValue,WorkStruct)
 }
 
 
-function GetObjectFromBuffer(buffer,format,WorkStruct,bNoSizeControl)
+function GetObjectFromBuffer(buffer,format,WorkStruct,bNoSizeControl,bOldVer)
 {
     
     var Arr = buffer;
@@ -545,11 +550,12 @@ function GetObjectFromBuffer(buffer,format,WorkStruct,bNoSizeControl)
         format = WorkStruct.FromObject;
     }
     
-    var Data = Read(Arr, format, undefined, WorkStruct);
+    var Data = Read(Arr, format, undefined, WorkStruct,!bOldVer);
     
-    if(global.DEV_MODE)
+    if(root.DEV_MODE)
         if(!bNoSizeControl && glError && Arr.len > Arr.length)
         {
+            //console.log("Data",Data);
             ToLogOne("**********Find error size on format: " + format, " " + Arr.len + "/" + Arr.length);
         }
     
@@ -570,7 +576,7 @@ function GetBufferFromObject(data,format,WorkStruct,bGetAsBuffer,Arr)
     Arr.len = Arr.length;
     Write(Arr, data, format, undefined, WorkStruct);
     
-    if(bGetAsBuffer && global.Buffer)
+    if(bGetAsBuffer && root.Buffer)
         Arr = Buffer.from(Arr);
     
     return Arr;
@@ -1119,15 +1125,10 @@ function TestValue(Value,Format,bLog)
     }
 }
 
-global.WriteUint32AtPos = WriteUint32AtPos;
-global.WriteUint32ReverseAtPos = WriteUint32ReverseAtPos;
-global.WriteUint32 = WriteUint32;
-global.ReadUint32FromArr = ReadUint32FromArr;
+root.WriteUint32AtPos = WriteUint32AtPos;
+root.WriteUint32ReverseAtPos = WriteUint32ReverseAtPos;
+root.WriteUint32 = WriteUint32;
+root.ReadUint32FromArr = ReadUint32FromArr;
 
-global.ReadStrFromArr = Utf8ArrayToStrNew;
+root.ReadStrFromArr = Utf8ArrayToStrNew;
 
-if(!global.ToLog)
-    global.ToLog = function (Str)
-    {
-        console.log(Str);
-    }

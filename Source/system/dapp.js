@@ -45,21 +45,21 @@ class DApp
         return TR;
     }
     
-    GetScriptTransaction(Body, BlockNum, TxNum)
+    GetScriptTransaction(Body, BlockNum, TxNum, bInner)
     {
         var Type = Body[0];
-        var format = GetFormatTransactionCommon(Type);
+        var format = GetFormatTransactionCommon(Type,bInner);
         if(!format)
             return GetHexFromArr(Body);
         
         var TR = SerializeLib.GetObjectFromBuffer(Body, format, {});
         
-        if(Type === TYPE_TRANSACTION_TRANSFER && TR.Body && TR.Body.length)
+        if((Type === TYPE_TRANSACTION_TRANSFER3 || Type === TYPE_TRANSACTION_TRANSFER5) && TR.Body && TR.Body.length)
         {
             var App = DAppByType[TR.Body[0]];
             if(App)
             {
-                TR.Body = JSON.parse(App.GetScriptTransaction(TR.Body, BlockNum, TxNum))
+                TR.Body = JSON.parse(App.GetScriptTransaction(TR.Body, BlockNum, TxNum,1))
             }
         }
         
@@ -101,11 +101,11 @@ class DApp
                 return {result:0, text:"Error OperationID (expected: " + Item.Value.OperationID + " for ID: " + FromNum + ")"};
             var MaxCountOperationID = 100;
             if(BlockNum >= global.BLOCKNUM_TICKET_ALGO)
-                MaxCountOperationID = 1000000
+                MaxCountOperationID = 1000000;
             if(OperationID > Item.Value.OperationID + MaxCountOperationID)
                 return {result:0, text:"Error too much OperationID (expected max: " + (Item.Value.OperationID + MaxCountOperationID) + " for ID: " + FromNum + ")"};
         }
-        
+
         var hash = Buffer.from(sha3(Body.slice(0, Body.length - 64)));
         var Sign = Buffer.from(Body.slice(Body.length - 64));
         var Result = CheckSign(hash, Sign, Item.PubKey);
@@ -145,14 +145,14 @@ class DApp
         
         return arr;
     }
-};
+}
 module.exports = DApp;
 
-function GetFormatTransactionCommon(Type)
+function GetFormatTransactionCommon(Type,bInner)
 {
     var App = DAppByType[Type];
     if(App)
-        return App.GetFormatTransaction(Type);
+        return App.GetFormatTransaction(Type,bInner);
     else
         return "";
 }
@@ -187,4 +187,4 @@ global.REGISTER_SYS_DAPP = function (App,Type)
     }
     
     DAppByType[Type] = App;
-}
+};

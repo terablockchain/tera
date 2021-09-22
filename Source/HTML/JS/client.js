@@ -1,15 +1,16 @@
 /*
  * @project: TERA
- * @version: Development (beta)
+ * @version: 2
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2017-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2017-2021 [progr76@gmail.com]
  * Web: https://terafoundation.org
  * Twitter: https://twitter.com/terafoundation
  * Telegram:  https://t.me/terafoundation
 */
 
 
-window.CLIENT_VERSION = 31;
+
+window.CLIENT_VERSION = 53;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -17,10 +18,18 @@ window.SUM_PRECISION = 9;
 
 window.RUN_CLIENT = 1;
 window.RUN_SERVER = 0;
+
+var glSession;
+var ServerHTTP;
+var glMainServer;
+var MapCategory = {};
+
+var root = typeof global==="object"?global:window;
+
 if(typeof global === 'object')
 {
-    global.RUN_CLIENT = 1;
-    global.RUN_SERVER = 0;
+    root.RUN_CLIENT = 1;
+    root.RUN_SERVER = 0;
 }
 
 var MaxBlockNum = 0;
@@ -36,7 +45,7 @@ function SetStatus(Str)
 }
 function SetError(Str)
 {
-    console.log(Str);
+    console.log("%c" + Str, "color:red;font-weight:bold;");
 }
 
 
@@ -127,14 +136,7 @@ if(!String.prototype.padStart)
     };
 }
 
-window.IsLocalClient = function ()
-{
-    return (window.location.protocol.substr(0, 4) !== "http");
-}
 
-var glSession;
-var ServerHTTP;
-var MainServer;
 
 if(window.nw)
 {
@@ -153,10 +155,10 @@ if(window.nw)
     
     window.GetData = function (Method,ObjPost,Func)
     {
-        window.nw.global.RunRPC({path:Method, obj:ObjPost}, Func);
+        window.nw.root.RunRPC({path:Method, obj:ObjPost}, Func);
     };
-    
-    global.RunRPC = function (message,Func)
+
+    root.RunRPC = function (message,Func)
     {
         if(!ServerHTTP)
             ServerHTTP = require('../core/html-server');
@@ -170,7 +172,7 @@ if(window.nw)
 }
 else
 {
-    global = window;
+    //global = window;
     
     window.Open = function (path,iconname,width,height)
     {
@@ -199,14 +201,17 @@ else
             if(Method.substr(0, 1) !== "/")
                 Method = "/" + Method;
             
-            if(MainServer)
+            if(GetMainServer())
             {
-                Method = GetProtocolServerPath(MainServer) + Method;
+                Method =GetURLPath(Method);
             }
             else
             {
                 if(IsLocalClient())
+                {
+                    //console.log("Local client for "+Method);
                     return;
+                }
             }
         }
         
@@ -259,7 +264,7 @@ else
                     }
                 }
                 else
-                    if(serv.status == 203)
+                    if(serv.status == 203 && IsFullNode())
                     {
                         window.location = "/password.html";
                     }
@@ -293,18 +298,7 @@ function IsIPAddres(Str)
     return 1;
 }
 
-function GetProtocolServerPath(Item)
-{
-    if(!Item)
-        return ".";
-    if(Item.port === 443)
-        return "https://" + Item.ip;
-    else
-        if(Item.port === 80)
-            return "http://" + Item.ip;
-        else
-            return "http://" + Item.ip + ":" + Item.port;
-}
+
 
 function ToFixed(Sum,Currency,bNoZero)
 {
@@ -369,7 +363,8 @@ function SUM_TO_STRING(Value,Currency,bFloat,bLocal)
 }
 
 
-function GetArrFromHex(Str)
+//----------------------------------------------------------------------------------------------------------------------
+window.GetArrFromHex=function(Str)
 {
     var array = [];
     for(var i = 0; Str && i < Str.length / 2; i++)
@@ -380,11 +375,11 @@ function GetArrFromHex(Str)
 }
 
 var HexStr = "0123456789ABCDEF";
-function GetHexFromArr(arr)
+window.GetHexFromArr=function(arr)
 {
     if(arr && !(arr instanceof Array) && arr.data)
         arr = arr.data;
-    
+
     var Str = "";
     if(arr)
     {
@@ -404,6 +399,7 @@ function GetHexFromArr(arr)
     }
     return Str;
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 function GetStrFromAddr(arr)
 {
@@ -422,242 +418,7 @@ function Left(Str,Count)
     return Str.substr(0, Count);
 }
 
-function toUTF8Array(str)
-{
-    var utf8 = [];
-    for(var i = 0; i < str.length; i++)
-    {
-        var charcode = str.charCodeAt(i);
-        if(charcode < 0x80)
-            utf8.push(charcode);
-        else
-            if(charcode < 0x800)
-            {
-                utf8.push(0xc0 | (charcode >> 6), 0x80 | (charcode & 0x3f));
-            }
-            else
-                if(charcode < 0xd800 || charcode >= 0xe000)
-                {
-                    utf8.push(0xe0 | (charcode >> 12), 0x80 | ((charcode >> 6) & 0x3f), 0x80 | (charcode & 0x3f));
-                }
-                else
-                {
-                    i++;
-                    charcode = 0x10000 + (((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff));
-                    utf8.push(0xf0 | (charcode >> 18), 0x80 | ((charcode >> 12) & 0x3f), 0x80 | ((charcode >> 6) & 0x3f), 0x80 | (charcode & 0x3f));
-                }
-    }
-    return utf8;
-}
 
-function Utf8ArrayToStr(array)
-{
-    var out = utf8ArrayToStr(array);
-    
-    for(var i = 0; i < out.length; i++)
-    {
-        if(out.charCodeAt(i) === 0)
-        {
-            out = out.substr(0, i);
-            break;
-        }
-    }
-    return out;
-}
-var utf8ArrayToStr = (function ()
-{
-    var charCache = new Array(128);
-    var charFromCodePt = String.fromCodePoint || String.fromCharCode;
-    var result = [];
-    
-    return function (array)
-    {
-        var codePt, byte1;
-        var buffLen = array.length;
-        
-        result.length = 0;
-        
-        for(var i = 0; i < buffLen; )
-        {
-            byte1 = array[i++];
-            
-            if(byte1 <= 0x7F)
-            {
-                codePt = byte1;
-            }
-            else
-                if(byte1 <= 0xDF)
-                {
-                    codePt = ((byte1 & 0x1F) << 6) | (array[i++] & 0x3F);
-                }
-                else
-                    if(byte1 <= 0xEF)
-                    {
-                        codePt = ((byte1 & 0x0F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
-                    }
-                    else
-                        if(String.fromCodePoint)
-                        {
-                            codePt = ((byte1 & 0x07) << 18) | ((array[i++] & 0x3F) << 12) | ((array[i++] & 0x3F) << 6) | (array[i++] & 0x3F);
-                        }
-                        else
-                        {
-                            codePt = 63;
-                            i += 3;
-                        }
-            
-            result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
-        }
-        
-        return result.join('');
-    };
-}
-)();
-
-function GetArr32FromStr(Str)
-{
-    return GetArrFromStr(Str, 32);
-}
-
-function GetArrFromStr(Str,Len)
-{
-    var arr = toUTF8Array(Str);
-    for(var i = arr.length; i < Len; i++)
-    {
-        arr[i] = 0;
-    }
-    return arr.slice(0, Len);
-}
-
-function WriteByte(arr,Num)
-{
-    arr[arr.length] = Num & 0xFF;
-}
-function WriteUint(arr,Num)
-{
-    var len = arr.length;
-    arr[len] = Num & 0xFF;
-    arr[len + 1] = (Num >>> 8) & 0xFF;
-    arr[len + 2] = (Num >>> 16) & 0xFF;
-    arr[len + 3] = (Num >>> 24) & 0xFF;
-    
-    var NumH = Math.floor(Num / 4294967296);
-    arr[len + 4] = NumH & 0xFF;
-    arr[len + 5] = (NumH >>> 8) & 0xFF;
-}
-function WriteUint16(arr,Num)
-{
-    var len = arr.length;
-    arr[len] = Num & 0xFF;
-    arr[len + 1] = (Num >>> 8) & 0xFF;
-}
-
-function WriteUint32(arr,Num)
-{
-    var len = arr.length;
-    arr[len] = Num & 0xFF;
-    arr[len + 1] = (Num >>> 8) & 0xFF;
-    arr[len + 2] = (Num >>> 16) & 0xFF;
-    arr[len + 3] = (Num >>> 24) & 0xFF;
-}
-function WriteStr(arr,Str,ConstLength)
-{
-    if(!Str)
-        Str = "";
-    var arrStr = toUTF8Array(Str);
-    
-    var length;
-    var len = arr.length;
-    
-    if(ConstLength)
-    {
-        length = ConstLength;
-    }
-    else
-    {
-        length = arrStr.length;
-        if(length > 65535)
-            length = 65535;
-        
-        arr[len] = length & 0xFF;
-        arr[len + 1] = (length >>> 8) & 0xFF;
-        len += 2;
-    }
-    
-    for(var i = 0; i < length; i++)
-    {
-        arr[len + i] = arrStr[i];
-    }
-}
-
-function WriteArr(arr,arr2,ConstLength)
-{
-    var len = arr.length;
-    for(var i = 0; i < ConstLength; i++)
-    {
-        arr[len + i] = arr2[i];
-    }
-}
-
-function WriteTr(arr,arr2)
-{
-    var len2 = arr2 ? arr2.length : 0;
-    var len = arr.length;
-    arr[len] = len2 & 0xFF;
-    arr[len + 1] = (len2 >>> 8) & 0xFF;
-    len += 2;
-    
-    for(var i = 0; i < len2; i++)
-    {
-        arr[len + i] = arr2[i];
-    }
-}
-
-function ReadUintFromArr(arr,len)
-{
-    if(len === undefined)
-    {
-        len = arr.len;
-        arr.len += 6;
-    }
-    
-    var value = (arr[len + 5] << 23) * 2 + (arr[len + 4] << 16) + (arr[len + 3] << 8) + arr[len + 2];
-    value = value * 256 + arr[len + 1];
-    value = value * 256 + arr[len];
-    return value;
-}
-function ReadUint32FromArr(arr,len)
-{
-    if(len === undefined)
-    {
-        len = arr.len;
-        arr.len += 4;
-    }
-    
-    var value = (arr[len + 3] << 23) * 2 + (arr[len + 2] << 16) + (arr[len + 1] << 8) + arr[len];
-    return value;
-}
-
-function ReadArr(arr,length)
-{
-    var Ret = [];
-    var len = arr.len;
-    for(var i = 0; i < length; i++)
-    {
-        Ret[i] = arr[len + i];
-    }
-    arr.len += length;
-    return Ret;
-}
-function ReadStr(arr)
-{
-    var length = arr[arr.len] + arr[arr.len + 1] * 256;
-    arr.len += 2;
-    var arr2 = arr.slice(arr.len, arr.len + length);
-    var Str = Utf8ArrayToStr(arr2);
-    arr.len += length;
-    return Str;
-}
 function ParseNum(Str)
 {
     var Res = parseInt(Str);
@@ -812,16 +573,15 @@ function UnVisibleChilds(parent)
     }
 }
 
-function ViewGrid(APIName,Params,nameid,bClear,TotalSum,F)
+async function ViewGrid(APIName,Params,nameid,bClear,TotalSum,F)
 {
-    GetData(APIName, Params, function (Data)
-    {
-        if(!Data || !Data.result)
-            return;
-        SetGridData(Data.arr, nameid, TotalSum, bClear);
-        if(F)
-            F(APIName, Params, Data);
-    });
+    var Data=await AGetData(APIName, Params);
+    if(!Data || !Data.result)
+        return;
+
+    await ASetGridData(Data.arr, nameid, TotalSum, bClear,0);
+    if(F)
+        F(APIName, Params, Data);
 }
 
 function CheckNewSearch(Def)
@@ -885,9 +645,20 @@ function ViewCurrentInner(Def,flag,This)
     }
     if(!Def.Param3)
         Def.Param3 = "";
+    var Params=Def.Params;
+
+    if(!Params)
+        Params={};
+    Params.StartNum=ParseNum(item.value);
+    Params.CountNum=GetCountViewRows(Def);
+    Params.Param3=Def.Param3;
+    Params.Filter=Filter;
+    Params.Filter2=Filter2;
+    Params.ChainMode=Def.ChainMode;
+    Params.GetState=0;//window.DEBUG_WALLET;
+
     
-    ViewGrid(Def.APIName, {StartNum:ParseNum(item.value), CountNum:GetCountViewRows(Def), Param3:Def.Param3, Filter:Filter, Filter2:Filter2,
-        ChainMode:Def.ChainMode, GetState:window.DEBUG_WALLET}, Def.TabName, 1, Def.TotalSum, Def.F);
+    ViewGrid(Def.APIName, Params, Def.TabName, 1, Def.TotalSum, Def.F);
     SaveValues();
     
     if(This)
@@ -991,50 +762,189 @@ function CreateEval(formula,StrParams)
 
 var glWorkNum = 0;
 var CUR_ROW;
-function SetGridData(arr,id_name,TotalSum,bclear,revert)
+
+function SetGridDataNew(arr,id_name,bClear)
 {
-    
+
     var htmlTable = $(id_name);
     if(!htmlTable)
     {
         console.log("Error id_name: " + id_name);
         return;
     }
-    
-    if(bclear)
+
+    if(bClear)
+    {
         ClearTable(htmlTable);
-    
+    }
+
     if(!htmlTable.ItemsMap)
     {
         htmlTable.ItemsMap = {};
         htmlTable.RowCount = 0;
     }
-    
+
     var map = htmlTable.ItemsMap;
-    htmlTable.Arr = arr;
-    
+
+    if(!glWorkNum)
+        glWorkNum=0;
     glWorkNum++;
     var ValueTotal = {SumCOIN:0, SumCENT:0};
-    
+
     var row0 = htmlTable.rows[0];
     var row0cells = row0.cells;
     var colcount = row0cells.length;
-    
+
     if(!htmlTable.ColumnArr)
         htmlTable.ColumnArr = CompileColumnArr(row0.cells);
     var ColumnArr = htmlTable.ColumnArr;
-    
+
+    var PrevItem;
     for(var i = 0; arr && i < arr.length; i++)
     {
         var Item = arr[i];
         var ID = Item.Num;
         htmlTable.MaxNum = Item.Num;
-        
+
         var row = map[ID];
         if(!row)
         {
             htmlTable.RowCount++;
-            if(revert)
+
+            var NewRowIndex;
+
+            var CurRowIndex=1;
+            if(CUR_ROW)
+                CurRowIndex=CUR_ROW.rowIndex;
+
+            if(!PrevItem && htmlTable.Arr.length>0)
+            {
+                CurRowIndex=1;
+                PrevItem=htmlTable.Arr[0];
+            }
+
+            if(CUR_ROW && PrevItem)
+            {
+                if(PrevItem.ID<Item.ID)
+                    NewRowIndex=CurRowIndex;
+                else
+                    NewRowIndex=CurRowIndex+1;
+            }
+            else
+            {
+                NewRowIndex=-1;
+            }
+            row = htmlTable.insertRow(NewRowIndex);
+
+            map[ID] = row;
+            for(var n = 0; n < colcount; n++)
+            {
+                var ColItem = ColumnArr[n];
+                if(!ColItem)
+                    continue;
+                var cell = row.insertCell();
+                cell.className = ColItem.C;
+            }
+        }
+
+        row.Work = glWorkNum;
+        CUR_ROW = row;
+        PrevItem=Item;
+        //console.log("row",row.rowIndex);
+
+        var n2 =  - 1;
+        for(var n = 0; n < colcount; n++)
+        {
+            var ColItem = ColumnArr[n];
+            if(!ColItem)
+                continue;
+            n2++;
+            var cell = row.cells[n2];
+
+            if(ColItem.H)
+            {
+                var text = "" + ColItem.F(Item);
+                text = toStaticHTML(text.trim());
+                if(cell.innerHTML !== text)
+                    cell.innerHTML = text;
+            }
+            else
+            if(ColItem.F)
+            {
+                var text = "" + ColItem.F(Item);
+                text.trim();
+                if(cell.innerText !== text)
+                    cell.innerText = text;
+            }
+        }
+    }
+
+    htmlTable.Arr = arr;
+
+    for(var key in map)
+    {
+        var row = map[key];
+        if(row.Work != glWorkNum)
+        {
+            htmlTable.deleteRow(row.rowIndex);
+            delete map[key];
+        }
+    }
+}
+
+
+function SetGridData(arr,id_name,TotalSum,bclear,revert)
+{
+
+    var htmlTable = $(id_name);
+    if(!htmlTable)
+    {
+        console.log("Error id_name: " + id_name);
+        return;
+    }
+
+    if(bclear)
+    {
+        ClearTable(htmlTable);
+    }
+
+    if(!htmlTable.ItemsMap)
+    {
+        htmlTable.ItemsMap = {};
+        htmlTable.RowCount = 0;
+    }
+
+    var WasLength=0;
+    if(htmlTable.Arr)
+        WasLength=htmlTable.Arr.length;
+
+    var map = htmlTable.ItemsMap;
+    htmlTable.Arr = arr;
+
+    if(!glWorkNum)
+        glWorkNum=0;
+    glWorkNum++;
+    var ValueTotal = {SumCOIN:0, SumCENT:0};
+
+    var row0 = htmlTable.rows[0];
+    var row0cells = row0.cells;
+    var colcount = row0cells.length;
+
+    if(!htmlTable.ColumnArr)
+        htmlTable.ColumnArr = CompileColumnArr(row0.cells);
+    var ColumnArr = htmlTable.ColumnArr;
+
+    for(var i = 0; arr && i < arr.length; i++)
+    {
+        var Item = arr[i];
+        var ID = Item.Num;
+        htmlTable.MaxNum = Item.Num;
+
+        var row = map[ID];
+        if(!row)
+        {
+            htmlTable.RowCount++;
+            if(revert==1 || revert==2 && WasLength>0)
                 row = htmlTable.insertRow(1);
             else
                 row = htmlTable.insertRow( - 1);
@@ -1050,7 +960,7 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
         }
         row.Work = glWorkNum;
         CUR_ROW = row;
-        
+
         var n2 =  - 1;
         for(var n = 0; n < colcount; n++)
         {
@@ -1059,7 +969,7 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
                 continue;
             n2++;
             var cell = row.cells[n2];
-            
+
             if(ColItem.H)
             {
                 var text = "" + ColItem.F(Item);
@@ -1068,22 +978,22 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
                     cell.innerHTML = text;
             }
             else
-                if(ColItem.F)
-                {
-                    var text = "" + ColItem.F(Item);
-                    text.trim();
-                    if(cell.innerText !== text)
-                        cell.innerText = text;
-                }
+            if(ColItem.F)
+            {
+                var text = "" + ColItem.F(Item);
+                text.trim();
+                if(cell.innerText !== text)
+                    cell.innerText = text;
+            }
         }
-        
+
         if(TotalSum && Item.Currency === 0)
             ADD(ValueTotal, Item.Value);
     }
     for(var key in map)
     {
         var row = map[key];
-        if(row.Work !== glWorkNum)
+        if(row.Work != glWorkNum)
         {
             htmlTable.deleteRow(row.rowIndex);
             delete map[key];
@@ -1100,9 +1010,11 @@ function SetGridData(arr,id_name,TotalSum,bclear,revert)
                 id.innerText = "";
         }
     }
-    
+
     DoStableScroll();
 }
+
+
 function CompileColumnArr(row0cells)
 {
     var Arr = [];
@@ -1131,6 +1043,7 @@ function ClearTable(htmlTable)
         htmlTable.deleteRow(i);
     htmlTable.ItemsMap = {};
     htmlTable.RowCount = 0;
+    htmlTable.Arr=[];
 }
 
 function RetRepeatTx(BlockNum,TrNum)
@@ -1207,7 +1120,7 @@ function RetIconPath(Item,bCurrency)
 {
     if(bCurrency)
     {
-        var ItemCurrency = MapCodeCurrency[MapCurrency[Item.Num]];
+        var ItemCurrency = GetItemCurrencyByNum(Item.Num);
         if(ItemCurrency)
         {
             if(ItemCurrency.PathIcon)
@@ -1221,16 +1134,10 @@ function RetIconPath(Item,bCurrency)
         }
     }
     
-    var StrPath = "";
-    if(MainServer)
-    {
-        StrPath = GetProtocolServerPath(MainServer);
-    }
-    
     if(Item.IconBlockNum)
-        return StrPath + '/file/' + Item.IconBlockNum + '/' + Item.IconTrNum;
+        return GetURLPath('/file/' + Item.IconBlockNum + '/' + Item.IconTrNum);
     else
-        return StrPath + "/PIC/blank.svg";
+        return GetURLPath("/PIC/blank.svg");
 }
 
 function RetIconDapp(Item)
@@ -1347,16 +1254,18 @@ function RetHistoryAccount(Item,Name)
     if(Num < 1)
         return "" + Num;
     
-    var Str;
-    Str = "<a class='olink' target='_blank' onclick='OpenHistoryPage(" + Num + ")'>" + Num + "</a>";
-    
-    return Str;
+    return "<a class='olink' target='_blank' onclick='OpenHistoryPage(" + Num + ")'>" + Num + "</a>";
 }
+
 
 function RetEditAccount(Item)
 {
-    return Item.Name;
+    if(CONFIG_DATA && CONFIG_DATA.CONSTANTS.USE_EDIT_ACCOUNT)
+        return  "<a class='olink' target='_blank' onclick='DoEditAccount(" + Item.Num + ")'>" + (Item.Name?Item.Name:"---------") + "</a>";
+    else
+        return Item.Name;
 }
+
 
 function DoEditAccount(Num)
 {
@@ -1380,8 +1289,8 @@ function OpenHistoryPage(Num)
 function RetBaseAccount(Item)
 {
     var Str = RetHistoryAccount(Item, "Account");
-    if(Item.AccountLength > 1)
-        Str += "-" + (Item.Account + Item.AccountLength - 1);
+    // if(Item.AccountLength > 1)
+    //     Str += "-" + (Item.Account + Item.AccountLength - 1);
     return Str;
 }
 
@@ -1580,291 +1489,61 @@ function SaveValuesByArr(Arr,DopStr)
 }
 
 
-var bWasCodeSys = 0;
-var MapCurrency = {};
-var MapCodeCurrency = {};
+function InitMapCategory()
+{
+    MapCategory[0] = "-";
+    MapCategory[1] = "Art & Music";
+    MapCategory[2] = "Big Data & AI";
+    MapCategory[3] = "Business";
+    MapCategory[4] = "Commerce & Advertising";
+    MapCategory[5] = "Communications";
+    MapCategory[6] = "Content Management";
+    MapCategory[7] = "Crowdfunding";
+    MapCategory[8] = "Data Storage";
+    MapCategory[9] = "Drugs & Healthcare";
+    MapCategory[10] = "Education";
+    MapCategory[11] = "Energy & Utilities";
+    MapCategory[12] = "Events & Entertainment";
+    MapCategory[13] = "eСommerce";
+    MapCategory[14] = "Finance";
+    MapCategory[15] = "Gambling & Betting";
+    MapCategory[16] = "Gaming & VR";
+    MapCategory[17] = "Healthcare";
+    MapCategory[18] = "Identity & Reputation";
+    MapCategory[19] = "Industry";
+    MapCategory[20] = "Infrastructure";
+    MapCategory[21] = "Investment";
+    MapCategory[22] = "Live Streaming";
+    MapCategory[23] = "Machine Learning & AI";
+    MapCategory[24] = "Marketing";
+    MapCategory[25] = "Media";
+    MapCategory[26] = "Mining";
+    MapCategory[27] = "Payments";
+    MapCategory[28] = "Platform";
+    MapCategory[29] = "Provenance & Notary";
+    MapCategory[30] = "Real Estate";
+    MapCategory[31] = "Recruitment";
+    MapCategory[32] = "Service";
+    MapCategory[33] = "Social Network";
+    MapCategory[34] = "Social project";
+    MapCategory[35] = "Supply & Logistics";
+    MapCategory[36] = "Trading & Investing";
+    MapCategory[37] = "Transport";
+    MapCategory[38] = "Travel & Tourisim";
 
-function InitMapCurrency()
-{
-    window.NETWORK_ID = window.NETWORK_NAME + "." + window.SHARD_NAME;
-    
-    var AccCoinList = 0;
-    
-    MapCurrency = {};
-    AddCurrency(0, window.SHARD_NAME, "./PIC/T.svg", 1);
-    
-    if(window.NETWORK_ID === "MAIN-JINN.TERA")
-    {
-        AddCurrency(16, "BTC", "./PIC/B.svg", 1);
-        AddCurrency(110, "USD", undefined, 1);
-        AddCurrency(111, "DAO", undefined, 1);
-        
-        AccCoinList = 226857;
-    }
-    else
-        if(window.NETWORK_ID === "TEST-JINN.TEST")
-        {
-            AddCurrency(9, "BTC", "./PIC/B.svg", 1);
-            AddCurrency(10, "USD", undefined, 1);
-            
-            AccCoinList = 571;
-        }
-        else
-            if(window.NETWORK_NAME === "LOCAL-JINN")
-            {
-                AddCurrency(9, "BTC", "./PIC/B.svg", 1);
-                AddCurrency(10, "USD", undefined, 1);
-                
-                AccCoinList = 234;
-            }
-            else
-            {
-                return;
-            }
-    
-    WasAccountsDataStr = "";
-    if(!bWasCodeSys)
-    {
-        
-        if(AccCoinList)
-        {
-            StaticCall(AccCoinList, "GetList", {}, [], function (Err,Arr)
-            {
-                if(!Arr)
-                    return;
-                for(var i = 0; i < Arr.length; i++)
-                {
-                    var Item = Arr[i];
-                    var Key = NormalizeCurrencyName(Item.Name);
-                    
-                    var Item2 = AddCurrency(Item.Num, Item.Name, undefined, Item.Flag & 1);
-                    if(Item.Flag > 10)
-                    {
-                        var PathIcon = Math.floor(Item.Flag / 10);
-                        Item2.IconTrNum = PathIcon % 100;
-                        Item2.IconBlockNum = Math.floor(PathIcon / 100);
-                    }
-                }
-                WasAccountsDataStr = "";
-                FillDataList("idCurrencyList", MapCurrency);
-            });
-        }
-        
-        bWasCodeSys = 1;
-    }
-}
-function AddCurrency(Num,Name,PathIcon,System)
-{
-    var Item = {Num:Num, Name:Name, PathIcon:PathIcon, system:System};
-    MapCurrency[Num] = Name;
-    MapCodeCurrency[Name] = Item;
-    return Item;
+    MapCategory[39] = "Bounty";
+    MapCategory[40] = "Code-library";
+    MapCategory[41] = "Development";
+    MapCategory[42] = "Exchanges";
+
+    MapCategory[43] = "Security";
+    MapCategory[44] = "Governance";
+    MapCategory[45] = "Property";
+    MapCategory[46] = "Insurance";
 }
 
-function NormalizeCurrencyName(Name)
-{
-    if(!Name)
-    {
-        return;
-    }
-    const LETTER = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
-    var Str = "";
-    for(var i = 0; i < Name.length; i++)
-    {
-        var C = Name.substr(i, 1);
-        var Index = LETTER.indexOf(C);
-        if(Index < 0)
-            continue;
-        if(i === 0 && Index < 1)
-            continue;
-        Str = Str + C;
-    }
-    
-    return Str;
-}
 
-InitMapCurrency();
 
-var MapCategory = {};
-MapCategory[0] = "-";
-MapCategory[1] = "Art & Music";
-MapCategory[2] = "Big Data & AI";
-MapCategory[3] = "Business";
-MapCategory[4] = "Commerce & Advertising";
-MapCategory[5] = "Communications";
-MapCategory[6] = "Content Management";
-MapCategory[7] = "Crowdfunding";
-MapCategory[8] = "Data Storage";
-MapCategory[9] = "Drugs & Healthcare";
-MapCategory[10] = "Education";
-MapCategory[11] = "Energy & Utilities";
-MapCategory[12] = "Events & Entertainment";
-MapCategory[13] = "eСommerce";
-MapCategory[14] = "Finance";
-MapCategory[15] = "Gambling & Betting";
-MapCategory[16] = "Gaming & VR";
-MapCategory[17] = "Healthcare";
-MapCategory[18] = "Identity & Reputation";
-MapCategory[19] = "Industry";
-MapCategory[20] = "Infrastructure";
-MapCategory[21] = "Investment";
-MapCategory[22] = "Live Streaming";
-MapCategory[23] = "Machine Learning & AI";
-MapCategory[24] = "Marketing";
-MapCategory[25] = "Media";
-MapCategory[26] = "Mining";
-MapCategory[27] = "Payments";
-MapCategory[28] = "Platform";
-MapCategory[29] = "Provenance & Notary";
-MapCategory[30] = "Real Estate";
-MapCategory[31] = "Recruitment";
-MapCategory[32] = "Service";
-MapCategory[33] = "Social Network";
-MapCategory[34] = "Social project";
-MapCategory[35] = "Supply & Logistics";
-MapCategory[36] = "Trading & Investing";
-MapCategory[37] = "Transport";
-MapCategory[38] = "Travel & Tourisim";
-
-MapCategory[39] = "Bounty";
-MapCategory[40] = "Code-library";
-MapCategory[41] = "Development";
-MapCategory[42] = "Exchanges";
-
-MapCategory[43] = "Security";
-MapCategory[44] = "Governance";
-MapCategory[45] = "Property";
-MapCategory[46] = "Insurance";
-
-function GetTokenName(Num,Name)
-{
-    if(!Name)
-        Name = "Token";
-    if(Num === undefined)
-        return "---";
-    else
-        return "" + Num + "." + escapeHtml(Name).toLowerCase();
-}
-
-function CurrencyNameItem(Item)
-{
-    var Name = MapCurrency[Item.Currency];
-    if(!Name)
-    {
-        if(Item.CurrencyObj)
-        {
-            Name = GetTokenName(Item.Currency, Item.CurrencyObj.ShortName);
-        }
-        else
-            Name = GetTokenName(Item.Currency, "");
-        
-        MapCurrency[Item.Currency] = Name;
-    }
-    if(Item.CurrencyObj && Item.CurrencyObj.TokenDescription)
-        Name += " : " + escapeHtml(Item.CurrencyObj.TokenDescription);
-    
-    return Name;
-}
-
-function CurrencyName(Num)
-{
-    var Name = MapCurrency[Num];
-    if(!Name)
-    {
-        GetData("GetDappList", {StartNum:Num, CountNum:1}, function (Data)
-        {
-            if(Data && Data.result)
-            {
-                var Smart = Data.arr[0];
-                
-                Name = GetTokenName(Smart.Num, Smart.ShortName);
-                MapCurrency[Smart.Num] = Name;
-            }
-        });
-        
-        Name = GetTokenName(Num, "");
-    }
-    return Name;
-}
-
-function FillCurrencyAsync(IdName,StartNum)
-{
-    
-    InitMapCurrency();
-    
-    if(!StartNum)
-        StartNum = 8;
-    
-    FillDataList(IdName, MapCurrency);
-}
-
-function FillCurrencyNext(IdName,StartNum)
-{
-    var MaxCountViewRows = 6;
-    GetData("DappSmartList", {StartNum:StartNum, CountNum:MaxCountViewRows, TokenGenerate:1}, function (Data)
-    {
-        if(Data && Data.result && Data.arr)
-        {
-            var MaxNum = 0;
-            for(var i = 0; i < Data.arr.length; i++)
-            {
-                var Smart = Data.arr[i];
-                if(!MapCurrency[Smart.Num])
-                {
-                    Name = GetTokenName(Smart.Num, Smart.ShortName);
-                    MapCurrency[Smart.Num] = Name;
-                }
-                if(Smart.Num > MaxNum)
-                    MaxNum = Smart.Num;
-            }
-            if(IdName)
-            {
-                FillDataList(IdName, MapCurrency);
-            }
-            if(Data.arr.length === MaxCountViewRows && MaxNum)
-            {
-                FillCurrencyNext(IdName, MaxNum + 1);
-            }
-        }
-    });
-}
-function FillDataList(IdName,Map)
-{
-    var dataList = $(IdName);
-    if(!dataList)
-        return;
-    
-    dataList.innerHTML = "";
-    
-    for(var key in Map)
-    {
-        var name = Map[key];
-        var Options = document.createElement('option');
-        Options.value = name;
-        var ExtItem = MapCodeCurrency[name];
-        if(ExtItem && ExtItem.system)
-            Options.label = "system";
-        dataList.appendChild(Options);
-    }
-}
-function ValidateCurrency(Element)
-{
-    var Num = GetCurrencyByName(Element.value);
-    var Name = MapCurrency[Num];
-    if(Name)
-        Element.value = Name;
-}
-function GetCurrencyByName(Value)
-{
-    Value = NormalizeCurrencyName(String(Value).toUpperCase());
-    var Item = MapCodeCurrency[Value];
-    if(Item)
-    {
-        return Item.Num;
-    }
-    
-    return parseInt(Value);
-}
 
 function FillSelect(IdName,arr,bNatural)
 {
@@ -1890,6 +1569,9 @@ function FillSelect(IdName,arr,bNatural)
             var name;
             if(bNatural === "KEY")
                 name = key;
+            else
+            if(bNatural === "NAME")
+                name = arr[key].name;
             else
                 name = arr[key];
             Options[Options.length] = new Option(name, key);
@@ -1955,18 +1637,19 @@ function FillCategoryAndSort(IdName,arr)
 
 function AddToInvoiceList(Item)
 {
-    var arr;
-    var Str = Storage.getItem("InvoiceList");
-    if(Str)
-    {
-        arr = JSON.parse(Str);
-    }
-    else
-    {
-        arr = [];
-    }
-    
-    arr.unshift(Item);
+    // var arr;
+    // var Str = Storage.getItem("InvoiceList");
+    // if(Str)
+    // {
+    //     arr = JSON.parse(Str);
+    // }
+    // else
+    // {
+    //     arr = [];
+    // }
+    //
+    // arr.unshift(Item);
+    var arr=[Item];
     Storage.setItem("InvoiceList", JSON.stringify(arr));
 }
 
@@ -2018,311 +1701,9 @@ function ParseFileName(Str)
     return Ret;
 }
 
-function RetError(F,TR,Body,Str)
-{
-    if(window.SetError)
-        SetError(Str);
-    if(F)
-        F(1, TR, Body, Str);
-    return 0;
-}
-function RetResult(F,TR,Body,Str)
-{
-    if(window.SetStatus)
-        SetStatus(Str);
-    if(F)
-        F(0, TR, Body, Str);
-    return 1;
-}
 
-window.MapSendTransaction = {};
-function SendTransactionNew(Body,TR,F)
-{
-    var MaxLength = 12000;
-    if(IsFullNode())
-    {
-        if(Body[0] === 111)
-            MaxLength = 16000;
-        else
-            MaxLength = 0;
-    }
-    
-    if(MaxLength && Body.length > MaxLength)
-    {
-        return RetError(F, TR, Body, "Error length transaction = " + Body.length + ". Can max size=" + MaxLength);
-    }
-    
-    var StrHex = GetHexFromArr(Body);
-    GetData("SendHexTx", {Hex:StrHex}, function (Data)
-    {
-        if(Data)
-        {
-            var key = GetHexFromArr(sha3(Body));
-            if(Data.ResultSend <= 0)
-            {
-                return RetError(F, TR, Body, "Error: " + Data.text);
-            }
-            if(!TR)
-                return;
-            
-            TR.BlockNum = Data._BlockNum;
-            TR.TxID = Data._TxID;
-            MapSendTransaction[key] = TR;
-            
-            return RetResult(F, TR, Body, "Send '" + key.substr(0, 12) + "' result:" + Data.text);
-        }
-        else
-        {
-            return RetError(F, TR, Body, "Error Data");
-        }
-    });
-}
 
-var MapSendID = {};
-function GetOperationIDFromItem(Item,CheckErr)
-{
-    if(!Item || !Item.Num)
-    {
-        if(CheckErr && window.SetError)
-            SetError("Error read account From");
-        return 0;
-    }
-    
-    var FromNum = Item.Num;
-    var OperationID = 0;
-    
-    var MapItem = MapSendID[FromNum];
-    if(!MapItem)
-    {
-        MapItem = {Date:0};
-        MapSendID[FromNum] = MapItem;
-    }
-    
-    var CurTime = Date.now();
-    OperationID = MapItem.OperationID;
-    if((CurTime - MapItem.Date) > 10 * 1000)
-    {
-        var BlockNum = GetCurrentBlockNumByTime();
-        OperationID = Item.Value.OperationID + BlockNum % 100;
-    }
-    OperationID = Math.max(Item.Value.OperationID, OperationID);
-    
-    OperationID++;
-    MapItem.OperationID = OperationID;
-    MapItem.Date = CurTime;
-    
-    return OperationID;
-}
 
-function SendCallMethod(Account,MethodName,Params,ParamsArr,FromNum,FromSmartNum,F)
-{
-    
-    var TR = {Type:135};
-    var Body = [TR.Type];
-    
-    WriteUint(Body, Account);
-    WriteStr(Body, MethodName);
-    WriteStr(Body, JSON.stringify(Params));
-    WriteUint(Body, FromNum);
-    if(FromNum)
-    {
-        GetData("GetAccount", Account, function (Data)
-        {
-            if(!Data || Data.result !== 1 || !Data.Item)
-            {
-                return RetError(F, TR, Body, "Error account number: " + Account);
-            }
-            if(Data.Item.Value.Smart !== FromSmartNum)
-            {
-                return RetError(F, TR, Body, "Error - The account:" + Account + " does not belong to a smart contract:" + FromSmartNum + " (have: " + Data.Item.Value.Smart + ")");
-            }
-            
-            GetData("GetAccount", FromNum, function (Data)
-            {
-                if(!Data || Data.result !== 1 || !Data.Item)
-                {
-                    return RetError(F, TR, Body, "Error account number: " + FromNum);
-                }
-                if(Data.Item.Num != FromNum)
-                {
-                    return RetError(F, TR, Body, "Error read from account number: " + FromNum + " read data=" + Data.Item.Num);
-                }
-                
-                var OperationID = GetOperationIDFromItem(Data.Item, 1);
-                
-                WriteUint(Body, OperationID);
-                Body.push(4);
-                WriteTr(Body, ParamsArr);
-                for(var i = 0; i < 7; i++)
-                    Body.push(0);
-                
-                SendTrArrayWithSign(Body, FromNum, TR, F);
-            });
-        });
-    }
-    else
-    {
-        WriteUint(Body, random(1000000000));
-        Body.push(4);
-        WriteTr(Body, ParamsArr);
-        for(var i = 0; i < 7; i++)
-            Body.push(0);
-        Body.length += 64;
-        SendTransactionNew(Body, TR, F);
-    }
-}
-
-function SendTrArrayWithSign(Body,Account,TR,F)
-{
-    if(window.SignLib && !Storage.getItem("BIGWALLET"))
-    {
-        if(MainServer || CanClientSign())
-        {
-            var Sign = GetSignFromArr(Body);
-            var Arr = GetArrFromHex(Sign);
-            WriteArr(Body, Arr, 64);
-            return SendTransactionNew(Body, TR, F);
-        }
-    }
-    
-    var StrHex = GetHexFromArr(Body);
-    GetData("GetSignFromHEX", {Hex:StrHex, Account:Account}, function (Data)
-    {
-        if(Data && Data.result)
-        {
-            var Arr = GetArrFromHex(Data.Sign);
-            WriteArr(Body, Arr, 64);
-            SendTransactionNew(Body, TR, F);
-        }
-    });
-}
-
-function GetTrCreateAcc(Currency,PubKey,Description,Adviser,Smart)
-{
-    var TR = {Type:TYPE_TRANSACTION_CREATE, Currency:Currency, PubKey:PubKey, Name:Description, Adviser:Adviser, Smart:Smart, };
-    return TR;
-}
-function GetBodyCreateAcc(TR)
-{
-    var Body = [];
-    WriteByte(Body, TR.Type);
-    WriteUint(Body, TR.Currency);
-    WriteArr(Body, GetArrFromHex(TR.PubKey), 33);
-    WriteStr(Body, TR.Name, 40);
-    WriteUint(Body, TR.Adviser);
-    WriteUint32(Body, TR.Smart);
-    Body.length += 3;
-    return Body;
-}
-
-function GetArrFromTR(TR)
-{
-    if(window.MapAccounts)
-        MaxBlockNum = GetCurrentBlockNumByTime();
-    
-    var Body = [];
-    WriteByte(Body, TR.Type);
-    WriteByte(Body, TR.Version);
-    WriteUint(Body, TR.OperationID);
-    WriteUint(Body, TR.FromID);
-    WriteUint32(Body, TR.To.length);
-    for(var i = 0; i < TR.To.length; i++)
-    {
-        var Item = TR.To[i];
-        if(TR.Version >= 3)
-            WriteTr(Body, Item.PubKey);
-        WriteUint(Body, Item.ID);
-        WriteUint(Body, Item.SumCOIN);
-        WriteUint32(Body, Item.SumCENT);
-        
-        if(window.MapAccounts && MapAccounts[Item.ID])
-            MapAccounts[Item.ID].MustUpdate = MaxBlockNum + 4;
-    }
-    
-    WriteStr(Body, TR.Description);
-    WriteUint(Body, 0);
-    if(TR.Version >= 3)
-    {
-        if(TR.Body)
-        {
-            WriteTr(Body, TR.Body);
-        }
-        else
-        {
-            WriteByte(Body, 0);
-            WriteByte(Body, 0);
-        }
-    }
-    return Body;
-}
-
-function GetSignTransaction(TR,StrPrivKey,F)
-{
-    if(window.SignLib && !Storage.getItem("BIGWALLET"))
-    {
-        if(TR.Version === 4)
-        {
-            var Body = GetArrFromTR(TR);
-            TR.Sign = GetArrFromHex(GetSignFromArr(Body, StrPrivKey));
-            F(TR);
-        }
-        else
-        {
-            TR.Sign = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-            F(TR);
-        }
-    }
-    else
-    {
-        if(window.SERVER_VERSION >= 2481 && TR.Version === 4)
-        {
-            var Body = GetArrFromTR(TR);
-            var Hash = GetHexFromArr(SHA3BUF(Body));
-            GetData("GetSignFromHash", {Hash:Hash, Account:TR.FromID}, function (Data)
-            {
-                if(Data && Data.result === 1)
-                {
-                    TR.Sign = GetArrFromHex(Data.Sign);
-                    F(TR);
-                }
-            });
-            return;
-        }
-        
-        GetData("GetSignTransaction", TR, function (Data)
-        {
-            if(Data && Data.result === 1)
-            {
-                TR.Sign = GetArrFromHex(Data.Sign);
-                F(TR);
-            }
-        });
-    }
-}
-function GetSignFromArr(Arr,StrPrivKey)
-{
-    if(!StrPrivKey)
-        StrPrivKey = GetPrivKey();
-    if(!IsHexStr(StrPrivKey) || StrPrivKey.length !== 64)
-        return "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-    
-    var PrivKey = GetArrFromHex(StrPrivKey);
-    var sigObj = SignLib.sign(SHA3BUF(Arr), Buffer.from(PrivKey), null, null);
-    return GetHexFromArr(sigObj.signature);
-}
-
-function IsHexStr(Str)
-{
-    if(!Str)
-        return false;
-    
-    var arr = GetArrFromHex(Str);
-    var Str2 = GetHexFromArr(arr);
-    if(Str2 === Str.toUpperCase())
-        return true;
-    else
-        return false;
-}
 
 function RetJSON(Item)
 {
@@ -2371,14 +1752,6 @@ function ToLog(Str)
     console.log(Str);
 }
 
-function InitMainServer()
-{
-    var Str = Storage.getItem("MainServer");
-    if(Str && !Storage.getItem("BIGWALLET") && Str.substr(0, 1) === "{")
-    {
-        MainServer = JSON.parse(Str);
-    }
-}
 
 function IsZeroArr(arr)
 {
@@ -2503,6 +1876,19 @@ function GetPubKey()
     else
         return "";
 }
+function IsCorrectPrivKey(StrKey)
+{
+    if(StrKey.length!==64)
+        return 0;
+
+    if(GetHexFromArr(GetArrFromHex(StrKey))!==StrKey.toUpperCase())
+        return 0;
+    if(StrKey.substr(0,12)==="000000000000")
+        return 0;
+
+    return 1;
+
+}
 
 function SetPrivKey(StrPrivKey)
 {
@@ -2574,6 +1960,13 @@ function UseInnerPage()
     else
         return 0;
 }
+
+function IsLocalClient()
+{
+    return (window.location.protocol.substr(0, 4) !== "http");
+}
+
+
 function isOS()
 {
     if(/iPhone|iPad|iPod/i.test(navigator.userAgent))
@@ -2617,10 +2010,10 @@ function GetStrFromDiagrArr(Arr)
 
 function GetWalletLink()
 {
-    if(MainServer)
+    if(GetMainServer())
         return "./web-wallet.html#TabAccounts";
     else
-        if(Storage.getItem("BIGWALLET"))
+        if(IsFullNode())
             return "/wallet.html#TabAccounts";
         else
             return "/web-wallet.html#TabAccounts";
@@ -2645,12 +2038,30 @@ function GetFilePath(Path)
 var glConfirmF;
 var glWasModal = 0;
 var TEMP_DISABLED_MAP = {};
+var NotModalClose=0;
+
+function openModalForce(id,idOK)
+{
+    //console.log("Open force!");
+    NotModalClose=1;
+    return openModal(id,idOK);
+}
+function closeModalForce()
+{
+    //console.log("Close force!");
+    NotModalClose=0;
+    return closeModal();
+}
 
 function openModal(id,idOK)
 {
     glWasModal = 1;
     var modal = document.querySelector("#" + id);
     var overlay = document.querySelector("#idOverlay");
+    if(!modal)
+        return SetError("Error id: "+id);
+    if(!overlay)
+        return SetError("Error idOverlay");
     modal.style.display = "flex";
     overlay.style.display = "block";
     
@@ -2666,20 +2077,30 @@ function openModal(id,idOK)
 
 function closeModal()
 {
+    if(NotModalClose)
+        return;
+
     glWasModal = 0;
-    var modals = document.querySelectorAll(".ModalDlg");
-    var overlay = document.querySelector("#idOverlay");
+    // var modals = document.querySelectorAll(".ModalDlg");
+    // var overlay = document.querySelector("#idOverlay");
+    // modals.forEach(function (item)
+    // {
+    //     item.style.display = "none";
+    // });
+    // overlay.style.display = "none";
+    var modals = document.querySelectorAll(".ModalDlg,.modal,#overlay,#idConfirm,#idOverlay");
     modals.forEach(function (item)
     {
         item.style.display = "none";
     });
-    overlay.style.display = "none";
-    
+
     setTimeout(function ()
     {
         glConfirmF = undefined;
     }, 100);
 }
+
+
 
 function DoConfirm(StrTitle,StrText,F,bDirect)
 {
@@ -2690,12 +2111,14 @@ function DoConfirm(StrTitle,StrText,F,bDirect)
         StrText = "Are you sure?";
     }
     else
+    {
         if(typeof StrText === "function")
         {
             bDirect = F;
             F = StrText;
             StrText = "";
         }
+    }
     
     if(!bDirect && window.openModal && $("idConfirm"))
     {
@@ -2711,10 +2134,11 @@ function DoConfirm(StrTitle,StrText,F,bDirect)
 }
 function OnConfirmOK()
 {
+    var WasConfirmF=glConfirmF;
     closeModal();
-    if(glConfirmF)
+    if(WasConfirmF)
     {
-        var F = glConfirmF;
+        var F = WasConfirmF;
         glConfirmF = undefined;
         F();
     }
@@ -2867,6 +2291,7 @@ function OnFindTx(idname)
 
 function MyXMLHttpRequest()
 {
+    //TODO
     this.status = 0;
     this.readyState = 0;
     this.Headers = {};
@@ -2938,3 +2363,215 @@ function IsLocalAllowed()
 }
 
 
+
+async function ASetGridData(arr,id_name,TotalSum,bClear,TotalCurency)
+{
+    var htmlTable = $(id_name);
+    if(!htmlTable)
+    {
+        console.log("Error id_name: " + id_name);
+        return;
+    }
+
+    if(bClear)
+    {
+        ClearTable(htmlTable);
+    }
+
+    if(!htmlTable.ItemsMap)
+    {
+        htmlTable.ItemsMap = {};
+        htmlTable.RowCount = 0;
+    }
+
+    var map = htmlTable.ItemsMap;
+
+    if(!glWorkNum)
+        glWorkNum=0;
+    glWorkNum++;
+    var ValueTotal = {SumCOIN:0, SumCENT:0};
+
+    var row0 = htmlTable.rows[0];
+    var row0cells = row0.cells;
+    var colcount = row0cells.length;
+
+    if(!htmlTable.ColumnArr)
+        htmlTable.ColumnArr = CompileColumnArr(row0.cells);
+    var ColumnArr = htmlTable.ColumnArr;
+
+    //create new rows
+
+    var PrevItem;
+    for(var i = 0; arr && i < arr.length; i++)
+    {
+        var Item = arr[i];
+        var ID = Item.Num;
+        htmlTable.MaxNum = Item.Num;
+
+        var row = map[ID];
+        if(!row)
+        {
+            htmlTable.RowCount++;
+
+            var NewRowIndex;
+
+            var CurRowIndex = 1;
+            if(CUR_ROW)
+                CurRowIndex = CUR_ROW.rowIndex;
+
+            if(!PrevItem && htmlTable.Arr && htmlTable.Arr.length > 0)
+            {
+                CurRowIndex = 1;
+                PrevItem = htmlTable.Arr[0];
+            }
+
+            if(CUR_ROW && PrevItem)
+            {
+                if(PrevItem.ID < Item.ID)
+                    NewRowIndex = CurRowIndex;
+                else
+                    NewRowIndex = CurRowIndex + 1;
+            }
+            else
+            {
+                NewRowIndex = -1;
+            }
+            row = htmlTable.insertRow(NewRowIndex);
+
+            map[ID] = row;
+            for(var n = 0; n < colcount; n++)
+            {
+                var ColItem = ColumnArr[n];
+                if(!ColItem)
+                    continue;
+                var cell = row.insertCell();
+                cell.className = ColItem.C;
+            }
+        }
+
+
+        CUR_ROW = row;
+        PrevItem = Item;
+        //console.log("row",row.rowIndex);
+
+    }
+
+    //print data on rows
+
+    for(var i = 0; arr && i < arr.length; i++)
+    {
+        var Item = arr[i];
+        var ID = Item.Num;
+
+        var row = map[ID];
+        row.Work = glWorkNum;
+
+        var n2 =  - 1;
+        for(var n = 0; n < colcount; n++)
+        {
+            var ColItem = ColumnArr[n];
+            if(!ColItem)
+                continue;
+            n2++;
+            var cell = row.cells[n2];
+
+            if(ColItem.H)
+            {
+                var text = "" + await ColItem.F(Item);
+                text = toStaticHTML(text.trim());
+                if(cell.innerHTML !== text)
+                    cell.innerHTML = text;
+            }
+            else
+            if(ColItem.F)
+            {
+                var text = "" + await ColItem.F(Item);
+                text.trim();
+                if(cell.innerText !== text)
+                    cell.innerText = text;
+            }
+        }
+
+         if(TotalSum && Item.Currency==TotalCurency)
+            ADD(ValueTotal, Item.Value);
+
+    }
+
+
+
+    htmlTable.Arr = arr;
+
+    for(var key in map)
+    {
+        var row = map[key];
+        if(row.Work != glWorkNum)
+        {
+            htmlTable.deleteRow(row.rowIndex);
+            delete map[key];
+        }
+    }
+
+
+    if(TotalSum)
+    {
+        var id = $(TotalSum);
+        if(id)
+        {
+            if(!ISZERO(ValueTotal))
+                id.innerText = "Total on page: " + SUM_TO_STRING(ValueTotal, TotalCurency, 0, 1);
+            else
+                id.innerText = "";
+        }
+    }
+
+}
+
+//Main server
+function InitMainServer()
+{
+    var Str = Storage.getItem("MainServer");
+    if(Str && !IsFullNode() && Str.substr(0, 1) === "{" && IsLocalClient())
+    {
+        SetMainServer(JSON.parse(Str));
+    }
+}
+function GetMainServer()
+{
+    return glMainServer;
+}
+function SetMainServer(Value)
+{
+    window.glMainServer=Value;
+    if(Value)
+    {
+        window.PROTOCOL_SERVER_PATH = GetProtocolServerPath();
+    }
+}
+
+function GetProtocolServerPath(Item)
+{
+    if(!Item)
+        Item=GetMainServer();
+    if(!Item)
+        return "";//.
+
+
+    if(Item.port === 443)
+        return "https://" + Item.ip;
+    else
+    if(Item.port === 80)
+        return "http://" + Item.ip;
+    else
+        return "http://" + Item.ip + ":" + Item.port;
+}
+
+function GetURLPath(Path)
+{
+    if(GetMainServer() && Path.substr(0,1)==="/")
+          Path = GetProtocolServerPath() + Path;
+
+    return Path;
+}
+
+
+InitMapCategory();

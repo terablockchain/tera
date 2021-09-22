@@ -1,0 +1,182 @@
+@media (min-width: 768px) {
+    .main {
+        padding-top: 60px;
+    }
+
+    .main-logo {
+        width: 125px;
+        height: 30px;
+    }
+
+    .no-mr {
+        margin-right: 0;
+    }
+
+    .accounts-info__counter-wrapper .title {
+        font-size: 28px !important;
+        line-height: 33px;
+    }
+
+    .header__logo {
+        margin-top: 3px;
+    }
+
+    .header__logo-link img {
+        height: 30px;
+        width: 125px;
+    }
+
+
+    .welcome__img .mobile {
+        display: none;
+    }
+    .welcome__img .tablet {
+        display: block;
+        width: 410px;
+        height: 410px;
+    }
+    .wallet-settings__generate {
+        margin-bottom: 0;
+    }
+    .title {
+        font-size: 28px;
+        line-height: 33px;
+    }
+    .welcome,
+    .wallet-settings--info,
+    .wallet-settings,
+    .accounts-info,
+    .send-page,
+    .dapps-page {
+        padding-top: 5px;
+        padding-left: 39px;
+        padding-right: 39px;
+    }
+    .send-page {
+        padding-top: 25px;
+    }
+    .welcome {
+        padding-top: 53px;
+    }
+    .welcome__title.title {
+        margin-top: -8px;
+        margin-bottom: 30px;
+    }
+    .header {
+        height: 60px;
+    }
+    .header__wrapper {
+        flex-wrap: nowrap;
+    }
+    .header__right {
+        order: 2;
+    }
+    .header__right select {
+        text-decoration: underline;
+        width: 75px;
+    }
+    .header__wallet-link {
+        display: flex;
+        align-items: center;
+        padding: 18px 17px;
+    }
+    .header__wallet-link span {
+        white-space: nowrap;
+        margin-left: 10px;
+        display: block;
+        text-transform: uppercase;
+    }
+    .header__nav {
+        max-width: 350px;
+    }
+    .nav-tabs__list {
+        font-size: 16px;
+        line-height: 18px;
+    }
+    .nav-tabs__tab {
+        background: none;
+    }
+    .nav-tabs__link {
+        padding: 21px 15px;
+
+    }
+    .welcome__link {
+        margin: 60px auto;
+    }
+    .social-list {
+        flex-wrap: wrap;
+        max-width: 550px;
+        padding-top: 0;
+        margin-top: 180px;
+    }
+    .header__right select {
+        position: absolute;
+        font-size: 14px;
+        line-height: 16px;
+        right: 165px;
+        width: 75px;
+        border-radius: 3px;
+        background: transparent;
+        color: #000;
+    }
+    .white-select {
+        display: block;
+        border: 0;
+        padding: 10px;
+        margin: 10px 15px 10px auto;
+    }
+
+
+
+    .accounts-info__accounts .prod-card {
+        font-size: 16px;
+        line-height: 19px;
+        padding: 18px 0;
+    }
+
+}
+
+
+a
+{
+    cursor: pointer;
+}
+
+.find--switch
+{
+    cursor: cell;
+}
+
+
+.prod-card__link.dapp-num0
+{
+    cursor: auto;
+ }
+
+.prod-card__button
+{
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    box-shadow: 0px 5px 10px rgba(68, 83, 104, 0.3);
+    border: 1px solid rgba(68, 83, 104, 0.1);
+    border-radius: 5px;
+}
+.prod-card__button:hover
+{
+    cursor: pointer;
+    color: orange;
+}
+
+.prod-card__button:active
+{
+    box-shadow: inset 4px 4px 4px rgba(68, 83, 104, 0.5);
+}
+
+
+.prod-card__nobutton
+{
+    cursor: auto;
+    padding: 2px;
+    border: none;
+}

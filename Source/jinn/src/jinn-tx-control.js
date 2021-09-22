@@ -1,14 +1,14 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
 /**
  *
- * Control the number of transactions
+ * Control the number and size of transactions
  *
 **/
 
@@ -88,9 +88,9 @@ function InitClass(Engine)
     };
     Engine.IsValidateTx = function (Tx,StrCheckName,BlockNum,IsBlockTx)
     {
-        if(!Tx || !Tx.IsTx || !Tx.body || Tx.body.length < 8 || Tx.body.length > 32000)
-            return 0;
         
+        if(!Tx || !Tx.IsTx || !Tx.body || Tx.body.length < 8 || Tx.body.length > JINN_CONST.MAX_TX_SIZE)
+            return 0;
         var Result = CheckTx(StrCheckName, Tx, BlockNum, 1);
         if(!Result)
             JINN_STAT.NoValidateTx++;

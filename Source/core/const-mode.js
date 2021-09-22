@@ -1,23 +1,37 @@
 /*
- * @project: TERA
- * @version: Development (beta)
- * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2017-2020 [progr76@gmail.com]
- * Web: https://terafoundation.org
- * Twitter: https://twitter.com/terafoundation
- * Telegram:  https://t.me/terafoundation
+ * @project: TERA, @copyright: Yuriy Ivanov (Vtools) 2017-2021 [progr76@gmail.com]
 */
 
 "use strict";
 
+//example run in dev mode:  start-node MODE:DEV_JINN PATH:<BlockchainDataPath>
+
+
 switch(global.MODE_RUN)
 {
+    case "DEV_JINN":
+        global.JINN_MODE = 1;
+        global.NETWORK = "LOCAL-JINN";
+        global.SHARD_NAME = "TERA";
+        global.LOCAL_RUN = 1;
+        //global.START_NETWORK_DATE = 0; - auto search last block number from the database
+
+        //small mining for creating blocks:
+        global.CREATE_BLOCK_ON_RECEIVE=1;
+        global.USE_MINING = 1;
+        global.POW_MAX_PERCENT=5;
+        global.COUNT_MINING_CPU = 1;
+        global.SIZE_MINING_MEMORY = 65000;
+        global.MINING_ACCOUNT=9;
+        break;
+
     case "TEST_JINN":
         global.JINN_MODE = 1;
         global.NETWORK = "TEST-JINN";
         global.SHARD_NAME = "TEST";
         global.TEST_JINN = 1;
-        
+        global.TEST_NETWORK=1;
+
         global.START_NETWORK_DATE = 1593818071532;
         global.CONSENSUS_PERIOD_TIME = 3000;
         
@@ -53,7 +67,7 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_5 = 0;
         global.UPDATE_CODE_6 = 0;
         global.UPDATE_CODE_7 = 0;
-        global.UPDATE_CODE_8 = 1000000000;
+
         global.UPDATE_CODE_NEW_ACCHASH = 1;
         
         global.STAT_MODE = 1;
@@ -61,6 +75,10 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_SHARDING = 3160000;
         
         global.TEST_MINING = 1;
+
+        global.COIN_STORE_NUM=975;
+        global.COIN_SMART_NUM=298;
+
         break;
         
     case "MAIN_JINN":
@@ -102,11 +120,14 @@ switch(global.MODE_RUN)
         global.UPDATE_CODE_5 = 60000000;
         global.UPDATE_CODE_6 = global.UPDATE_CODE_JINN;
         global.UPDATE_CODE_7 = 64000000;
-        global.UPDATE_CODE_8 = 1000000000;
+
         
         global.UPDATE_CODE_NEW_ACCHASH = 0;
         
         global.UPDATE_CODE_SHARDING = 68600000;
+
+        global.COIN_STORE_NUM=231941;
+        global.COIN_SMART_NUM=136;
         
         break;
         

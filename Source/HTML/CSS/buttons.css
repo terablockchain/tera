@@ -121,13 +121,15 @@
     width: 800px;
     border: 0 solid black;
     font-weight: 700;
+    height: 62px;
 }
 
-#PaiListInfo
+#PayListInfo
 {
     width: 800px;
-    height:20px;
+    height:60px;
     text-align: center;
+    vertical-align: center;
 }
 
 .btinvoice
@@ -226,3 +228,5 @@ input[type="checkbox"]
 {
     vertical-align: middle;
 }
+
+

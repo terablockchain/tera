@@ -170,7 +170,7 @@ function ViewConstant()
 function ViewOpenWallet()
 {
     openModal('idBlockPasswordGet', 'idBtnEnterPassword');
-    itemPasswordGet.onkeydown = OnEnterPas1;
+    //itemPasswordGet.onkeydown = OnEnterPas1;
     itemPasswordGet.value = "";
     itemPasswordGet.focus();
 }
@@ -214,11 +214,11 @@ function SetVisibleItemByTypeKey()
     }
 }
 
-function EditJSONTransaction()
-{
-    CreateTransaction();
-    openModal('idBlockEditJson', 'idBtnSendJSON');
-}
+// function EditJSONTransaction()
+// {
+//     CreateTransferTransaction();
+//     openModal('idBlockEditJson', 'idBtnSendJSON');
+// }
 
 function TruncateBlockChain()
 {
@@ -285,37 +285,54 @@ function ViewStatus()
     id.innerHTML = Str1 + Str2;
 }
 
-function SendMoneyBefore()
+function ChooseToken(name)
 {
+    if(name==="idListNFT")
+    {
+        SendMoneyBefore();
+    }
+}
+
+
+async function SendMoneyBefore()
+{
+    SetStatus("");
     if($("idSendButton").disabled)
     {
         return;
     }
-    
+
+
     var StrToID = GetSendAccTo();
     var StrWhite = GetSendAccTo(1);
     var Item = MapAccounts[StrToID];
-    if(Storage.getItem("White:" + NETWORK_ID + ":" + StrWhite) || !$("idSumSend").value || Item && Item.MyAccount)
-    {
-        SendMoney();
-    }
-    else
-    {
-        var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
-        var StrTo = " to " + GetAccountText(Item, StrWhite);
-        $("idWhiteOnSend").checked = 0;
-        
-        $("idOnSendSum").innerText = STRING_FROM_COIN(CoinAmount);
-        $("idOnSendCoinName").innerText = $("idCoinName").innerText;
-        $("idOnSendToName").innerText = StrTo;
-        
-        SetVisibleBlock("idOnSendWarning", ($("idSumSend").value >= 100000));
-        SetVisibleBlock("idBtOnSend", Item ? "inline-block" : "none");
-        
-        SetVisibleBlock("idBlockOnSend", 1);
-        
-        openModal('idBlockOnSend', 'idBtOnSend');
-    }
+
+    var CurToken=GetSelectedToken();
+    if(!CurToken)
+        return;
+
+    //console.log("CurToken:",CurToken);
+
+
+    $("idTokenHolder").innerHTML = GetCopyNFTCard(CurToken.element_id,CurToken.Token,CurToken.ID,idSumSend.value);
+
+    var CoinAmount = COIN_FROM_FLOAT($("idSumSend").value);
+    var StrTo = " to " + GetAccountText(Item, StrWhite);
+
+
+    $("idOnSendSum").innerText = STRING_FROM_COIN(CoinAmount);
+
+
+    $("idOnSendCoinName").innerText = CurToken.Token;
+    $("idOnSendToName").innerText = StrTo;
+
+    SetVisibleBlock("idOnSendWarning", +idSumSend.value >= 100000);
+    SetVisibleBlock("idBtOnSend", Item ? "inline-block" : "none");
+
+    SetVisibleBlock("idBlockOnSend", 1);
+
+    openModal('idBlockOnSend', 'idBtOnSend');
+
 }
 
 function RetDescription(Item)

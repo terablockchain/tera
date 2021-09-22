@@ -21,7 +21,11 @@ function DrawDiagram(Item)
 {
     if(Item.Delete)
         return;
-    
+    DiagramMapId[Item.id] = Item;
+
+    if(Item.F1)//additional presetup
+        Item.F1(Item);
+
     var arr = Item.arr;
     if(!arr)
         arr = Item.ArrList;
@@ -45,10 +49,10 @@ function DrawDiagram(Item)
     
     var obj = document.getElementById(Item.id);
     var ctx = obj.getContext('2d');
-    var Left = 50;
+    var Left = Item.left?Item.left:50;
     var Top = 11;
     var Button = 15;
-    var Right = 50;
+    var Right = Item.right?Item.right:50;
     if(Item.fillStyle)
         ctx.fillStyle = Item.fillStyle;
     else
@@ -56,8 +60,10 @@ function DrawDiagram(Item)
     ctx.fillRect(0, 0, obj.width, obj.height);
     
     var MaxWidth = obj.width - Left - Right;
+
     if(arr.length > MaxWidth)
     {
+        //console.log("************MaxWidth",MaxWidth);
         var K = arr.length / MaxWidth;
         var arr2 = [];
         for(var i = 0; i < MaxWidth; i++)
@@ -78,6 +84,7 @@ function DrawDiagram(Item)
     var MaxValue = arr[0];
     var MinValue = arr[0];
     var AvgValue = 0;
+
     for(var i = 0; i < arr.length; i++)
     {
         if(arr[i] > MaxValue)
@@ -92,18 +99,18 @@ function DrawDiagram(Item)
         AvgValue = AvgValue / arr.length;
     else
         AvgValue = Item.AvgValue;
-    
+
     if(Pow2 && AvgValue)
-        
         AvgValue = Math.pow(2, AvgValue) / 1000000;
-    
+
     if(AvgValue < 50)
         AvgValue = AvgValue.toFixed(2);
     else
         AvgValue = Math.floor(AvgValue);
-    
+
     if(Item.MaxValue !== undefined)
         MaxValue = Item.MaxValue;
+
     
     if(Pow2 && MaxValue)
         MaxValue = Math.pow(2, MaxValue) / 1000000;
@@ -139,6 +146,7 @@ function DrawDiagram(Item)
     var StartX = Left;
     var StartY = obj.height - Button;
     var mouseValueX = 0;
+    var mouseValueI = 0;
     var mouseValue = undefined;
     var mouseColor = undefined;
     function DrawLines(arr,mode,color)
@@ -158,7 +166,7 @@ function DrawDiagram(Item)
                 if(Pow2)
                     Value = Math.pow(2, Value) / 1000000;
             }
-            var x = StartX + ctx.lineWidth / 2 + (i) * KX;
+            var x = StartX + (i+0.5)* KX;
             
             if(mouseX)
             {
@@ -166,6 +174,7 @@ function DrawDiagram(Item)
                 var deltaWas = Math.abs(mouseValueX - mouseX);
                 if(deltaCur < deltaWas)
                 {
+                    mouseValueI=i;
                     mouseValueX = x;
                     mouseValue = Value;
                     
@@ -245,7 +254,6 @@ function DrawDiagram(Item)
     if(mouseX !== undefined)
     {
         ctx.beginPath();
-        ctx.lineWidth = 0.5;
         ctx.strokeStyle = "#00F";
         ctx.moveTo(mouseX, Top);
         ctx.lineTo(mouseX, StartY);
@@ -256,19 +264,21 @@ function DrawDiagram(Item)
             ctx.fillStyle = mouseColor;
             
             var Val = GetValueByItemProperty(mouseValue, Item);
-            
+            if(arrX && arrX[mouseValueI])
+                Val=String(arrX[mouseValueI])+" = "+Val;
+
+
             var mouseTextX = mouseX;
-            if(Item.MouseText)
-                mouseTextX -= 3 * Item.MouseText.length;
-            else
-                Item.MouseText = "";
-            ctx.fillText("" + Val + Item.MouseText, mouseTextX - 3, Top - 2);
+            Val=""+(Item.MouseTextPref?Item.MouseTextPref:"") + Val + (Item.MouseText?Item.MouseText:"");
+            mouseTextX -= 5 * Val.length/2;
+            ctx.fillText(Val, mouseTextX, Top - 2);
         }
     }
+    var tlength=Math.floor(Left/6);
     ctx.fillStyle = "#000";
     if(!Item.NoTextMax)
-        ctx.fillText(Rigth("          " + MaxValueText, 8), 0, Top - 3);
-    if(MaxValue > 0 && AvgValue > 0)
+        ctx.fillText(Rigth("          " + MaxValueText, tlength), 0, Top - 3);
+    if(MaxValue > 0 && AvgValue > 0 && !Item.NoAvgValue)
     {
         
         var heigh = StartY - Top;
@@ -285,46 +295,53 @@ function DrawDiagram(Item)
         ctx.lineTo(Left + 2, y + Top);
         ctx.stroke();
         ctx.strokeStyle = "#00F";
-        ctx.fillText(Rigth("          " + AvgValueText, 8), 0, yT + Top);
+        ctx.fillText(Rigth("          " + AvgValueText, tlength), 0, yT + Top);
     }
     
     if(arr.length < CountNameX)
         CountNameX = arr.length;
-    var KX3 = (MaxWidth) / CountNameX;
+    var KX3 = MaxWidth / CountNameX;
     
     var KDelitel = 1;
     var Step = arr.length / CountNameX;
+
+
     var StartTime, bNumber;
     if(arrX)
     {
     }
     else
-        if(StartNumber !== undefined)
-        {
-            bNumber = 1;
-            StartTime = StartNumber;
-        }
-        else
-            if(StartServer)
-            {
-                bNumber = 1;
-                StartTime = Math.floor(((Date.now() - StartServer) - StepTime * arr.length * 1000) / 1000);
-                if(StartTime < 0)
-                    StartTime = 0;
-                
-                var KDelitel = Math.floor(Step / 10) * 10;
-                if(KDelitel == 0)
-                    KDelitel = 1;
-            }
-            else
-            {
-                bNumber = 0;
-                StartTime = Date.now() - StepTime * arr.length * 1000;
-                StartX = StartX - 16;
-            }
-    
+    if(StartNumber !== undefined)
+    {
+        bNumber = 1;
+        StartTime = StartNumber;
+    }
+    else
+    if(StartServer)
+    {
+        bNumber = 1;
+        StartTime = Math.floor(((Date.now() - StartServer) - StepTime * arr.length * 1000) / 1000);
+        if(StartTime < 0)
+            StartTime = 0;
+
+        KDelitel = Math.floor(Step / 10) * 10;
+        if(KDelitel == 0)
+            KDelitel = 1;
+    }
+    else
+    {
+        bNumber = 0;
+        StartTime = Date.now() - StepTime * arr.length * 1000;
+        StartX = StartX - 16;
+    }
+
     for(i = 0; i <= CountNameX; i++)
     {
+        var x = StartX + (i + 0.5) * KX3;
+        var y = StartY + 10;
+        if(x-10 >= MaxWidth)
+            continue;
+
         var Val;
         if(i === CountNameX)
         {
@@ -332,38 +349,60 @@ function DrawDiagram(Item)
             KDelitel = 1;
         }
         else
-            if(i === 0)
-                Val = 0;
-            else
-                Val = i * Step * StepTime;
+        if(i === 0)
+            Val = 0;
+        else
+            Val = i * Step * StepTime;
+
         var Str;
         if(arrX)
         {
             Val = Math.floor(Val);
+            x = 1+StartX + (Val+0.5) * KX;
             Str = arrX[Val];
             if(Str === undefined)
                 Str = "";
         }
         else
-            if(bNumber)
-            {
-                Val = Math.floor((StartTime + Val) / KDelitel) * KDelitel;
-                Str = Val;
-            }
-            else
-            {
-                var Time = new Date(StartTime + Val * 1000);
-                Str = "" + Time.getHours();
-                Str += ":" + Rigth("0" + Time.getMinutes(), 2);
-                Str += ":" + Rigth("0" + Time.getSeconds(), 2);
-            }
-        
-        var x = StartX + (i + 0.5) * KX3;
-        var y = StartY + 10;
-        if(x < MaxWidth)
-            ctx.fillText(Str, x, y);
+        if(bNumber)
+        {
+            Val = Math.floor((StartTime + Val) / KDelitel) * KDelitel;
+            Str = Val;
+        }
+        else
+        {
+            var Time = new Date(StartTime + Val * 1000);
+            Str = "" + Time.getHours();
+            Str += ":" + Rigth("0" + Time.getMinutes(), 2);
+            Str += ":" + Rigth("0" + Time.getSeconds(), 2);
+        }
+        if(!Str)
+            continue;
+
+
+        ctx.strokeStyle = "#bbb";
+        ctx.lineWidth = KX;
+        ctx.beginPath();
+        ctx.moveTo(x, StartY-2);
+        ctx.lineTo(x, StartY+2);
+        ctx.stroke();
+        ctx.lineWidth = 0.5;
+        FillTextAvg(ctx, x, y, Str);
     }
+
+    if(Item.F2)//additional draw process
+        Item.F2(Item,ctx);
 }
+
+function FillTextAvg(context,x,y,Str)
+{
+    Str=String(Str).trim();
+    x-=5*Str.length/2;
+
+
+    context.fillText(Str, x, y);
+}
+
 
 function Rigth(Str,Count)
 {

@@ -64,9 +64,9 @@
     font-family: "courier new", "times new roman", monospace;
 }
 .grid td.pubkey {
-    width: 205px;
-    min-width: 205px;
-    max-width: 205px!important;
+    width: 215px;
+    min-width: 215px;
+    max-width: 215px!important;
 
     font-size: 10px;
     line-height: 12px;

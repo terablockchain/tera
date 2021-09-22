@@ -29,9 +29,12 @@ else
     window.attachEvent("onmessage", DappListener);
 }
 
+
+
+
 function CreateFrame(Code,Parent)
 {
-    
+
     if(!Parent)
         Parent = document.getElementsByTagName('body')[0];
     
@@ -44,50 +47,60 @@ function CreateFrame(Code,Parent)
     iframe.name = 'dapp';
     iframe.sandbox = "allow-scripts";
     
-    var SriptLW = "";
+    var ScriptLW = "";
     var StrPath = ".";
-    if(MainServer)
+    if(GetMainServer())
     {
-        StrPath = GetProtocolServerPath(MainServer);
-        Code = Code.replace(/.\/CSS\/[0-9a-z_-]+.css\">/g, StrPath + "$&");
-        Code = Code.replace(/.\/JS\/[0-9a-z_-]+.js\">/g, StrPath + "$&");
+        StrPath = GetProtocolServerPath();
+        Code = Code.replace(/\/CSS\/[0-9a-z_-]+.css\">/g, StrPath + "$&");
+        Code = Code.replace(/\/JS\/[0-9a-z_-]+.js\">/g, StrPath + "$&");
         Code = Code.replace(/\/file\/[0-9]+\/[0-9]+\"/g, StrPath + "$&");
-        SriptLW = '<script>window.PROTOCOL_SERVER_PATH="' + StrPath + '";<\/script>';
-        
+
+        //console.log("Code:",Code);
+        ScriptLW = '<script>window.PROTOCOL_SERVER_PATH="' + StrPath + '";<\/script>';
+
+        //console.log("Code:",Code);
+
         if(isMobile())
             StrPath = ".";
     }
     if(isMobile())
     {
-        StrPath = GetProtocolServerPath(MainServer);
+        StrPath = GetProtocolServerPath();
     }
+
+    ScriptLW+=`<script>window.NETWORK_ID="${window.NETWORK_ID}";window.NETWORK_NAME="${window.NETWORK_NAME}";window.SHARD_NAME="${window.SHARD_NAME}";window.SMART_NUM=${SMART.Num};<\/script>`;
+    //console.log("CreateFrame NETWORK_ID",NETWORK_ID);
     
-    Code = SriptLW + '\
+    Code = ScriptLW + '\
     <meta charset="UTF-8">\
     <meta http-equiv="X-Frame-Options" value="sameorigin">\
     <script type="text/javascript" src="' + StrPath + '/JS/sha3.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/client.js"><\/script>\
+    \<script type="text/javascript" src="' + StrPath + '/JS/client-promise.js"><\/script>\
+    <script type="text/javascript" src="' + StrPath + '/JS/client-tokens.js"><\/script>\
+    <script type="text/javascript" src="' + StrPath + '/JS/client-tx.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/crypto-client.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/coinlib.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/dapp-inner.js"><\/script>\
     <script type="text/javascript" src="' + StrPath + '/JS/terahashlib.js"><\/script>\
+    <script type="text/javascript" src="' + StrPath + '/JS/terabuf.js"><\/script>\
     ' + Code;
-    
+
+
     if($("idModalCSS"))
     {
         Code += $("idModalCSS").outerHTML;
         Code += $("idOverlay").outerHTML;
         Code += $("idConfirm").outerHTML;
     }
-    
+
     iframe.srcdoc = Code;
     Parent.appendChild(iframe);
     
-    setTimeout(function ()
-    {
-        SetVisibleBlock("idFrame", 1);
-    }, 2000);
+
 }
+
 
 function SendMessage(Data)
 {
@@ -195,11 +208,20 @@ function DappListener(event)
                     Data.Account = BASE_ACCOUNT.Num;
                 if(!Data.FromNum)
                     Data.FromNum = 0;
-                
-                SendCallMethod(Data.Account, Data.MethodName, Data.Params, Data.ParamsArr, Data.FromNum, glSmart);
-                
+
+                SendCallMethod(Data.Account, Data.MethodName, Data.Params, Data.ParamsArr, Data.FromNum, glSmart,RetSendTx,Data,Data.Confirm,Data.TxTicks);
+
                 break;
             }
+        case "StartTransfer":
+        {
+            Data.Smart=glSmart;
+            //Data.Account=BASE_ACCOUNT.Num;
+
+            AddToTransfer(Data);
+
+            break;
+        }
         case "DappInfo":
             {
                 DoDappInfo(Data);
@@ -295,7 +317,7 @@ function DappListener(event)
             
         case "CreateNewAccount":
             {
-                CreateNewAccount(Data.Currency);
+                CreateNewAccount(Data.Currency,Data.Name,Data.PubKey,RetSendTx,Data,Data.Confirm);
                 break;
             }
         case "ReloadDapp":
@@ -313,16 +335,27 @@ function DappListener(event)
             
         case "ethereum-request":
             {
-                ethereum.request(Data.Params).then(function (Result)
+                if(!window.ethereum)
+                {
+                    Data.cmd = "Result";
+                    Data.Result = "Metamask not installed";
+                    Data.Err = 1;
+                    SendMessage(Data);
+                    return;
+                }
+
+                window.ethereum.request(Data.Params).then(function (Result)
                 {
                     Data.cmd = "Result";
                     Data.Result = Result;
+                    //console.log("Result",Result);
                     SendMessage(Data);
                 }).catch(function (Result)
                 {
                     Data.cmd = "Result";
                     Data.Result = Result;
                     Data.Err = 1;
+                    //console.error(Result);
                     SendMessage(Data);
                 });
                 break;
@@ -330,7 +363,8 @@ function DappListener(event)
             
         case "ethereum-on":
             {
-                ethereum.on(Data.Name, function (Result)
+                if(window.ethereum)
+                window.ethereum.on(Data.Name, function (Result)
                 {
                     Data.cmd = "ResultOn";
                     Data.Result = Result;
@@ -340,7 +374,8 @@ function DappListener(event)
             }
         case "ethereum-off":
             {
-                ethereum.removeListener(Data.Name, function (Result)
+                if(window.ethereum)
+                window.ethereum.removeListener(Data.Name, function (Result)
                 {
                     Data.cmd = "Result";
                     Data.Result = Result;
@@ -356,7 +391,21 @@ function DappListener(event)
                 SendMessage(Data);
                 break;
             }
+        case "Show":
+            SetVisibleBlock("idFrame", 1);
+            break;
+
     }
+}
+
+function RetSendTx(Err,TR, Body, Text, Context)
+{
+    Context.cmd="DATA";
+    Context.result=Err?0:1;
+    Context.Err=Err;
+    Context.TR=TR;
+    Context.Text=Text;
+    SendMessage(Context);
 }
 
 function DoDappInfo(Data)
@@ -370,6 +419,7 @@ function DoDappInfo(Data)
     GetData("DappInfo", {Smart:glSmart, Key:Key, Session:glSession, NumDappInfo:NumDappInfo, AllData:AllData, AllAccounts:Data.AllAccounts},
     function (SetData)
     {
+        //console.log(SetData)
         if(SetData)
         {
             Data.Err = !SetData.result;
@@ -396,7 +446,7 @@ function DoDappInfo(Data)
                     Data[key] = SetData[key];
                 Data.OPEN_PATH = OPEN_PATH;
                 
-                if(!Storage.getItem("BIGWALLET"))
+                if(!IsFullNode())
                 {
                     Data.PubKey = GetPubKey();
                     Data.WalletCanSign = IsPrivateMode(GetPrivKey());
@@ -434,7 +484,7 @@ function SetArrLog(arr)
         var Item = arr[i];
         if(!Item.final)
             continue;
-        if(Item.text.indexOf("Add to blockchain") >= 0)
+        if(typeof Item.text==="string" && Item.text.indexOf("Add to blockchain") >= 0)
             continue;
         
         var TR = MapSendTransaction[Item.key];
@@ -467,3 +517,5 @@ function DoComputeSecret(Account,PubKey,F)
         F(Result);
     });
 }
+
+

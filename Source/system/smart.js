@@ -13,15 +13,44 @@
 
 //Smart contract engine
 
+const fs = require('fs');
 
 require("../HTML/JS/lexer.js");
 require("../HTML/JS/smart-vm.js");
 
-const TYPE_TRANSACTION_SMART_CREATE = 130;
-const TYPE_TRANSACTION_SMART_RUN = 135;
-const TYPE_TRANSACTION_SMART_CHANGE = 140;
+global.TYPE_TRANSACTION_SMART_CREATE1 = 130;
+global.TYPE_TRANSACTION_SMART_CREATE2 = 131;
 
-global.FORMAT_SMART_CREATE = "{\
+global.TYPE_TRANSACTION_SMART_RUN1 = 135;
+global.TYPE_TRANSACTION_SMART_RUN2 = 136;
+global.TYPE_TRANSACTION_SMART_CHANGE = 140;
+global.TYPE_TRANSACTION_SMART_SET = 142;
+
+global.FORMAT_SMART_CREATE2 = "{\
+    Type:byte,\
+    Reserve1:byte,\
+    Reserve2:uint,\
+    OwnerPubKey:byte,\
+    ISIN:str,\
+    Zip:byte,\
+    Reserve3:byte,\
+    Reserve4:str,\
+    Category1:byte,\
+    Category2:byte,\
+    Category3:byte,\
+    Fixed:byte,\
+    CentName:str12,\
+    CrossMsgConfirms:uint32,\
+    Reserve:arr10,\
+    IconBlockNum:uint,\
+    IconTrNum:uint16,\
+    ShortName:str12,\
+    Name:str,\
+    Description:str,\
+    Code:str,\
+    HTML:str,\
+    }";
+global.FORMAT_SMART_CREATE1 = "{\
     Type:byte,\
     TokenGenerate:byte,\
     StartValue:uint,\
@@ -45,9 +74,26 @@ global.FORMAT_SMART_CREATE = "{\
     Code:str,\
     HTML:str,\
     }";
-global.WorkStructCreate = {};
+global.WorkStructCreate1 = {};
+global.WorkStructCreate2 = {};
 
-global.FORMAT_SMART_RUN = "{\
+global.FORMAT_SMART_RUN2 = "{\
+    Type:byte,\
+    Version:byte,\
+    OperationID:uint,\
+    FromNum:uint,\
+    TxMaxBlock:uint,\
+    TxTicks:uint32,\
+    Account:uint,\
+    MethodName:str,\
+    Params:str,\
+    ParamsArr: tr,\
+    Reserve:arr7,\
+    Sign:arr64,\
+    }";
+global.FORMAT_SMART_RUN2_NS=global.FORMAT_SMART_RUN2.replace("Sign:arr64,","");
+
+global.FORMAT_SMART_RUN1 = "{\
     Type:byte,\
     Account:uint,\
     MethodName:str,\
@@ -59,7 +105,10 @@ global.FORMAT_SMART_RUN = "{\
     Reserve:arr7,\
     Sign:arr64,\
     }";
-global.WorkStructSmartRun = {};
+global.WorkStructSmartRun1 = {};
+global.WorkStructSmartRun2 = {};
+global.WorkStructSmartRun2_NS = {};
+
 
 global.FORMAT_SMART_CHANGE = "{\
     Type:byte,\
@@ -74,13 +123,94 @@ global.FORMAT_SMART_CHANGE = "{\
 global.WorkStructChange = {};
 
 
+global.FORMAT_SMART_SET = "{\
+    Type:byte,\
+    Version:byte,\
+    OperationID:uint,\
+    FromNum:uint,\
+    Smart:uint32,\
+    HTMLBlock:uint,\
+    HTMLTr:uint16,\
+    Reserve:arr10,\
+    Sign:arr64,\
+    }";
+global.WorkStructSet = {};
+
+
 class SmartApp extends require("./smart-tr")
 {
-    constructor()
+    constructor(UpdateVersion)
     {
         var bReadOnly = (global.PROCESS_NAME !== "TX");
+        if(UpdateVersion=="Update")
+            bReadOnly=0;
+
         super(bReadOnly)
+        var FileName,FileNameVer,DeltaNum;
+
+        if(fs.existsSync(GetDataPath("DB/smart2")) || UpdateVersion=="Update" || !fs.existsSync(GetDataPath("DB/smart")))
+        {
+
+            this.FormatRow2();
+            FileNameVer=31;
+            DeltaNum=10;
+            FileName = "smart2";
+            ToLog("************************* new version SMART2 *************************")
+        }
+        else
+        {
+            //old!!!
+            this.FormatRow1();
+            DeltaNum=0;
+            FileNameVer=30;
+            FileName = "smart";
+        }
+
+        this.DBSmart = new CDBRow(FileName, this.FORMAT_ROW, bReadOnly, "Num", DeltaNum, this.ROW_SIZE)
+        REGISTER_TR_DB(this.DBSmart, FileNameVer)
         
+        if(!bReadOnly)
+            this.Start();
+    }
+
+    FormatRow2()
+    {
+        this.FORMAT_ROW = "{\
+            Version:byte,\
+            ShortName:str12,\
+            Name:str40,\
+            Description:str,\
+            CentName:str12,\
+            Fixed:byte,\
+            Reserve:arr20,\
+            TokenGenerate:byte,\
+            ISIN:str12,\
+            Zip:byte,\
+            BlockNum:uint,\
+            TrNum:uint16,\
+            IconBlockNum:uint,\
+            IconTrNum:uint16,\
+            Account:uint,\
+            AccountLength:byte,\
+            Category1:byte,\
+            Category2:byte,\
+            Category3:byte,\
+            Owner:uint,\
+            CrossMsgConfirms:uint32,\
+            StateFormat:str,\
+            Code:str,\
+            HTML:str,\
+            HTMLBlock:uint,\
+            HTMLTr:uint16,\
+            Parent:uint32,\
+            Reserve2:arr30,\
+            }"
+
+        this.ROW_SIZE = 1 << 16;//65536
+    }
+
+    FormatRow1()
+    {
         this.FORMAT_ROW = "{\
             Version:byte,\
             TokenGenerate:byte,\
@@ -108,15 +238,10 @@ class SmartApp extends require("./smart-tr")
             HTML:str,\
             SumHash:hash,\
             }"
-        
+
         this.ROW_SIZE = 2 * (1 << 13)
-        this.DBSmart = new CDBRow("smart", this.FORMAT_ROW, bReadOnly, "Num", 0, this.ROW_SIZE)
-        REGISTER_TR_DB(this.DBSmart, 30)
-        
-        if(!bReadOnly)
-            this.Start()
     }
-    
+
     Name()
     {
         return "Smart";
@@ -187,50 +312,81 @@ class SmartApp extends require("./smart-tr")
         var Result = false;
         switch(Type)
         {
-            case TYPE_TRANSACTION_SMART_CREATE:
-                Result = this.TRCreateSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+            case TYPE_TRANSACTION_SMART_CREATE1:
+                Result = this.TRCreateSmart1(Block, Body, BlockNum, TrNum, ContextFrom)
                 break;
-            case TYPE_TRANSACTION_SMART_RUN:
-                Result = this.TRRunSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+            case TYPE_TRANSACTION_SMART_CREATE2:
+                Result = this.TRCreateSmart2(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+            case TYPE_TRANSACTION_SMART_RUN1:
+                Result = this.TRRunSmart1(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+            case TYPE_TRANSACTION_SMART_RUN2:
+                Result = this.TRRunSmart2(Block, Body, BlockNum, TrNum, ContextFrom)
                 break;
             case TYPE_TRANSACTION_SMART_CHANGE:
                 Result = this.TRChangeSmart(Block, Body, BlockNum, TrNum, ContextFrom)
                 break;
+
+            case TYPE_TRANSACTION_SMART_SET:
+                Result = this.TRSetSmart(Block, Body, BlockNum, TrNum, ContextFrom)
+                break;
+
         }
         
         return Result;
     }
     
-    GetFormatTransaction(Type)
+    GetFormatTransaction(Type,bInner)
     {
         var format;
         switch(Type)
         {
-            case TYPE_TRANSACTION_SMART_CREATE:
-                format = FORMAT_SMART_CREATE
+            case TYPE_TRANSACTION_SMART_CREATE1:
+                format = FORMAT_SMART_CREATE1;
                 break;
-                
-            case TYPE_TRANSACTION_SMART_RUN:
-                format = FORMAT_SMART_RUN
+            case TYPE_TRANSACTION_SMART_CREATE2:
+                format = FORMAT_SMART_CREATE2;
                 break;
-                
+
+            case TYPE_TRANSACTION_SMART_RUN1:
+                format = FORMAT_SMART_RUN1;
+                break;
+            case TYPE_TRANSACTION_SMART_RUN2:
+                if(bInner)
+                    format = FORMAT_SMART_RUN2_NS;
+                else
+                    format = FORMAT_SMART_RUN2;
+                break;
+
             case TYPE_TRANSACTION_SMART_CHANGE:
-                format = FORMAT_SMART_CHANGE
+                format = FORMAT_SMART_CHANGE;
                 break;
-                
+
+            case TYPE_TRANSACTION_SMART_SET:
+                format = FORMAT_SMART_SET;
+                break;
+
             default:
-                format = ""
+                format = "";
         }
         return format;
     }
     GetSenderNum(BlockNum, Body)
     {
         var Type = Body[0];
+        if(Type==TYPE_TRANSACTION_SMART_RUN2 && Body.length >= 32)
+        {
+            var len = 1+1+6;
+            var Num = ReadUintFromArr(Body, len);
+            return Num;
+        }
+        else
         if(Type && Body.length > 90)
         {
             switch(Type)
             {
-                case TYPE_TRANSACTION_SMART_RUN:
+                case TYPE_TRANSACTION_SMART_RUN1:
                     var len = 1 + 6;
                     len += 2 + Body[len] + Body[len + 1] * 256
                     if(len + 64 > Body.length)
@@ -244,6 +400,11 @@ class SmartApp extends require("./smart-tr")
                 case TYPE_TRANSACTION_SMART_CHANGE:
                     var Num = ReadUintFromArr(Body, 1);
                     return Num;
+
+                case TYPE_TRANSACTION_SMART_SET:
+                    var Num = ReadUintFromArr(Body, 1+1+6);
+                    return Num;
+
             }
         }
         
@@ -252,11 +413,18 @@ class SmartApp extends require("./smart-tr")
     GetSenderOperationID(BlockNum, Body)
     {
         var Type = Body[0];
+        if(Type==TYPE_TRANSACTION_SMART_RUN2 && Body.length >= 32)
+        {
+            var len = 1+1;
+            var Num = ReadUintFromArr(Body, len);
+            return Num;
+        }
+        else
         if(Type && Body.length > 90)
         {
             switch(Type)
             {
-                case TYPE_TRANSACTION_SMART_RUN:
+                case TYPE_TRANSACTION_SMART_RUN1:
                     var len = 1 + 6;
                     len += 2 + Body[len] + Body[len + 1] * 256
                     if(len + 64 > Body.length)
@@ -264,47 +432,85 @@ class SmartApp extends require("./smart-tr")
                     len += 2 + Body[len] + Body[len + 1] * 256
                     if(len + 64 > Body.length)
                         return 0;
-                    len += 6
+                    len += 6;
                     var Num = ReadUintFromArr(Body, len);
                     return Num;
                 case TYPE_TRANSACTION_SMART_CHANGE:
                     var Num = ReadUintFromArr(Body, 1 + 26);
                     return Num;
+
+                case TYPE_TRANSACTION_SMART_SET:
+                    var Num = ReadUintFromArr(Body, 1+1);
+                    return Num;
             }
         }
-        
+
         return 0;
     }
-    
+
+    GetSignTransferTx(TR, PrivKey)
+    {
+        var Format;
+        if(TR.Type===TYPE_TRANSACTION_SMART_RUN2)
+            Format=FORMAT_SMART_RUN2;
+        else
+            Format=FORMAT_SMART_RUN1;
+
+        var Arr = BufLib.GetBufferFromObject(TR, Format, GetTxSize(TR), {})
+        var Hash = Buffer.from(sha3(Arr.slice(0, Arr.length - 64)));
+        var sigObj = secp256k1.sign(Hash, Buffer.from(PrivKey));
+        return sigObj.signature;
+    }
+
     CheckSignTransferTx(BlockNum, Body)
     {
         return this.CheckSignAccountTx(BlockNum, Body).result;
     }
+
+    CreateSmartByParent(Block, BlockNum, TrNum, SmartNum,Params)
+    {
+        var Smart = SMARTS.ReadSmart(SmartNum);
+        var Smart2=CopyObjKeys({},Smart);
+        for(var key in Params)
+            Smart2[key]=Params[key];
+
+        Smart2.TokenGenerate=0;
+        Smart2.OwnerPubKey=0;
+        Smart2.AccountLength=1;
+        Smart2.Parent=SmartNum;
+
+        var Ret=this.CreateNewSmart(Smart2, Block, BlockNum, TrNum, undefined,0,2);
+        if(Ret===true)
+            return Smart2;
+        else
+            throw new Error(Ret);
+    }
+
     DBSmartWrite(Item)
     {
         var PrevNum;
         if(Item.Num === undefined)
-            PrevNum = this.GetMaxNum()
+            PrevNum = this.GetMaxNum();
         else
-            PrevNum = Item.Num - 1
+            PrevNum = Item.Num - 1;
         
-        Item.SumHash = []
-        var Buf = BufLib.GetBufferFromObject(Item, this.FORMAT_ROW, 20000, {});
-        var Hash = sha3(Buf);
-        
-        if(PrevNum < 0)
-        {
-            Item.SumHash = Hash
-        }
-        else
-        {
-            var PrevItem = this.DBSmart.Read(PrevNum);
-            if(!PrevItem)
-            {
-                throw "!PrevItem of Smart num = " + PrevNum;
-            }
-            Item.SumHash = sha3arr2(PrevItem.SumHash, Hash)
-        }
+        // Item.SumHash = [];
+        // var Buf = BufLib.GetBufferFromObject(Item, this.FORMAT_ROW, 66000, {});
+        // var Hash = sha3(Buf);
+        //
+        // if(PrevNum < 0)
+        // {
+        //     Item.SumHash = Hash;
+        // }
+        // else
+        // {
+        //     var PrevItem = this.DBSmart.Read(PrevNum);
+        //     if(!PrevItem)
+        //     {
+        //         throw "!PrevItem of Smart num = " + PrevNum;
+        //     }
+        //     Item.SumHash = sha3arr2(PrevItem.SumHash, Hash)
+        // }
         
         this.DBSmart.Write(Item)
     }
@@ -312,8 +518,8 @@ class SmartApp extends require("./smart-tr")
     {
         if(this.DBSmart.WasUpdate)
         {
-            this.DBSmart.WasUpdate = 0
-            this.SmartMap = {}
+            this.DBSmart.WasUpdate = 0;
+            this.SmartMap = {};
         }
         
         return this.SmartMap;
@@ -363,51 +569,57 @@ class SmartApp extends require("./smart-tr")
             }
         }
         
-        if(Smart && bTokenDescription)
-            this.AddCurrencyTokenDescription(Smart)
+        // if(Smart && bTokenDescription)
+        //     this.AddCurrencyTokenDescription(Smart)
         
         return Smart;
     }
     
-    AddCurrencyTokenDescription(Smart)
-    {
-        if(!Smart || !Smart.Num)
-            return;
-        
-        if(!this.MapTokenDescription)
-            this.MapTokenDescription = {}
-        var Item = this.MapTokenDescription[Smart.Num];
-        var Time = Date.now();
-        if(!Item)
-        {
-            Item = {Time:Time, Description:""}
-            this.MapTokenDescription[Smart.Num] = Item
-        }
-        if(Time - Item.Time > 5 * 1000)
-        {
-            Item.Time = Time
-            var Result;
-            var Params = {};
-            Result = RunStaticSmartMethod(Smart.Account, "GetTokenDescription", Params)
-            if(Result && Result.result)
-            {
-                Item.TokenDescription = Result.RetValue
-            }
-            else
-            {
-                Item.TokenDescription = ""
-                Item.Time = Time + 1000 * 1000
-            }
-        }
-        Smart.TokenDescription = Item.TokenDescription
-    }
+    // AddCurrencyTokenDescription(Smart)
+    // {
+    //     if(!Smart || !Smart.Num)
+    //         return;
+    //
+    //     if(!this.MapTokenDescription)
+    //         this.MapTokenDescription = {}
+    //     var Item = this.MapTokenDescription[Smart.Num];
+    //     var Time = Date.now();
+    //     if(!Item)
+    //     {
+    //         Item = {Time:Time, Description:""}
+    //         this.MapTokenDescription[Smart.Num] = Item
+    //     }
+    //     if(Time - Item.Time > 5 * 1000)
+    //     {
+    //         Item.Time = Time
+    //         var Result;
+    //         var Params = {};
+    //         Result = RunStaticSmartMethod(Smart.Account, "GetTokenDescription", Params)
+    //         if(Result && Result.result)
+    //         {
+    //             Item.TokenDescription = Result.RetValue
+    //         }
+    //         else
+    //         {
+    //             Item.TokenDescription = ""
+    //             Item.Time = Time + 1000 * 1000
+    //         }
+    //     }
+    //     Smart.TokenDescription = Item.TokenDescription
+    // }
 }
 
+global.SmartApp=SmartApp;
 var App = new SmartApp;
 
-REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CREATE);
-REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_RUN);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CREATE1);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_RUN1);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CREATE2);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_RUN2);
 REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_CHANGE);
+REGISTER_SYS_DAPP(App, TYPE_TRANSACTION_SMART_SET);
+
+
 
 const VM = require('vm');
 global.RunSmartEvalContext = RunSmartEvalContext;

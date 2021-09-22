@@ -82,11 +82,11 @@ class AccountHash extends require("./accounts-keyvalue")
             {
                 if(CompareArr(Item.AccHash, TR.AccHash) === 0)
                 {
-                    if(IsZeroArr(TR.SmartHash) || TR.AccountMax === 0 || TR.SmartCount)
-                        return 1;
-                    
-                    if(CompareArr(Item.SmartHash, TR.SmartHash) === 0 && Item.AccountMax === TR.AccountMax && Item.SmartCount === TR.SmartCount)
-                        return 1;
+                    // if(IsZeroArr(TR.SmartHash) || TR.AccountMax === 0 || TR.SmartCount)
+                    return 1;
+
+                    // if(CompareArr(Item.SmartHash, TR.SmartHash) === 0 && Item.AccountMax === TR.AccountMax && Item.SmartCount === TR.SmartCount)
+                    //     return 1;
                 }
                 return 0;
             }
@@ -155,20 +155,20 @@ class AccountHash extends require("./accounts-keyvalue")
             return;
         
         var BlockMaxAccount;
-        BlockMaxAccount = this.GetMaxAccount()
+        BlockMaxAccount = this.GetMaxAccount();
         var Hash = this.GetCalcHash();
         
-        var SmartHash;
+        var SmartHash=[];
         var SmartCount = SMARTS.GetMaxNum() + 1;
-        if(SmartCount > 0)
-        {
-            var MaxSmart = SMARTS.DBSmart.Read(SmartCount - 1);
-            SmartHash = MaxSmart.SumHash
-        }
-        else
-        {
-            SmartHash = []
-        }
+        // if(SmartCount > 0)
+        // {
+        //     var MaxSmart = SMARTS.DBSmart.Read(SmartCount - 1);
+        //     SmartHash = MaxSmart.SumHash
+        // }
+        // else
+        // {
+        //     SmartHash = []
+        // }
         if(Block.BlockNum > 1000 && IsZeroArr(Hash))
         {
             ToLogTx("BlockNum:" + Block.BlockNum + " AccHash = Zero")
@@ -176,7 +176,7 @@ class AccountHash extends require("./accounts-keyvalue")
         }
         var Data = {Num:Block.BlockNum / PERIOD_ACCOUNT_HASH, BlockNum:Block.BlockNum, AccHash:Hash, SumHash:Block.SumHash, AccountMax:BlockMaxAccount,
             SmartHash:SmartHash, SmartCount:SmartCount};
-        this.DBAccountsHash.Write(Data)
+        this.DBAccountsHash.Write(Data);
         return Data;
     }
     

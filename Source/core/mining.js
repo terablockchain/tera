@@ -200,8 +200,8 @@ function SetCalcPOW(Block,cmd)
     //RPC Mining support
     if(global.USE_API_MINING && global.WEB_PROCESS && global.WEB_PROCESS.Worker)
     {
-        global.WEB_PROCESS.Worker.send({cmd:"MiningBlock", Value:{result:0, BlockNum:Block.BlockNum, PrevHash:GetHexFromArr(Block.PrevHash),
-                SeqHash:GetHexFromArr(Block.SeqHash), Period:0, Time:Date.now(), }});
+        global.WEB_PROCESS.sendAll({cmd:"MiningBlock", Value:{BlockNum:Block.BlockNum, PrevHash:GetHexFromArr(Block.PrevHash),
+                SeqHash:GetHexFromArr(Block.SeqHash), Hash:GetHexFromArr(Block.Hash), Time:Date.now(), }});
     }
     
     if(!global.USE_MINING)

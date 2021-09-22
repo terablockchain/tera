@@ -1,12 +1,22 @@
 /*
  * @project: TERA
- * @version: Development (beta)
+ * @version: 2
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2017-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2017-2021 [progr76@gmail.com]
  * Web: https://terafoundation.org
  * Twitter: https://twitter.com/terafoundation
  * Telegram:  https://t.me/terafoundation
 */
+
+function SaveAllProjects()
+{
+    SaveValues(1);
+    var Value=localStorage['SMART-ProjectArray'];
+    SaveWebDataToFile(Value,'dapp-ide.txt');
+
+    SaveProjectsToDB(Value);
+}
+
 
 function SetDialogToSmart(Smart)
 {
@@ -14,22 +24,22 @@ function SetDialogToSmart(Smart)
     if(!Smart.ID)
         Smart.ID = Date.now() * 1000 + random(1000);
     
-    Smart.ShortName = $("idShortName").value;
-    Smart.CentName = $("idCentName").value;
-    Smart.Fixed = $("idFixed").value;
-    Smart.ISIN = $("idISIN").value;
+    Smart.ShortName = idShortName.value;
+    Smart.CentName = idCentName.value;
+    Smart.Fixed = idFixed.value;
+    Smart.ISIN = idISIN.value;
     
-    Smart.Name = $("idName").value;
-    Smart.Description = $("idDescription").value;
-    Smart.TokenGenerate = $("idTokenGenerate").checked;
-    Smart.AccountLength = $("idAccountLength").value;
+    Smart.Name = idName.value;
+    Smart.Description = idDescription.value;
+    //Smart.TokenGenerate = idTokenGenerate.checked;
+    //Smart.AccountLength = idAccountLength.value;
     
-    Smart.StateFormat = $("idStateFormat").value.trim();
-    Smart.Category1 = $("idCategory1").value;
-    Smart.Category2 = $("idCategory2").value;
-    Smart.Category3 = $("idCategory3").value;
+    Smart.StateFormat = "";//idStateFormat.value.trim();
+    Smart.Category1 = idCategory1.value;
+    Smart.Category2 = idCategory2.value;
+    Smart.Category3 = idCategory3.value;
     
-    var IconParam = ParseFileName($("idIcon").value);
+    var IconParam = ParseFileName(idIcon.value);
     Smart.IconBlockNum = IconParam.BlockNum;
     Smart.IconTrNum = IconParam.TrNum;
     
@@ -38,42 +48,43 @@ function SetDialogToSmart(Smart)
     Smart.Code = GetSmartCode();
     Smart.HTML = GetHTMLCode();
     
-    Smart.StartValue = $("idStartValue").value;
-    Smart.OwnerPubKey = $("idOwnerPubKey").checked;
+    Smart.StartValue = 0;//idStartValue.value;
+    Smart.OwnerPubKey = idOwnerPubKey.checked;
     
     SetVisibleTokenMode();
 }
 
 function SetSmartToDialog(Smart,bSaveToArr,bNoSetPos)
 {
-    $("idName").value = Smart.Name;
-    $("idShortName").value = Smart.ShortName;
+    idName.value = Smart.Name;
+    idShortName.value = Smart.ShortName;
+
     if(Smart.CentName)
-        $("idCentName").value = Smart.CentName;
+        idCentName.value = Smart.CentName;
     else
-        $("idCentName").value = "";
+        idCentName.value = "";
     
     if(Smart.Fixed)
-        $("idFixed").value = Smart.Fixed;
+        idFixed.value = Smart.Fixed;
     else
-        $("idFixed").value = "";
+        idFixed.value = "";
     
-    $("idISIN").value = Smart.ISIN;
+    idISIN.value = Smart.ISIN;
     
-    $("idDescription").value = Smart.Description;
-    $("idTokenGenerate").checked = Smart.TokenGenerate;
-    $("idAccountLength").value = Smart.AccountLength;
+    idDescription.value = Smart.Description;
+    //idTokenGenerate.checked = Smart.TokenGenerate;
+    //idAccountLength.value = Smart.AccountLength;
     
-    $("idStateFormat").value = Smart.StateFormat;
-    $("idCategory1").value = Smart.Category1;
-    $("idCategory2").value = Smart.Category2;
-    $("idCategory3").value = Smart.Category3;
+    //idStateFormat.value = Smart.StateFormat;
+    idCategory1.value = Smart.Category1;
+    idCategory2.value = Smart.Category2;
+    idCategory3.value = Smart.Category3;
     if(Smart.IconBlockNum)
     {
-        $("idIcon").value = "/file/" + Smart.IconBlockNum + "/" + Smart.IconTrNum;
+        idIcon.value = "/file/" + Smart.IconBlockNum + "/" + Smart.IconTrNum;
     }
     else
-        $("idIcon").value = "";
+        idIcon.value = "";
     
     if(window.ace)
     {
@@ -91,14 +102,14 @@ function SetSmartToDialog(Smart,bSaveToArr,bNoSetPos)
     }
     else
     {
-        $("idCode").value = Smart.Code;
-        $("idHTML").value = Smart.HTML;
+        idCode.value = Smart.Code;
+        idHTML.value = Smart.HTML;
     }
     
-    if(!Smart.StartValue)
-        Smart.StartValue = 0;
-    $("idStartValue").value = Smart.StartValue;
-    $("idOwnerPubKey").checked = Smart.OwnerPubKey;
+    //if(!Smart.StartValue)
+    Smart.StartValue = 0;
+    //idStartValue.value = Smart.StartValue;
+    idOwnerPubKey.checked = Smart.OwnerPubKey;
     
     SetSampleByName();
     
@@ -126,15 +137,19 @@ function SetSmartToDialog(Smart,bSaveToArr,bNoSetPos)
     }
     
     CheckReplay();
+
+    CheckShortName();
+
 }
 
 function SetDialogEnabled()
 {
-    var bDisabled = (CurProjectValue != $("idProjectList").value);
+
+    var bDisabled = (CurProjectValue != idProjectList.value);
     
-    var Arr = ["idName", "idShortName", "idCentName", "idFixed", "idISIN", "idCode", "idHTML", "idDescription", "idTokenGenerate",
-    "idStartValue", "idOwnerPubKey", "idAccountLength", "idStateFormat", "idCategory1", "idCategory2", "idCategory3", "idIcon",
-    "idBtIcon", "idBtSendSmart", "idBtSendHTML", "!idStateHTML1", "!idStateHTML2"];
+    var Arr = ["idName", "idShortName", "idCentName", "idFixed", "idISIN", "idCode", "idHTML", "idDescription",
+    "idOwnerPubKey",  "idCategory1", "idCategory2", "idCategory3", "idIcon",
+    "idBtIcon", "idBtSendSmart", "idBtSendHTML","idBtSendJS", "!idStateHTML1", "!idStateHTML2"];
     for(var i = 0; i < Arr.length; i++)
     {
         var Name = Arr[i];
@@ -155,11 +170,11 @@ function SetDialogEnabled()
         }
     }
     
-    if($("idSmartHTMLMode").value !== "1")
-    {
-        $("idStateHTML1").disabled = 1;
-        $("idStateHTML2").disabled = 1;
-    }
+    // if(idSmartHTMLMode.value !== "1")
+    // {
+    //     idStateHTML1.disabled = 1;
+    //     idStateHTML2.disabled = 1;
+    // }
     
     SetVisibleBlock("idRefHTML", bDisabled);
     
@@ -167,7 +182,7 @@ function SetDialogEnabled()
 }
 
 var LastBaseState = undefined;
-function LoadSmart(Path)
+function LoadSmart(Path,LoadLastHTML,WasSmart)
 {
     LastBaseState = undefined;
     SetStatus("");
@@ -182,24 +197,39 @@ function LoadSmart(Path)
                 if(SetData && SetData.result && SetData.arr.length === 1)
                 {
                     var Smart = SetData.arr[0];
-                    $("idSmartOwner").value = Smart.Owner;
-                    $("idSmartAccount").value = Smart.Account;
-                    if(MapAccounts[Smart.Owner] && Smart.BaseState && Smart.BaseState.HTMLBlock !== undefined && Smart.BaseState.HTMLTr !== undefined)
-                        $("idSmartHTMLMode").value = 1;
-                    else
-                        $("idSmartHTMLMode").value = 0;
+                    idSmartNum.value = Smart.Num;
+                    idSmartOwner.value = Smart.Owner;
+                    idSmartAccount.value = Smart.Account;
+                    // if(MapAccounts[Smart.Owner] && Smart.BaseState && Smart.BaseState.HTMLBlock !== undefined && Smart.BaseState.HTMLTr !== undefined)
+                    //     idSmartHTMLMode.value = 1;
+                    // else
+                    //     idSmartHTMLMode.value = 0;
                     
-                    LoadSmart("/file/" + Smart.BlockNum + "/" + Smart.TrNum);
                     var Str = "";
                     var Url = "";
+                    //idSmartHTMLMode.value = 0;
+                    if(Smart.HTMLBlock)
+                    {
+                        LastBaseState={HTMLBlock:Smart.HTMLBlock,HTMLTr:Smart.HTMLTr};
+                    }
+                    else
                     if(Smart.BaseState && Smart.BaseState.HTMLBlock)
                     {
                         LastBaseState = Smart.BaseState;
-                        var Url = "/file/" + Smart.BaseState.HTMLBlock + "/" + Smart.BaseState.HTMLTr;
+                    }
+
+                    if(LastBaseState)
+                    {
+                        //idSmartHTMLMode.value = 1;
+                        Url = "/file/" + LastBaseState.HTMLBlock + "/" + LastBaseState.HTMLTr;
                         Str = "<a target='_blank' class='link' onclick='OpenExtLink(\"" + Url + "\"); return 0;'>" + Url + "</a>";
                     }
-                    $("idRefHTML").innerHTML = Str;
-                    $("idNewStateFile").value = Url;
+                    idRefHTML.innerHTML = Str;
+                    idNewStateFile.value = Url;
+                    var StateHTML=undefined;
+                    if(LoadLastHTML)
+                        StateHTML=LastBaseState;
+                    LoadSmart("/file/" + Smart.BlockNum + "/" + Smart.TrNum,StateHTML,Smart);
                 }
                 else
                 {
@@ -217,23 +247,42 @@ function LoadSmart(Path)
                 SetError("Error file path: " + Path);
                 return;
             }
+            if(WasSmart)
             GetData("DappBlockFile", Param, function (SetData)
             {
                 if(SetData && SetData.result)
                 {
-                    if(SetData.Type === 111 && SetData.Body.Body.Type === 130)
+                    var Smart = SetData.Body?SetData.Body.Body:undefined;
+                    var SmartType=Smart?Smart.Type:0;
+
+                    if((SetData.Type === 111 || SetData.Type === 112) && (SmartType === 130 || SmartType === 131))
                     {
-                        var Smart = SetData.Body.Body;
-                        SetSmartToDialog(Smart, 1);
+
+                        if(LoadLastHTML && typeof LoadLastHTML === "object")
+                        {
+                            GetData("DappBlockFile", {BlockNum:LoadLastHTML.HTMLBlock, TrNum:LoadLastHTML.HTMLTr}, function (SetData)
+                            {
+                                if(SetData && SetData.result)
+                                {
+                                    WasSmart.HTML=SetData.Body;
+                                    SetSmartToDialog(WasSmart, 1);
+                                }
+                            });
+                        }
+                        else
+                        {
+                            SetSmartToDialog(WasSmart, 1);
+                        }
                     }
                     else
                     {
-                        SetError("Error type (" + SetData.Type + ") transaction in path: " + Path);
+                        SetSmartToDialog(WasSmart, 1);
+                        console.log("Error type (" + SetData.Type+"," + SmartType+") transaction in path: " + Path);
                     }
                 }
                 else
                 {
-                    SetError("Error data in path: " + Path);
+                    console.log("Error data in path: " + Path);
                 }
                 SetPrice();
             });
@@ -252,7 +301,7 @@ function SetCurrentSmart(nSet)
     SavePrevProject();
     CurProjectValue = undefined;
     
-    var SmartValue =  + ($("idSmartList").value);
+    var SmartValue =  + (idSmartList.value);
     
     if(nSet === 2 && SmartValue === PrevSmartValue)
         return;
@@ -264,7 +313,7 @@ function SetCurrentSmart(nSet)
     SetDialogEnabled();
     if(SmartValue > 8)
     {
-        $("idSmartStart").value = SmartValue;
+        idSmartStart.value = SmartValue;
         
         for(var Num = 0; Num < 2; Num++)
         {
@@ -287,10 +336,11 @@ var AllDappMap = {};
 function FillSmart(StartNum,Count)
 {
     if(StartNum === undefined)
-        StartNum = $("idSmartStart").value;
-    if(!StartNum)
-        StartNum = 1;
-    if(NETWORK_ID === "MAIN-JINN.TERA" && (StartNum < 8))
+        StartNum = idSmartStart.value;
+    // if(!StartNum)
+    //     StartNum = 1;
+    //if(window.NETWORK_ID === "MAIN-JINN.TERA" && (StartNum < 8))
+    if(!StartNum || StartNum<8)
         StartNum = 8;
     if(!Count)
         Count = 100;
@@ -337,7 +387,7 @@ function FillProject()
         Arr.push({text:"" + Smart.Name, value:i, img:img});
     }
     FillSelect("idProjectList", Arr);
-    $("idProjectList").value = CurProjectValue;
+    idProjectList.value = CurProjectValue;
 }
 
 function SavePrevProject()
@@ -355,7 +405,7 @@ function SetCurrentProject(bSet)
     
     PrevSmartValue = undefined;
     
-    var SmartValue = $("idProjectList").value;
+    var SmartValue = idProjectList.value;
     if(SmartValue)
     {
         
@@ -373,7 +423,7 @@ function SetCurrentProject(bSet)
 }
 function DelProject()
 {
-    var SmartValue = $("idProjectList").value;
+    var SmartValue = idProjectList.value;
     if(!SmartValue)
         return;
     var Index = parseInt(SmartValue);
@@ -401,7 +451,8 @@ function DelProject()
             }
             
             SetSmartToDialog(Smart);
-            $("idProjectList").value = Index;
+            idProjectList.value = Index;
+            SaveValues(1);
         }
     });
 }
@@ -442,6 +493,7 @@ function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML,idHTMLBefor)
         CodeSmart = GetTextFromF(FCodeTemplate);
     }
     else
+    {
         if(typeof FCodeTemplate === "object")
         {
             for(var i = 0; i < FCodeTemplate.length; i++)
@@ -456,10 +508,14 @@ function NewDapp(Mode,FCodeTemplate,FHTMLTemplate,idHTML,idHTMLBefor)
         {
             CodeSmart = FCodeTemplate;
         }
+    }
     
     CodeHTML = GetTextFromF(FHTMLTemplate);
+
+    //console.log("CodeHTML",CodeHTML);
     
     NewDappNext(Mode, CodeSmart, CodeHTML, idHTML, idHTMLBefor);
+    DoPlay(1);
 }
 
 function GetTextFromF(F)
@@ -509,27 +565,28 @@ function NewDappNext(Mode,CodeSmart,CodeHTML,idHTML,idHTMLBefor)
         
         Str += "<script>\n" + CodeHTML + "\n<\/script>\n\n";
         if(idHTML)
-            Smart.HTML = Str + $(idHTML).innerHTML + "\n";
-        
-        Smart.StateFormat = "{HTMLBlock:uint,HTMLTr:uint16}";
+            Str +=  $(idHTML).innerHTML + "\n";
+
+        Smart.HTML = Str;
+        //Smart.StateFormat = "{HTMLBlock:uint,HTMLTr:uint16}";
     }
     
     ProjectArray.unshift(Smart);
     FillProject();
-    $("idProjectList").value = 0;
-    CurProjectValue = $("idProjectList").value;
+    idProjectList.value = 0;
+    CurProjectValue = idProjectList.value;
     SetSmartToDialog(Smart, 0, 1);
     
-    $("idName").focus();
+    idName.focus();
 }
 
 function LoadFromDapp()
 {
-    var Num = $("idLoadDapp").value;
+    var Num = idLoadDapp.value;
     if(Num)
     {
         NewDappNext("Blank");
-        LoadSmart(Num);
+        LoadSmart(Num,1);
     }
 }
 
@@ -558,7 +615,7 @@ function TrimRows(StrID)
 
 function SetVisibleTokenMode()
 {
-    SetVisibleBlock("idTokenMode", $("idTokenGenerate").checked);
+    //SetVisibleBlock("idTokenMode", idTokenGenerate.checked);
 }
 
 function OpenWalletPage()
@@ -570,15 +627,30 @@ function CheckReplay()
 {
     if(editHTML && editHTML.NeedReplay)
     {
-        if($("idAutoPlay").checked)
+        if(idAutoPlay.checked)
             DoPlay();
     }
 }
 
 function DoPlay(bRecreate)
 {
+
+
     if(ArrTabs[1].Current != "TabPlay")
         return;
+
+
+
+
+    if(idAutoPlay.checked)//защита от бесконечных циклов
+    {
+        idAutoPlay.checked=false;
+        SaveValues(1);
+        setTimeout(function ()
+        {
+            idAutoPlay.checked=true;
+        },100);
+    }
     
     var bEnable = SetDialogEnabled();
     if(!bEnable && LastBaseState)
@@ -588,27 +660,48 @@ function DoPlay(bRecreate)
             if(SetData && SetData.result)
             {
                 bWasPlay = 1;
-                RunFrame(SetData.Body, $("idPreview"), bRecreate);
+                RunFrame(SetData.Body, idPreview, bRecreate);
             }
         });
         return;
     }
     bWasPlay = 1;
     var Code = GetHTMLCode();
-    RunFrame(Code, $("idPreview"), bRecreate);
+    RunFrame(Code, idPreview, bRecreate);
 }
 
 function SelectScreenStyle()
 {
-    var Select = $("idScreenStyle");
-    $("idPreview").className = Select.value;
+    idPreview.className = idScreenStyle.value;
 }
 
 function DoPlaySend()
 {
-    var SendFrom = ParseNum($("idSendFrom").value);
-    var SendTo = ParseNum($("idSendTo").value);
-    var fSum = parseFloat($("idSendSum").value);
+    var SendFrom = ParseNum(idSendFrom.value);
+    var SendTo = ParseNum(idSendTo.value);
+    var fSum = parseFloat(idSendSum.value);
+    var Currency=parseInt(idCurrency.value);
+    var TokenID=idTokenID.value;
     
-    PlaySend(SendFrom, SendTo, fSum, $("idSendDesc").value);
+    PlaySend(SendFrom, SendTo, fSum, idSendDesc.value,Currency,TokenID);
+}
+
+function CheckShortName()
+{
+    SetVisibleBlock("idCheckShortName",!IsOkShortName(idShortName.value));
+    SetVisibleBlock("idCheckCentName",!IsOkShortName(idCentName.value,1));
+}
+function IsErrTokenNames()
+{
+    if(!IsOkShortName(idShortName.value))
+        return "Token name";
+    if(!IsOkShortName(idCentName.value,1))
+        return "Cent name";
+    return 0;
+}
+
+function IsOkShortName(Name,bCent)
+{
+    var MustName = NormalizeCurrencyName(Name,bCent);
+    return Name===MustName;
 }

@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -19,19 +19,19 @@ module.exports.Init = Init;
 const FORMAT_NET_CONSTANT = {NetConstVer:"uint", NetConstStartNum:"uint", PROTOCOL_MODE:"uint", MAX_TRANSACTION_COUNT:"uint16",
     __RESRV000:"uint16", __RESRV00:"uint32", MIN_COUNT_FOR_CORRECT_TIME:"uint", CORRECT_TIME_TRIGGER:"uint16", CORRECT_TIME_VALUE:"uint16",
     INFLATION_TIME_VALUE:"byte", __RESRV01:"uint", MAX_LEADER_COUNT:"byte", MAX_ITEMS_FOR_LOAD:"uint32", MAX_PACKET_SIZE:"uint32",
-    MAX_PACKET_SIZE_RET_DATA:"uint32", MAX_BLOCK_SIZE:"uint32", __RESRV02:"uint", MAX_ERR_PROCESS_COUNT:"uint", RECONNECT_MIN_TIME:"uint",
+    MAX_PACKET_SIZE_RET_DATA:"uint32", MAX_BLOCK_SIZE:"uint32", MAX_TX_SIZE:"uint", MAX_ERR_PROCESS_COUNT:"uint", RECONNECT_MIN_TIME:"uint",
     MAX_LEVEL_CONNECTION:"byte", EXTRA_SLOTS_COUNT:"byte", MAX_CONNECT_TIMEOUT:"uint32", MAX_CONNECT_COUNT:"uint16", __RESRV03:"uint32",
     MAX_LEVEL_NODES:"byte", MAX_RET_NODE_LIST:"uint16", MAX_CACHE_BODY_LENGTH:"uint32", MAX_DEPTH_FOR_SECONDARY_CHAIN:"uint32",
     MAX_DELTA_PROCESSING:"byte", METHOD_ALIVE_TIME:"uint32", __RESRV04:"uint", __RESRV041:"uint", __RESRV042:"uint16", __RESRV043:"byte",
     STEP_ADDTX:"uint16", STEP_TICKET:"uint16", STEP_TX:"uint16", STEP_NEW_BLOCK:"uint16", STEP_SAVE:"uint16", STEP_LAST:"uint16",
-    STEP_CLEAR_MEM:"uint16", _ReservT5:"uint", UNIQUE_IP_MODE:"uint16", _ReservT6:"uint", CHECK_POINT_HASH:"hash", __RESRV05:"uint32",
-    __RESRV006:"uint16", __RESRV0006:"uint16", __RESRV06:"uint16", TEST_COUNT_BLOCK:"uint32", TEST_COUNT_TX:"uint32", __RESRV07:"uint32",
-    TEST_DELTA_TIMING_HASH:"uint32", TEST_DIV_TIMING_HASH:"uint32", TEST_NDELTA_TIMING_HASH:"uint32", MAX_TRANSFER_TX:"uint32",
-    RUN_RESET:"uint16", HOT_BLOCK_DELTA:"uint16", TX_PRIORITY_MODE:"byte", __RESRV08:"byte", TX_PRIORITY_LENGTH:"uint16", TX_BASE_VALUE:"uint",
-    TX_FREE_COUNT:"uint16", TEST_MODE_1:"uint16", TEST_MODE_2:"uint16", TEST_MODE_3:"uint16", TX_FREE_BYTES_MAX:"uint32", TX_CHECK_OPERATION_ID:"byte",
-    TX_CHECK_SIGN_ON_ADD:"uint16", TX_CHECK_SIGN_ON_TRANSFER:"uint16", MAX_ONE_NODE_TX:"uint32", MIN_TIME_SEND_TT_PERIOD:"uint16",
-    MAX_TIME_SEND_TT_PERIOD:"uint16", DELTA_TIME_NEW_BLOCK:"uint16", MAX_CHILD_PROCESS_TIME:"uint16", BLOCK_CREATE_INTERVAL:"uint16",
-    MAX_CROSS_MSG_COUNT:"uint16", MAX_CROSS_RUN_COUNT:"uint16", RESERVE_DATA:"arr313", NET_SIGN:"arr64"};
+    STEP_CLEAR_MEM:"uint16", STEP_RESEND:"uint16", COUNT_RESEND:"uint16", _ReservT5:"uint16", UNIQUE_IP_MODE:"uint16", _ReservT6:"uint",
+    CHECK_POINT_HASH:"hash", __RESRV05:"uint32", __RESRV006:"uint16", __RESRV0006:"uint16", __RESRV06:"uint16", TEST_COUNT_BLOCK:"uint32",
+    TEST_COUNT_TX:"uint32", __RESRV07:"uint32", TEST_DELTA_TIMING_HASH:"uint32", TEST_DIV_TIMING_HASH:"uint32", TEST_NDELTA_TIMING_HASH:"uint32",
+    MAX_TRANSFER_TX:"uint32", RUN_RESET:"uint16", HOT_BLOCK_DELTA:"uint16", TX_PRIORITY_MODE:"byte", __RESRV08:"byte", TX_PRIORITY_LENGTH:"uint16",
+    TX_BASE_VALUE:"uint", TX_FREE_COUNT:"uint16", TEST_MODE_1:"uint16", TEST_MODE_2:"uint16", TEST_MODE_3:"uint16", TX_FREE_BYTES_MAX:"uint32",
+    TX_CHECK_OPERATION_ID:"byte", TX_CHECK_SIGN_ON_ADD:"uint16", TX_CHECK_SIGN_ON_TRANSFER:"uint16", MAX_ONE_NODE_TX:"uint32",
+    MIN_TIME_SEND_TT_PERIOD:"uint16", MAX_TIME_SEND_TT_PERIOD:"uint16", DELTA_TIME_NEW_BLOCK:"uint16", MAX_CHILD_PROCESS_TIME:"uint16",
+    BLOCK_CREATE_INTERVAL:"uint16", MAX_CROSS_MSG_COUNT:"uint16", MAX_CROSS_RUN_COUNT:"uint16", RESERVE_DATA:"arr313", NET_SIGN:"arr64"};
 
 var FormatForSign = CopyNetConstant({}, FORMAT_NET_CONSTANT, 1);
 
@@ -131,6 +131,9 @@ function Init(Engine)
         var WasConst = CopyNetConstant({}, JINN_CONST);
         
         CopyNetConstant(JINN_CONST, JINN_NET_CONSTANT);
+        
+        if(!JINN_CONST.MAX_TX_SIZE)
+            JINN_CONST.MAX_TX_SIZE = 64000;
         var CountCreate = JINN_NET_CONSTANT.TEST_COUNT_BLOCK + JINN_NET_CONSTANT.NetConstStartNum - Engine.CurrentBlockNum;
         if(JINN_NET_CONSTANT.TEST_COUNT_BLOCK && CountCreate > 0)
         {
@@ -141,6 +144,12 @@ function Init(Engine)
         if(JINN_NET_CONSTANT.RUN_RESET && (JINN_NET_CONSTANT.NetConstStartNum + 1) >= Engine.CurrentBlockNum)
         {
             
+            if(JINN_NET_CONSTANT.RUN_RESET === 5)
+            {
+                ToLog("****REWRITE_DAPP_TRANSACTIONS*****", 2);
+                if(!global.DEV_MODE)
+                    REWRITE_DAPP_TRANSACTIONS(5000);
+            }
             if(JINN_NET_CONSTANT.RUN_RESET === 10)
             {
                 ToLog("****ClearCommonStat*****", 2);

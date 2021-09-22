@@ -77,7 +77,7 @@ class AccountTR extends require("./accounts-sign")
         
         try
         {
-            var TR = BufLib.GetObjectFromBuffer(Body, FORMAT_CREATE, {});
+            var TR = BufLib.GetObjectFromBuffer(Body, FORMAT_ACC_CREATE, {});
         }
         catch(e)
         {
@@ -101,7 +101,7 @@ class AccountTR extends require("./accounts-sign")
         {
             try
             {
-                RunSmartMethod(Block, TR, Account.Value.Smart, Account, BlockNum, TrNum, ContextFrom, "OnSetSmart")
+                RunSmartMethod(Block, TR, Account.Value.Smart, Account, BlockNum, TrNum, ContextFrom, "OnSetSmart");
             }
             catch(e)
             {
@@ -112,9 +112,83 @@ class AccountTR extends require("./accounts-sign")
         this.ResultTx = Account.Num
         return true;
     }
-    
+
+    TRTransferMoney5(Block, Body, BlockNum, TrNum, format_money_transfer, workstructtransfer)
+    {
+        if(GETVERSION(BlockNum)<2)
+            return "Error blockchain version";
+
+        if(IS_ROLLBACK_TRANSACTION())
+            return "Was rollback tx";
+
+        if(Body.length < 120)
+            return "Error length transaction";
+
+
+        var TR = SerializeLib.GetObjectFromBuffer(Body, format_money_transfer, workstructtransfer);
+        if(TR.TxMaxBlock && TR.TxMaxBlock<BlockNum)
+            return "Error Max block num: "+BlockNum+"/"+TR.TxMaxBlock;
+
+        var MaxTicks=PRICE_DAO(BlockNum).MaxTicks;
+        if(TR.TxTicks>MaxTicks)
+            return "Error max ticks: "+TR.TxTicks+"/"+MaxTicks;
+        SetTickCounter(TR.TxTicks);
+
+
+        if(TR.Version !=4)
+            return "Error Tx version";
+        if(!TR.FromID)
+            return "Error sender's account ID: " + TR.FromID;
+
+        TR.FromNum=TR.FromID;
+        var ResultCheck = ACCOUNTS.CheckSignFrom(Body, TR, BlockNum, TrNum);
+        if(typeof ResultCheck === "string")
+            return ResultCheck;
+
+
+
+        var CoinSumTo=this.SendMoneyTR(Block, TR.FromID, TR.ToID, TR.Amount, BlockNum, TrNum, TR.Description,
+            TR.Description, 0,0,0,TR.Currency,TR.TokenID);
+        if(!CoinSumTo || CoinSumTo.SumCOIN===undefined || CoinSumTo.SumCENT===undefined)
+            CoinSumTo=TR.Amount;
+
+
+
+        //Run next transactions
+        if(TR.Body && TR.Body.length)
+        {
+            var Data = this.ReadStateTR(TR.FromID);
+
+            //correct tx for pay context:
+            if(TR.Currency)
+                TR.Currency=TR.Currency;
+            else
+            if(Data.Currency)
+                TR.Currency=Data.Currency;
+
+            TR.Value=CoinSumTo;
+            TR.To=[{ID:TR.ToID,SumCOIN:TR.Value.SumCOIN,SumCENT:TR.Value.SumCENT}];
+
+            var App = DAppByType[TR.Body[0]];
+            if(App)
+            {
+                TR.FromPubKey = Data.PubKey
+                var Result = App.OnProcessTransaction(Block, TR.Body, BlockNum, TrNum, TR)
+                if(Result !== true)
+                    return Result;
+            }
+        }
+
+        return true;
+
+    }
+
+
     TRTransferMoney(Block, Body, BlockNum, TrNum, format_money_transfer, workstructtransfer)
     {
+        if(GETVERSION(BlockNum)>=3)
+            return "Error blockchain version";
+
         if(IS_ROLLBACK_TRANSACTION())
             return "Was rollback tx";
         
@@ -415,81 +489,149 @@ class AccountTR extends require("./accounts-sign")
         return this.WriteHistory(AccountNum, HistoryObj);
     }
     
-    SendMoneyTR(Block, FromID, ToID, CoinSum, BlockNum, TrNum, DescriptionFrom, DescriptionTo, OperationCount, bSmartMode, OperationNum)
+    SendMoneyTR(Block, FromID, ToID, CoinSum, BlockNum, TrNum, DescriptionFrom, DescriptionTo, OperationCount, bSmartMode, OperationNum,Currency,TokenID)
     {
-        FromID = ParseNum(FromID)
-        ToID = ParseNum(ToID)
+        //проверки и выравнивания
+        FromID = ParseNum(FromID);
+        ToID = ParseNum(ToID);
         
         if(CoinSum.SumCENT >= 1e9)
         {
             throw "ERROR SumCENT>=1e9";
         }
-        
+
+
+
         var FromData = this.ReadStateTR(FromID);
+
+        var Smart;
+        // if(FromID==1445)
+        //     console.log("SendMoneyTR: "+FromID+"->"+ToID+" Sum:",FLOAT_FROM_COIN(CoinSum),"Currency:",Currency,FromData.Currency)
+        // if(Currency && FromData.Currency==Currency)
+        //     Currency=0;
+
+        if(Currency && FromData.Currency==Currency)// && GETVERSION(BlockNum)>=3)
+            Currency=0;
+
+
+        var CoinSumTo;
+        if(Currency)
+        {
+            //перевод soft токенов
+            if(!TokenID)
+                TokenID="";
+
+            Smart = SMARTS.ReadSmart(Currency);
+            if(!Smart)
+                throw "ERROR Read smart: "+Currency;
+            if(Smart.Version<2)
+                throw "Smart contract "+Currency+" is not a Software Token";
+
+            var PayContext = {FromID:FromID, ToID:ToID, Description:DescriptionFrom, Value:CoinSum,Currency:Currency,TokenID:TokenID,SmartMode:bSmartMode};
+
+            CoinSumTo=RunSmartMethod(Block, undefined, Smart, undefined, BlockNum, TrNum, PayContext, "OnTransfer",{From:FromID,To:ToID,Amount:CoinSum,ID:TokenID},[],0,1);
+
+            FromData = this.ReadStateTR(FromID);//reload
+        }
+
+
+
         if(!FromData)
-        {
             throw "Send: Error account FromNum: " + FromID;
-        }
-        
-        if(!SUB(FromData.Value, CoinSum))
+        var ToData;
+        if(FromID==ToID)
+            ToData=FromData;
+        else
+            ToData = this.ReadStateTR(ToID);//перечитываем
+        if(!ToData)
+            throw "Send: Error account ToNum: " + ToID;
+
+
+        if(!Currency)
         {
-            throw "Not enough money on the account ID:" + FromID;
+            //перевод обычных монет
+
+            if(!SUB(FromData.Value, CoinSum))
+            {
+                throw "Not enough money on the account ID:" + FromID;
+            }
+            ADD(ToData.Value, CoinSum);
+            this.WriteStateTR(ToData, BlockNum, TrNum);
+            if(!ISZERO(CoinSum) && FromData.Currency !== ToData.Currency)
+                throw "Different currencies. Accounts: " + FromID + " and " + ToID;
         }
-        
-        var FromOperationID = FromData.Value.OperationID;
-        
+
+        FromData.Value.OperationID += OperationCount;
+        this.WriteStateTR(FromData, BlockNum, TrNum);
+
+
+        //console.log("2:",FLOAT_FROM_COIN(FromData.Value));
+        this.DoSmartEvents(Block, FromID, ToID, CoinSum,CoinSumTo, BlockNum, TrNum, DescriptionFrom, DescriptionTo, FromData,ToData, bSmartMode, Smart,Currency,TokenID);
+        //console.log("3:",FLOAT_FROM_COIN(FromData.Value));
+
+        return CoinSumTo;//возврат реально переведенной суммы - для варианта монет с fee
+    }
+
+    DoSmartEvents(Block, FromID, ToID, CoinSum, CoinSumTo, BlockNum, TrNum, DescriptionFrom, DescriptionTo, FromData,ToData, bSmartMode, Smart,Currency,TokenID)
+    {
+        if(!CoinSumTo || CoinSumTo.SumCOIN===undefined || CoinSumTo.SumCENT===undefined)
+            CoinSumTo=CoinSum;
+
         if(FromID >= global.START_HISTORY)
         {
             var DescriptionFrom2 = DescriptionFrom;
             if(DescriptionFrom2.length > 100)
                 DescriptionFrom2 = DescriptionFrom2.substr(0, 100)
             var HistoryObj = {Direct:"-", Receive:0, CurID:FromID, CorrID:ToID, BlockNum:BlockNum, TrNum:TrNum, FromID:FromID, ToID:ToID,
-                SumCOIN:CoinSum.SumCOIN, SumCENT:CoinSum.SumCENT, Description:DescriptionFrom2, FromOperationID:FromOperationID, Currency:FromData.Currency,
+                SumCOIN:CoinSum.SumCOIN, SumCENT:CoinSum.SumCENT, Description:DescriptionFrom2,
                 SmartMode:bSmartMode};
+
+            if(Smart)
+            {
+                HistoryObj.SmartMode=4;
+                HistoryObj.Currency=Currency;
+                HistoryObj.Token=Smart.ShortName;
+                HistoryObj.ID=TokenID;
+            }
+
             this.WriteHistoryTR(FromID, HistoryObj)
         }
-        FromData.Value.OperationID += OperationCount
-        this.WriteStateTR(FromData, BlockNum, TrNum)
-        
-        var ToData = this.ReadStateTR(ToID);
-        if(!ToData)
-        {
-            throw "Send: Error account ToNum: " + ToID;
-        }
-        ADD(ToData.Value, CoinSum)
-        
         if(ToID >= global.START_HISTORY)
         {
             var DescriptionTo2 = DescriptionTo;
             if(DescriptionTo2.length > 100)
                 DescriptionTo2 = DescriptionTo2.substr(0, 100)
             var HistoryObj = {Direct:"+", Receive:1, CurID:ToID, CorrID:FromID, BlockNum:BlockNum, TrNum:TrNum, FromID:FromID, ToID:ToID,
-                SumCOIN:CoinSum.SumCOIN, SumCENT:CoinSum.SumCENT, Description:DescriptionTo2, FromOperationID:FromOperationID, Currency:ToData.Currency,
+                SumCOIN:CoinSumTo.SumCOIN, SumCENT:CoinSumTo.SumCENT, Description:DescriptionTo2,
                 SmartMode:bSmartMode};
-            this.WriteHistoryTR(ToID, HistoryObj)
+            if(Smart)
+            {
+                HistoryObj.SmartMode=4;
+                HistoryObj.Currency=Currency;
+                HistoryObj.Token=Smart.ShortName;
+                HistoryObj.ID=TokenID;
+            }
+            this.WriteHistoryTR(ToID, HistoryObj);
         }
-        
-        this.WriteStateTR(ToData, BlockNum, TrNum)
-        if(!ISZERO(CoinSum) && FromData.Currency !== ToData.Currency)
-            throw "Different currencies. Accounts: " + FromID + " and " + ToID;
-        
+
+
         if(FromData.Value.Smart)
         {
-            FromData = this.ReadStateTR(FromID)
-            
-            var Context = {FromID:FromID, ToID:ToID, Description:DescriptionFrom, Value:CoinSum};
+            var Context = {FromID:FromID, ToID:ToID, Description:DescriptionFrom, Value:CoinSum,Currency:Currency,TokenID:TokenID};
             if(BlockNum >= global.UPDATE_CODE_SHARDING)
-                Context.SmartMode = (bSmartMode ? 1 : 0)
-            RunSmartMethod(Block, undefined, FromData.Value.Smart, FromData, BlockNum, TrNum, Context, "OnSend")
+                Context.SmartMode = (bSmartMode ? 1 : 0);
+            RunSmartMethod(Block, undefined, FromData.Value.Smart, FromData, BlockNum, TrNum, Context, "OnSend");
         }
         if(ToData.Value.Smart)
         {
-            var Context = {FromID:FromID, ToID:ToID, Description:DescriptionTo, Value:CoinSum};
+            var Context = {FromID:FromID, ToID:ToID, Description:DescriptionTo, Value:CoinSumTo,Currency:Currency,TokenID:TokenID};
             if(BlockNum >= global.UPDATE_CODE_SHARDING)
-                Context.SmartMode = (bSmartMode ? 1 : 0)
-            RunSmartMethod(Block, undefined, ToData.Value.Smart, ToData, BlockNum, TrNum, Context, "OnGet")
+                Context.SmartMode = (bSmartMode ? 1 : 0);
+            RunSmartMethod(Block, undefined, ToData.Value.Smart, ToData, BlockNum, TrNum, Context, "OnGet");
         }
+
     }
-};
+
+}
 
 module.exports = AccountTR;

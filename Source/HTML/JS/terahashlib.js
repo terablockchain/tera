@@ -14,23 +14,23 @@ var BLOCKNUM_ALGO2;
 var BLOCKNUM_HASH_NEW;
 var BLOCKNUM_TICKET_ALGO;
 
-if(typeof global === "object")
-{
-    global.GetHashFromSeqAddr = GetHashFromSeqAddr;
-    global.GetHashFromNum2 = GetHashFromNum2;
-    global.GetHashFromNum3 = GetHashFromNum3;
-    global.GetHashFromArrNum2 = GetHashFromArrNum2;
-    global.XORArr = XORArr;
-    
-    global.GetHash = GetHash;
-}
+var root = typeof global==="object"?global:window;
+
+
+root.GetHashFromSeqAddr = GetHashFromSeqAddr;
+root.GetHashFromNum2 = GetHashFromNum2;
+root.GetHashFromNum3 = GetHashFromNum3;
+root.GetHashFromArrNum2 = GetHashFromArrNum2;
+root.XORArr = XORArr;
+
+root.GetHash = GetHash;
 
 InitTeraHashConst();
 
 function InitTeraHashConst()
 {
-    
-    if(global.NETWORK_ID === "MAIN-JINN.TERA")
+
+    if(root.NETWORK_ID === "MAIN-JINN.TERA")
     {
         BLOCKNUM_ALGO2 = 6560000;
         BLOCKNUM_HASH_NEW = 10195000;
@@ -423,7 +423,7 @@ function GetSeqHash(BlockNum,PrevHash,TreeHash,PrevSumPow)
 
 function CalcDataHash(BlockNum,PrevHash,TreeHash,PrevSumPow)
 {
-    if(BlockNum > 15 && BlockNum >= global.UPDATE_CODE_JINN)
+    if(BlockNum > 15 && BlockNum >= root.UPDATE_CODE_JINN)
     {
         // new code
         
@@ -449,7 +449,7 @@ function CalcSumHash(PrevSumHash,Hash,BlockNum,SumPow)
         return shaarr2(PrevSumHash, Hash);
     }
     
-    if(BlockNum >= global.UPDATE_CODE_JINN)
+    if(BlockNum >= root.UPDATE_CODE_JINN)
     {
         // new code
         
@@ -464,10 +464,10 @@ function CalcSumHash(PrevSumHash,Hash,BlockNum,SumPow)
 
 function CalcLinkHashFromArray(ArrHashes,BlockNum)
 {
-    if(BlockNum >= global.UPDATE_CODE_JINN)
+    if(BlockNum >= root.UPDATE_CODE_JINN)
     {
         // new code
-        ToLogTrace("Error algo for new mode CalcLinkHashFromArray BlockNum=" + BlockNum + "/" + global.UPDATE_CODE_JINN);
+        ToLogTrace("Error algo for new mode CalcLinkHashFromArray BlockNum=" + BlockNum + "/" + root.UPDATE_CODE_JINN);
     }
     
     // old code
@@ -535,12 +535,12 @@ function GetArrFromValue(Num)
 
 function GetTxID(BlockNum,Body)
 {
-    var Nonce = ReadUintFromArr(Body, Body.length - 6);
-    var Arr = CreateTxID(Body, BlockNum, Nonce);
-    return Arr.slice(0, TX_ID_HASH_LENGTH + 6);
+    var Arr = CreateTxID(Body, BlockNum);
+    //return Arr.slice(0, TX_ID_HASH_LENGTH + 6);
+    return Arr;
 }
 
-function CreateTxID(body,BlockNum,Nonce)
+function CreateTxID(body,BlockNum)
 {
     var HASH = sha3(body, 31);
     WriteUintToArrOnPos(HASH, BlockNum, TX_ID_HASH_LENGTH);
@@ -555,54 +555,46 @@ function GetStrTxIDFromHash(Hash,BlockNum)
     return GetHexFromArr(Hash2);
 }
 
-if(typeof global === "object")
-{
-    global.ReadUint32FromArr = ReadUint32FromArr;
-    global.ReadUintFromArr = ReadUintFromArr;
-    global.ReadUint16FromArr = ReadUint16FromArr;
-    global.WriteUintToArr = WriteUintToArr;
-    global.WriteUint32ToArr = WriteUint32ToArr;
-    global.WriteUint32ToArrOnPos = WriteUint32ToArrOnPos;
-    global.WriteUint16ToArrOnPos = WriteUint16ToArrOnPos;
-    
-    global.WriteUintToArrOnPos = WriteUintToArrOnPos;
-    global.WriteArrToArr = WriteArrToArr;
-    global.WriteArrToArrOnPos = WriteArrToArrOnPos;
-    global.WriteArrToArrHOnPos = WriteArrToArrHOnPos;
-    global.ConvertBufferToStr = ConvertBufferToStr;
-    global.CopyObjValue = CopyObjValue;
-    global.CopyArr = CopyArr;
-    
-    global.ParseNum = ParseNum;
-    global.CompareArr = CompareArr;
-    global.CompareArrL = CompareArrL;
-    global.IsEqArr = IsEqArr;
-    
-    global.shaarr2 = shaarr2;
-    global.sha3arr2 = sha3arr2;
-    global.arr2 = arr2;
-    
-    global.GetBlockArrFromBuffer = GetBlockArrFromBuffer;
-    global.GetBufferFromBlockArr = GetBufferFromBlockArr;
-    
-    global.shaarrblock2 = shaarrblock2;
-    global.GetSeqHash = GetSeqHash;
-    
-    global.CalcHash3FromArray = CalcHash3FromArray;
-    global.CalcLinkHashFromArray = CalcLinkHashFromArray;
-    global.CalcHashFromArray = CalcHashFromArray;
-    global.CalcSumHash = CalcSumHash;
-    global.CalcDataHash = CalcDataHash;
-    global.CalcBlockHashJinn = CalcBlockHashJinn;
-    
-    global.GetArrFromValue = GetArrFromValue;
-    
-    global.GetStrTxIDFromHash = GetStrTxIDFromHash;
-    global.GetTxID = GetTxID;
-    global.CreateTxID = CreateTxID;
-}
-else
-    if(typeof window === "object")
-    {
-        global = window;
-    }
+root.ReadUint32FromArr = ReadUint32FromArr;
+root.ReadUintFromArr = ReadUintFromArr;
+root.ReadUint16FromArr = ReadUint16FromArr;
+root.WriteUintToArr = WriteUintToArr;
+root.WriteUint32ToArr = WriteUint32ToArr;
+root.WriteUint32ToArrOnPos = WriteUint32ToArrOnPos;
+root.WriteUint16ToArrOnPos = WriteUint16ToArrOnPos;
+
+root.WriteUintToArrOnPos = WriteUintToArrOnPos;
+root.WriteArrToArr = WriteArrToArr;
+root.WriteArrToArrOnPos = WriteArrToArrOnPos;
+root.WriteArrToArrHOnPos = WriteArrToArrHOnPos;
+root.ConvertBufferToStr = ConvertBufferToStr;
+root.CopyObjValue = CopyObjValue;
+root.CopyArr = CopyArr;
+
+root.ParseNum = ParseNum;
+root.CompareArr = CompareArr;
+root.CompareArrL = CompareArrL;
+root.IsEqArr = IsEqArr;
+
+root.shaarr2 = shaarr2;
+root.sha3arr2 = sha3arr2;
+root.arr2 = arr2;
+
+root.GetBlockArrFromBuffer = GetBlockArrFromBuffer;
+root.GetBufferFromBlockArr = GetBufferFromBlockArr;
+
+root.shaarrblock2 = shaarrblock2;
+root.GetSeqHash = GetSeqHash;
+
+root.CalcHash3FromArray = CalcHash3FromArray;
+root.CalcLinkHashFromArray = CalcLinkHashFromArray;
+root.CalcHashFromArray = CalcHashFromArray;
+root.CalcSumHash = CalcSumHash;
+root.CalcDataHash = CalcDataHash;
+root.CalcBlockHashJinn = CalcBlockHashJinn;
+
+root.GetArrFromValue = GetArrFromValue;
+
+root.GetStrTxIDFromHash = GetStrTxIDFromHash;
+root.GetTxID = GetTxID;
+root.CreateTxID = CreateTxID;

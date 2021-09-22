@@ -47,18 +47,26 @@ process.on('message', function (msg)
 {
     switch(msg.cmd)
     {
-        case "FindTX":
-            global.TreeFindTX.SaveValue(msg.TX, msg);
-            break;
+        // case "FindTX":
+        //     console.log("FindTX",JSON.stringify(msg,"",4));
+        //     global.TreeFindTX.SaveValue(msg.TX, msg);
+        //     break;
         case "SetSmartEvent":
+            //console.log("Smart:" + msg.Smart);
             global.TreeFindTX.SaveValue("Smart:" + msg.Smart, 1);
             break;
             
         default:
             break;
     }
-}
-);
+});
+
+global.SetFindTX=function(Params,F)
+{
+    //console.log("SetFindTX",JSON.stringify(Params,"",4));
+    Params.F=F;
+    global.TreeFindTX.SaveValue(Params.TX, Params);
+};
 
 setInterval(PrepareStatEverySecond, 1000);
 
@@ -66,7 +74,7 @@ global.SetStatMode = function (Val)
 {
     global.STAT_MODE = Val;
     return global.STAT_MODE;
-}
+};
 
 
 
@@ -420,3 +428,14 @@ function RunTestAccHash(BlockNum)
 }
 
 
+//***************************************************************************
+//Debug log
+/*
+global.DebugEvent=function (Obj,BlockNum,TrNum)
+{
+    console.log(BlockNum,":",TrNum,"Event:",Obj);
+};
+//global.glStopTxProcessNum=45582;
+
+//***************************************************************************
+//*/

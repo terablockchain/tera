@@ -9,6 +9,8 @@
 
     <script type="text/javascript" src="/HTML/JS/coinlib.js"></script>
     <script type="text/javascript" src="../HTML/JS/client.js"></script>
+    <script type="text/javascript" src="../HTML/JS/client-promise.js"></script>
+    <script type="text/javascript" src="../HTML/JS/client-tokens.js"></script>
     <script type="text/javascript" src="../HTML/JS/diagram.js"></script>
 
     <script>
@@ -24,10 +26,12 @@
         {
             window.MainServer=undefined;
 
-            GetData("GetCurrentInfo",{Diagram:IsVisibleBlock("idStatBlock")?1:0}, function (Data)
+            GetData("GetCurrentInfo",{Diagram:IsVisibleBlock("idStatBlock")?1:0}, async function (Data)
             {
                 if(!Data)
                     return;
+
+                await CheckNetworkID(Data);
 
                 SetConfigData(Data,bFirst);
 
@@ -97,7 +101,8 @@
     <script>
         var DiagramArr=
             [
-                {name:"MAX:ALL_NODES",text:"All nodes count",value:0,red:"#1d506b",MouseText:" nodes"},
+                {name:"MAX:Addrs",text:"All nodes count",value:0,red:"#256b87",MouseText:" nodes"},
+                {name:"MAX:ALL_NODES",text:"Public nodes count",value:0,red:"#244248",MouseText:" nodes"},
                 {name:"MAX:HASH_RATE_B",text:"HashRate, Tera hash/s",value:0,red:"#286b16",MathPow:2,MathDiv:1024*1024*1024*1024,KPrecision:10,NoTextMax:1,MouseText:" T h/s"},
         ];
 
@@ -176,7 +181,7 @@
                             <tr>
                                 <th id="(RetHistoryAccount(Item))" class="num">ID</th>
                                 <th id="SUM_TO_STRING(Item.Value)" class="sum">Amount</th>
-                                <th id="CurrencyNameItem(Item)" class="cur">Cur</th>
+                                <th id="ACurrencyNameItem(Item)" class="cur">Cur</th>
                                 <th id="Item.Name" class="accname">Name</th>
                                 <th id="Item.PubKeyStr" class="hash">PubKey</th>
                                 <th id="Item.Value.OperationID" class="minwidth">Operation</th>

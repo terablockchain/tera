@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -18,10 +18,12 @@ function Init(Engine)
         
         var type = Tx.body[0];
         var App = DAppByType[type];
+        var Ret;
         if(App)
-            return App.GetSenderNum(BlockNum, Tx.body);
+            Ret = App.GetSenderNum(BlockNum, Tx.body);
         else
-            return 0;
+            Ret = 0;
+        return Ret;
     };
     
     Engine.GetTxSenderOperationID = function (Tx,BlockNum)
@@ -144,8 +146,7 @@ function Init(Engine)
             var Power = Engine.GetAddrPower(Item.AddrHashPOW, Item.BlockNum);
             if(Item.System)
                 Power += global.MIN_POW_ADDRES;
-            
-            if(Power > global.MIN_POW_ADDRES)
+            if(Power > 0)
             {
                 Arr.push({ip:Item.ip, port:Item.ip, portweb:Item.portweb});
             }

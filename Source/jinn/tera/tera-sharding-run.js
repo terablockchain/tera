@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -20,6 +20,7 @@ function Init(Engine)
     
     Engine.CanCreateNewBlock = function (BlockNumNew)
     {
+        
         if(!global.USE_MINING_SHARDS)
             return 1;
         if(Engine.LastNumCreateNewBlock !== Engine.CurrentBlockNum)

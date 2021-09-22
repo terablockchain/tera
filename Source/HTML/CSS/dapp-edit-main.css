@@ -30,6 +30,7 @@ body
     margin: 2px;
 }
 
+
 .tabheader2 th
 {
     margin: 0px;
@@ -60,6 +61,12 @@ body
     background2: linear-gradient(270deg, #3D4C61 0%, #445368 100%);
 
 }
+
+.tabheader2
+{
+    margin: 0 2px 0 0;
+}
+
 .layer
 {
     margin: 3px;
@@ -100,7 +107,9 @@ body
 
 .current2
 {
-    background-color:  var(--color22);
+    background-color2:  var(--color22);
+    background:  var(--color1);
+
     border-bottom:0;
 }
 
@@ -160,6 +169,11 @@ body
 {
     width: 768px;
     height: 1024px;
+}
+#idPreview.size1024x800
+{
+    width: 1024px;
+    height: 800px;
 }
 
 
@@ -260,16 +274,21 @@ input,select
 
 #idStatus
 {
-    position: fixed;
+    position: absolute;
     top:5px;
     left: 300px;
     width: 80%;
+    max-width: 650px;
     height: 20px;
-    border: 1px solid var(--color2);
+    border2: 1px solid red;
     text-align: left;
     color:var(--color3);
 }
 
+.btfile
+{
+    padding: 5px;
+}
 body.univers .bt[disabled]
 {
     background: var(--color22);
@@ -296,8 +315,14 @@ body.univers .bt:hover[disabled]
     -webkit-box-align: end;
     -webkit-align-items: flex-end;
     -ms-flex-align: end;
-    align-items: flex-end; }
+    align-items: flex-end;
 
+}
+
+.row-send {
+    margin: 4px 2px;
+    line-height:24px;
+}
 
 .resizable {
     resize: horizontal;
@@ -305,9 +330,15 @@ body.univers .bt:hover[disabled]
     border: 1px solid black;
 }
 
+.page_property {
+    float: left;
+    width: 85%;
+    height:100%;
+}
+
 .t-holder2
 {
-    height: 220px;
+    height: 260px;
 }
 
 .dsmall
@@ -320,6 +351,10 @@ body.univers .bt:hover[disabled]
 .dsmall2
 {
     width: 40px;
+}
+#idTokenID
+{
+    width: 90px;
 }
 #idSendDesc
 {
@@ -382,13 +417,11 @@ textarea:hover, select:hover
 }
 
 
-/*::-webkit-scrollbar*/
-/*{*/
-/*    width: 20px;*/
-/*}*/
-/*::-webkit-scrollbar-track-piece*/
-/*{*/
-/*    background-color: transparent;*/
-/*    -webkit-border-radius: 6px;*/
-/*}*/
-
+#idCheckShortName,#idCheckCentName
+{
+    display: none;
+    color: #a60f0e;
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+}

@@ -58,10 +58,13 @@ class AccountKeyValue extends require("./accounts-tr")
         
         var Value = 0;
         if(Account.Currency === 0)
-            Value = FLOAT_FROM_COIN(Account.Value)
-        
+            Value = FLOAT_FROM_COIN(Account.Value);
         var Price = PRICE_DAO(BlockNum);
-        var MinSum = Account.KeyValueSize * Price.Storage;
+        var Size=Account.KeyValueSize-Price.FreeStorage;
+        if(Size<=0)
+            return;
+
+        var MinSum = Size * Price.Storage;
         if(Value < MinSum)
         {
             throw "Insufficient deposit amount on account: " + Account.Num + " for data storage: Value=" + Value + " min need: " + MinSum;
@@ -74,12 +77,12 @@ class AccountKeyValue extends require("./accounts-tr")
         var Account = this.DBState.Read(Data.ID);
         if(Account)
         {
-            Account.KeyValueSize += Size * nDirect
-            this.DBStateWriteInner(Account, BlockNum)
+            Account.KeyValueSize += Size * nDirect;
+            this.DBStateWriteInner(Account, BlockNum);
         }
     }
     
-    ReadValue(ID, Key, Format)
+    ReadValue(ID, Key, Format,bOldVer)
     {
         var Value;
         var Data = {ID:ID, Key:Key};
@@ -88,7 +91,7 @@ class AccountKeyValue extends require("./accounts-tr")
         {
             if(Format)
             {
-                Value = SerializeLib.GetObjectFromBuffer(Item.ValueBuf, Format, {})
+                Value = SerializeLib.GetObjectFromBuffer(Item.ValueBuf, Format, {},0,bOldVer)
             }
             else
             {
@@ -114,13 +117,14 @@ class AccountKeyValue extends require("./accounts-tr")
         }
         
         if(Buf.length > 65535)
-            Buf.length = 65535
+            Buf.length = 65535;
         
         var Data = {ID:ID, Key:Key, ValueBuf:Buf};
         
-        this.RemoveValue(ID, Key)
-        
-        this.ControlValueBufSize(Data, BlockNum, 1)
+        this.RemoveValue(ID, Key);
+
+        if(BlockNum)
+            this.ControlValueBufSize(Data, BlockNum, 1);
         
         this.DBKeyValue.Insert(Data)
     }
@@ -135,6 +139,6 @@ class AccountKeyValue extends require("./accounts-tr")
             this.DBKeyValue.Remove(Data)
         }
     }
-};
+}
 
 module.exports = AccountKeyValue;

@@ -13,10 +13,15 @@
 <script type="text/javascript" src="./JS/dapp-outer.js"></script>
 <script type="text/javascript" src="./JS/coinlib.js"></script>
 <script type="text/javascript" src="./JS/client.js"></script>
+<script type="text/javascript" src="./JS/client-promise.js"></script>
+<script type="text/javascript" src="./JS/client-tokens.js"></script>
+<script type="text/javascript" src="./JS/client-tx.js"></script>
 <script type="text/javascript" src="./JS/sha3.js"></script>
 <script type="text/javascript" src="./JS/crypto-client.js"></script>
 <script type="text/javascript" src="./JS/terahashlib.js"></script>
 <script type="text/javascript" src="./JS/terabuf.js"></script>
+
+
 
 <script>
     module={};
@@ -26,7 +31,6 @@
 <script src="./JS/sign-lib-min.js"></script>
 <script src="./JS/lexer.js"></script>
 <script src="./JS/smart-vm.js"></script>
-<script src="./JS/dapp-edit-play.js"></script>
 
 
 
@@ -38,7 +42,11 @@
 <script src="./JS/dapp-edit-project.js"></script>
 <script src="./JS/dapp-edit-ace.js"></script>
 <script src="./JS/dapp-edit-template.js"></script>
+<script src="./JS/dapp-edit-db.js"></script>
 
+
+<script src="./JS/dapp-edit-accounts.js"></script>
+<script src="./JS/dapp-edit-play.js"></script>
 
 
 
@@ -84,13 +92,51 @@
 <!--TEMPLATES  TEMPLATES  TEMPLATES-->
 
 <DIV id="idDappTemplate" style="display: none">
-<BR>
-<select size="1" id="idTestAccount" style="width: 300px">
-    <option value="0">Loading...</option>
-</select>
-<BR><BR>
-<BUTTON onclick="SendMethod('Method1')">Method1</BUTTON>
+
+
+    <DIV align='center' id="idMain" style="display:none">
+        <div class="row_acc">
+            <p>Account:</p>
+            <select size="1" id="idAddrTera" onchange="">
+                <option value="0">Loading...</option>
+            </select>
+            <button class="btn_acc" onclick="CreateAccount()">
+                <svg viewBox="0 0 16 16" style="height:16px"><path d="M0 7h16v2H0V7z"></path><path d="M9 0v16H7V0h2z"></path></svg>
+            </button>
+        </div>
+
+
+        <menu>
+            <item data-ref="m1" id="idPage1">
+                Send
+            </item>
+
+            <item data-ref="m2" id="idPage2">
+                Test
+            </item>
+
+        </menu>
+
+
+
+        <content data-ref="m1">
+
+            <br>
+            <button onclick="SendTest()">SendTest</button>
+
+        </content>
+
+        <content data-ref="m2">
+
+            Test Test Test
+
+        </content>
+
+    </DIV>
+
+
 </DIV>
+
 
 <DIV id="idDappTemplate1" style="display: none">
 <BR>
@@ -149,6 +195,9 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                 <DIV style="width: 15%;min-width:140px; float:left;" class="resizable">
                     <INPUT type="button" onclick="NewProject()" class="bt btool" value="New">
                     <INPUT type="button" onclick="DelProject()" class="bt btool" value="Del">
+                    <INPUT type="button" onclick="SaveValues(1)" class="bt btool" value="Save">
+
+
 <!--                    <INPUT type="button" onclick="LoadSmart()" class="bt btool" value="Load">-->
                     <div style="padding-left: 2px; ">PROJECTS:</div>
                     <select size="2" id="idProjectList" style="width:100%;height:calc(50vh - 67px - 10px)"  onchange="SetCurrentProject(1)" onclick="SetCurrentProject(2)">
@@ -169,9 +218,9 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                 </DIV>
 
                 <!--Dapp properties-->
-                <DIV style="width: 85%; height:100%; float: left;">
+                <DIV class="page_property">
                     <DIV style="padding: 5px">
-                        FULL NAME: <INPUT type="string" id="idName" onchange="SaveValues(1)" class="radius" style="height:20px;width: 60%;padding-left:5px;font-weight: bold" value="">
+                        <B>Name:</B> <INPUT type="string" id="idName" onchange="SaveValues(1)" class="radius" style="height:20px;width: 60%;padding-left:5px;font-weight: bold" value="">
                         ICON:
                         <INPUT type="string" id="idIcon" class="radius" style="width: 13%;margin-right: 5px" onchange="SetSampleByName()" value=""><button id="idBtIcon" onclick="SelectBlockchainFile('idIcon','idIconSample')">...</button>
                         <span style="display: inline-block">
@@ -189,43 +238,66 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                     </table>
                     <!--Main properties-->
                     <DIV id="TabMain" style="display: none;" class="layer layer2">
+                        <input type="hidden" id="idSmartNum">
                         <input type="hidden" id="idSmartOwner">
                         <input type="hidden" id="idSmartAccount">
                         <input type="hidden" id="idSmartHTMLMode">
-                        <BR>Number of accounts (1-50):<INPUT type="number" id="idAccountLength" min=1 max=50 style="text-align:center;width: 100px;" class="radius" value="1">
-                        <BR><BR>
-                        PubKey copied from owner:
-                        <input type="checkbox" class="" id="idOwnerPubKey" onchange = ""/>
-                        <BR><BR>
-                        State storage format:<DIV class="link info-syntax" onclick="ShowSyntax('idFormatStorage')">syntax helper</DIV>
-                        <textarea id="idStateFormat"  style="width: 99.5%;height: 70px;" rows="2" cols="99" autofocus>
-                        </textarea>
+<!--                        <BR>Number of accounts (1-50):<INPUT type="number" id="idAccountLength" min=1 max=50 style="text-align:center;width: 100px;" class="radius" value="1">-->
 
-                        <BR><BR>
+                        <BR>
+                        <DIV>
+                            <div style="float: left;margin-right: 30px;"><DIV>CATEGORY1:</DIV>
+                                <select size="1" id="idCategory1" class="radius tmain-holder" style="height: 30px">
+                                </select>
+                            </div>
+
+                            <div style="float: left;margin-right: 30px;"><DIV>CATEGORY2:</DIV>
+                                <select size="1" id="idCategory2" class="radius tmain-holder" style="height: 30px;">
+                                </select>
+                            </div>
+
+                            <div style="float: none;"><DIV>CATEGORY3:</DIV>
+                                <select size="1" id="idCategory3" class="radius tmain-holder" style="height: 30px">
+                                </select>
+                            </div>
+                        </DIV>
+
+                        DESCRIPTION:
+                        <textarea id="idDescription"  class="radius" style="width: 99.5%;min-height:40px;height: calc(30vh - 112px)" rows="2" cols="98">
+                        </textarea>
     <!--                    Cross Msg confirms:-->
     <!--                    <INPUT type="string" id="idCrossMsgConfirms" class="radius" value="">-->
     <!--                    <BR>-->
 
                         <BR>
                         <DIV style="background-color: var(--color2); padding: 5px;">
-                            <input type="checkbox" class="" id="idTokenGenerate" onchange = "SetPrice();SetVisibleTokenMode()"/>Token generate smart-contract
+<!--                            <input type="checkbox" class="" id="idTokenGenerate" onchange = "SetPrice();SetVisibleTokenMode()"/>Token generate smart-contract-->
 
                             <table id="idTokenMode">
                                 <tr><td>
-                                    Short name:
-                                </td><td>
-                                    <INPUT type="string" id="idShortName" maxlength="5" class="radius" value="">
-                                </td></tr>
-                                <tr><td>
-                                    Cent name:
-                                </td><td>
-                                    <INPUT type="string" id="idCentName" maxlength="5" class="radius" value="">
+                                    Token name:
                                 </td>
                                     <td>
-                                        <INPUT type="number" id="idFixed" maxlength="1" class="radius" value="">
+                                    <INPUT type="string" id="idShortName" maxlength="12" class="radius" value="" oninput="CheckShortName()">
                                     </td>
+                                    <td id="idCheckShortName">The name must start with the <B>big characters</B> A-Z and can have the characters: 0-9, "_", "-"</td>
+                                </tr>
+                                <tr><td>
+                                    Cent name:
+                                </td>
+                                <td>
+                                    <INPUT type="string" id="idCentName" maxlength="12" class="radius" value="" oninput="CheckShortName()">
+                                </td>
+                                <td id="idCheckCentName">The name must start with the <B>small characters</B> a-z and can have the characters: 0-9, "_", "-"</td>
                                 </tr>
 
+                                <tr><td>
+                                    Precision:
+                                </td>
+                                    <td>
+                                        <INPUT type="number" id="idFixed" style="width: 50px" maxlength="1" class="radius" value="">
+                                    </td>
+                                </tr>
 
                                 <tr><td>
                                     ISIN:
@@ -233,36 +305,24 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                                     <INPUT type="string" id="idISIN" class="radius" value="">
                                 </td></tr>
 
-                                <tr><td>
-                                    The initial amount of coins:
-                                </td><td>
-                                    <INPUT type="number" id="idStartValue" class="radius" value="">
-                                </td></tr>
+<!--                                <tr><td>-->
+<!--                                    The initial amount of coins:-->
+<!--                                </td><td>-->
+<!--                                    <INPUT type="number" id="idStartValue" class="radius" value="">-->
+<!--                                </td></tr>-->
                             </table>
 
                         </DIV>
 
+<!--                        <BR><BR>-->
+
+<!--                        State storage format:<DIV class="link info-syntax" onclick="ShowSyntax('idFormatStorage')">syntax helper</DIV>-->
+<!--                        <textarea id="idStateFormat"  style="width: 99.5%;height: 70px;" rows="2" cols="99" autofocus>-->
+<!--                        </textarea>-->
+
                         <BR>
-                        <DIV>
-                            <div style="float: left;margin-right: 30px;"><DIV>CATEGORY1:</DIV>
-                            <select size="1" id="idCategory1" class="radius tmain-holder" style="height: 30px">
-                            </select>
-                            </div>
-
-                            <div style="float: left;margin-right: 30px;"><DIV>CATEGORY2:</DIV>
-                            <select size="1" id="idCategory2" class="radius tmain-holder" style="height: 30px;">
-                            </select>
-                            </div>
-
-                            <div style="float: none;"><DIV>CATEGORY3:</DIV>
-                            <select size="1" id="idCategory3" class="radius tmain-holder" style="height: 30px">
-                            </select>
-                            </div>
-                        </DIV>
-
-                        DESCRIPTION:
-                        <textarea id="idDescription"  class="radius" style="width: 99.5%;min-height:40px;height: calc(30vh - 112px)" rows="2" cols="98">
-                        </textarea>
+                        PubKey copied from owner:
+                        <input type="checkbox" class="" id="idOwnerPubKey" onchange = ""/>
 
                     </DIV>
 
@@ -295,17 +355,26 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                                 <option value="size360x640">360 * 640</option>
                                 <option value="size375x812">375 * 812</option>
                                 <option value="size768x1024">768 * 1024</option>
+                                <option value="size1024x800">1024 * 800</option>
                             </select>
 
                             <BR><INPUT type="button" onclick="DoPlay(1)" class="bt radius t-holder" style="height: 40px;" value="RECREATE">
                             <BR><INPUT type="button" onclick="DoPlay()" class="bt radius t-holder marginbottom0" style="height: 40px;" value="PLAY HTML">
                             <DIV class="t-holder"><input type="checkbox" class="" id="idAutoPlay"/>Automatic play</DIV>
                             <DIV class="t-holder"><input type="checkbox" class="" id="idDebugLog"/>Log debug</DIV>
+                            <DIV class="t-holder"><input type="checkbox" class="" id="idDebugTiks"/>Log tiks</DIV>
+
                             Wallet test sending:<BR>
                             <DIV class="t-holder t-holder2">
-                                From:<INPUT  id="idSendFrom" value="100" class="dsmall">
-                                To<INPUT id="idSendTo" value="107" class="dsmall">
-                                Sum:<INPUT id="idSendSum" value="1000" class="dsmall dsmall2">
+                                <DIV class="row row-send">
+                                    From:<INPUT  id="idSendFrom" value="100" class="dsmall">
+                                    To<INPUT id="idSendTo" value="107" class="dsmall">
+                                    Sum:<INPUT id="idSendSum" value="1000" class="dsmall dsmall2" autocomplete="off">
+                                </DIV>
+                                <DIV class="row row-send">
+                                    Currency:<INPUT id="idCurrency" value="0" autocomplete="off" class="dsmall">
+                                    ID:<INPUT id="idTokenID">
+                                </DIV>
 
                                 <textarea id="idSendDesc"  rows="5" cols="21"></textarea>
                                 <INPUT type="button" onclick="DoPlaySend()" class="bt bsend radius" style="height: 40px;" value="Send">
@@ -342,6 +411,9 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                         <HR>
                         <BR>
                         <INPUT type="button" onclick="SendHTMLToBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendHTML" value="SEND HTML FILE">
+                        <BR>
+                        <INPUT type="button" onclick="SendJSToBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendJS" value="SEND JS FILE">
+
 
 
                         <BR>
@@ -416,8 +488,8 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                 <option value="styleDark">Dark</option>
             </select>
             <BR><BR>
-            <button onclick="SaveValues(1);SaveWebDataToFile(localStorage['SMART-ProjectArray'],'dapp-ide.txt')" class="bt" id="idSave"> Save to file</button>
-            <label for="load-key" class="bt" onchange="LoadWebDataFromFile('load-key',DoLoadingConfig)" id="idLoad">
+            <button onclick="SaveAllProjects();" class="bt btfile" id="idSave"> Save to file</button>
+            <label for="load-key" class="bt btfile" onchange="LoadWebDataFromFile('load-key',DoLoadingConfig)" id="idLoad">
                 <input class="hidden" id="load-key" type="file">
                 <span>Load from file</span>
             </label>
@@ -426,7 +498,7 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
         <DIV id="idServerBlock" style="max-height: 300px;">
             <HR>
             Log from node:
-            <textarea rows="15" cols="200"  id="idServerLog" class="focusnowrite" readonly>
+            <textarea rows="12" cols="200"  id="idServerLog" class="focusnowrite" readonly>
             </textarea>
 <!--            <DIV id="idServerLog"></DIV><BR>-->
         </DIV>
@@ -507,16 +579,28 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
     </DIV>
 </section>
 
+<section class="ModalDlg" id="idSending" style="display: none; width: 200px;">
+    <div align='center' style="width: 200px;">
+        <h2>Sending Tx</h2>
+        <BR>
+        <p>Wait a few seconds, pls...</p>
+
+        <p id="idSendingContent"></p>
+    </div>
+</section>
+
+
 <section id="idNewSmart" class="ModalDlg MenuDlg" style="display: none;">
     <DIV align='center'>
         <h3>New smart contract</h3>
         <button class="smart-menu" onclick="NewDapp('Blank','','')">Blank</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Proxy',TemplateProxy,TemplateProxyHTML)">Proxy</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Token',TemplateSmartToken,TemplateSmartTokenHTML)">Smart Token</button><BR>
         <BR>Example code with:<BR>
-        <button class="smart-menu" onclick="NewDapp('Smart',CodeTemplateSmart,'')">Smart: All events</button><BR>
-        <button class="smart-menu" onclick="NewDapp('SmartTest',CodeTemplateSmart2,'')">Smart: OnSend & OnGet</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Smart',TemplateAllEvent,'')">Smart: All events</button><BR>
+        <button class="smart-menu" onclick="NewDapp('Dapp',CodeTemplateDapp,DappTemplate,'idDappTemplate')">Dapp: Tabbed menu</button><BR>
         <button class="smart-menu" onclick="NewDapp('Storage',SmartTemplate1,DappTemplate1,'idDappTemplate1')">Dapp: Key storage</button><BR>
         <button class="smart-menu" onclick="NewDapp('Web',SiteTemplateSmart,SiteTemplateHTML,'idSiteTemplate2','idSiteTemplate1')">WWW-page</button><BR>
-        <button class="smart-menu" onclick="NewDapp('Dapp',CodeTemplateDapp,DappTemplate,'idDappTemplate')">Dapp: User list</button><BR>
 
         <button class="smart-menu smart-load" onclick="LoadFromDapp()">Load from Dapp:</button><input style="width: 80px" id="idLoadDapp"><BR>
         <button class="smart-menu bt-white"  onclick="closeModal()">Cancel</button>

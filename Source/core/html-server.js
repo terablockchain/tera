@@ -60,8 +60,8 @@ CacheMap["highlight-html.js"] = 1000000;
 CacheMap["highlight-js.js"] = 1000000;
 
 var AllowArr = ["text/javascript", "application/javascript", "application/json", "application/octet-stream", "application/font-woff",
-"text/css", "audio/wav", "audio/mpeg", "image/vnd.microsoft.icon", "image/jpeg", "image/png", "image/gif", "text/plain", "text/csv",
-"image/x-icon"];
+    "text/css", "audio/wav", "audio/mpeg", "image/vnd.microsoft.icon", "image/jpeg", "image/png", "image/gif", "text/plain", "text/csv",
+    "image/x-icon"];
 
 var AllowMap = {};
 for(var i = 0; i < AllowArr.length; i++)
@@ -74,12 +74,14 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
 {
     var Caller = HTTPCaller;
     var Method = params[0];
-    
+
     var Path2 = Path;
     if(Path2.substring(0, 1) === "/")
         Path2 = Path2.substring(1);
     var ArrPath = Path2.split('/', 5);
-    
+
+    //console.log(ArrPath,Path);
+
     var APIv2 = 0;
     if(ArrPath[0] === "api")
     {
@@ -89,8 +91,9 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
             Caller = WebApi2;
         }
         Method = ArrPath[2];
+        //console.log(Method,"PATH:", Path);
     }
-    
+
     var F = Caller[Method];
     if(F)
     {
@@ -99,16 +102,17 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
             response.end();
             return;
         }
-        
+
+
         var Headers = {'Content-Type':'text/plain'};
-        
+
         var Ret = F(params[1], response);
         if(Ret === null)
         {
             response.writeHead(200, Headers);
             return;
         }
-        
+
         try
         {
             var Str = JSON.stringify(Ret);
@@ -122,23 +126,27 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
         }
         return;
     }
-    
+
     var method = params[0];
     method = method.toLowerCase();
     if(method === "dapp" && params.length === 2)
         method = "DappTemplateFile";
-    
+
     var LongTime = undefined;
     switch(method)
     {
         case "":
             SendWebFile(request, response, "./HTML/wallet.html");
             break;
-            
+
         case "file":
             SendBlockFile(request, response, params[1], params[2]);
             break;
-            
+
+        case "nft":
+            SendNFTFile(request, response, params[1]);
+            break;
+
         case "DappTemplateFile":
             DappTemplateFile(request, response, params[1]);
             break;
@@ -154,72 +162,72 @@ function DoCommand(request,response,Type,Path,params,remoteAddress)
         case "tx":
             DoGetTransactionByID(response, {TxID:params[1]});
             break;
-            
+
         default:
+        {
+            if(Path.indexOf(".") ===  - 1)
+                ToError("Error path:" + Path + "  remoteAddress=" + remoteAddress);
+
+            var path = params[params.length - 1];
+            if(typeof path !== "string")
+                path = "ErrorPath";
+            else
+            if(Path.indexOf("..") >= 0 || path.indexOf("\\") >= 0 || path.indexOf("/") >= 0)
+                path = "ErrorFilePath";
+
+            if(path.indexOf(".") < 0)
+                path += ".html";
+
+            var type = Path.substr(Path.length - 3, 3);
+            switch(type)
             {
-                if(Path.indexOf(".") ===  - 1)
-                    ToError("Error path:" + Path + "  remoteAddress=" + remoteAddress);
-                
-                var path = params[params.length - 1];
-                if(typeof path !== "string")
-                    path = "ErrorPath";
-                else
-                    if(Path.indexOf("..") >= 0 || path.indexOf("\\") >= 0 || path.indexOf("/") >= 0)
-                        path = "ErrorFilePath";
-                
-                if(path.indexOf(".") < 0)
-                    path += ".html";
-                
-                var type = Path.substr(Path.length - 3, 3);
-                switch(type)
-                {
-                    case ".js":
-                    case "asm":
-                        if(params[0] === "HTML" && params[1] === "Ace")
-                        {
-                            LongTime = 1000000;
-                            path = Path;
-                        }
-                        else
-                            if(params[0] === "Ace")
-                            {
-                                LongTime = 1000000;
-                                path = "./HTML/" + Path;
-                            }
-                            else
-                            {
-                                path = "./HTML/JS/" + path;
-                            }
-                        break;
-                    case "css":
-                        path = "./HTML/CSS/" + path;
-                        break;
-                    case "wav":
-                    case "mp3":
-                        path = "./HTML/SOUND/" + path;
-                        break;
-                    case "svg":
-                    case "png":
-                    case "gif":
-                    case "jpg":
-                    case "ico":
-                        path = "./HTML/PIC/" + path;
-                        break;
-                        
-                    case "pdf":
-                    case "zip":
-                    case "exe":
-                    case "msi":
-                        path = "./HTML/FILES/" + path;
-                        break;
-                    default:
-                        path = "./HTML/" + path;
-                        break;
-                }
-                
-                SendWebFile(request, response, path, "", 0, LongTime);
-                break;
+                case ".js":
+                case "asm":
+                    if(params[0] === "HTML" && params[1] === "Ace")
+                    {
+                        LongTime = 1000000;
+                        path = Path;
+                    }
+                    else
+                    if(params[0] === "Ace")
+                    {
+                        LongTime = 1000000;
+                        path = "./HTML/" + Path;
+                    }
+                    else
+                    {
+                        path = "./HTML/JS/" + path;
+                    }
+                    break;
+                case "css":
+                    path = "./HTML/CSS/" + path;
+                    break;
+                case "wav":
+                case "mp3":
+                    path = "./HTML/SOUND/" + path;
+                    break;
+                case "svg":
+                case "png":
+                case "gif":
+                case "jpg":
+                case "ico":
+                    path = "./HTML/PIC/" + path;
+                    break;
+
+                case "pdf":
+                case "zip":
+                case "exe":
+                case "msi":
+                    path = "./HTML/FILES/" + path;
+                    break;
+                default:
+                    path = "./HTML/" + path;
+                    break;
             }
+
+            SendWebFile(request, response, path, "", 0, LongTime);
+            break;
+        }
     }
 }
 
@@ -237,13 +245,18 @@ function DappTemplateFile(request,response,StrNum)
             var Headers = {'Content-Type':'text/html', "X-Frame-Options":"sameorigin"};
             var Str = fs.readFileSync("HTML/dapp-frame.html", {encoding:"utf8"});
             Str = Str.replace(/#template-number#/g, Num);
-            Str = Str.replace(/.\/tera.ico/g, "/file/" + Data.IconBlockNum + "/" + Data.IconTrNum);
-            
+            var StrIcon;
+            if(Data.IconBlockNum)
+                StrIcon="/file/" + Data.IconBlockNum + "/" + Data.IconTrNum;
+            else
+                StrIcon="/../Tera.svg";
+            Str = Str.replace(/.\/tera.ico/g, StrIcon);
+
             SendGZipData(request, response, Headers, Str);
             return;
         }
     }
-    
+
     response.writeHead(404, {'Content-Type':'text/html'});
     response.end();
 }
@@ -262,7 +275,7 @@ function DappSmartCodeFile(response,StrNum)
             return;
         }
     }
-    
+
     response.writeHead(404, {'Content-Type':'text/html'});
     response.end();
 }
@@ -280,7 +293,7 @@ function DappClientCodeFile(response,StrNum)
             return;
         }
     }
-    
+
     response.writeHead(404, {'Content-Type':'text/html'});
     response.end();
 }
@@ -300,7 +313,23 @@ HTTPCaller.DappSmartHTMLFile = function (Params)
     return {result:0};
 }
 
+
 global.SendBlockFile = SendBlockFile;
+global.SendNFTFile = SendNFTFile;
+function SendNFTFile(request,response,StrNum)
+{
+    var Num;
+    if(StrNum && StrNum.length>15)
+        Num = +StrNum.substr(StrNum.length-15);
+    else
+        Num = +StrNum;
+
+    var BlockNum=Math.floor(Num/1000);
+    var TrNum=Num%1000;
+    //console.log(Num,"->",BlockNum,TrNum);
+    return SendBlockFile(request, response, BlockNum, TrNum);
+}
+
 function SendBlockFile(request,response,BlockNum,TrNum)
 {
     BlockNum = parseInt(BlockNum);
@@ -318,29 +347,48 @@ function SendBlockFile(request,response,BlockNum,TrNum)
 }
 function SendToResponceFile(request,response,Block,TrNum)
 {
-    
+
     var Body = Block.arrContent[TrNum];
     if(Body && Body.data)
         Body = Body.data;
-    if(Body && Body[0] === global.TYPE_TRANSACTION_FILE)
+    if(Body)
     {
-        var TR = DApps.File.GetObjectTransaction(Body);
-        var StrType = TR.ContentType.toLowerCase();
-        
-        var Headers = {"X-Content-Type-Options":"nosniff"};
-        
-        if(AllowMap[StrType] || (Block.BlockNum < global.UPDATE_CODE_2 && StrType === "image/svg+xml"))
-            Headers['Content-Type'] = TR.ContentType;
-        else
-            Headers['Content-Type'] = "text/plain";
-        
-        SendGZipData(request, response, Headers, TR.Data);
+        var Type=Body[0];
+
+        if(Type === global.TYPE_TRANSACTION_FILE
+            || Type === global.TYPE_TRANSACTION_SMART_RUN1
+            || Type === global.TYPE_TRANSACTION_SMART_RUN2)
+        {
+            var Headers = {"X-Content-Type-Options":"nosniff"};
+            Headers["Access-Control-Allow-Origin"]="*";
+
+            var ContentType,Data;
+            var TR = DApps.File.GetObjectTransaction(Body);
+            if(Type === global.TYPE_TRANSACTION_FILE)
+            {
+                ContentType = TR.ContentType;
+                Data=TR.Data;
+            }
+            else
+            {
+                ContentType = "text/plain";
+                Data=TR.Params;
+            }
+
+
+            var StrType = ContentType.toLowerCase();
+
+            if(AllowMap[StrType] || (Block.BlockNum < global.UPDATE_CODE_2 && StrType === "image/svg+xml"))
+                Headers['Content-Type'] = ContentType;
+            else
+                Headers['Content-Type'] = "text/plain";
+
+            SendGZipData(request, response, Headers, Data);
+            return;
+        }
     }
-    else
-    {
-        
-        SendToResponce404(response);
-    }
+
+    SendToResponce404(response);
 }
 
 function SendToResponce404(response)
@@ -372,13 +420,13 @@ function SendToResponceDappFile(response,Block,TrNum)
     var Body = Block.arrContent[TrNum];
     if(Body)
     {
-        
+
         var Type = Body[0];
         if(Type === global.TYPE_TRANSACTION_FILE)
         {
             var TR = DApps.File.GetObjectTransaction(Body);
             var Str = Buffer.from(TR.Data).toString('utf8');
-            
+
             Result = {result:1, Type:Type, ContentType:TR.ContentType, Name:TR.Name, Body:Str};
         }
         else
@@ -388,7 +436,7 @@ function SendToResponceDappFile(response,Block,TrNum)
             {
                 Body = JSON.parse(App.GetScriptTransaction(Body, Block.BlockNum, TrNum));
             }
-            
+
             Result = {result:1, Type:Type, Body:Body};
         }
     }
@@ -406,28 +454,28 @@ HTTPCaller.DappStaticCall = function (Params,response)
 {
     var Result = RunStaticSmartMethod(ParseNum(Params.Account), Params.MethodName, Params.Params, Params.ParamsArr);
     var Str = JSON.stringify(Result);
-    if(Str.length > 16000)
+    if(Str.length > 64000)
     {
-        return {result:0, RetValue:"Error result length (more 16000)"};
+        return {result:0, RetValue:"Error result length (more 64000)"};
     }
-    
+
     response.end(Str);
     return null;
-}
+};
 
 HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
 {
     var SmartNum = ParseNum(Params.Smart);
     if(global.TX_PROCESS && global.TX_PROCESS.Worker)
         global.TX_PROCESS.Worker.send({cmd:"SetSmartEvent", Smart:SmartNum});
-    
+
     var Account;
     var Smart = SMARTS.ReadSimple(SmartNum);
     if(Smart)
     {
         delete Smart.HTML;
         delete Smart.Code;
-        
+
         Account = ACCOUNTS.ReadState(Smart.Account);
         try
         {
@@ -442,12 +490,13 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
             Account.SmartState = {};
         }
     }
-    
+
     DeleteOldEvents(SmartNum);
     var Context = GetUserContext(Params);
     var EArr = GetEventArray(SmartNum, Context);
     var WLData = HTTPCaller.DappWalletList(Params);
-    
+    //console.log("WLData.arr=",WLData.arr)
+
     var ArrLog = [];
     for(var i = 0; i < ArrLogClient.length; i++)
     {
@@ -458,19 +507,33 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
             break;
         ArrLog.push(Item);
     }
-    
-    var Ret = {result:1, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN,
-        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB), NEW_SIGN_TIME:NEW_SIGN_TIME, Smart:Smart,
-        Account:Account, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME, JINN_MODE:1, ArrWallet:WLData.arr, ArrEvent:EArr, ArrLog:ArrLog,
+
+    var Ret = {result:1,
+        DELTA_CURRENT_TIME:DELTA_CURRENT_TIME,
+        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
+        UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME,
+        PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB),
+        NEW_SIGN_TIME:NEW_SIGN_TIME,
+        Smart:Smart,
+        Account:Account,
+        NETWORK:global.NETWORK,
+        SHARD_NAME:global.SHARD_NAME,
+        JINN_MODE:1,
+        ArrWallet:WLData.arr,
+        ArrEvent:EArr,
+        ArrLog:ArrLog,
+        COIN_STORE_NUM:global.COIN_STORE_NUM,
+        BlockNumDB:SERVER.BlockNumDB,
     };
-    
+
     if(global.WALLET)
     {
         Ret.WalletIsOpen = (WALLET.WalletOpen !== false);
         Ret.WalletCanSign = (WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit);
         Ret.PubKey = WALLET.KeyPair.PubKeyStr;
     }
-    
+
     if(!ObjectOnly)
     {
         Ret.CurTime = Date.now();
@@ -478,7 +541,7 @@ HTTPCaller.DappInfo = function (Params,responce,ObjectOnly)
         Ret.MaxAccID = ACCOUNTS.GetMaxAccount();
         Ret.MaxDappsID = SMARTS.GetMaxNum();
     }
-    
+
     return Ret;
 }
 
@@ -493,20 +556,23 @@ HTTPCaller.DappWalletList = function (Params)
             arr.push(arr0[i]);
         }
     }
+    arr=UseRetFieldsArr(arr,Params.Fields);
+    //console.log("arr",arr)
     var Ret = {result:1, arr:arr, };
     return Ret;
 }
 
 HTTPCaller.DappAccountList = function (Params)
 {
-    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, undefined, 1,1);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
-function DappAccount(response,StrNum)
+global.DappAccount=function(response,StrNum)
 {
     var Num = parseInt(StrNum);
-    var arr = ACCOUNTS.GetRowsAccounts(Num, 1, undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(Num, 1, undefined, 1,1);
     var Data = {Item:arr[0], result:1};
     response.writeHead(200, {'Content-Type':"text/plain", "X-Content-Type-Options":"nosniff"});
     response.end(JSON.stringify(Data));
@@ -515,7 +581,8 @@ function DappAccount(response,StrNum)
 HTTPCaller.DappSmartList = function (Params)
 {
     var arr = SMARTS.GetRows(Params.StartNum,  + Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate,
-    Params.AllRow);
+        Params.AllRow);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 HTTPCaller.DappBlockList = function (Params,response)
@@ -531,7 +598,6 @@ HTTPCaller.DappTransactionList = function (Params,response)
 }
 
 
-var sessionid = GetHexFromAddres(crypto.randomBytes(20));
 
 HTTPCaller.RestartNode = function (Params)
 {
@@ -549,7 +615,7 @@ HTTPCaller.FindMyAccounts = function (Params)
 HTTPCaller.GetAccount = function (id)
 {
     id = parseInt(id);
-    var arr = ACCOUNTS.GetRowsAccounts(id, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(id, 1,0,1,1);
     return {Item:arr[0], result:1};
 }
 
@@ -557,8 +623,9 @@ HTTPCaller.GetAccountList = function (Params)
 {
     if(!( + Params.CountNum))
         Params.CountNum = 1;
-    
-    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, Params.Filter, Params.GetState);
+
+    var arr = ACCOUNTS.GetRowsAccounts(Params.StartNum,  + Params.CountNum, Params.Filter, Params.GetState, Params.GetCoin);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetDappList = function (Params)
@@ -566,26 +633,29 @@ HTTPCaller.GetDappList = function (Params)
     if(!( + Params.CountNum))
         Params.CountNum = 1;
     var arr = SMARTS.GetRows(Params.StartNum,  + Params.CountNum, Params.Filter, Params.Filter2, 1);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetBlockList = function (Params,response,bOnlyNum)
 {
     if(!( + Params.CountNum))
         Params.CountNum = 1;
-    
+
     var arr = SERVER.GetRows(Params.StartNum,  + Params.CountNum, Params.Filter, !bOnlyNum, Params.ChainMode);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetTransactionAll = function (Params,response)
 {
     if(!( + Params.CountNum))
         Params.CountNum = 1;
-    
+
     var BlockNum = Params.Param3;
     if(!BlockNum)
         BlockNum = 0;
-    
+
     var arr = SERVER.GetTrRows(BlockNum, Params.StartNum,  + Params.CountNum, Params.ChainMode, Params.Filter);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
@@ -596,6 +666,7 @@ HTTPCaller.GetActList = function (Params)
 HTTPCaller.GetJournalList = function (Params)
 {
     var arr = JOURNAL_DB.GetScrollList(Params.StartNum,  + Params.CountNum);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
@@ -615,17 +686,20 @@ HTTPCaller.FindJournalByBlockNum = function (Params)
 HTTPCaller.GetCrossOutList = function (Params)
 {
     var arr = SHARDS.GetCrossOutList(Params.StartNum,  + Params.CountNum);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 HTTPCaller.GetCrossInList = function (Params)
 {
     var arr = SHARDS.GetCrossInList(Params.StartNum,  + Params.CountNum);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
 HTTPCaller.GetShardList = function (Params)
 {
     var arr = SHARDS.GetShardList(Params.StartNum,  + Params.CountNum);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
@@ -675,7 +749,7 @@ HTTPCaller.GetHashList = function (Params)
         {
             item.Miner = ACCOUNTS.GetMinerFromBlock(Block);
         }
-        
+
         var Arr = SERVER.GetTrRows(item.BlockNum, 0, 65535, 0);
         for(var TxNum = 0; TxNum < Arr.length; TxNum++)
         {
@@ -687,12 +761,14 @@ HTTPCaller.GetHashList = function (Params)
             }
         }
     }
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
 HTTPCaller.GetHistoryAct = function (Params)
 {
     var arr = WALLET.GetHistory(Params.StartNum,  + Params.CountNum, Params.Filter);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
@@ -704,16 +780,16 @@ var LastHashRate = 0;
 var HashRateOneSec = 0;
 HTTPCaller.GetWalletInfo = function (Params)
 {
-    
+
     var Constants = {};
     for(var i = 0; i < global.CONST_NAME_ARR.length; i++)
     {
         var key = global.CONST_NAME_ARR[i];
         Constants[key] = global[key];
     }
-    
+
     var MaxHistory = 0;
-    
+
     var Delta = Date.now() - LastTimeGetHashRate;
     if(Delta >= CONSENSUS_PERIOD_TIME)
     {
@@ -722,30 +798,79 @@ HTTPCaller.GetWalletInfo = function (Params)
         LastHashRate = global.HASH_RATE;
         LastTimeGetHashRate = Date.now();
     }
-    
+
     var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
-    
-    var Ret = {result:1, WalletOpen:WALLET.WalletOpen, WalletIsOpen:(WALLET.WalletOpen !== false), WalletCanSign:(WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit),
-        CODE_VERSION:CODE_VERSION, VersionNum:global.UPDATE_CODE_VERSION_NUM, RelayMode:SERVER.RelayMode, NodeSyncStatus:SERVER.NodeSyncStatus,
-        BlockNumDB:SERVER.BlockNumDB, BlockNumDBMin:SERVER.BlockNumDBMin, CurBlockNum:GetCurrentBlockNumByTime(), CurTime:Date.now(),
-        IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), AccountMap:WALLET.AccountMap, ArrLog:ArrLogClient, MaxAccID:ACCOUNTS.GetMaxAccount(),
-        MaxActNum:0, MaxJournalNum:JOURNAL_DB.GetMaxNum(), MaxDappsID:SMARTS.GetMaxNum(), MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
-        MaxCrossInNum:SHARDS.GetMaxCrossInNum(), MaxShardNum:SHARDS.GetMaxShardNum(), NeedRestart:global.NeedRestart, ip:SERVER.ip,
-        port:SERVER.port, HistoryMaxNum:MaxHistory, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN,
-        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME, DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)),
-        NodeAddrStr:SERVER.addrStr, STAT_MODE:global.STAT_MODE, HTTPPort:global.HTTP_PORT_NUMBER, HTTPPassword:HTTP_PORT_PASSWORD,
-        CONSTANTS:Constants, CheckPointBlockNum:CHECK_POINT.BlockNum, MiningAccount:GetMiningAccount(), CountMiningCPU:GetCountMiningCPU(),
-        CountRunCPU:global.ArrMiningWrk.length, MiningPaused:global.MiningPaused, HashRate:HashRateOneSec, PRICE_DAO:PRICE_DAO(SERVER.BlockNumDB),
-        NWMODE:global.NWMODE, PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH, MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(), TXBlockNum:TXBlockNum,
-        SpeedSignLib:global.SpeedSignLib, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME, MaxLogLevel:global.MaxLogLevel, JINN_NET_CONSTANT:global.JINN_NET_CONSTANT,
-        JINN_MODE:1, sessionid:sessionid, };
-    
+    var SysInfo=SYSCORE.GetInfo(SERVER.BlockNumDB);
+
+    var Ret = {
+        result:1,
+        WalletOpen:WALLET.WalletOpen,
+        WalletIsOpen:(WALLET.WalletOpen !== false),
+        WalletCanSign:(WALLET.WalletOpen !== false && WALLET.KeyPair.WasInit),
+        CODE_VERSION:CODE_VERSION,
+        CodeVer:global.START_CODE_VERSION_NUM,
+        VersionNum:global.UPDATE_CODE_VERSION_NUM,
+        RelayMode:SERVER.RelayMode,
+        NodeSyncStatus:SERVER.NodeSyncStatus,
+        BlockNumDB:SERVER.BlockNumDB,
+        BlockNumDBMin:SERVER.BlockNumDBMin,
+        CurBlockNum:GetCurrentBlockNumByTime(),
+        CurTime:Date.now(),
+        IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr),
+        AccountMap:WALLET.AccountMap,
+        ArrLog:ArrLogClient,
+        MaxAccID:ACCOUNTS.GetMaxAccount(),
+        MaxActNum:0,
+        MaxJournalNum:JOURNAL_DB.GetMaxNum(),
+        MaxDappsID:SMARTS.GetMaxNum(),
+        MaxCrossOutNum:SHARDS.GetMaxCrossOutNum(),
+        MaxCrossInNum:SHARDS.GetMaxCrossInNum(),
+        MaxShardNum:SHARDS.GetMaxShardNum(),
+        NeedRestart:global.NeedRestart,
+        ip:SERVER.ip,
+        port:SERVER.port,
+        HistoryMaxNum:MaxHistory,
+        DELTA_CURRENT_TIME:DELTA_CURRENT_TIME,
+        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
+        UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME,
+        NEW_SIGN_TIME:NEW_SIGN_TIME,
+        DATA_PATH:(DATA_PATH.substr(1, 1) === ":" ? DATA_PATH : GetNormalPathString(process.cwd() + "/" + DATA_PATH)),
+        NodeAddrStr:SERVER.addrStr,
+        STAT_MODE:global.STAT_MODE,
+        HTTPPort:global.HTTP_PORT_NUMBER,
+        HTTPPassword:HTTP_PORT_PASSWORD,
+        CONSTANTS:Constants,
+        CheckPointBlockNum:CHECK_POINT.BlockNum,
+        MiningAccount:GetMiningAccount(),
+        CountMiningCPU:GetCountMiningCPU(),
+        CountRunCPU:global.ArrMiningWrk.length,
+        MiningPaused:global.MiningPaused,
+        HashRate:HashRateOneSec,
+        BLOCKCHAIN_VERSION:SysInfo.Active,
+        PRICE_DAO:SysInfo,//PRICE_DAO(SERVER.BlockNumDB),
+        //SYS_CORE:SysInfo,
+        //FORMAT_SYS:FORMAT_SYS,
+        NWMODE:global.NWMODE,
+        PERIOD_ACCOUNT_HASH:PERIOD_ACCOUNT_HASH,
+        MAX_ACCOUNT_HASH:ACCOUNTS.DBAccountsHash.GetMaxNum(),
+        TXBlockNum:TXBlockNum,
+        SpeedSignLib:global.SpeedSignLib,
+        NETWORK:global.NETWORK,
+        SHARD_NAME:global.SHARD_NAME,
+        MaxLogLevel:global.MaxLogLevel,
+        JINN_NET_CONSTANT:global.JINN_NET_CONSTANT,
+        JINN_MODE:1,
+        sessionid:GetSessionId(),
+        COIN_STORE_NUM:global.COIN_STORE_NUM,
+    };
+
     if(Params.Account)
         Ret.PrivateKey = GetHexFromArr(WALLET.GetPrivateKey(WALLET.AccountMap[Params.Account]));
     else
         Ret.PrivateKey = GetHexFromArr(WALLET.GetPrivateKey());
     Ret.PublicKey = WALLET.KeyPair.PubKeyStr;
-    
+
     return Ret;
 }
 HTTPCaller.GetCurrentInfo = HTTPCaller.GetWalletInfo;
@@ -758,10 +883,10 @@ HTTPCaller.TestSignLib = function ()
 HTTPCaller.GetWalletAccounts = function ()
 {
     var Ret = {result:1, arr:ACCOUNTS.GetWalletAccountsByMap(WALLET.AccountMap), };
-    
+
     Ret.PrivateKey = WALLET.KeyPair.PrivKeyStr;
     Ret.PublicKey = WALLET.KeyPair.PubKeyStr;
-    
+
     return Ret;
 }
 HTTPCaller.SetWalletKey = function (PrivateKeyStr)
@@ -794,13 +919,14 @@ HTTPCaller.GetSignTransaction = function (TR)
 HTTPCaller.GetSignFromHEX = function (Params)
 {
     var Arr = GetArrFromHex(Params.Hex);
-    
+    //console.log(Params.Account)
+
     var Sign;
     if(Params.Account)
         Sign = WALLET.GetSignFromArr(Arr, WALLET.AccountMap[Params.Account]);
     else
         Sign = WALLET.GetSignFromArr(Arr);
-    
+
     return {Sign:Sign, result:1};
 }
 
@@ -812,40 +938,28 @@ HTTPCaller.GetSignFromHash = function (Params)
         Sign = WALLET.GetSignFromHash(Hash, WALLET.AccountMap[Params.Account]);
     else
         Sign = WALLET.GetSignFromHash(Hash);
-    
+
     return {Sign:Sign, result:1};
 }
 
-HTTPCaller.SendHexTx = function (Params)
+HTTPCaller.SendHexTx = function (Params,response)
 {
     if(typeof Params === "object" && typeof Params.Hex === "string")
         Params.Hex += "000000000000000000000000";
-    return HTTPCaller.SendTransactionHex(Params);
+    return HTTPCaller.SendTransactionHex(Params,response);
 }
 
-HTTPCaller.SendTransactionHex = function (Params)
+HTTPCaller.SendTransactionHex = function (Params,response)
 {
-    if(typeof Params.Hex !== "string")
-        return {result:0};
-    
-    var body = GetArrFromHex(Params.Hex.substr(0, Params.Hex.length - 12 * 2));
-    var Result = {result:1};
-    var Tx = {body:body, ToAll:1};
-    var Res = SERVER.AddTransactionOwn(Tx);
-    Result.sessionid = sessionid;
-    Result._TxID = Tx._TxID;
-    Result._BlockNum = Tx._BlockNum;
-    Result.text = TR_MAP_RESULT[Res];
-    Result.ResultSend = Res;
-    
-    if(Res === 1)
-        Result.text = TR_MAP_RESULT[Res] + " on Block " + Result._BlockNum;
-    
-    var final = 0;
-    if(Res <= 0 && Res !==  - 3)
-        final =  - 1;
-    ToLogClient("Send: " + Result.text, GetHexFromArr(sha3(body, 29)), final);
-    return Result;
+    //console.log(JSON.stringify(Params));
+    Params.Main=1;
+    AddTransactionFromMain(Params,function (Err,Result)
+    {
+        //console.log(JSON.stringify(Result));
+        response.end(JSON.stringify(Result));
+    });
+
+    return null;
 }
 
 HTTPCaller.SendDirectCode = function (Params,response)
@@ -858,12 +972,12 @@ HTTPCaller.SendDirectCode = function (Params,response)
             RunProcess = global.TX_PROCESS;
         if(Params.WEB)
             RunProcess = global.WEB_PROCESS;
-        
+
         if(RunProcess && RunProcess.RunRPC)
         {
             RunProcess.RunRPC("EvalCode", Params.Code, function (Err,Ret)
             {
-                Result = {result:!Err, sessionid:sessionid, text:Ret, };
+                Result = {result:!Err, sessionid:GetSessionId(), text:Ret, };
                 var Str = JSON.stringify(Result);
                 response.end(Str);
             });
@@ -885,8 +999,8 @@ HTTPCaller.SendDirectCode = function (Params,response)
             Result = "" + e;
         }
     }
-    
-    var Struct = {result:1, sessionid:sessionid, text:Result};
+
+    var Struct = {result:1, sessionid:GetSessionId(), text:Result};
     return Struct;
 }
 
@@ -895,7 +1009,7 @@ HTTPCaller.SetMining = function (MiningAccount)
     var Account = parseInt(MiningAccount);
     global.MINING_ACCOUNT = Account;
     SAVE_CONST(1);
-    
+
     return {result:1};
 }
 
@@ -907,7 +1021,7 @@ function CheckCorrectDevKey()
         ToLogClient(StrErr);
         return {result:0, text:StrErr};
     }
-    
+
     if(!IsDeveloperAccount(WALLET.PubKeyArr))
     {
         var StrErr = "Not developer key";
@@ -924,12 +1038,12 @@ HTTPCaller.SetCheckPoint = function (BlockNum)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     if(!BlockNum)
         BlockNum = SERVER.BlockNumDB;
     else
         BlockNum = parseInt(BlockNum);
-    
+
     if(SetCheckPointOnBlock(BlockNum))
         return {result:1, text:"Set check point on BlockNum=" + BlockNum};
     else
@@ -939,11 +1053,11 @@ function SetCheckPointOnBlock(BlockNum)
 {
     if(WALLET.WalletOpen === false)
         return 0;
-    
+
     var Block = SERVER.ReadBlockHeaderDB(BlockNum);
     if(!Block)
         return 0;
-    
+
     var SignArr = arr2(Block.Hash, GetArrFromValue(Block.BlockNum));
     var Sign = secp256k1.sign(SHA3BUF(SignArr, Block.BlockNum), WALLET.KeyPair.getPrivateKey('')).signature;
     global.CHECK_POINT = {BlockNum:BlockNum, Hash:Block.Hash, Sign:Sign};
@@ -958,13 +1072,13 @@ HTTPCaller.SetAutoCheckPoint = function (Param)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     if(idSetTimeSetCheckPoint)
         clearInterval(idSetTimeSetCheckPoint);
     idSetTimeSetCheckPoint = undefined;
     if(Param.Set)
         idSetTimeSetCheckPoint = setInterval(RunSetCheckPoint, Param.Period * 1000);
-    
+
     return {result:1, text:"AutoCheck: " + Param.Set + " each " + Param.Period + " sec"};
 }
 
@@ -979,7 +1093,7 @@ function RunSetCheckPoint()
     var Delta = GetCurrentBlockNumByTime() - SERVER.BlockNumDB;
     if(Delta > 16)
         return;
-    
+
     var BlockNum = SERVER.BlockNumDB - 20;
     var Block = SERVER.ReadBlockHeaderDB(BlockNum);
     if(Block)
@@ -990,7 +1104,7 @@ function RunSetCheckPoint()
             ToLog("CANNOT SET CHECK POINT Power=" + Power + "  BlockNum=" + BlockNum);
             return;
         }
-        
+
         CountCheckPow++;
         SumCheckPow += Power;
         var AvgPow = SumCheckPow / CountCheckPow;
@@ -1002,7 +1116,7 @@ function RunSetCheckPoint()
                 return;
             }
         }
-        
+
         SetCheckPointOnBlock(BlockNum);
         ToLog("SET CHECK POINT Power=" + Power + "/" + AvgPow + "  BlockNum=" + BlockNum);
     }
@@ -1013,11 +1127,11 @@ HTTPCaller.SetNewCodeVersion = function (Data)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     var Ret = SERVER.SetNewCodeVersion(Data, WALLET.KeyPair.getPrivateKey(''));
-    
+
     SERVER.ResetNextPingAllNode();
-    
+
     return {result:1, text:Ret};
 }
 
@@ -1026,13 +1140,13 @@ HTTPCaller.SetCheckNetConstant = function (Data)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     if(!Data || !Data.JINN)
     {
         ToLogClient("Data JINN not set");
         return {result:0, text:"Data JINN not set"};
     }
-    
+
     var Num = GetCurrentBlockNumByTime();
     var BlockNum = GetCurrentBlockNumByTime() + Math.floor(10 * 1000 / global.CONSENSUS_PERIOD_TIME);
     var DataJinn = Data.JINN;
@@ -1043,7 +1157,7 @@ HTTPCaller.SetCheckNetConstant = function (Data)
     var SignArr = Engine.GetSignCheckNetConstant(DataJinn);
     DataJinn.NET_SIGN = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
     Engine.CheckNetConstant(DataJinn);
-    
+
     return {result:1, text:"Set NET_CONSTANT BlockNum=" + BlockNum};
 }
 
@@ -1052,19 +1166,19 @@ HTTPCaller.SetCheckDeltaTime = function (Data)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     if(!Data || !Data.Num)
     {
         ToLogClient("Num not set");
         return {result:0};
     }
-    
+
     var SignArr = SERVER.GetSignCheckDeltaTime(Data);
     Data.Sign = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
     global.CHECK_DELTA_TIME = Data;
-    
+
     SERVER.ResetNextPingAllNode();
-    
+
     return {result:1, text:"Set check time Num=" + Data.Num};
 }
 
@@ -1074,13 +1188,13 @@ HTTPCaller.SetAutoCorrTime = function (bSet)
     var Ret = CheckCorrectDevKey();
     if(Ret !== true)
         return Ret;
-    
+
     if(idAutoCorrTime)
         clearInterval(idAutoCorrTime);
     idAutoCorrTime = undefined;
     if(bSet)
         idAutoCorrTime = setInterval(RunAutoCorrTime, 1000);
-    
+
     return {result:1, text:"Auto correct: " + bSet};
 }
 
@@ -1089,7 +1203,7 @@ function RunAutoCorrTime()
 {
     if(WALLET.WalletOpen === false)
         return;
-    
+
     if(GetCurrentBlockNumByTime() > StartCheckTimeNum && Math.abs(global.DELTA_CURRENT_TIME) >= 120)
     {
         var AutoDelta =  - Math.trunc(global.DELTA_CURRENT_TIME);
@@ -1102,13 +1216,13 @@ function RunAutoCorrTime()
         Data.DeltaTime = 40;
         Data.StartBlockNum = Data.Num + 5;
         Data.EndBlockNum = Data.StartBlockNum + Math.trunc(AutoDelta / Data.DeltaTime);
-        
+
         var SignArr = SERVER.GetSignCheckDeltaTime(Data);
         Data.Sign = secp256k1.sign(SHA3BUF(SignArr), WALLET.KeyPair.getPrivateKey('')).signature;
         global.CHECK_DELTA_TIME = Data;
-        
+
         SERVER.ResetNextPingAllNode();
-        
+
         StartCheckTimeNum = Data.EndBlockNum + 1;
         ToLog("Auto corr time Num:" + Data.Num + " AutoDelta=" + AutoDelta);
     }
@@ -1123,12 +1237,12 @@ HTTPCaller.SaveConstant = function (SetObj)
     }
     SAVE_CONST(true);
     SERVER.DO_CONSTANT();
-    
+
     if(!WasUpdate && global.USE_AUTO_UPDATE && CODE_VERSION.VersionNum && global.UPDATE_CODE_VERSION_NUM < CODE_VERSION.VersionNum)
     {
         SERVER.UseCode(CODE_VERSION.VersionNum, true);
     }
-    
+
     if(SetObj.DoRestartNode)
         global.RestartNode();
     else
@@ -1136,7 +1250,7 @@ HTTPCaller.SaveConstant = function (SetObj)
         if(SetObj.DoMining)
             global.RunStopPOWProcess();
     }
-    
+
     return {result:1};
 }
 
@@ -1145,10 +1259,10 @@ HTTPCaller.SetHTTPParams = function (SetObj)
     global.HTTP_PORT_NUMBER = SetObj.HTTPPort;
     global.HTTP_PORT_PASSWORD = SetObj.HTTPPassword;
     SAVE_CONST(true);
-    
+
     if(SetObj.DoRestartNode)
         global.RestartNode();
-    
+
     return {result:1};
 }
 
@@ -1157,12 +1271,12 @@ HTTPCaller.SetNetMode = function (SetObj)
     global.JINN_IP = SetObj.ip;
     global.JINN_PORT = SetObj.port;
     global.AUTODETECT_IP = SetObj.AutoDetectIP;
-    
+
     SAVE_CONST(true);
-    
+
     if(SetObj.DoRestartNode)
         global.RestartNode();
-    
+
     return {result:1};
 }
 
@@ -1171,7 +1285,7 @@ HTTPCaller.GetAccountKey = function (Num)
 {
     var Result = {};
     Result.result = 0;
-    
+
     var KeyPair = WALLET.GetAccountKey(Num);
     if(KeyPair)
     {
@@ -1186,12 +1300,12 @@ HTTPCaller.GetNodeData = function (Param)
     var Item = SERVER.FindNodeByID(Param.ID);
     if(!Item)
         return {};
-    
+
     if(global.GetJinnNode)
     {
         return global.GetJinnNode(Item);
     }
-    
+
     return GetCopyNode(Item, 0);
 }
 
@@ -1200,19 +1314,19 @@ HTTPCaller.GetHotArray = function (Param)
     var ArrTree = SERVER.GetTransferTree();
     if(!ArrTree)
         return {result:0};
-    
+
     for(var Level = 0; Level < ArrTree.length; Level++)
     {
         var arr = ArrTree[Level];
         if(!arr)
             continue;
-        
+
         for(var n = 0; n < arr.length; n++)
         {
             arr[n] = GetCopyNode(arr[n], 1);
         }
     }
-    
+
     var Ret = {result:1, ArrTree:ArrTree, JINN_MODE:1};
     return Ret;
 }
@@ -1225,16 +1339,16 @@ function SortNodeHot(a,b)
         HotA = 1;
     if(b.Hot)
         HotB = 1;
-    
+
     if(HotB !== HotA)
         return HotB - HotA;
-    
+
     if(b.BlockProcessCount !== a.BlockProcessCount)
         return b.BlockProcessCount - a.BlockProcessCount;
-    
+
     if(a.DeltaTime !== b.DeltaTime)
         return a.DeltaTime - b.DeltaTime;
-    
+
     return a.id - b.id;
 }
 
@@ -1242,7 +1356,7 @@ function GetCopyNode(Node,bSimple)
 {
     if(!Node)
         return;
-    
+
     if(bSimple)
     {
         var Item = {ID:Node.id, ip:Node.ip, Active:Node.Active, CanHot:Node.CanHot, Hot:Node.Hot, IsCluster:Node.IsCluster, Cross:Node.Cross,
@@ -1250,7 +1364,7 @@ function GetCopyNode(Node,bSimple)
             Debug:Node.Debug, CurrentShard:Node.CurrentShard, };
         return Item;
     }
-    
+
     if(Node.Socket && Node.Socket.Info)
     {
         Node.Info += Node.Socket.Info + "\n";
@@ -1258,7 +1372,7 @@ function GetCopyNode(Node,bSimple)
     }
     if(!Node.PrevInfo)
         Node.PrevInfo = "";
-    
+
     var Item = {ID:Node.id, ip:Node.ip, VersionNum:Node.VersionNum, NetConstVer:Node.NetConstVer, VERSION:Node.VERSIONMAX, LoadHistoryMode:Node.LoadHistoryMode,
         BlockNumDBMin:Node.BlockNumDBMin, BlockNumDB:Node.BlockNumDB, LevelsBit:Node.LevelsBit, NoSendTx:Node.NoSendTx, GetNoSendTx:Node.GetNoSendTx,
         DirectMAccount:Node.DirectMAccount, portweb:Node.portweb, port:Node.port, TransferCount:Node.TransferCount, LevelCount:Node.LevelCount,
@@ -1268,7 +1382,7 @@ function GetCopyNode(Node,bSimple)
         Active:Node.Active, Hot:Node.Hot, LogInfo:Node.PrevInfo + Node.LogInfo, InConnectArr:Node.WasAddToConnect, Level:Node.Level,
         TransferBlockNum:Node.TransferBlockNum, TransferSize:Node.TransferSize, TransferBlockNumFix:Node.TransferBlockNumFix, CurBlockNum:Node.CurBlockNum,
         WasBan:Node.WasBan, ErrCountAll:Node.ErrCountAll, ADDRITEM:Node.ADDRITEM, INFO:Node.INFO, STATS:Node.STATS, };
-    
+
     return Item;
 }
 
@@ -1277,9 +1391,9 @@ function GetCopyNode(Node,bSimple)
 HTTPCaller.GetBlockchainStat = function (Param)
 {
     var Result = global.Engine.GetBlockchainStatForMonitor(Param);
-    
+
     Result.result = 1;
-    Result.sessionid = sessionid;
+    Result.sessionid = GetSessionId();
     return Result;
 }
 
@@ -1287,12 +1401,12 @@ HTTPCaller.GetAllCounters = function (Params,response)
 {
     let Result = GET_STATS();
     Result.result = 1;
-    Result.sessionid = sessionid;
+    Result.sessionid = GetSessionId();
     Result.STAT_MODE = global.STAT_MODE;
-    
+
     if(!global.TX_PROCESS || !global.TX_PROCESS.RunRPC)
         return Result;
-    
+
     global.TX_PROCESS.RunRPC("GET_STATS", "", function (Err,Params)
     {
         Result.result = !Err;
@@ -1300,7 +1414,7 @@ HTTPCaller.GetAllCounters = function (Params,response)
         {
             AddStatData(Params, Result, "TX");
         }
-        
+
         if(global.WEB_PROCESS && global.WEB_PROCESS.RunRPC)
         {
             global.WEB_PROCESS.RunRPC("GET_STATS", "", function (Err,Params)
@@ -1318,7 +1432,7 @@ HTTPCaller.GetAllCounters = function (Params,response)
             response.end(JSON.stringify(Result));
         }
     });
-    
+
     return null;
 }
 
@@ -1338,17 +1452,17 @@ HTTPCaller.SetStatMode = function (flag)
 {
     if(flag)
         StartCommonStat();
-    
+
     global.STAT_MODE = flag;
     SAVE_CONST(true);
     global.TX_PROCESS.RunRPC("LOAD_CONST");
-    
-    return {result:1, sessionid:sessionid, STAT_MODE:global.STAT_MODE};
+
+    return {result:1, sessionid:GetSessionId(), STAT_MODE:global.STAT_MODE};
 }
 HTTPCaller.ClearStat = function ()
 {
     global.ClearCommonStat();
-    
+
     if(global.TX_PROCESS && global.TX_PROCESS.RunRPC)
     {
         global.TX_PROCESS.RunRPC("ClearCommonStat", "", function (Err,Params)
@@ -1361,57 +1475,57 @@ HTTPCaller.ClearStat = function ()
         {
         });
     }
-    
-    return {result:1, sessionid:sessionid, STAT_MODE:global.STAT_MODE};
+
+    return {result:1, sessionid:GetSessionId(), STAT_MODE:global.STAT_MODE};
 }
 
 HTTPCaller.RewriteAllTransactions = function (Param)
 {
     SERVER.RewriteAllTransactions();
-    
-    return {result:1, sessionid:sessionid};
+
+    return {result:1, sessionid:GetSessionId()};
 }
 
 HTTPCaller.RewriteTransactions = function (Param)
 {
     var Ret = REWRITE_DAPP_TRANSACTIONS(Param.BlockCount);
-    return {result:Ret, sessionid:sessionid};
+    return {result:Ret, sessionid:GetSessionId()};
 }
 HTTPCaller.TruncateBlockChain = function (Param)
 {
     var StartNum = SERVER.BlockNumDB - Param.BlockCount;
     if(StartNum < 15)
         StartNum = 15;
-    
+
     SERVER.TruncateBlockDB(StartNum);
-    return {result:1, sessionid:sessionid};
+    return {result:1, sessionid:GetSessionId()};
 }
 
 HTTPCaller.ClearDataBase = function (Param)
 {
     SERVER.ClearDataBase();
-    return {result:1, sessionid:sessionid};
+    return {result:1, sessionid:GetSessionId()};
 }
 
 HTTPCaller.CleanChain = function (Param)
 {
     if(global.CleanChain)
     {
-        
+
         var StartNum = SERVER.BlockNumDB - Param.BlockCount;
         global.CleanChain(StartNum);
-        return {result:1, sessionid:sessionid};
+        return {result:1, sessionid:GetSessionId()};
     }
-    return {result:0, sessionid:sessionid};
+    return {result:0, sessionid:GetSessionId()};
 }
 
 HTTPCaller.StartLoadNewCode = function (Param)
 {
     global.NoStartLoadNewCode = 1;
     require("../update");
-    
+
     global.StartLoadNewCode(1);
-    return {result:1, sessionid:sessionid};
+    return {result:1, sessionid:GetSessionId()};
 }
 
 HTTPCaller.AddSetNode = function (AddrItem)
@@ -1424,12 +1538,12 @@ HTTPCaller.AddSetNode = function (AddrItem)
         Find.System = 1;
         Find.Score = AddrItem.Score;
         Engine.SaveAddrNodes();
-        
-        return {result:1, sessionid:sessionid};
+
+        return {result:1, sessionid:GetSessionId()};
     }
     else
     {
-        return {result:0, sessionid:sessionid};
+        return {result:0, sessionid:GetSessionId()};
     }
 }
 
@@ -1437,11 +1551,11 @@ HTTPCaller.AddSetNode = function (AddrItem)
 HTTPCaller.GetArrStats = function (Keys,response)
 {
     var arr = GET_STATDIAGRAMS(Keys);
-    let Result = {result:1, sessionid:sessionid, arr:arr, STAT_MODE:global.STAT_MODE};
-    
+    let Result = {result:1, sessionid:GetSessionId(), arr:arr, STAT_MODE:global.STAT_MODE};
+
     if(!global.TX_PROCESS || !global.TX_PROCESS.RunRPC)
         return Result;
-    
+
     var Keys2 = [];
     for(var i = 0; i < Keys.length; i++)
     {
@@ -1461,11 +1575,11 @@ HTTPCaller.GetArrStats = function (Keys,response)
                 Result.arr.push(Item);
             }
         }
-        
+
         var Str = JSON.stringify(Result);
         response.end(Str);
     });
-    
+
     return null;
 }
 
@@ -1476,7 +1590,7 @@ HTTPCaller.GetBlockChain = function (type)
     {
         return {result:0};
     }
-    
+
     var MainChains = {};
     for(var i = 0; i < SERVER.LoadedChainList.length; i++)
     {
@@ -1484,11 +1598,11 @@ HTTPCaller.GetBlockChain = function (type)
         if(chain && !chain.Deleted)
             MainChains[chain.id] = true;
     }
-    
+
     var arrBlocks = [];
     var arrLoadedChainList = [];
     var arrLoadedBlocks = [];
-    
+
     for(var key in SERVER.BlockChain)
     {
         var Block = SERVER.BlockChain[key];
@@ -1497,51 +1611,51 @@ HTTPCaller.GetBlockChain = function (type)
             arrBlocks.push(CopyBlockDraw(Block, MainChains));
         }
     }
-    
+
     AddChainList(arrLoadedChainList, SERVER.LoadedChainList, true);
     AddMapList(arrLoadedBlocks, type, SERVER.MapMapLoaded, MainChains);
-    
+
     var ArrLoadedChainList = global.HistoryBlockBuf.LoadValue("LoadedChainList", 1);
     if(ArrLoadedChainList)
         for(var List of ArrLoadedChainList)
         {
             AddChainList(arrLoadedChainList, List);
         }
-    
+
     var ArrMapMapLoaded = global.HistoryBlockBuf.LoadValue("MapMapLoaded", 1);
     if(ArrMapMapLoaded)
         for(var List of ArrMapMapLoaded)
         {
             AddMapList(arrLoadedBlocks, type, List);
         }
-    
+
     var obj = {LastCurrentBlockNum:SERVER.GetLastCorrectBlockNum(), CurrentBlockNum:SERVER.CurrentBlockNum, LoadedChainList:arrLoadedChainList,
         LoadedBlocks:arrLoadedBlocks, BlockChain:arrBlocks, port:SERVER.port, DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, memoryUsage:process.memoryUsage(),
         IsDevelopAccount:IsDeveloperAccount(WALLET.PubKeyArr), LoadedChainCount:SERVER.LoadedChainList.length, StartLoadBlockTime:SERVER.StartLoadBlockTime,
-        sessionid:sessionid, result:1};
-    
+        sessionid:GetSessionId(), result:1};
+
     arrBlocks = [];
     arrLoadedChainList = [];
     arrLoadedBlocks = [];
-    
+
     return obj;
 }
 
 HTTPCaller.GetHistoryTransactions = function (Params)
 {
-    
+
     if(typeof Params === "object" && Params.AccountID)
     {
         var Account = ACCOUNTS.ReadState(Params.AccountID);
         if(!Account)
             return {result:0};
-        
+
         if(!Params.Count)
             Params.Count = 100;
-        
+
         if(global.PROCESS_NAME !== "MAIN")
             Params.GetPubKey = 0;
-        
+
         var arr = ACCOUNTS.GetHistory(Params.AccountID, Params.Count, Params.NextPos, 0, Params.GetPubKey);
         if(Params.GetTxID || Params.GetDescription)
         {
@@ -1554,23 +1668,36 @@ HTTPCaller.GetHistoryTransactions = function (Params)
                 var Body = Block.arrContent[Item.TrNum];
                 if(!Body)
                     continue;
-                
+
                 if(Params.GetTxID)
                 {
                     Item.TxID = GetHexFromArr(GetTxID(Item.BlockNum, Body));
                 }
                 if(Params.GetDescription && Item.Description === undefined)
                 {
-                    
+
                     var TR = ACCOUNTS.GetObjectTransaction(Body);
                     if(TR)
                         Item.Description = TR.Description;
                 }
             }
         }
-        var Result = {Value:{SumCOIN:Account.Value.SumCOIN, SumCENT:Account.Value.SumCENT}, Name:Account.Name, Currency:Account.Currency,
-            MaxBlockNum:GetCurrentBlockNumByTime(), FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME,
+        var Result = {
+            Value:{SumCOIN:Account.Value.SumCOIN, SumCENT:Account.Value.SumCENT}, Name:Account.Name, Currency:Account.Currency,
+            MaxBlockNum:GetCurrentBlockNumByTime(),
+            FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
+            UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+            CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME,
+            NETWORK:global.NETWORK,
+            SHARD_NAME:global.SHARD_NAME,
             result:arr.length > 0 ? 1 : 0, History:arr};
+        if(Params.GetBalanceArr)
+        {
+            if(Account.Currency)
+                Account.CurrencyObj = SMARTS.ReadSimple(Account.Currency, 1);
+            Result.BalanceArr = ACCOUNTS.ReadBalanceArr(Account);
+        }
+
         return Result;
     }
     return {result:0};
@@ -1630,17 +1757,17 @@ function CopyBlockDraw(Block,MainChains)
             }
         }
     }
-    
+
     var CheckPoint = 0;
     if(Block.BlockNum === CHECK_POINT.BlockNum)
         CheckPoint = 1;
-    
+
     var Mining;
     if(SERVER.MiningBlock === Block)
         Mining = 1;
     else
         Mining = 0;
-    
+
     GetGUID(Block);
     var Item = {guid:Block.guid, Active:Block.Active, Prepared:Block.Prepared, BlockNum:Block.BlockNum, Hash:GetHexFromAddresShort(Block.Hash),
         SumHash:GetHexFromAddresShort(Block.SumHash), SeqHash:GetHexFromAddresShort(Block.SeqHash), TreeHash:GetHexFromAddresShort(Block.TreeHash),
@@ -1652,23 +1779,23 @@ function CopyBlockDraw(Block,MainChains)
         Item.chainid = Block.chain.id;
     if(Block.arrContent)
         Item.TrCount = Block.arrContent.length;
-    
+
     Item.BlockDown = GetGUID(Block.BlockDown);
-    
+
     if(MainChains && Item.chainid)
     {
         Item.Main = MainChains[Item.chainid];
     }
-    
+
     return Item;
 }
 function CopyChainDraw(Chain,bWasRecursive,bMain)
 {
     if(!Chain)
         return Chain;
-    
+
     GetGUID(Chain);
-    
+
     var Item = {guid:Chain.guid, id:Chain.id, chainid:Chain.id, FindBlockDB:Chain.FindBlockDB, GetFindDB:Chain.GetFindDB(), BlockNum:Chain.BlockNumStart,
         Hash:GetHexFromAddresShort(Chain.HashStart), StopSend:Chain.StopSend, SumPow:0, Info:Chain.Info, IsSum:Chain.IsSum, Main:bMain,
     };
@@ -1698,7 +1825,7 @@ function CopyChainDraw(Chain,bWasRecursive,bMain)
     {
         Item.HashMaxStr = "------";
     }
-    
+
     return Item;
 }
 
@@ -1724,7 +1851,7 @@ function AddMapList(arrLoadedBlocks,type,MapMapLoaded,MainChains)
                 var Block = map[key];
                 if(key.substr(1, 1) === ":")
                     continue;
-                
+
                 if(!Block.Send || type === "reload")
                 {
                     arrLoadedBlocks.push(CopyBlockDraw(Block, MainChains));
@@ -1741,13 +1868,13 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
     var type = name.substr(name.length - 4, 4);
     var index1 = type.indexOf(".");
     type = type.substr(index1 + 1);
-    
+
     var Path;
     if(name.substr(0, 2) !== "./" && name.substr(1, 1) !== ":")
         Path = "./" + name;
     else
         Path = name;
-    
+
     var bErr = 0;
     var FStat = undefined;
     if(!fs.existsSync(Path))
@@ -1758,7 +1885,7 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
         if(!FStat.isFile())
             bErr = 1;
     }
-    
+
     if(bErr)
     {
         if(!global.DEV_MODE || type === "ico")
@@ -1770,19 +1897,19 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
         response.end("Not found: " + name);
         return;
     }
-    
+
     var StrContentType = ContenTypeMap[type];
     if(!StrContentType)
         StrContentType = DefaultContentType;
-    
+
     var Headers = {};
     if(StrContentType === "text/html")
     {
         Headers['Content-Type'] = 'text/html';
-        
+
         if(Path !== "./HTML/web3-wallet.html")
             Headers["X-Frame-Options"] = "sameorigin";
-        
+
         if(StrCookie)
             Headers['Set-Cookie'] = StrCookie;
     }
@@ -1798,21 +1925,21 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
             Headers['Content-Type'] = StrContentType;
         }
     }
-    
+
     var ArrPath = Path.split('/', 5);
     var ShortName = ArrPath[ArrPath.length - 1];
     var Long2 = CacheMap[ShortName];
     if(Long2)
         Long = Long2;
-    
+
     if(global.DEV_MODE)
         Long = 1;
-    
+
     if(Long)
     {
         Headers['Cache-Control'] = "max-age=" + Long;
     }
-    
+
     if(bParsing && StrContentType === "text/html")
     {
         var data = GetFileHTMLWithParsing(Path);
@@ -1820,20 +1947,21 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
         return;
     }
     else
-        if("image/jpeg,image/vnd.microsoft.icon,image/svg+xml,image/png,application/javascript,text/css,text/html".indexOf(StrContentType) >  - 1)
-        {
-            response.writeHead(200, Headers);
-            var data = GetFileSimpleBin(Path);
-            SendGZipData(request, response, Headers, data);
-            return;
-        }
+    if("image/jpeg,image/vnd.microsoft.icon,image/svg+xml,image/png,application/javascript,text/css,text/html".indexOf(StrContentType) >  - 1)
+    {
+        response.writeHead(200, Headers);
+
+        var data = GetFileSimpleBin(Path);
+        SendGZipData(request, response, Headers, data);
+        return;
+    }
     const stream = fs.createReadStream(Path);
     let acceptEncoding = request.headers['accept-encoding'];
     if(!global.HTTP_USE_ZIP || !acceptEncoding)
     {
         acceptEncoding = '';
     }
-    
+
     if(/\bdeflate\b/.test(acceptEncoding))
     {
         Headers['Content-Encoding'] = 'deflate';
@@ -1841,37 +1969,37 @@ function SendWebFile(request,response,name,StrCookie,bParsing,Long)
         stream.pipe(zlib.createDeflate({level:zlib.constants.Z_BEST_SPEED})).pipe(response);
     }
     else
-        if(/\bgzip\b/.test(acceptEncoding))
+    if(/\bgzip\b/.test(acceptEncoding))
+    {
+        Headers['Content-Encoding'] = 'gzip';
+        response.writeHead(200, Headers);
+        stream.pipe(zlib.createGzip({level:zlib.constants.Z_BEST_SPEED})).pipe(response);
+    }
+    else
+    if(/\bbr\b/.test(acceptEncoding))
+    {
+        Headers['Content-Encoding'] = 'br';
+        response.writeHead(200, Headers);
+        stream.pipe(zlib.createBrotliCompress()).pipe(response);
+    }
+    else
+    {
+        response.writeHead(200, Headers);
+
+        var TimePeriod = 30 * 60 * 1000;
+        if(type === "zip")
+            TimePeriod += Math.floor(FStat.size / 100000) * 1000;
+
+        setTimeout(function ()
         {
-            Headers['Content-Encoding'] = 'gzip';
-            response.writeHead(200, Headers);
-            stream.pipe(zlib.createGzip({level:zlib.constants.Z_BEST_SPEED})).pipe(response);
-        }
-        else
-            if(/\bbr\b/.test(acceptEncoding))
-            {
-                Headers['Content-Encoding'] = 'br';
-                response.writeHead(200, Headers);
-                stream.pipe(zlib.createBrotliCompress()).pipe(response);
-            }
-            else
-            {
-                response.writeHead(200, Headers);
-                
-                var TimePeriod = 30 * 60 * 1000;
-                if(type === "zip")
-                    TimePeriod += Math.floor(FStat.size / 100000) * 1000;
-                
-                setTimeout(function ()
-                {
-                    
-                    stream.close();
-                    stream.push(null);
-                    stream.read(0);
-                }, TimePeriod);
-                
-                stream.pipe(response);
-            }
+
+            stream.close();
+            stream.push(null);
+            stream.read(0);
+        }, TimePeriod);
+
+        stream.pipe(response);
+    }
 }
 
 function SendGZipData(request,response,Headers,data0)
@@ -1879,18 +2007,18 @@ function SendGZipData(request,response,Headers,data0)
     if(!data0)
         data0 = [];
     var data = Buffer.from(data0);
-    
+
     let acceptEncoding = request.headers['accept-encoding'];
     if(!global.HTTP_USE_ZIP || !acceptEncoding)
     {
         acceptEncoding = '';
     }
-    
+
     if(/\bgzip\b/.test(acceptEncoding))
     {
         Headers['Content-Encoding'] = 'gzip';
         response.writeHead(200, Headers);
-        
+
         var gzip = zlib.createGzip({level:zlib.constants.Z_BEST_SPEED});
         gzip.pipe(response);
         gzip.on('error', function (err)
@@ -1912,7 +2040,7 @@ function GetFileHTMLWithParsing(Path,bZip)
     if(bZip)
     {
         var data = GetFileHTMLWithParsing(Path, 0);
-        
+
         return data;
     }
     else
@@ -1921,12 +2049,12 @@ function GetFileHTMLWithParsing(Path,bZip)
         if(!data)
         {
             global.SendHTMLMap[Path] = "-recursion-";
-            
+
             data = String(fs.readFileSync(Path));
-            
+
             data = ParseTag(data, "File", 0);
             data = ParseTag(data, "Edit", 1);
-            
+
             global.SendHTMLMap[Path] = data;
         }
         return data;
@@ -1957,7 +2085,7 @@ function ParseTag(Str,TagName,bEdit)
                 break;
             }
             var Path2 = Str.substring(index + 3 + TagName.length, index + Delta);
-            
+
             data += Str.substring(0, index);
             if(bEdit)
             {
@@ -1967,7 +2095,7 @@ function ParseTag(Str,TagName,bEdit)
                     bWasInject = 1;
                 }
                 glEditNum++;
-                
+
                 data += "<DIV class='' id='idEdit" + glEditNum + "'>";
                 data += GetFileHTMLFromMarkdown(Path2);
                 data += "</DIV>";
@@ -2022,12 +2150,12 @@ global.GetFileSimpleBin = function (Path)
         global.SendHTMLMap[Key] = data;
     }
     return data;
-}
+};
 
 function SaveFileSimple(Path,Str)
 {
     global.SendHTMLMap = {};
-    
+
     var Key = "GetFileSimple-" + Path;
     global.SendHTMLMap[Key] = Str;
     SaveToFile(Path, Str);
@@ -2053,7 +2181,7 @@ function GetStrTime(now)
 {
     if(!now)
         now = GetCurrentTime(0);
-    
+
     var Str = "" + now.getHours().toStringZ(2);
     Str = Str + ":" + now.getMinutes().toStringZ(2);
     Str = Str + ":" + now.getSeconds().toStringZ(2);
@@ -2067,19 +2195,19 @@ function OnGetData(arg)
         }, writeHead:function ()
         {
         }, };
-    
+
     var Path = arg.path;
     var obj = arg.obj;
-    
+
     if(Path.substr(0, 1) === "/")
         Path = Path.substr(1);
     var params = Path.split('/', 5);
-    
+
     var Ret;
     var F = HTTPCaller[params[0]];
     if(F)
     {
-        
+
         if(obj)
             Ret = F(obj);
         else
@@ -2095,13 +2223,13 @@ function OnGetData(arg)
 function parseCookies(rc)
 {
     var list = {};
-    
+
     rc && rc.split(';').forEach(function (cookie)
     {
         var parts = cookie.split('=');
         list[parts.shift().trim()] = decodeURI(parts.join('='));
     });
-    
+
     return list;
 }
 
@@ -2114,19 +2242,19 @@ function SetSafeResponce(response)
         response.StopSend = 0;
         response._end = response.end;
         response._writeHead = response.writeHead;
-        
+
         if(response.socket && response.socket._events && response.socket._events.error.length < 2)
         {
             response.socket.on("error", function (err)
             {
             });
         }
-        
+
         response.on('error', function (err)
         {
             console.log("Error " + err);
         });
-        
+
         response.writeHead = function ()
         {
             try
@@ -2141,7 +2269,7 @@ function SetSafeResponce(response)
         };
         response.end = function ()
         {
-            
+
             try
             {
                 if(global.STAT_MODE === 2 && arguments && arguments[0] && arguments[0].length)
@@ -2150,12 +2278,12 @@ function SetSafeResponce(response)
                     if(response.DetailStatName)
                         ADD_TO_STAT("HTTP_SEND" + response.DetailStatName, arguments[0].length);
                 }
-                
+
                 response._end.apply(response, arguments);
             }
             catch(e)
             {
-                
+
                 ToError("H##1");
                 ToError(e);
             }
@@ -2173,11 +2301,11 @@ if(global.HTTP_PORT_NUMBER)
     {
         ClientTokenHashMap = {};
     }, 24 * 3600 * 1000);
-    
+
     var MaxTimeEmptyAccess = 600;
     var CountPswdPls = 0;
     var TimeStartServer = Date.now();
-    
+
     var port = global.HTTP_PORT_NUMBER;
     var HTTPServer = http.createServer(function (request,response)
     {
@@ -2185,7 +2313,7 @@ if(global.HTTP_PORT_NUMBER)
             return;
         if(!request.socket || !request.socket.remoteAddress)
             return;
-        
+
         if(request.socket._events && request.socket._events.error.length < 2)
             request.socket.on("error", function (err)
             {
@@ -2194,29 +2322,29 @@ if(global.HTTP_PORT_NUMBER)
                 console.log("HTML socket.error code=" + err.code);
                 ToLog(err.stack, 3);
             });
-        
+
         var remoteAddress = request.socket.remoteAddress.replace(/^.*:/, '');
-        
+
         if(remoteAddress === "1")
             remoteAddress = "127.0.0.1";
-        
+
         var fromURL = url.parse(request.url);
         var Path = querystring.unescape(fromURL.path);
-        
+
         if(!ClientIPMap[remoteAddress])
         {
             ClientIPMap[remoteAddress] = 1;
             ToLog("TRY CONNECT FOR HTTP ACCESS FROM: " + remoteAddress, 0);
             ToLog("Path: " + Path, 0);
         }
-        
+
         var Password = global.HTTP_PORT_PASSWORD;
-        
+
         var CheckPassword = 1;
         if(global.NOHTMLPASSWORD)
             if(global.HTTP_IP_CONNECT || remoteAddress === "127.0.0.1")
                 CheckPassword = 0;
-        
+
         if(CheckPassword && !Password)
         {
             if(remoteAddress !== "127.0.0.1")
@@ -2227,27 +2355,27 @@ if(global.HTTP_PORT_NUMBER)
                 if(Delta > MaxTimeEmptyAccess * 1000)
                     Password = GetHexFromArr(crypto.randomBytes(16));
                 else
-                    if(Delta > (MaxTimeEmptyAccess - 10) * 1000)
-                    {
-                        CountPswdPls++;
-                        if(CountPswdPls <= 5)
-                            ToLog("PLEASE, SET PASSWORD FOR ACCCES TO FULL NODE");
-                    }
+                if(Delta > (MaxTimeEmptyAccess - 10) * 1000)
+                {
+                    CountPswdPls++;
+                    if(CountPswdPls <= 5)
+                        ToLog("PLEASE, SET PASSWORD FOR ACCCES TO FULL NODE");
+                }
             }
         }
-        
+
         if(global.HTTP_IP_CONNECT && remoteAddress !== "127.0.0.1" && global.HTTP_IP_CONNECT.indexOf(remoteAddress) < 0)
             return;
-        
+
         SetSafeResponce(response);
-        
+
         if(!global.SERVER || !global.SERVER.CanSend)
         {
             response.writeHead(404, {'Content-Type':'text/html'});
             response.end("");
             return;
         }
-        
+
         if(global.NWMODE)
         {
             Path = Path.replace("HTML/HTML", "HTML");
@@ -2263,7 +2391,7 @@ if(global.HTTP_PORT_NUMBER)
                     Path = "/HTML/wallet.html";
                 }
             }
-            
+
             if(!Password)
             {
                 var cookies = parseCookies(request.headers.cookie);
@@ -2277,22 +2405,22 @@ if(global.HTTP_PORT_NUMBER)
                 }
             }
         }
-        
+
         if(CheckPassword && Password)
         {
             var StrPort = "";
             if(global.HTTP_PORT_NUMBER !== 80)
                 StrPort = global.HTTP_PORT_NUMBER;
-            
+
             var cookies = parseCookies(request.headers.cookie);
-            
+
             var cookies_hash = cookies["hash" + StrPort];
-            
+
             var bSendPSW = 0;
             if(cookies_hash && !ClientTokenHashMap[cookies_hash])
             {
                 var hash = GetCookieHash(cookies_hash, Password);
-                
+
                 if(hash && hash === cookies_hash)
                 {
                     ClientTokenHashMap[cookies_hash] = 1;
@@ -2303,44 +2431,44 @@ if(global.HTTP_PORT_NUMBER)
                 }
             }
             else
-                if(!ClientIPMap2[remoteAddress] && !cookies_hash)
-                {
-                    bSendPSW = 1;
-                }
-            
+            if(!ClientIPMap2[remoteAddress] && !cookies_hash)
+            {
+                bSendPSW = 1;
+            }
+
             if(Path === "/password.html")
                 bSendPSW = 1;
-            
+
             if(bSendPSW)
             {
                 SendPasswordFile(request, response, Path, StrPort);
                 return;
             }
             else
-                if(request.method === "POST")
+            if(request.method === "POST")
+            {
+                var TokenHash = request.headers.tokenhash;
+
+                if(!TokenHash || !ClientTokenHashMap[TokenHash])
                 {
-                    var TokenHash = request.headers.tokenhash;
-                    
-                    if(!TokenHash || !ClientTokenHashMap[TokenHash])
+                    var hash2;
+                    if(TokenHash)
+                        hash2 = GetCookieHash(TokenHash, Password + "-api");
+
+                    if(TokenHash && hash2 && hash2 === TokenHash)
                     {
-                        var hash2;
-                        if(TokenHash)
-                            hash2 = GetCookieHash(TokenHash, Password + "-api");
-                        
-                        if(TokenHash && hash2 && hash2 === TokenHash)
-                        {
-                            ClientTokenHashMap[TokenHash] = 1;
-                        }
-                        else
-                        {
-                            if(TokenHash && hash2)
-                                ToLog("Invalid API token: " + request.method + "   path: " + Path + "  token:" + TokenHash + "/" + hash2);
-                            response.writeHead(203, {'Content-Type':'text/html'});
-                            response.end("Invalid API token");
-                            return;
-                        }
+                        ClientTokenHashMap[TokenHash] = 1;
+                    }
+                    else
+                    {
+                        if(TokenHash && hash2)
+                            ToLog("Invalid API token: " + request.method + "   path: " + Path + "  token:" + TokenHash + "/" + hash2);
+                        response.writeHead(203, {'Content-Type':'text/html'});
+                        response.end("Invalid API token");
+                        return;
                     }
                 }
+            }
         }
         if(!ClientIPMap2[remoteAddress])
         {
@@ -2348,7 +2476,7 @@ if(global.HTTP_PORT_NUMBER)
             ToLog("OK CONNECT TO HTTP ACCESS FROM: " + remoteAddress, 0);
             ToLog("Path: " + Path, 0);
         }
-        
+
         var params = Path.split('/', 6);
         params.splice(0, 1);
         var Type = request.method;
@@ -2359,10 +2487,10 @@ if(global.HTTP_PORT_NUMBER)
             let postData = "";
             request.addListener("data", function (postDataChunk)
             {
-                if(postData.length < 70000 && postDataChunk.length < 70000)
+                if(postData.length < 130000 && postDataChunk.length < 130000)
                     postData += postDataChunk;
             });
-            
+
             request.addListener("end", function ()
             {
                 var Data;
@@ -2377,7 +2505,7 @@ if(global.HTTP_PORT_NUMBER)
                     Response.end("Error data parsing");
                     return;
                 }
-                
+
                 if(Params[0] === "HTML")
                     DoCommand(request, response, Type, Path, [Params[1], Data], remoteAddress);
                 else
@@ -2393,7 +2521,7 @@ if(global.HTTP_PORT_NUMBER)
         global.HTTP_SERVER_START_OK = 1;
         ToLog("Run HTTP-server on " + LISTEN_IP + ":" + port);
     });
-    
+
     HTTPServer.on('error', function (err)
     {
         ToError("H##3");
@@ -2405,7 +2533,7 @@ function SendPasswordFile(request,response,Path,StrPort)
 {
     if(!Path || Path === "/" || Path.substr(Path.length - 4, 4) === "html")
     {
-        
+
         SendWebFile(request, response, "./HTML/password.html", "token" + StrPort + "=" + glStrToken + ";path=/;SameSite=Strict;");
     }
     else
@@ -2418,7 +2546,7 @@ function SendPasswordFile(request,response,Path,StrPort)
 if(global.ELECTRON)
 {
     const ipcMain = require('electron').ipcMain;
-    
+
     ipcMain.on('GetData', function (event,arg)
     {
         event.returnValue = OnGetData(arg);
@@ -2426,12 +2554,13 @@ if(global.ELECTRON)
 }
 exports.SendData = OnGetData;
 
+global.RunConsole=RunConsole;
 function RunConsole(StrRun)
 {
     var Str = fs.readFileSync("./EXPERIMENTAL/_run-console.js", {encoding:"utf8"});
     if(StrRun)
         Str += "\n" + StrRun;
-    
+
     try
     {
         var ret = eval(Str);
@@ -2449,7 +2578,7 @@ function GetUserContext(Params)
 {
     if(typeof Params.Key !== "string")
         Params.Key = "" + Params.Key;
-    
+
     var StrKey = Params.Key + "-" + Params.Session;
     var Context = WebWalletUser[StrKey];
     if(!Context)
@@ -2472,7 +2601,7 @@ function AddDappEventToGlobalMap(Data)
     global.EventNum++;
     Data.EventNum = global.EventNum;
     Data.EventDate = Date.now();
-    
+
     var Arr = global.EventMap[Data.Smart];
     if(!Arr)
     {
@@ -2490,7 +2619,7 @@ function DeleteOldEvents(SmartNum)
 {
     var CurDate = Date.now();
     var Arr = global.EventMap[SmartNum];
-    
+
     while(Arr && Arr.length)
     {
         var Event = Arr[0];
@@ -2509,7 +2638,7 @@ function GetEventArray(SmartNum,Context)
     {
         return [];
     }
-    
+
     var FromEventNum = Context.FromEventNum;
     var ArrRet = [];
     for(var i = 0; i < Arr.length; i++)
@@ -2522,7 +2651,7 @@ function GetEventArray(SmartNum,Context)
     {
         Context.FromEventNum = ArrRet[ArrRet.length - 1].EventNum + 1;
     }
-    
+
     return ArrRet;
 }
 
@@ -2536,14 +2665,14 @@ HTTPCaller.GetHashRate = function (ArrParams)
     for(var i = 0; i < ArrParams.length; i++)
     {
         var bMinutes = (i === ArrParams.length - 1);
-        
+
         var Item = ArrParams[i];
         if(!Item)
         {
             ResArr[i] = undefined;
             continue;
         }
-        
+
         if(Item.BlockNum1 < 0)
             Item.BlockNum1 = 0;
         if(Item.BlockNum2 > CurBlockNum)
@@ -2553,19 +2682,19 @@ HTTPCaller.GetHashRate = function (ArrParams)
         if(Count > 20 && !bMinutes)
             Count = 20;
         else
-            if(Count <= 0)
-                Count = 1;
+        if(Count <= 0)
+            Count = 1;
         var StepDelta = Math.floor(Delta / Count);
         if(StepDelta < 1)
             StepDelta = 1;
         if(bMinutes)
             DeltaMinute = Delta;
         var CountAvg = 3;
-        
+
         var StepDeltaAvg = Math.floor(StepDelta / CountAvg);
         if(StepDeltaAvg < 1)
             StepDeltaAvg = 1;
-        
+
         var ItervalArr = [];
         for(var Num = Item.BlockNum1; Num < Item.BlockNum2; Num += StepDelta)
         {
@@ -2606,12 +2735,12 @@ HTTPCaller.GetHashRate = function (ArrParams)
             {
                 Power = 0;
             }
-            
+
             ItervalArr.push(Power);
         }
         ResArr[i] = ItervalArr;
     }
-    
+
     var Ret = {result:1, ItervalArr:ResArr};
     Ret.MaxHashStatArr = Engine.GetTimePowerArr(GetCurrentBlockNumByTime() - DeltaMinute);
     return Ret;
@@ -2636,29 +2765,36 @@ HTTPCaller.GetTransaction = function (Params,response)
     }
     response.writeHead(200, {'Content-Type':'text/plain'});
     response.end(JSON.stringify(result));
+    return null;
 }
 
 global.GetTransactionByID = GetTransactionByID;
 function GetTransactionByID(Params)
 {
+    //SERVER.RefreshAllDB();
+
     var BlockNum;
     if(typeof Params.TxID === "string")
     {
         var Arr = GetArrFromHex(Params.TxID);
+        var Arr1 = Arr.slice(0, TX_ID_HASH_LENGTH);
         BlockNum = ReadUintFromArr(Arr, TX_ID_HASH_LENGTH);
-        var Block = SERVER.ReadBlockDB(BlockNum);
-        if(Block && Block.arrContent)
+
+        for(var n=0;n<100;n++)//max 100 blocks
         {
-            for(var i = 0; i < Block.arrContent.length; i++)
+            var Block = SERVER.ReadBlockDB(BlockNum+n);
+            if(Block && Block.TxData)
             {
-                var Body = Block.arrContent[i];
-                var Arr2 = GetTxID(BlockNum, Body);
-                
-                if(CompareArr(Arr2, Arr) === 0)
+                for(var i = 0; i < Block.TxData.length; i++)
                 {
-                    return GetTransactionFromBody(Params, Block, i, Body);
+                    var Tx = Block.TxData[i];
+                    if(CompareArr(Tx.HASH.slice(0, TX_ID_HASH_LENGTH), Arr1) === 0)
+                    {
+                        return GetTransactionFromBody(Params, Block, i, Tx.body);
+                    }
                 }
             }
+
         }
     }
     return {result:0, Meta:Params ? Params.Meta : undefined, BlockNum:BlockNum};
@@ -2671,9 +2807,11 @@ function GetTransactionFromBody(Params,Block,TrNum,Body)
     if(TR)
     {
         ConvertBufferToStr(TR);
-        TR.result = 1;
         TR.Meta = Params.Meta;
         TR.result = GetVerifyTransaction(Block, TrNum);
+        if(TR.result===undefined)//не успела обновиться информация
+            TR.result = 1;
+
         TR.BlockNum = Block.BlockNum;
         TR.TrNum = TrNum;
         return TR;
@@ -2687,7 +2825,7 @@ function GetCookieHash(cookies_hash,Password)
     {
         return undefined;
     }
-    
+
     var nonce = 0;
     var index = cookies_hash.indexOf("-");
     if(index > 0)
@@ -2696,11 +2834,71 @@ function GetCookieHash(cookies_hash,Password)
         if(!nonce)
             nonce = 0;
     }
-    
+
     var hash = CalcClientHash(glStrToken + "-" + Password, nonce);
-    
+
     return hash;
+}
+
+global.GetFormatTx=function (Params)
+{
+    var BlockNum=GetCurrentBlockNumByTime();
+    var RetData=
+        {
+            CodeVer:global.START_CODE_VERSION_NUM,
+            BLOCKCHAIN_VERSION:GETVERSION(BlockNum),
+            PRICE:PRICE_DAO(BlockNum),
+
+            FORMAT_SYS:FORMAT_SYS,
+            FORMAT_SMART_CREATE1:FORMAT_SMART_CREATE1,
+            FORMAT_SMART_CREATE2:FORMAT_SMART_CREATE2,
+            FORMAT_SMART_RUN1:FORMAT_SMART_RUN1,
+            FORMAT_SMART_RUN2:FORMAT_SMART_RUN2,
+            FORMAT_SMART_CHANGE:FORMAT_SMART_CHANGE,
+            FORMAT_ACC_CREATE:FORMAT_ACC_CREATE,
+            FORMAT_ACC_CHANGE:FORMAT_ACC_CHANGE,
+            FORMAT_MONEY_TRANSFER3:FORMAT_MONEY_TRANSFER3,
+            FORMAT_MONEY_TRANSFER5:FORMAT_MONEY_TRANSFER5,
+            FORMAT_FILE_CREATE:FORMAT_FILE_CREATE,
+            FORMAT_SMART_SET:FORMAT_SMART_SET,
+
+            TYPE_SYS:TYPE_TRANSACTION_SYS,
+            TYPE_SMART_CREATE1:TYPE_TRANSACTION_SMART_CREATE1,
+            TYPE_SMART_CREATE2:TYPE_TRANSACTION_SMART_CREATE2,
+            TYPE_SMART_RUN1:TYPE_TRANSACTION_SMART_RUN1,
+            TYPE_SMART_RUN2:TYPE_TRANSACTION_SMART_RUN2,
+            TYPE_SMART_CHANGE:TYPE_TRANSACTION_SMART_CHANGE,
+            TYPE_ACC_CREATE:TYPE_TRANSACTION_CREATE,
+            TYPE_ACC_CHANGE:TYPE_TRANSACTION_ACC_CHANGE,
+            TYPE_MONEY_TRANSFER3:TYPE_TRANSACTION_TRANSFER3,
+            TYPE_MONEY_TRANSFER5:TYPE_TRANSACTION_TRANSFER5,
+            TYPE_TRANSACTION_FILE:TYPE_TRANSACTION_FILE,
+            TYPE_SMART_SET:TYPE_TRANSACTION_SMART_SET,
+        };
+
+    return RetData;
+};
+HTTPCaller.GetFormatTx = GetFormatTx;
+
+global.UseRetFieldsArr=UseRetFieldsArr;
+function UseRetFieldsArr(Arr,Fields)
+{
+    if(!Fields)
+        return Arr;
+    var Arr2=[];
+    for(var i=0;i<Arr.length;i++)
+    {
+        var Item=Arr[i];
+        var Item2={};
+        for(var n=0;n<Fields.length;n++)
+            Item2[Fields[n]]=Item[Fields[n]];
+        Arr[i]=Item2;
+    }
+
+    return Arr;
 }
 
 
 require("../rpc/api-v2-exchange.js");
+
+

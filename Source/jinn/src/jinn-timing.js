@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -78,6 +78,8 @@ function DoNode(Engine)
         
         Engine.ClearListToNum(Engine.MiningBlockArr, CurBlockNum - JINN_CONST.STEP_CLEAR_MEM);
     }
+    
+    Engine.DoResend();
     
     Engine.DoCreateNewBlock();
     

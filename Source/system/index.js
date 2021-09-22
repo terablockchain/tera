@@ -22,7 +22,10 @@ require("./smart");
 require("./shard-channel");
 require("./file");
 
+require("./syscore");
+
 global.ACCOUNTS = DApps.Account;
 global.SMARTS = DApps.Smart;
 global.SHARDS = DApps.Shard;
+global.SYSCORE = DApps.SysCore;
 

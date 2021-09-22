@@ -13,29 +13,17 @@
     <script type="text/javascript" src="./JS/crypto-client.js"></script>
     <script type="text/javascript" src="./JS/coinlib.js"></script>
     <script type="text/javascript" src="./JS/client.js"></script>
+    <script type="text/javascript" src="./JS/client-promise.js"></script>
+    <script type="text/javascript" src="./JS/client-tokens.js"></script>
+    <script type="text/javascript" src="./JS/client-tx.js"></script>
     <script type="text/javascript" src="./JS/terahashlib.js"></script>
     <script type="text/javascript" src="./JS/dapp-outer.js"></script>
+    <script type="text/javascript" src="./JS/terabuf.js"></script>
+    <script type="text/javascript" src="./JS/dapp-frame.js"></script>
 
-    <script id="idTestScript">
-        function OnMessage(event)
-        {
-            var Data=event.data;
-            console.log("Data:",Data);
-        }
-        function InitDappInner()
-        {
-            window.ToLog=function (Str)
-            {
-                console.log(Str);
-            };
-            window.addEventListener("message", OnMessage);
-            ToLog("Init OK");
-        }
-    </script>
 
 
     <script>
-
         InitWalletKeyName();
         var TranslateArr=[];
         window.Storage=window.localStorage;
@@ -44,405 +32,8 @@
         DapNumber="#template-number#";
         glSmart=parseInt(DapNumber);
         var glProgramSetHash;
-
-
-
-        //DAPP TRANSFER
-        window.onload=function()
-        {
-            InitMobileInterface();
-            DoNewSession();
-            InitTranslate();
-
-
-            if(window.location.hash)
-                OPEN_PATH=window.location.hash.substr(1);
-            if(IsLocalClient())
-            {
-                DapNumber=window.location.search.substr(6);
-                if(Storage.getItem("MainServer"))
-                {
-                    MainServer=JSON.parse(Storage.getItem("MainServer"));
-                }
-            }
-            glSmart=parseInt(DapNumber);
-
-
-            var Key=GetPubKey();
-            GetData("DappInfo",{Smart:glSmart, Key:Key, Session:glSession, AllData:1}, function (SetData)
-            {
-                if(!SetData || !SetData.result)
-                    return;
-
-                CONFIG_DATA=SetData;
-                SMART=SetData.Smart;
-                BASE_ACCOUNT=SetData.Account;
-
-                SetBlockChainConstant(SetData);
-                document.title=SMART.Name;
-
-
-                //if(CONFIG_DATA.NETWORK!=="MAIN-JINN.TERA")
-                DAPPPREFIX="DAPP-"+CONFIG_DATA.NETWORK+"."+CONFIG_DATA.SHARD_NAME;
-
-                InitMenu();
-
-
-                var HTMLBlock=BASE_ACCOUNT.SmartState.HTMLBlock;
-                var HTMLTr=BASE_ACCOUNT.SmartState.HTMLTr;
-                if(HTMLBlock)
-                {
-                    ToLog("Load HTML from: /file/"+HTMLBlock+"/"+HTMLTr);
-                    GetData("DappBlockFile",{BlockNum:HTMLBlock,TrNum:HTMLTr}, function (SetData)
-                    {
-                        if(SetData && SetData.result)
-                        {
-                            CreateFrame(SetData.Body);
-                        }
-                    });
-                }
-                else
-                {
-                    GetData("DappSmartHTMLFile",{Smart:glSmart}, function (SetData)
-                    {
-                        if(SetData && SetData.result)
-                        {
-                            CreateFrame(SetData.Body);
-                        }
-                    });
-                }
-
-
-            });
-
-            //LoadSignLib();
-
-            window.addEventListener("popstate", function(event)
-            {
-                OPEN_PATH=window.location.hash.substr(1);
-                if(!glProgramSetHash)
-                    SendMessage({cmd:"History",OPEN_PATH:OPEN_PATH});
-
-            }, false);
-
-
-            if(isMobile())
-                SetMobileMode();
-
-
-        }
-
-
-        function SetLocationHash(Str)
-        {
-            glProgramSetHash=1;
-            window.location.hash=Str;
-            glProgramSetHash=0;
-        }
-
-        function SetMobileMode()
-        {
-            var newchild = document.createElement("meta")
-            newchild.name = "viewport"
-            newchild.content = "width=device-width, initial-scale=1.0";//, maximum-scale=1.0, user-scalable=0;
-            window.parent.document.getElementsByTagName("head")[0].appendChild(newchild);
-        }
-
-
-        var idInstallApp=0;
-        function CheckInstall()
-        {
-            if(!idInstallApp)
-                idInstallApp=setInterval(RunCheckInstall,2000);
-        }
-
-        function RunCheckInstall()
-        {
-            // if(CONFIG_DATA && CONFIG_DATA.ArrWallet && CONFIG_DATA.ArrWallet.length===0)
-            // {
-            //     var StrRef='<A class="btcreate" href="'+GetWalletLink()+'">Accounts</A>';
-            //     var Str='<DIV style="background-color: #c8ecff;">For install this app press: <button class="btcreate" onclick="InstallApp()">Create account</button><DIV>';
-            //     SetStatus(Str);
-            // }
-        }
-        function OpenWalletPage()
-        {
-            OpenWindow(GetWalletLink());
-        }
-        function OpenSmartSrc()
-        {
-            OpenWindow("/smart/"+glSmart);
-        }
-
-        //LIB
-        function IsPrivateMode(PrivKeyStr)
-        {
-            if(Storage.getItem(WALLET_KEY_EXIT))
-                return 0;
-
-            return IsPrivateKey(PrivKeyStr);
-        }
-
-
-        function SetStatus(Str,bNoEscape)
-        {
-            var id = $("idStatus");
-            if(!bNoEscape)
-            {
-                if(Str)
-                    console.log(Str);
-                Str = escapeHtml(Str);
-            }
-            id.innerHTML=Str;
-
-        }
-
-        function SetError(Str,bNoSound)
-        {
-            if(Str)
-                console.log(Str);
-            SetStatus("<DIV style='color:red'><B>"+escapeHtml(Str)+"</B></DIV>",1);
-        }
-
-
-        function CreateNewWebKeys()
-        {
-            var arr = new Uint8Array(32);
-            window.crypto.getRandomValues(arr);
-            var PrivKey=sha3(arr);
-            SetPrivKey(GetHexFromArr(PrivKey));
-            Storage.setItem("idPubKey",GetHexFromArr(SignLib.publicKeyCreate(PrivKey,1)));
-            CONFIG_DATA.PubKey=GetPubKey();
-
-
-
-        }
-
-        var CountCreateNewAccount=0;
-        function CreateNewAccount(Currency)
-        {
-            if(!CONFIG_DATA.WalletCanSign)
-            {
-                if(Storage.getItem("BIGWALLET") || IsLockedWallet())
-                {
-                    SetError("Pls, open wallet");
-                    return;
-                }
-
-                CreateNewWebKeys();
-            }
-            if(CountCreateNewAccount>20)
-                return;
-            CountCreateNewAccount++;
-
-
-            var TR=GetTrCreateAcc(Currency,CONFIG_DATA.PubKey,SMART.Name,0,SMART.Num);
-            var Body=GetBodyCreateAcc(TR);
-            SendTransactionNew(Body,TR);
-        }
-
-        function InstallApp()
-        {
-
-            CreateNewAccount(BASE_ACCOUNT.Currency);
-
-            if(idInstallApp)
-            {
-                clearInterval(idInstallApp);
-                idInstallApp=setInterval(RunCheckInstall,30000);
-            }
-
-        }
-
-        function ResetDapp()
-        {
-            SetStatus("");
-            DoNewSession();
-            if(idInstallApp)
-            {
-                clearInterval(idInstallApp);
-                idInstallApp=0;
-            }
-        }
-        function RunDappFromFile()
-        {
-            CloseMenu();
-            LoadDappFromFile();
-
-        }
-        var WasLoadFromFile=0;
-        function LoadDappFromFile()
-        {
-            $('idFile').onchange=function ()
-            {
-                ResetDapp();
-                CreateFromFile();
-            };
-            $('idFile').click();
-        }
-        function ReloadDapp()
-        {
-            ResetDapp();
-
-            if(WasLoadFromFile)
-                CreateFromFile();
-            else
-                window.location.reload();
-        }
-        function CreateFromFile()
-        {
-            var file = $("idFile").files[0];
-            var reader = new FileReader();
-            reader.onload = function()
-            {
-                WasLoadFromFile=1;
-                var view = new Uint8Array(reader.result);
-                var Str=Utf8ArrayToStr(view);
-                if($("idFrame"))
-                    $("idFrame").outerHTML="";
-                CreateFrame(Str);
-                $("idRunItem").innerText="Runing DApp from: "+file.name;
-            }
-            if(file)
-                reader.readAsArrayBuffer(file);
-        }
-
-        function InitMenu()
-        {
-            $("idCreateItem").innerText=$("idCreateItem").innerText.replace("NNN",SMART.Num);
-        }
-        var OpenMenu=0;
-        function OnClickMenu()
-        {
-            DoVisibleMenu(!OpenMenu);
-        }
-        function CloseMenu()
-        {
-            DoVisibleMenu(0);
-        }
-        function DoVisibleMenu(SetMenu)
-        {
-            setTimeout(function ()
-            {
-                OpenMenu=SetMenu;
-                $("idMenu").className="top "+(OpenMenu?"open":"close");
-            },50);
-
-        }
-
-        window.onclick=function (t)
-        {
-            if(OpenMenu)
-            {
-                CloseMenu();
-            }
-        }
-        window.onkeydown = function (e)
-        {
-            //ToLog("keyCode="+e.keyCode);
-            switch (e.keyCode)
-            {
-                case 27:
-                    if(OpenMenu)
-                    {
-                        CloseMenu();
-                    }
-                    break;
-                case 116:
-                    e.preventDefault();
-                    ReloadDapp();
-                    break;
-                default:
-            }
-        };
-
-
-        //TRANSLATE TRANSLATE TRANSLATE
-        //TRANSLATE TRANSLATE TRANSLATE
-        //TRANSLATE TRANSLATE TRANSLATE
-        function DoTranslate(Data)
-        {
-            Data.Key="_"+Data.Key;
-
-            var id=Data.Key;
-            var div=$(id);
-            if(div && div.innerText!==Data.Str)
-            {
-                Data.Str2=div.innerText;
-                SendMessage(Data);
-                return;
-            }
-
-            Data.Str2=sessionStorage[id];
-            if(Data.Str2)
-            {
-                if($("idCanTranslate").innerText==="Translation completed.")
-                {
-                    TranslateArr.push(Data);
-                }
-                else
-                {
-                    SendMessage(Data);
-                }
-                return;
-            }
-
-
-            var Lib=$("idTranslate");
-            div = document.createElement('div');
-            div.id=id;
-            div.innerText=Data.Str;
-            Lib.appendChild(div);
-
-            var observer = new MutationObserver(function(mutations)
-            {
-                mutations.forEach(function(mutation)
-                {
-                    if(Data.Str2)
-                        return;
-
-                    //ToLog(div.innerText)
-                    sessionStorage[Data.Key]=div.innerText;
-                    Data.Str2=div.innerText;
-                    SendMessage(Data);
-                 });
-            });
-            observer.observe(
-                div,
-                {
-                    childList: true,
-                    attributes: false,
-                    subtree: true,
-                    characterData: true,
-                }
-            );
-
-        }
-        function InitTranslate()
-        {
-            var observer = new MutationObserver(function(mutations)
-            {
-                mutations.forEach(function(mutation)
-                {
-                    for(var i=0;i<TranslateArr.length;i++)
-                        SendMessage(TranslateArr[i]);
-                    TranslateArr=[];
-                });
-            });
-            observer.observe(
-                $("idCanTranslate"),
-                {
-                    childList: true,
-                    attributes: false,
-                    subtree: true,
-                    characterData: true,
-                }
-            );
-
-        }
-
-
     </script>
+
 
     <style>
         :root
@@ -469,12 +60,31 @@
         }
         #idStatus
         {
-            left: 0;
-            width: 90%;
-            min-width: 90%;
+            left: 5px;
+            width: 80%;
+            min-width: 80%;
             height:25px;
             padding: 5px 0 0 0;
+            border2: 1px solid #5a6c74;
+            overflow: hidden;
         }
+
+        #idRestart
+        {
+            z-index:30;
+            right: 152px;
+            height:30px;
+            color: var(--colorMenu0);
+            background-color: var(--colorMenu01);
+            cursor: pointer;
+            padding: 5px 0 0 0;
+        }
+        #idRestart:hover
+        {
+            color: #ecb84e;
+            background-color: var(--colorMenu2);
+        }
+
         #idMenu
         {
             z-index:30;
@@ -604,18 +214,21 @@
 </div>
 
 <DIV id="idStatus" class="top"></DIV>
+<button id="idRestart" class="top" onclick="ReloadDapp();" style="display: none">RELOAD</button>
 <DIV id="idMenu" class="top close" onclick="OnClickMenu()">Options
     <div id="idMenuList" class="top open">
         <div class="item" onclick="OpenWalletPage();">Open wallet page</div>
         <div class="item" onclick="OpenSmartSrc();">Smart src code</div>
         <div class="item" onclick="RunDappFromFile();" id="idRunItem">Dapp from file...</div>
-        <div class="item" onclick="ReloadDapp();">F5: ReRun dapp</div>
+        <div class="item" onclick="RunDappFromStorage();" id="idRunItem2">Dapp from storage...</div>
+<!--        <div class="item" onclick="ReloadDapp();">F5: ReRun dapp</div>-->
         <div class="item" onclick="window.location.reload();">Reset dapp</div>
         <div class="item" onclick="InstallApp();" id="idCreateItem">Create account with Dapp NNN</div>
         <div id="idMobile" class="item" onclick="DoMobile(1);">View logs</div>
     </div>
 </DIV>
 <input type="file" id="idFile" style="display: none">
+
 
 <!--modal support for dapp-->
 <style id="idModalCSS">
@@ -647,7 +260,6 @@
         transform: translate(-50%, -50%);
         max-width: 250px;
     }
-
     .bt-confirm
     {
         border-radius: 4px;
@@ -667,6 +279,147 @@
         cursor: pointer;
     }
 </style>
+
+
+<style>
+    *
+    {
+        line-height: 1.5;
+    }
+
+    .ModalTr
+    {
+        z-index: 2000;
+        position: fixed;
+        top: 2px;
+        left2: 4px;
+        padding: 0;
+        margin: 0 auto;
+        width: 320px;
+        left: 50%;
+        transform: translate(-50%, 0);
+
+        background: #fff;
+        border-radius: 5px;
+        border: 1px solid #727473;
+        box-shadow: 0 0 5px rgb(0 0 0);
+        color: #000;
+    }
+
+
+    .bt-small
+    {
+        width: 80px;
+    }
+    .bt-white
+    {
+        color:#445368;
+        background-color: white;
+        border-color: #53687e;
+    }
+
+    .header
+    {
+        display: flex;
+        z-index: 2000;
+        height: 35px;
+        margin: 0;
+        width: 100%;
+        background: linear-gradient(270deg, #3D4C61 0%, #445368 100%);
+        color: #fff;
+    }
+    .main-logo
+    {
+        padding: 2px;
+        height: 30px;
+    }
+    .curwallet
+    {
+        margin: 5px;
+    }
+
+
+    #idAmount
+    {
+        color: #cc7e00;
+    }
+    #idToken
+    {
+        color: #7f4d00;
+        margin-left: 5px;
+    }
+
+
+    .row
+    {
+        display: flex;
+        margin: 0px 5px 0px 20px;
+        padding:0;
+        line-height: 24px;
+    }
+    .title
+    {
+        width:80px;
+    }
+    .value
+    {
+        font-weight: bold;
+        width:220px;
+        overflow: auto;
+        border2: 1px solid black;
+
+    }
+
+
+</style>
+
+
+<section id="idTransfer" class="ModalTr" style="display: none;">
+    <div style="height: 100%; width: 100%;">
+        <div class="header">
+            <img class="main-logo" src="./PIC/TeraLogo.svg" alt="TERA Foundation">
+            <div class="curwallet"><span>Wallet </span><b id="idAccess1" class=""></b></div>
+        </div>
+        <DIV align='center' class="page">
+            <h2>Sending</h2>
+
+            <DIV align='left' class="transfer_info">
+
+                <DIV class="row" id="idRowCall">
+                    <DIV class="title">Method:</DIV>
+                    <div class="value" id="idMethod">
+                        Swap
+                    </div>
+                </DIV>
+                <DIV class="row">
+                    <DIV class="title">Accounts:</DIV>
+                    <div class="value">
+                        <span id="idFrom">100</span> → <span id="idTo">107</span>
+                    </div>
+                </DIV>
+                <DIV class="row" id="idRowID">
+                    <DIV class="title">Token ID:</DIV>
+                    <div class="value"  id="idID">
+                        10000000001
+                    </div>
+                </DIV>
+                <DIV class="row">
+                    <DIV class="title">Amount:</DIV>
+                    <div class="value">
+                        <span id="idAmount">100000000.0000000001</span><span id="idToken">TERA</span>
+                    </div>
+                </DIV>
+            </DIV>
+
+            <h3 style="color: orangered">A you sure?</h3>
+            <button class="bt-confirm bt-small"  onclick="OnOKTr()">OK</button>
+<!--            <button class="bt-confirm bt-small bt-white"  onclick="OnHideTr()">Hide</button>-->
+            <button class="bt-confirm bt-small bt-white"  onclick="OnCancelTr()">Cancel</button>
+        </DIV>
+    </div>
+</section>
+
+
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
 <section id="idConfirm" class="ModalDlg" style="display: none;">
     <DIV align='center'>
@@ -678,9 +431,8 @@
 </section>
 
 
+
+
 </body>
 </html>
-<script>
-    var glDebugPath="";
-</script>
 

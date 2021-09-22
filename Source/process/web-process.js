@@ -15,6 +15,15 @@
 
 global.PROCESS_NAME = "WEB";
 
+function GetDefaultPage()
+{
+    if(global.HTTP_START_PAGE)
+        return global.HTTP_START_PAGE;
+    else
+        return "web-wallet.html";
+}
+
+
 const http = require('http'), net = require('net'), url = require('url'), fs = require('fs'), querystring = require('querystring');
 
 global.MAX_STAT_PERIOD = 600;
@@ -42,14 +51,15 @@ process.on('message', function (msg)
     switch(msg.cmd)
     {
         case "Stat":
-            ADD_TO_STAT(msg.Name, msg.Value);
+            for(var i=0;i<msg.Arr.length;i++)
+                ADD_TO_STAT(msg.Arr[i].Name, msg.Arr[i].Value);
             break;
         case "NodeList":
-            AllNodeList = msg.ValueAll;
-            HostNodeList = GetArrWithWebOnly(AllNodeList);
+            global.AllNodeList = msg.ValueAll;
+            global.HostNodeList = GetArrWithWebOnly(AllNodeList);
             break;
         case "NodeBlockChain":
-            NodeBlockChain = msg.Value;
+            global.NodeBlockChain = msg.Value;
             break;
             
         case "DappEvent":
@@ -64,27 +74,14 @@ process.on('message', function (msg)
                 break;
             }
             
-        case "RetFindTX":
+        case "WalletEvent":
             {
-                if(msg.WebID)
-                {
-                    var F = global.GlobalRunMap[msg.WebID];
-                    if(F)
-                    {
-                        if(!msg.bEvent)
-                            delete global.GlobalRunMap[msg.WebID];
-                        F(msg.Result, msg.ResultStr, msg.bEvent);
-                        break;
-                    }
-                }
-                
-                AddToArrClient(msg.ResultStr, msg.TX, msg.bFinal, Date.now());
-                
+                AddToArrClient(msg.ResultStr, msg.TX, msg.bFinal, Date.now(),msg.BlockNum,msg.TrNum);
                 break;
             }
             
         case "MiningBlock":
-            GlMiningBlock = msg.Value;
+            global.GlMiningBlock = msg.Value;
             break;
     }
 }
@@ -115,7 +112,7 @@ global.OnExit = function ()
         RedirectServer.close();
     if(HostingServer)
         HostingServer.close();
-}
+};
 
 if(!global.HTTP_HOSTING_PORT)
 {
@@ -193,7 +190,12 @@ function MainHTTPFunction(request,response)
     var DataURL = url.parse(request.url);
     var Params = querystring.parse(DataURL.query);
     var Path = querystring.unescape(DataURL.pathname);
-    
+
+    if(!Path || Path==="/")
+    {
+        Path = GetDefaultPage();
+    }
+
     var ip = request.socket.remoteAddress;
     global.WEB_LOG && ToLogWeb("" + ip + " Get Path:" + Path);
     
@@ -281,17 +283,6 @@ function RunListenServer()
     });
 }
 
-var IndexName = "index.html";
-if(global.HTTP_START_PAGE)
-    IndexName = global.HTTP_START_PAGE;
-else
-{
-    var SiteFolder = GetNormalPathString("./SITE");
-    if(!fs.existsSync(SiteFolder))
-    {
-        IndexName = "web-wallet.html";
-    }
-}
 
 var WalletFileMap = {};
 WalletFileMap["mobile-wallet.html"] = "web-wallet.html";
@@ -307,16 +298,13 @@ function DoCommandNew(request,response,Type,Path,Params)
 {
     if(global.HTTP_START_PAGE === "WWW")
         return DoCommandWWW(request, response, Type, Path, Params);
-    
+
     if(Path.substring(0, 1) === "/")
         Path = Path.substring(1);
-    
-    if(global.HTTP_START_PAGE && !Path)
-    {
-        Path = global.HTTP_START_PAGE;
-    }
-    
+
+//
     var ArrPath = Path.split('/', 7);
+
     
     if(global.AddonCommand)
     {
@@ -364,6 +352,8 @@ function DoCommandNew(request,response,Type,Path,Params)
     var F = Caller[Method];
     if(F)
     {
+        //console.log(Method,ArrPath);
+
         response.writeHead(200, {'Content-Type':'text/plain', 'Access-Control-Allow-Origin':"*"});
         
         if(!global.USE_API_V1 && !APIv2)
@@ -407,7 +397,9 @@ function DoCommandNew(request,response,Type,Path,Params)
         }
         return;
     }
-    
+    if(!Method)
+        return;
+
     Method = Method.toLowerCase();
     if(Method === "dapp" && ArrPath.length === 2)
         Method = "DappTemplateFile";
@@ -417,7 +409,11 @@ function DoCommandNew(request,response,Type,Path,Params)
         case "file":
             SendBlockFile(request, response, ArrPath[1], ArrPath[2]);
             break;
-            
+
+        case "nft":
+            SendNFTFile(request, response, ArrPath[1]);
+            break;
+
         case "DappTemplateFile":
             DappTemplateFile(request, response, ArrPath[1]);
             break;
@@ -441,7 +437,7 @@ function DoCommandNew(request,response,Type,Path,Params)
                         Name = "ErrorFilePath";
                 
                 if(Name === "")
-                    Name = IndexName;
+                    Name = GetDefaultPage();
                 
                 if(Name.indexOf(".") < 0)
                     Name += ".html";
@@ -603,7 +599,7 @@ setInterval(function ()
     if(MaxNumBlockDB > Count)
     {
         var StartNum = MaxNumBlockDB - Count + 1;
-        NodeBlockChain = SERVER.BlockChainToBuf(StartNum, StartNum, MaxNumBlockDB);
+        global.NodeBlockChain = SERVER.BlockChainToBuf(StartNum, StartNum, MaxNumBlockDB);
     }
 }
 , 700);
@@ -643,9 +639,14 @@ global.WebApi1.GetAccountListByKey = global.HostingCaller.GetAccountListByKey;
 
 global.WebApi1.GetTransaction = global.WebApi2.GetTransaction;
 global.WebApi1.GetHistoryTransactions = global.WebApi2.GetHistoryTransactions;
+global.WebApi1.GetBalance = global.WebApi2.GetBalance;
+
 
 global.WebApi1.SendTransactionHex = global.HostingCaller.SendTransactionHex;
 
 global.WebApi1.GetWork = global.HostingCaller.GetWork;
 global.WebApi1.SubmitWork = global.HostingCaller.SubmitWork;
 global.WebApi1.SubmitHashrate = global.HostingCaller.SubmitHashrate;
+
+global.WebApi1.SendHexTx = global.HostingCaller.SendHexTx;
+global.WebApi1.GetFormatTx = global.HostingCaller.GetFormatTx;

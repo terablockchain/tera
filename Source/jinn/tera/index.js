@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -54,6 +54,7 @@ JINN_CONST.MAX_ITEMS_FOR_LOAD = 500;
 
 JINN_CONST.MAX_BLOCK_SIZE = 300000;
 JINN_CONST.MAX_DEPTH_FOR_SECONDARY_CHAIN = 100;
+JINN_CONST.MAX_TX_SIZE = 64000;
 
 JINN_EXTERN.GetCurrentBlockNumByTime = global.GetCurrentBlockNumByTime;
 
@@ -113,6 +114,8 @@ function GetEngine(MapName)
     
     require("./tera-virtual-tx").Init(Engine);
     
+    require("./tera-block-create").Init(Engine);
+    
     return Engine;
 }
 
@@ -147,9 +150,10 @@ function Create(MapName)
             Engine.AddNodeAddr({ip:"t2.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"t4.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"t5.teraexplorer.com", port:30000, Score:SYSTEM_SCORE, System:1});
-            Engine.AddNodeAddr({ip:"terablockchain.org", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"teraexplorer.org", port:30000, Score:SYSTEM_SCORE, System:1});
             Engine.AddNodeAddr({ip:"149.154.70.158", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"45.12.4.15", port:30000, Score:SYSTEM_SCORE, System:1});
+            Engine.AddNodeAddr({ip:"212.80.218.162", port:30000, Score:SYSTEM_SCORE, System:1});
         }
         else
             if(global.NETWORK_ID === "TEST-JINN.TEST")

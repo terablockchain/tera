@@ -19,8 +19,9 @@ class AccountScroll extends require("./dapp")
     {
         super(bReadOnly)
     }
-    GetRowsAccounts(start, count, Filter, bGetState)
+    GetRowsAccounts(start, count, Filter, bGetState, bGetCoin)
     {
+        //console.log("GetRowsAccounts:",start,count,bGetState, bGetCoin)
         if(Filter)
         {
             Filter = Filter.trim()
@@ -31,7 +32,7 @@ class AccountScroll extends require("./dapp")
         {
             if(Filter.substring(0, 1) === "=")
             {
-                Filter = Filter.substring(1)
+                Filter = Filter.substring(1);
                 try
                 {
                     F = CreateEval(Filter, "Cur,Currency,ID,Operation,Amount,Adviser,Name,PubKey,Smart,BlockNum")
@@ -112,9 +113,18 @@ class AccountScroll extends require("./dapp")
                         Data.SmartState = {}
                 }
             }
+            //ERC
+            if(bGetCoin)// && Data.Currency===0)//игнорируем другие валюты
+            {
+                if(Data.Currency && !Data.CurrencyObj)
+                    Data.CurrencyObj = SMARTS.ReadSimple(Data.Currency, 1)
+
+                Data.BalanceArr=this.ReadBalanceArr(Data);
+            }
+
             
-            arr.push(Data)
-            count--
+            arr.push(Data);
+            count--;
             if(count < 1)
                 break;
         }

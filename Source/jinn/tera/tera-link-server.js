@@ -1,8 +1,8 @@
 /*
  * @project: JINN
- * @version: 1.0
+ * @version: 1.1
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2019-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
 
@@ -37,20 +37,10 @@ function Init(Engine)
         return BlockNum;
     };
     
-    SERVER.AddTransactionOwn = function (Tr)
+    SERVER.AddTransactionInner = function (Tx0)
     {
-        var Result = SERVER.AddTransaction(Tr, 1);
-        if(Result > 0 && global.TX_PROCESS.Worker)
-        {
-            var StrHex = GetHexFromArr(sha3(Tr.body, 38));
-            global.TX_PROCESS.Worker.send({cmd:"FindTX", TX:StrHex});
-        }
+        Engine.OnAddTransactionInner(Tx0);
         
-        return Result;
-    };
-    
-    SERVER.AddTransaction = function (Tx0)
-    {
         if(!global.USE_MINING && !SERVER.GetHotNodesCount())
             return TX_RESULT_NOCONNECT;
         var Body = Tx0.body;
@@ -78,12 +68,15 @@ function Init(Engine)
         Tx0._TxID = GetStrTxIDFromHash(Tx.HASH, BlockNum);
         Tx0._BlockNum = BlockNum;
         
+        var Ret;
         var TxArr = [Tx];
         var CountSend = Engine.AddCurrentProcessingTx(BlockNum, TxArr);
         if(CountSend === 1)
-            return 1;
+            Ret = 1;
         else
-            return TX_RESULT_WAS_SEND;
+            Ret = TX_RESULT_WAS_SEND;
+        
+        return Ret;
     };
     
     SERVER.CheckCreateTransactionObject = function (Tr,SetTxID,BlockNum)
@@ -313,6 +306,9 @@ function Init(Engine)
         var arr = [];
         var Block = SERVER.ReadBlockDB(BlockNum, ChainMode);
         
+        if(typeof FilterTxId === "string" && FilterTxId.length >= TX_ID_HASH_LENGTH * 2)
+            FilterTxId = FilterTxId.substr(0, TX_ID_HASH_LENGTH * 2);
+        
         if(Block && Block.arrContent)
         {
             for(var num = start; num < start + count; num++)
@@ -324,7 +320,7 @@ function Init(Engine)
                 
                 var Tr = {body:Block.arrContent[num]};
                 SERVER.CheckCreateTransactionObject(Tr, 1, BlockNum);
-                if(typeof FilterTxId === "string" && FilterTxId.length >= 20 && Tr.TxID !== FilterTxId)
+                if(typeof FilterTxId === "string" && FilterTxId.length === TX_ID_HASH_LENGTH * 2 && Tr.TxID.substr(0, TX_ID_HASH_LENGTH * 2) !== FilterTxId)
                     continue;
                 
                 Tr.Num = num;

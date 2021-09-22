@@ -69,22 +69,30 @@ class SmartScroll extends require("./dapp")
             }
             
             var CanAdd = 1;
+            if(!global.ALL_VIEW_ROWS && !bAllRow)
+            {
+                if(Data.HTMLBlock === 404)
+                    CanAdd = 0;
+            }
             var DataState = ACCOUNTS.ReadState(Data.Account);
             if(DataState)
             {
-                Data.KeyValueSize = DataState.KeyValueSize
-                Data.BaseState = ACCOUNTS.GetSmartState(DataState, Data.StateFormat)
+                Data.KeyValueSize = DataState.KeyValueSize;
+                Data.BaseState = ACCOUNTS.GetSmartState(DataState, Data.StateFormat);
                 if(!global.ALL_VIEW_ROWS && !bAllRow)
-                    if(typeof Data.BaseState === "object" && Data.BaseState.HTMLBlock === 404)
-                        CanAdd = 0
+                {
+                    if(CanAdd && typeof Data.BaseState === "object" && Data.BaseState.HTMLBlock === 404)
+                        CanAdd = 0;
+                }
             }
-            
+
+
             if(CanAdd)
             {
-                arr.push(Data)
+                arr.push(Data);
             }
             
-            count--
+            count--;
             if(count < 1)
                 break;
         }

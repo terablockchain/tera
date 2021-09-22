@@ -24,15 +24,36 @@ HostingCaller.GetCurrentInfo = function (Params)
     var MaxNumBlockDB = SERVER.GetMaxNumBlockDB();
     var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     
-    var Ret = {result:1, VersionNum:global.START_CODE_VERSION_NUM, VersionUpd:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK,
-        SHARD_NAME:global.SHARD_NAME, MaxNumBlockDB:MaxNumBlockDB, CurBlockNum:GetCurrentBlockNumByTime(), MaxAccID:ACCOUNTS.GetMaxAccount(),
-        MaxDappsID:SMARTS.GetMaxNum(), TXBlockNum:TXBlockNum, CurTime:Date.now(), DELTA_CURRENT_TIME:DELTA_CURRENT_TIME, MIN_POWER_POW_TR:0,
-        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK, UPDATE_CODE_JINN:UPDATE_CODE_JINN, CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME, NEW_SIGN_TIME:NEW_SIGN_TIME,
-        PRICE_DAO:PRICE_DAO(MaxNumBlockDB), GrayConnect:global.CLIENT_MODE, JINN_MODE:1, sessionid:sessionid, };
+    var Ret = {
+        result:1,
+        BLOCKCHAIN_VERSION:GETVERSION(MaxNumBlockDB),
+        CodeVer:global.START_CODE_VERSION_NUM,
+        VersionNum:global.START_CODE_VERSION_NUM,
+        VersionUpd:global.UPDATE_CODE_VERSION_NUM,
+        NETWORK:global.NETWORK,
+        SHARD_NAME:global.SHARD_NAME,
+        MaxNumBlockDB:MaxNumBlockDB,
+        CurBlockNum:GetCurrentBlockNumByTime(),
+        MaxAccID:ACCOUNTS.GetMaxAccount(),
+        MaxDappsID:SMARTS.GetMaxNum(),
+        TXBlockNum:TXBlockNum,
+        CurTime:Date.now(),
+        DELTA_CURRENT_TIME:DELTA_CURRENT_TIME,
+        MIN_POWER_POW_TR:0,
+        FIRST_TIME_BLOCK:FIRST_TIME_BLOCK,
+        UPDATE_CODE_JINN:UPDATE_CODE_JINN,
+        CONSENSUS_PERIOD_TIME:CONSENSUS_PERIOD_TIME,
+        NEW_SIGN_TIME:NEW_SIGN_TIME,
+        PRICE_DAO:PRICE_DAO(MaxNumBlockDB),
+        GrayConnect:global.CLIENT_MODE,
+        JINN_MODE:1,
+        sessionid:sessionid,
+        COIN_STORE_NUM:global.COIN_STORE_NUM,
+    };
     
     if(typeof Params === "object" && Params.Diagram == 1)
     {
-        var arrNames = ["MAX:ALL_NODES", "MAX:HASH_RATE_B"];
+        var arrNames = ["MAX:ALL_NODES", "MAX:Addrs", "MAX:HASH_RATE_B"];
         Ret.arr = GET_STATDIAGRAMS(arrNames);
     }
     if(typeof Params === "object" && Params.BlockChain == 1)
@@ -70,7 +91,7 @@ HostingCaller.GetAccountList = function (Params)
         Params.CountNum = MaxCountViewRows;
     if(!Params.CountNum)
         Params.CountNum = 1;
-    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum);
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum,0,Params.GetState, Params.GetCoin);
     return {result:1, arr:arr};
 }
 
@@ -78,7 +99,7 @@ HostingCaller.GetAccount = function (id)
 {
     
     id = ParseNum(id);
-    var arr = ACCOUNTS.GetRowsAccounts(id, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(id, 1,0,0,1);
     return {Item:arr[0], result:1};
 }
 
@@ -132,6 +153,7 @@ HostingCaller.GetDappList = function (Params)
         Params.CountNum = 1;
     
     var arr = SMARTS.GetRows(ParseNum(Params.StartNum), Params.CountNum, undefined, Params.Filter, 1);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {result:1, arr:arr};
 }
 
@@ -190,9 +212,9 @@ HostingCaller.GetNodeList = function (Params)
         
         arr.push(Value);
     }
-    
-    var Result = {result:1, arr:arr, VersionNum:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME,
-    };
+
+    arr=UseRetFieldsArr(arr,Params.Fields);
+    var Result = {result:1, arr:arr, CodeVer:global.START_CODE_VERSION_NUM, VersionNum:global.UPDATE_CODE_VERSION_NUM, NETWORK:global.NETWORK, SHARD_NAME:global.SHARD_NAME};
     return Result;
 }
 
@@ -206,7 +228,34 @@ setInterval(function ()
 }
 , 3600 * 1000);
 
-HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
+function UpdateAccountKeyMap()
+{
+    for(var num = LastMaxNum; true; num++)
+    {
+        if(ACCOUNTS.IsHole(num))
+            continue;
+
+        var Data = ACCOUNTS.ReadState(num);
+        if(!Data)
+            break;
+        var StrKey = GetHexFromArr(Data.PubKey);
+        var Item={Num:Data.Num};
+        var FirstItem=AccountKeyMap[StrKey];
+        if(!FirstItem)
+        {
+            FirstItem={Counts:0};
+            FirstItem.LastItem=FirstItem;
+            AccountKeyMap[StrKey] = FirstItem;
+        }
+        FirstItem.Counts++;
+        FirstItem.LastItem.Next=Item;
+        FirstItem.LastItem=Item;
+    }
+    LastMaxNum = num;
+}
+
+
+HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,ccc,bRet,SmartFilter)
 {
     if(typeof Params !== "object" || !Params.Key)
         return {result:0, arr:[]};
@@ -214,34 +263,63 @@ HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
     if(!global.USE_API_WALLET)
         return {result:0};
     
-    var Accounts = ACCOUNTS;
-    for(var num = LastMaxNum; true; num++)
-    {
-        if(Accounts.IsHole(num))
-            continue;
-        
-        var Data = Accounts.ReadState(num);
-        if(!Data)
-            break;
-        var StrKey = GetHexFromArr(Data.PubKey);
-        Data.Next = AccountKeyMap[StrKey];
-        AccountKeyMap[StrKey] = Data;
-    }
-    LastMaxNum = num;
-    
+    UpdateAccountKeyMap();
+
     var arr = [];
     var Item = AccountKeyMap[Params.Key];
+    var Counts=0;
+    if(Item)
+    {
+        Counts = Item.Counts;
+        Item=Item.Next;
+    }
+
+    var Count=0;
+    if(Params.StartNum || Params.CurrentPage)
+    {
+        var SkipPages=Params.CurrentPage;
+        var Count2=0;
+        while(Item)
+        {
+            //search page
+            Count2++;
+            if(Params.CurrentPage && Count2>global.HTTP_MAX_COUNT_ROWS)
+            {
+                Count2=0;
+                SkipPages--;
+                if(!SkipPages)
+                    break;
+            }
+
+            //search first num
+            if(Item.Num==Params.StartNum)
+                break;
+
+            Item = Item.Next;
+            Count++;
+            if(Count > 1000)
+                break;
+        }
+    }
+
     while(Item)
     {
-        var Data = Accounts.ReadState(Item.Num);
+        var Data = ACCOUNTS.ReadState(Item.Num);
         if(!Data)
-            continue;
+            break;
         
         if(!Data.PubKeyStr)
             Data.PubKeyStr = GetHexFromArr(Data.PubKey);
         
         if(Data.Currency)
             Data.CurrencyObj = SMARTS.ReadSimple(Data.Currency, 1);
+
+        if(SmartFilter && Data.Value.Smart!=SmartFilter)
+        {
+            Item = Item.Next;
+            continue;
+        }
+
         if(Data.Value.Smart)
         {
             Data.SmartObj = SMARTS.ReadSimple(Data.Value.Smart);
@@ -256,18 +334,33 @@ HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
                 Data.SmartState = {};
             }
         }
-        arr.unshift(Data);
+
+        //ERC
+        if(Params.BalanceArr)
+        {
+            Data.BalanceArr=ACCOUNTS.ReadBalanceArr(Data);
+        }
+
+        arr.push(Data);
         Item = Item.Next;
         if(arr.length >= global.HTTP_MAX_COUNT_ROWS)
             break;
+
     }
     
-    var Ret = {result:1, arr:arr};
-    if(bRet)
+    var Ret = {result:1, Accounts:Counts, HasNext:Item?1:0, ROWS_ON_PAGE:global.HTTP_MAX_COUNT_ROWS, arr:arr};
+
+    Ret.NETWORK=global.NETWORK;
+    Ret.SHARD_NAME=global.SHARD_NAME;
+
+    if(bRet || !Params.Session)
     {
         return Ret;
     }
-    
+
+
+    //for session:
+
     var Context = GetUserContext(Params);
     var StrInfo = JSON.stringify(Ret);
     if(Params.AllData === "0")
@@ -275,13 +368,13 @@ HostingCaller.GetAccountListByKey = function (Params,aaa,bbb,bRet)
     
     if(!Params.AllData && Context.PrevAccountList === StrInfo)
     {
-        return {result:0, cache:1};
+        return {result:0, Accounts:Counts, ROWS_ON_PAGE:global.HTTP_MAX_COUNT_ROWS, cache:1};
     }
     Context.PrevAccountList = StrInfo;
     Context.NumAccountList++;
     
     return StrInfo;
-}
+};
 
 var CategoryMap = {};
 var CategoryArr = [];
@@ -329,13 +422,17 @@ HostingCaller.SendHexTx = function (Params,response,ArrPath,request)
     if(typeof Params === "object" && typeof Params.Hex === "string")
         Params.Hex += "000000000000000000000000";
     return HostingCaller.SendTransactionHex(Params, response, ArrPath, request);
-}
+};
 
 HostingCaller.SendTransactionHex = function (Params,response,ArrPath,request)
 {
     if(typeof Params !== "object" || !Params.Hex)
-        return {result:0, text:"object required"};
-    
+        return {result:0, text:"SendTransactionHex object required"};
+    if(typeof Params.Hex!=="string")
+        return {result:0, text:"Params.Hex - string required"};
+    if(Params.Hex.length>JINN_CONST.MAX_TX_SIZE*2)
+        return {result:0, text:"Params.Hex - error length (max="+(JINN_CONST.MAX_TX_SIZE*2)+")"};
+
     var ip = request.socket.remoteAddress;
     var Item = MapIPSend[ip];
     if(!Item)
@@ -361,17 +458,14 @@ HostingCaller.SendTransactionHex = function (Params,response,ArrPath,request)
         return null;
     }
     
-    process.RunRPC("AddTransactionFromWeb", {HexValue:Params.Hex}, function (Err,Data)
+    process.RunRPC("AddTransactionFromWeb", {HexValue:Params.Hex,Confirm:Params.Confirm,F:1,Web:1}, function (Err,Data)
     {
-        var Result = Data.Result;
-        var text = TR_MAP_RESULT[Result];
-        
-        var Result2 = {result:(Result > 0 ? 1 : 0), text:text, _BlockNum:Data._BlockNum, _TxID:Data._TxID};
-        var Str = JSON.stringify(Result2);
+        var Result = {result:Data.result, text:Data.text, _BlockNum:Data._BlockNum, _TxID:Data._TxID, BlockNum:Data.BlockNum,TrNum:Data.TrNum};
+        var Str = JSON.stringify(Result);
         response.end(Str);
     });
     return null;
-}
+};
 
 
 
@@ -381,14 +475,14 @@ HostingCaller.DappSmartHTMLFile = function (Params)
         return {result:0};
     
     return HTTPCaller.DappSmartHTMLFile(Params);
-}
+};
 HostingCaller.DappBlockFile = function (Params,responce)
 {
     if(typeof Params !== "object")
         return {result:0};
     
     return HTTPCaller.DappBlockFile(Params, responce);
-}
+};
 
 HostingCaller.DappInfo = function (Params)
 {
@@ -422,17 +516,21 @@ HostingCaller.DappInfo = function (Params)
     Ret.MaxDappsID = SMARTS.GetMaxNum();
     
     return Ret;
-}
+};
 
 HostingCaller.DappWalletList = function (Params)
 {
     if(typeof Params !== "object")
         return {result:0};
-    
-    var Ret = HostingCaller.GetAccountListByKey(Params, undefined, undefined, 1);
-    
     var Smart = ParseNum(Params.Smart);
-    
+    var SmartFilter=0;
+    if(!Params.AllAccounts && Smart)
+        SmartFilter=Smart;
+
+    Params.BalanceArr=1;
+    var Ret = HostingCaller.GetAccountListByKey(Params, undefined, undefined, undefined, 1, SmartFilter);
+    //console.log("Ret.arr=",Ret.arr)
+
     var arr = [];
     for(var i = 0; i < Ret.arr.length; i++)
     {
@@ -444,7 +542,7 @@ HostingCaller.DappWalletList = function (Params)
     Ret.arr = arr;
     
     return Ret;
-}
+};
 HTTPCaller.DappWalletList = HostingCaller.DappWalletList;
 
 
@@ -459,18 +557,12 @@ HostingCaller.DappAccountList = function (Params)
     if(!Params.CountNum)
         Params.CountNum = 1;
     
-    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum, undefined, 1);
+    var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.StartNum), Params.CountNum, undefined, 1, 1);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
-}
+};
 
-function DappAccount(response,StrNum)
-{
-    var Num = parseInt(StrNum);
-    var arr = ACCOUNTS.GetRowsAccounts(Num, 1, undefined, 1);
-    var Data = {Item:arr[0], result:1};
-    response.writeHead(200, {'Content-Type':"text/plain", "X-Content-Type-Options":"nosniff"});
-    response.end(JSON.stringify(Data));
-}
+
 
 HostingCaller.DappSmartList = function (Params)
 {
@@ -485,6 +577,7 @@ HostingCaller.DappSmartList = function (Params)
     
     var arr = SMARTS.GetRows(ParseNum(Params.StartNum), Params.CountNum, undefined, undefined, Params.GetAllData, Params.TokenGenerate,
     Params.AllRow);
+    arr=UseRetFieldsArr(arr,Params.Fields);
     return {arr:arr, result:1};
 }
 
@@ -545,7 +638,7 @@ HostingCaller.GetSupplyCalc = function (Params)
     var Delta = BlockNum - BlockNum0;
     var DeltaReward = Math.floor(Delta * NEW_FORMULA_JINN_KTERA * RestAcc0 / TOTAL_SUPPLY_TERA);
     return TOTAL_SUPPLY_TERA - RestAcc0 + DeltaReward;
-}
+};
 
 HostingCaller.GetSupply = function (Params)
 {
@@ -561,12 +654,12 @@ HostingCaller.GetSupply = function (Params)
     {
         return "" + (global.TOTAL_SUPPLY_TERA - Data.Value.SumCOIN);
     }
-}
+};
 
 HostingCaller.GetTotalSupply = function (Params)
 {
     return "" + global.TOTAL_SUPPLY_TERA;
-}
+};
 
 //Mining RPC
 
@@ -591,7 +684,7 @@ HostingCaller.GetWork = function (Params)
     RetData.CONSENSUS_PERIOD_TIME = CONSENSUS_PERIOD_TIME;
     
     return RetData;
-}
+};
 
 HostingCaller.SubmitWork = function (Params)
 {
@@ -621,12 +714,14 @@ HostingCaller.SubmitWork = function (Params)
     process.send(msg);
     
     return {result:1};
-}
+};
 
 HostingCaller.SubmitHashrate = function (Params)
 {
     return {result:0};
-}
+};
+
+HostingCaller.GetFormatTx=GetFormatTx;
 
 function HexToArr(Params,Name)
 {
@@ -642,3 +737,5 @@ function HexToArr(Params,Name)
     }
     return 0;
 }
+
+

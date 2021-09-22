@@ -69,7 +69,7 @@ setInterval(function ()
 
 global.ArrLogClient = [];
 global.ArrLogCounter = 0;
-function ToLogClient(Str,StrKey,bFinal,bNoFile,bToWeb)
+function ToLogClient(Str,StrKey,bFinal,bNoFile,bToWeb,BlockNum,TrNum)
 {
     if(!Str)
         return;
@@ -81,20 +81,20 @@ function ToLogClient(Str,StrKey,bFinal,bNoFile,bToWeb)
     {
         if(!StrKey)
             StrKey = "";
-        AddToArrClient(Str, StrKey, bFinal, GetStrOnlyTime());
+        AddToArrClient(Str, StrKey, bFinal, GetStrOnlyTime(),BlockNum,TrNum);
     }
     else
     {
-        process.send({cmd:"ToLogClient", Str:Str, StrKey:StrKey, bFinal:bFinal, NoWeb:1});
+        process.send({cmd:"ToLogClient", Str:Str, StrKey:StrKey, bFinal:bFinal, NoWeb:1,BlockNum:BlockNum,TrNum:TrNum});
     }
 }
 global.ToLogClient = ToLogClient;
 global.ToLogClient0 = ToLogClient;
 
-function AddToArrClient(text,key,final,time)
+function AddToArrClient(text,key,final,time,BlockNum,TrNum)
 {
     global.ArrLogCounter++;
-    ArrLogClient.push({id:global.ArrLogCounter, text:text, key:key, final:final, time:time, });
+    ArrLogClient.push({id:global.ArrLogCounter, text:text, key:key, final:final, time:time,BlockNum:BlockNum,TrNum:TrNum});
     if(ArrLogClient.length > 13)
         ArrLogClient.shift();
 }

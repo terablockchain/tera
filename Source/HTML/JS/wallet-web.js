@@ -1,18 +1,18 @@
 /*
  * @project: TERA
- * @version: Development (beta)
+ * @version: 2
  * @license: MIT (not for evil)
- * @copyright: Yuriy Ivanov (Vtools) 2017-2020 [progr76@gmail.com]
+ * @copyright: Yuriy Ivanov (Vtools) 2017-2021 [progr76@gmail.com]
  * Web: https://terafoundation.org
  * Twitter: https://twitter.com/terafoundation
  * Telegram:  https://t.me/terafoundation
 */
 
 
-var MIN_VERSION = 2431;
+var MIN_VERSION = 2542;
 var COUNT_BLOCK_PROOF = 100;
 var MIN_SUM_POWER = 0;
-var MainServer = undefined;
+
 var MaxConnectedCount = 50;
 var TIME_LENGTH_CONNECT_ALL = 2 * 1000;
 var StartTimeConnecting = 0;
@@ -20,13 +20,20 @@ var ConnectedCount = 0;
 var NETWORK_NAME = "MAIN-JINN";
 var SHARD_NAME = "TERA";
 var NETWORK_ID = NETWORK_NAME + "." + SHARD_NAME;
+var SystemOnly;
 var ServerMap = {};
-var ServerMainMap = {"127.0.0.1":{"ip":"127.0.0.1", "port":80, "Name":"LOCAL"}, "terawallet.org":{"ip":"terawallet.org", "port":443,
-        "Name":"terawallet", "System":1}, "teraexplorer.org":{"ip":"teraexplorer.org", "port":443, "Name":"teraexplorer", "System":1},
-    "t2.teraexplorer.com":{"ip":"t2.teraexplorer.com", "port":443, "Name":"t2.teraexplorer.com", "System":1}, "t4.teraexplorer.com":{"ip":"t4.teraexplorer.com",
-        "port":443, "Name":"t4.teraexplorer.com", "System":1}, "t5.teraexplorer.com":{"ip":"t5.teraexplorer.com", "port":443, "Name":"t5.teraexplorer.com",
-        "System":1}, "dappsgate.com":{"ip":"dappsgate.com", "port":80, "Name":"SUPPORT2", "System":1}, "t1.teraexplorer.com":{"ip":"t1.teraexplorer.com",
-        "port":80, "Name":"t1.teraexplorer.com", "System":1}, };
+var ServerMainMap = {
+    "127.0.0.1":{"ip":"127.0.0.1", "port":80, "Name":"LOCAL"},
+    "terawallet.org":{"ip":"terawallet.org", "port":443,"Name":"terawallet", "System":1},
+    "teraexplorer.org":{"ip":"teraexplorer.org", "port":443, "Name":"teraexplorer", "System":1},
+    "t2.teraexplorer.com":{"ip":"t2.teraexplorer.com", "port":443, "Name":"t2.teraexplorer.com", "System":1},
+    "t4.teraexplorer.com":{"ip":"t4.teraexplorer.com", "port":443, "Name":"t4.teraexplorer.com", "System":1},
+    "t5.teraexplorer.com":{"ip":"t5.teraexplorer.com", "port":443, "Name":"t5.teraexplorer.com",  "System":1},
+
+    "dappsgate.com":{"ip":"dappsgate.com", "port":80, "Name":"SUPPORT2", "System":1},
+    "t1.teraexplorer.com":{"ip":"t1.teraexplorer.com", "port":80, "Name":"t1.teraexplorer.com", "System":1},
+};
+
 var ServerTestMap = {"127.0.0.1":{"ip":"127.0.0.1", "port":80, "Name":"LOCAL"}, "dappsgate.com":{"ip":"dappsgate.com", "port":88,
         "Name":"SUPPORT1", "System":1}, };
 
@@ -50,6 +57,7 @@ function StartWebWallet()
         BLOCKNUM_HASH_NEW = 0;
         BLOCKNUM_TICKET_ALGO = 0;
     }
+
     
     if($("idNetwork"))
         $("idNetwork").innerText = NETWORK_ID;
@@ -58,6 +66,13 @@ function StartWebWallet()
 }
 function OnInitWebWallet()
 {
+    if(isMobile() || !IsLocalClient() || idMainServer.value)
+    {
+        SystemOnly=1;
+        return;//only seed nodes
+    }
+
+
     var str = Storage.getItem(NETWORK_ID + "NodesArrayList");
     if(str)
     {
@@ -109,7 +124,7 @@ function SetStatus(Str,bNoEscape)
 function SetError(Str,bNoSound)
 {
     if(Str)
-        console.log(Str);
+        console.log("%c" + Str, "color:red;font-weight:bold;");
     SetStatus("<DIV  align='left' style='color:red'><B>" + escapeHtml(Str) + "</B></DIV>", 1);
 }
 
@@ -117,6 +132,33 @@ var CountConnect = 0;
 var CountWallet = 0;
 function ConnectWebWallet()
 {
+
+    if(idMainServer.value)
+    {
+        var Str=idMainServer.value;
+        if(Str.substr(Str.length-1)==="/")
+            Str=Str.substr(0,Str.length-1);
+        var Index1=Str.indexOf("://");
+        var Port=Str.indexOf("https:")>=0?443:80;
+        var Server=Str;
+        if(Index1>=0 && Str.substr(0,4)==="http")
+            Server=Str.substr(Index1+3);
+
+        var Index2=Server.indexOf(":");
+        if(Index2>=0)
+        {
+            Port = +Server.substr(Index2+1);
+            Server = Server.substr(0, Index2);
+        }
+        //console.log("Server:",Str,"--->",Server,Port);
+
+
+        SetMainServer({ip:Server,port:Port,Name:"User defined"});
+        OnFindServer();
+        return;
+    }
+
+
     StartTimeConnecting = Date.now();
     ConnectedCount = 0;
     for(var key in ServerMap)
@@ -127,7 +169,7 @@ function ConnectWebWallet()
     
     if(window.BrowserIE && !IsLocalClient())
     {
-        MainServer = undefined;
+        SetMainServer( undefined);
         return;
     }
     
@@ -152,7 +194,10 @@ function LoopHandShake()
         var Item = ServerMap[key];
         if(Item.SendHandShake || !Item.port)
             continue;
-        
+
+        if(!Item.System && SystemOnly)
+            continue;
+
         CountConnect++;
         if(window.BrowserIE && CountConnect > 4)
             break;
@@ -308,7 +353,7 @@ function DoWalletInfo(Item)
 
 function FindLider()
 {
-    MainServer = undefined;
+    SetMainServer( undefined);
     
     var Arr = [];
     var MapSumPower = {};
@@ -321,7 +366,7 @@ function FindLider()
             if(arr.data)
                 arr = arr.data;
             Item.SumPower = CalcPowFromBlockChain(arr, Item.ip);
-            if(Item.SumPower < MIN_SUM_POWER)
+            if(MIN_SUM_POWER && Item.SumPower < MIN_SUM_POWER)
             {
                 ToLog("Skip: " + Item.ip + ":" + Item.port + " SumPower(" + Item.SumPower + ") < MIN_SUM_POWER(" + MIN_SUM_POWER + ")");
                 continue;
@@ -353,7 +398,7 @@ function FindLider()
             Item.Stat++;
             
             SetStatus("Found node " + Item.ip + ":" + Item.port + " pow=" + Item.SumPower / COUNT_BLOCK_PROOF + "  ping=" + Item.DeltaTime2 + " ms");
-            MainServer = Item;
+            SetMainServer(Item);
             SaveServerMap();
             break;
         }
@@ -397,9 +442,4 @@ function CalcPowFromBlockChain(BufRead,name)
     return Sum;
 }
 
-function SetAllSum()
-{
-    var Item = MapAccounts[$("idAccount").value];
-    if(Item)
-        $("idSumSend").value = FLOAT_FROM_COIN(Item.Value).toStringF();
-}
+

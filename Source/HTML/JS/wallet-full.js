@@ -184,7 +184,7 @@ function CreateAccount(bAddToPay)
         }
     }
     var Smart = ParseNum($("idSmart").value);
-    var Currency = GetCurrencyByName($("idCurrency").value);
+    var Currency = FindCurrencyNum($("idCurrency").value);
     
     var WN = ParseNum($("idWN").value);
     
@@ -336,7 +336,7 @@ function SetVisibleItemByTypeKey()
 
 var CountViewRows = 20;
 var DefAccounts = {BlockName:"idPaginationAccount", NumName:"idViewAccountNum", TabName:"grid_accounts_all", APIName:"GetAccountList",
-    Param3:"", FilterName:"idViewAccountFilter", TotalSum:"idTotalSum"};
+    Param3:"", FilterName:"idViewAccountFilter", TotalSum:"idTotalSum", Params:{GetCoin:1}};
 var DefBlock = {BlockName:"idPaginationBlock", NumName:"idViewBlockNum", TabName:"grid_block_all", APIName:"GetBlockList",
     Param3:"", FilterName:""};
 
@@ -454,8 +454,8 @@ function SetConfigData(Data)
     
     window.SUM_PRECISION =  + CONFIG_DATA.CONSTANTS.SUM_PRECISION;
     window.DEBUG_WALLET = 0;
-    if(CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
-        window.DEBUG_WALLET = 1;
+    // if(CONFIG_DATA.CONSTANTS.DEBUG_WALLET)
+    //     window.DEBUG_WALLET = 1;
     if(!window.DEBUG_WALLET)
     {
         var State1 = "GetStateItem(Item)";
@@ -488,8 +488,9 @@ function SetConfigData(Data)
     SetBlockChainConstant(Data);
     MaxBlockNum = GetCurrentBlockNumByTime();
     
-    window.NETWORK_NAME = CONFIG_DATA.NETWORK;
-    window.SHARD_NAME = CONFIG_DATA.SHARD_NAME;
+    // window.NETWORK_NAME = CONFIG_DATA.NETWORK;
+    // window.SHARD_NAME = CONFIG_DATA.SHARD_NAME;
+    CheckNetworkID(CONFIG_DATA);
     if(!WasInitCurrency)
     {
         
@@ -986,20 +987,6 @@ function OnClickOpenCloseWallet()
         }
 }
 
-function ViewOpenWallet()
-{
-    
-    if(WalletOpen !== false)
-    {
-        SetStatus("Wallet not close");
-        return;
-    }
-    
-    itemPasswordGet.onkeydown = OnEnterPas1;
-    itemPasswordGet.value = "";
-    SetVisibleBlock("idBlockPasswordGet", true);
-    itemPasswordGet.focus();
-}
 function OpenWallet()
 {
     var Passwd1 = itemPasswordGet.value;
@@ -1032,8 +1019,8 @@ function ViewSetPassword()
         return;
     }
     
-    itemPassword1.onkeydown = OnEnterPas1;
-    itemPassword2.onkeydown = OnEnterPas2;
+    // itemPassword1.onkeydown = OnEnterPas1;
+    // itemPassword2.onkeydown = OnEnterPas2;
     
     itemPassword1.value = "";
     itemPassword2.value = "";
@@ -1100,14 +1087,6 @@ function OnEnterPas2(e)
     }
 }
 
-function SetAllSum()
-{
-    var Item = MapAccounts[$("idAccount").value];
-    if(Item)
-    {
-        $("idSumSend").value = FLOAT_FROM_COIN(Item.Value);
-    }
-}
 
 function OpenOwnWebWallet()
 {
@@ -1123,11 +1102,10 @@ function OpenOwnWebWallet()
 function OnInitWallet()
 {
     UpdatesData();
-    setInterval(UpdatesData, 1000);
+    setInterval(UpdatesData, 2000);
     
-    setInterval(CheckNewMoney, 2000);
     setInterval(SaveValues, 2000);
-    setTimeout(CheckNameAccTo, 100);
+    setTimeout(CheckNameAccTo, 200);
     
     if(window.location.hash)
     {
