@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="./tera.ico" type="image/vnd.microsoft.icon">
 
+    <link rel="stylesheet" href="./CSS/wallet-common.css">
     <link rel="stylesheet" href="./CSS/mobile-wallet.css">
     <link rel="stylesheet" href="./CSS/mobile-wallet2.css">
     <link rel="stylesheet" href="./CSS/wallet-multicoin.css">
-    <link rel="stylesheet" href="./CSS/wallet-common.css">
 
     <script type="text/javascript" src="./JS/coinlib.js"></script>
     <script type="text/javascript" src="./JS/client.js"></script>
@@ -106,9 +106,9 @@
 
 
 
-        <div class="wallet-settings__ok-btns">
-            <button class="btn wallet-settings__btn-270" id="okEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyOK()">OK</button>
-            <button class="btn btn--white wallet-settings__btn-270" id="cancelEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyCancel()">Cancel</button>
+        <div class="row_buttons">
+            <button class="btn btn250" id="okEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyOK()">OK</button>
+            <button class="btn btn--white btn250" id="cancelEditBtn" style="margin-bottom: 15px;" onclick="OnPrivKeyCancel()">Cancel</button>
         </div>
 
     </section>
@@ -117,14 +117,14 @@
     <section id="TabKeySet" class="wallet-settings wallet-settings--info" style="display: none;">
         <div class="wallet-settings__title-wrap2">
 
-            <div class="wallet-settings__ok-btns">
-                <button onclick="openModal('password-modal-set')" class="pointer btn" style="margin-bottom: 15px;height: 55px;">
+            <div class="row_buttons">
+                <button onclick="openModal('password-modal-set')" class="btn btn200" style="margin-bottom: 15px;height: 55px;">
                     <svg width="20" height="20" viewBox="0 -3 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M3.5 5V10H10.5H12H13C13.5523 10 14 10.4477 14 11V17C14 17.5523 13.5523 18 13 18H1C0.447716 18 0 17.5523 0 17V11C0 10.4477 0.447715 10 1 10H2V5C2 2.23858 4.23858 0 7 0C9.76142 0 12 2.23858 12 5V7H10.5V5C10.5 3.067 8.933 1.5 7 1.5C5.067 1.5 3.5 3.067 3.5 5Z" fill="var(--fill--password)" fill-opacity="0.5"/>
                     </svg>
                     set password
                 </button>
-                <button onclick="DoExitWallet();" id="idWalletExit" class="pointer btn" style="margin-bottom: 15px;height: 55px;">
+                <button onclick="DoExitWallet();" id="idWalletExit" class="btn btn200" style="margin-bottom: 15px;height: 55px;">
                         <svg width="20" height="20" viewBox="0 -3 20 17" fill="white" xmlns="http://www.w3.org/2000/svg">
                             <path transform="scale(0.035)" d="M0,121.05v248.2c0,34.2,27.9,62.1,62.1,62.1h200.6c34.2,0,62.1-27.9,62.1-62.1v-40.2c0-6.8-5.5-12.3-12.3-12.3 s-12.3,5.5-12.3,12.3v40.2c0,20.7-16.9,37.6-37.6,37.6H62.1c-20.7,0-37.6-16.9-37.6-37.6v-248.2c0-20.7,16.9-37.6,37.6-37.6h200.6 c20.7,0,37.6,16.9,37.6,37.6v40.2c0,6.8,5.5,12.3,12.3,12.3s12.3-5.5,12.3-12.3v-40.2c0-34.2-27.9-62.1-62.1-62.1H62.1 C27.9,58.95,0,86.75,0,121.05z" fill2="blue" fill-opacity="0.5"/>
                             <path transform="scale(0.035)" d="M385.4,337.65c2.4,2.4,5.5,3.6,8.7,3.6s6.3-1.2,8.7-3.6l83.9-83.9c4.8-4.8,4.8-12.5,0-17.3l-83.9-83.9 c-4.8-4.8-12.5-4.8-17.3,0s-4.8,12.5,0,17.3l63,63H218.6c-6.8,0-12.3,5.5-12.3,12.3c0,6.8,5.5,12.3,12.3,12.3h229.8l-63,63 C380.6,325.15,380.6,332.95,385.4,337.65z" fill2="blue" fill-opacity="0.5"/>
@@ -189,14 +189,19 @@
             
             <div class="key-field">
                 <span class="key-field__title">Public name</span>
-                <input type="text" 
+                <input type="text"
                        id="idAccountName" 
                        class="key-field__input" 
                        placeholder="Input public text name of your account"
                        oninput="OnChangeAccName()">
+
+                <a class="currency_old_token">
+                    <a href="#" target="" onclick="ViewTokenCurrencyInput()" class="accounts-info__to-send-link link_old_token">Set currency (old token format)</a>
+                </a>
+
             </div>
 
-            <div class="key-field">
+            <div class="key-field" id="idRowTokenCurrency" style="display: none">
                 <span class="key-field__title">Currency</span>
 
                 <input type="search" list="idCurrencyList" id="idCurrency" class="bigs key-field__input key-field__input" onchange="ValidateCurrency(this)"/>
@@ -258,8 +263,8 @@
                     <div class="prod-card__footer">
                         <div class="prod-card__footer-wrap" >
                             <div class="prod-card__link prod-card__link--dapp">
-                            <a onclick="OpenDapps($SmartObj.Num,$Item.Num,$SmartObj.HTMLLength)" class="prod-card__button dapp_border">
-                                <img $smartobj.iconpath alt="." width="32" height="32">
+                            <a onclick="OpenDapps($SmartObj.Num,$Item.Num,$SmartObj.HTMLLength)" class="prod-card__button">
+                                <img $smartobj.iconpath alt="." width="32" height="32" class="$smartobj.iconclass">
                                 <span  class="prod-card__dapp-name mob-hidden">$SmartObj.Name</span>
                             </a>
                             </div>
@@ -650,16 +655,16 @@
 
 
 
-<div id="overlay" onclick="closeModal()"></div>
+<!--<div id="idOverlay" onclick="closeModal()"></div>-->
 
 
-<section class="modal password-modal password-modal--set" id="password-modal-set">
+<section class="Modal modal password-modal password-modal--set" id="password-modal-set">
     <h2 class="password-modal__title">Secure your wallet</h2>
     <p class="password-modal__subtitle">Set a password for protect entry</p>
     <div class="password-modal__form">
-        <input type="password" class="password-modal__input" placeholder="Enter password" autocomplete2="WalletPassword" id="Password1">
-        <input type="password" class="password-modal__input" placeholder="Repeat password" autocomplete2="WalletPassword" id="Password2">
-        <div class="password-modal__buttons">
+        <input type="password" class="password-modal__input" placeholder="Enter password" id="Password1">
+        <input type="password" class="password-modal__input" placeholder="Repeat password"  id="Password2">
+        <div class="row_buttons">
             <button class="btn" onclick="SetNewPassword()">Set pass</button>
             <button class="btn btn--white" onclick="closeModal()">Cancel</button>
         </div>
@@ -667,26 +672,26 @@
 </section>
 
 
-<section class="modal password-modal" id="password-modal-enter">
+<section class="Modal modal password-modal" id="password-modal-enter">
     <h2 class="password-modal__title">Wallet is secured</h2>
     <p class="password-modal__subtitle">Enter password to unlock wallet</p>
     <div class="password-modal__form">
         <input type="password" class="password-modal__input" placeholder="Enter password" autocomplete2="WalletPassword" id="Password">
-        <div class="password-modal__buttons password-modal__buttons--one">
+        <div class="row_buttons row_buttons-one">
             <button class="btn" onclick="MyOpenWallet()">Unlock</button>
         </div>
         <a class="password-modal__link pointer" id="idEntrance" onclick="MyOpenWallet(1)">Entrance to sub-wallet</a>
     </div>
 </section>
 
-<section class="modal dapp-modal" id="idSending" style="display: none; margin-top: 10px;">
+<section class="Modal modal dapp-modal" id="idSending" style="display: none; margin-top: 10px;">
     <h2 class="password-modal__title">Sending Tx</h2><BR>
     <p class="password-modal__subtitle">Wait a few seconds, pls...</p>
     <p class="password-modal__subtitle" id="idSendingContent"></p>
  </section>
 
 
-<section class="modal dapp-modal" id="idSmartEnter" style="display: none; margin-top: -10px; padding: 20px">
+<section class="Modal modal dapp-modal" id="idSmartEnter" style="display: none; margin-top: -10px; padding: 20px">
     <h2 class="password-modal__title"><span>Enter number of dapp</span></h2>
     <p class="password-modal__subtitle">Enter the dapps number that will be added to your account. Attention make sure that you trust this dapp, otherwise you may lose all funds in this account.</p>
     <DIV align='center'>
@@ -699,15 +704,15 @@
 
 
 
-<div class="modal" id="idShowPage" style="display: none; padding: 5px">
-    <div class="modal__container confirm__container"  style="display: block;">
+<div class="Modal modal" id="idShowPage" style="display: none; padding: 5px">
+    <div class="page__container"  style="display: block;">
         <div id="idShowContent"></div>
-        <BR>
         <DIV align='center'>
             <button id="idCloseShow" onclick="closeModal()" class="btn btn--white">Close</button>
         </DIV>
     </div>
 </div>
+
 
 
 
@@ -744,7 +749,7 @@
 
 
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
-<section id="idConfirm" class="ModalDlg" style="display: none;">
+<section id="idConfirm" class="Modal ModalDlg" style="display: none;">
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>

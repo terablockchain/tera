@@ -155,7 +155,7 @@ class SmartApp extends require("./smart-tr")
             FileNameVer=31;
             DeltaNum=10;
             FileName = "smart2";
-            ToLog("************************* new version SMART2 *************************")
+            //ToLog("************************* new version SMART2 *************************")
         }
         else
         {

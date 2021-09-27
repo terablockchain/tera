@@ -213,9 +213,9 @@
     <DIV id="idCanTranslate">Translation completed.</DIV>
 </div>
 
-<DIV id="idStatus" class="top"></DIV>
+<DIV id="idStatus" class="top" style="display: none"></DIV>
 <button id="idRestart" class="top" onclick="ReloadDapp();" style="display: none">RELOAD</button>
-<DIV id="idMenu" class="top close" onclick="OnClickMenu()">Options
+<DIV id="idMenu" class="top close" onclick="OnClickMenu()" style="display: none">Options
     <div id="idMenuList" class="top open">
         <div class="item" onclick="OpenWalletPage();">Open wallet page</div>
         <div class="item" onclick="OpenSmartSrc();">Smart src code</div>
@@ -421,7 +421,7 @@
 
 
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
-<section id="idConfirm" class="ModalDlg" style="display: none;">
+<section id="idConfirm" class="Modal ModalDlg" style="display: none;">
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>

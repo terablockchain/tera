@@ -4,22 +4,49 @@ var glDlgTransfer;
 var glListTransfer=[];
 var idTimerTransfer=0;
 
+var TestLoadMode=0;
+var TestLoadName="";
+
+function CorrectFrameSize()
+{
+    var bStatusTab=!(location.href.indexOf("nostatus")>=0);
+    if(!bStatusTab)
+    {
+
+        idFrame.style.top=0;
+        idFrame.style.height="100vh";
+
+
+        //
+
+
+    }
+
+}
+
 //DAPP TRANSFER
 window.onload=function()
 {
+    var bStatusTab=!(location.href.indexOf("nostatus")>=0);
+    SetVisibleBlock("idStatus",bStatusTab);
+    SetVisibleBlock("idMenu",bStatusTab);
+
+
+
     InitMobileInterface();
     DoNewSession();
     InitTranslate();
 
 
     if(window.location.hash)
-        OPEN_PATH=window.location.hash.substr(1);
+        OPEN_PATH=unescape(window.location.hash.substr(1));
     if(IsLocalClient())
     {
         DapNumber=window.location.search.substr(6);
-        if(Storage.getItem("MainServer"))
+        var CurMainServer=Storage.getItem("MainServer");
+        if(CurMainServer)
         {
-            SetMainServer(JSON.parse(Storage.getItem("MainServer")));
+            SetMainServer(JSON.parse(CurMainServer));
         }
     }
     glSmart=parseInt(DapNumber);
@@ -45,6 +72,10 @@ window.onload=function()
         DAPPPREFIX="DAPP-"+CONFIG_DATA.NETWORK+"."+CONFIG_DATA.SHARD_NAME;
 
         InitMenu();
+
+        if(CheckStorageDebug())
+            return;
+
 
         var HTMLBlock,HTMLTr;
         //console.log("SMART",SMART)
@@ -87,7 +118,7 @@ window.onload=function()
 
     window.addEventListener("popstate", function(event)
     {
-        OPEN_PATH=window.location.hash.substr(1);
+        OPEN_PATH=unescape(window.location.hash.substr(1));
         if(!glProgramSetHash)
             SendMessage({cmd:"History",OPEN_PATH:OPEN_PATH});
 
@@ -247,8 +278,6 @@ function RunDappFromStorage()
 
 
 
-var TestLoadMode=0;
-var TestLoadName="";
 function LoadDappFromFile()
 {
     $('idFile').onchange=function ()
@@ -324,6 +353,22 @@ function LoadDappFromStorage()
         TestLoadName=idSmartName.value.trim();
         CreateFromStorage();
     });
+
+}
+
+function CheckStorageDebug()
+{
+    var Key="DAPP-DEBUG:"+glSmart;
+    var Name=localStorage[Key];
+    if(Name)
+    {
+        console.log("Load from storage:",Name)
+        TestLoadMode="STORAGE";
+        TestLoadName=Name;
+
+        CreateFromStorage();
+        return 1;
+    }
 
 }
 

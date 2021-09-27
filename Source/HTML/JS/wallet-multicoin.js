@@ -40,6 +40,7 @@ function AddWorkNftImg(Addr,Num)
 }
 function RestartWorkNftImg()
 {
+    //console.log("RestartWorkNftImg")
     MAP_NFT_WORK=MAP_NFT_WORK_NEW;
     MAP_NFT_WORK_NEW={};
     StartWorkNftImg();
@@ -57,7 +58,7 @@ function StartWorkNftImg()
         else
         {
             Count++;
-            if(Count>10)
+            if(Count>100)
                 break;
 
             SetNftAttrMap(Addr);
@@ -70,7 +71,9 @@ function DoImgWork(Addr)
     var Num=MAP_NFT_WORK[Addr];
     var Element=$("idImg"+Num);
     if(Element)
-        Element.src=Attr.image;
+    {
+        Element.src = GetURLPath(Attr.image);
+    }
 
     delete MAP_NFT_WORK[Addr];
 }
@@ -98,11 +101,11 @@ function SetNftAttrMap(Addr)
 
 
 //--------------------------------------------------------------------------- NFT cards
-async function FillListNFT(IDList,Account,PrefixNum,TokenName,bView,TokenOnly)
+async function FillListNFT(IDList,TokensArr,PrefixNum,TokenName,bView,TokenOnly,Account)
 {
     if(!FirstPromise("FillListNFT"))
         return;
-    FillListNFTNext(IDList,Account,PrefixNum,TokenName,bView,TokenOnly);
+    FillListNFTNext(IDList,TokensArr,PrefixNum,TokenName,"",bView,TokenOnly,Account);
     LeavePromise("FillListNFT");
 }
 
@@ -115,7 +118,7 @@ function GetCoinStoreNum()
 }
 
 
-async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,bView,TokenOnly)
+async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,TokenID,bView,TokenOnly,Account)
 {
     if(!PrefixNum)
         PrefixNum=0;
@@ -143,6 +146,9 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,bView,Token
             for(var i=0;i<Item.Arr.length;i++)
             {
                 var Value=Item.Arr[i];
+                if(TokenID && Value.ID!=TokenID)
+                    continue;
+
                 var Sum=FLOAT_FROM_COIN(Value);
                 if(!Sum && !Item.Inner)
                     continue;
@@ -174,7 +180,7 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,bView,Token
                     // {
                     //     Item.TokenName = "" + Item.Currency + "." + Item.Token;
                     // }
-                    Str+=GetNFTCard(IDList.id,Item,Value,Sum,Num);
+                    Str+=GetNFTCard(IDList.id,Item,Value,Sum,Num,Account);
                     Num++;
                 }
                 else
@@ -189,7 +195,7 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,bView,Token
                     {
                         AddWorkNftImg(Addr,Num);
                     }
-                    Str+=GetNFTCard(IDList.id,Item,Value,Sum,Num);
+                    Str+=GetNFTCard(IDList.id,Item,Value,Sum,Num,Account);
                     Num++;
                 }
 
@@ -216,14 +222,14 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,bView,Token
 
 }
 
-function GetNFTCard(ListId,Token,Value,Sum,Num)
+function GetNFTCard(ListId,Token,Value,Sum,Num,Account)
 {
     var ID=GetShortTokenID(Value.ID);
     if(ID=="0")
         ID="";
 
     var Str= `
-    <item_nft id="idNFT${Num}" data-token="${Token.Token}" data-currency="${Token.Currency}" data-amount="${Sum}" data-id="${Value.ID}" ondblclick="ChooseToken('${ListId}')" onclick="SelectNFTItem('${ListId}',this)">
+    <item_nft id="idNFT${Num}" data-token="${Token.Token}" data-currency="${Token.Currency}" data-amount="${Sum}" data-id="${Value.ID}" data-account="${Account}" onclick="NFTClick('${ListId}',this)">
     <DIV class="tokenname">${Token.TokenName}<BR>${ID}</DIV>
     <img class="img_nft" id="idImg${Num}" ${Value.IMG?'src="'+Value.IMG+'"':''}>`;
 
@@ -262,6 +268,36 @@ function GetShortTokenID(ID)
     }
     return ID;
 }
+
+var clickTimer = null;
+var clickElement=null;
+function NFTClick(List,element)
+{
+    SelectNFTItem(List,element)
+
+    if(clickTimer && clickElement && clickElement.id!==element.id)
+    {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+    }
+    clickElement=element;
+
+    if (clickTimer == null)
+    {
+        clickTimer = setTimeout(function ()
+        {
+            clickTimer = null;
+        }, 500)
+    } else
+    {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+
+        OpenToken(List,element)
+
+    }
+}
+
 function SelectNFTItem(List,element)
 {
     var IDList=$(List);
@@ -286,6 +322,58 @@ function SelectNFTItem(List,element)
     if(window.SetCurCurrencyName)
         SetCurCurrencyName();
 }
+
+//---------------------------------------------------------------------------
+
+async function OpenToken(List,element)
+{
+    //open dapp
+
+    if(!element || !element.dataset)
+        return;
+    var dataset=element.dataset;
+
+    var Params=
+        {
+            Account:+dataset.account,
+            ID:dataset.id,
+        };
+    var Currency=+dataset.currency;
+    if(!Currency)
+        return;
+
+    var SmartObj=await AReadSmart(Currency,["Account"]);
+    var SmallMode=await ACall(SmartObj.Account,"InPlaceShow");
+
+
+    var StrParams=JSON.stringify(Params);
+    if(SmallMode)
+    {
+        var StrPath = '/dapp/' + Currency+"?nostatus#" + StrParams;
+        if(IsLocalClient())
+        {
+            StrPath = "./dapp-frame.html?dapp="  + Currency+"?nostatus#" + StrParams;
+        }
+
+
+        openModal('idShowPage', 'idCloseShow');
+
+        idShowContent.innerHTML = "";
+        var iframe = document.createElement('iframe');
+        iframe.id = "idFrame";
+        iframe.name = 'dapp';
+        iframe.sandbox = "allow-scripts allow-same-origin allow-popups";
+        iframe.src = StrPath;
+        idShowContent.appendChild(iframe);
+        return;
+    }
+
+
+    OpenDapps(Currency, StrParams, 1);
+    //console.log(List,StrParams);
+}
+
+
 //---------------------------------------------------------------------------
 function RetCountERC(Item,DopStr)
 {
@@ -389,9 +477,10 @@ async function OpenTokensPage(Account)
         $("idShowContent").innerHTML = Str;
 
 
-        FillListNFT(idListShow, Item.BalanceArr, Account * 10000 + 5000, "", 1, 1);
+        FillListNFT(idListShow, Item.BalanceArr, Account * 10000 + 5000, "", 1, 1, Account);
     }
 }
+
 
 
 

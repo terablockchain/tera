@@ -31,7 +31,7 @@ async function InitMapCurrency()
         return ;
 
     //window.NETWORK_ID = window.NETWORK_NAME + "." + window.SHARD_NAME;
-    // console.log("window.NETWORK_ID",window.NETWORK_ID);
+    //console.log("window.NETWORK_ID",window.NETWORK_ID);
     // console.log(window.NETWORK_NAME);
     // console.log(window.SHARD_NAME);
 
@@ -335,25 +335,43 @@ function AccToListArr(UserArr,MaxStrLength,FilterCurrency)
             var Token=Item.BalanceArr[n];
             if(FilterCurrency!==undefined && Token.Currency!=FilterCurrency)
                 continue;
+            var TokenSum=0;
+            var NFTSum=0;
             for(var j=0;j<Token.Arr.length;j++)
             {
                 var Value2=Token.Arr[j];
                 var Sum=FLOAT_FROM_COIN(Value2);
                 if(Sum)
                 {
-                    if(Was && Str.length>=MaxStrLength)
-                    {
-                        if(MaxStrLength)
-                            Str+="...";
-                        break MTokens;
-                    }
-                    if(Was)
-                        Str+="; ";
+                    if(Value2.ID && Value2.ID!=="0")
+                        NFTSum += Sum;
                     else
-                        Str+=" (";
-                    Was=1;
-                    Str+=Sum+" "+Token.Token;
+                        TokenSum += Sum;
                 }
+            }
+            if(TokenSum || NFTSum)
+            {
+                if(Was && Str.length>=MaxStrLength)
+                {
+                    if(MaxStrLength)
+                        Str+="...";
+                    break MTokens;
+                }
+                if(Was)
+                    Str+="; ";
+                else
+                    Str+=" (";
+                Was=1;
+                if(NFTSum)
+                {
+                    if(NFTSum && TokenSum)
+                        Str+=TokenSum+" "+Token.Token + " NFT: " + NFTSum;
+                    else
+                        Str+=" "+Token.Token+" NFT: " + NFTSum;
+                }
+                else
+                if(TokenSum)
+                    Str+=TokenSum+" "+Token.Token;
             }
         }
         if(Was)
@@ -370,6 +388,30 @@ function AccToListArr(UserArr,MaxStrLength,FilterCurrency)
     return Arr;
 }
 
+function FindBalance(AccObj,Currency,ID)
+{
+    if(AccObj && AccObj.BalanceArr)
+    {
+        if(Currency===undefined)
+            return AccObj.BalanceArr;
+
+        for(var i=0;i<AccObj.BalanceArr.length;i++)
+        {
+            var Token=AccObj.BalanceArr[i];
+            if(Token.Currency===Currency)
+            {
+                if(ID===undefined)
+                    return Token.Arr;
+                for(var n=0;n<Token.Arr.length;n++)
+                {
+                    if(Token.Arr[n].ID===ID)
+                        return Token.Arr[n];
+                }
+            }
+        }
+    }
+    return {SumCOIN:0,SumCENT:0};
+}
 
 
 InitMapCurrency();

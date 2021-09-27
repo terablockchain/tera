@@ -79,7 +79,7 @@
 </DIV>
 
 
-<section id="idSyntaxDlg" class="ModalDlg" style="display: none; max-width: 700px; text-align: left">
+<section id="idSyntaxDlg" class="Modal ModalDlg" style="display: none; max-width: 700px; text-align: left">
     <DIV align='center'>
         <div id="idSyntaxText" align="left">---</div>
         <button class="bt-confirm"  onclick="closeModal()">Understand</button>
@@ -94,45 +94,45 @@
 <DIV id="idDappTemplate" style="display: none">
 
 
-    <DIV align='center' id="idMain" style="display:none">
-        <div class="row_acc">
-            <p>Account:</p>
-            <select size="1" id="idAddrTera" onchange="">
-                <option value="0">Loading...</option>
-            </select>
-            <button class="btn_acc" onclick="CreateAccount()">
-                <svg viewBox="0 0 16 16" style="height:16px"><path d="M0 7h16v2H0V7z"></path><path d="M9 0v16H7V0h2z"></path></svg>
-            </button>
-        </div>
+<DIV align='center' id="idMain" style="display:none">
+    <div class="row_acc">
+        <p>Account:</p>
+        <select size="1" id="idAddrTera" onchange="">
+            <option value="0">Loading...</option>
+        </select>
+        <button class="btn_acc" onclick="CreateAccount()">
+            <svg viewBox="0 0 16 16" style="height:16px"><path d="M0 7h16v2H0V7z"></path><path d="M9 0v16H7V0h2z"></path></svg>
+        </button>
+    </div>
 
 
-        <menu>
-            <item data-ref="m1" id="idPage1">
-                Send
-            </item>
+    <menu>
+        <item data-ref="m1" id="idPage1">
+            Send
+        </item>
 
-            <item data-ref="m2" id="idPage2">
-                Test
-            </item>
+        <item data-ref="m2" id="idPage2">
+            Test
+        </item>
 
-        </menu>
+    </menu>
 
 
 
-        <content data-ref="m1">
+    <content data-ref="m1">
 
-            <br>
-            <button onclick="SendTest()">SendTest</button>
+        <br>
+        <button onclick="SendTest()">SendTest</button>
 
-        </content>
+    </content>
 
-        <content data-ref="m2">
+    <content data-ref="m2">
 
-            Test Test Test
+        Test Test Test
 
-        </content>
+    </content>
 
-    </DIV>
+</DIV>
 
 
 </DIV>
@@ -411,6 +411,8 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                         <HR>
                         <BR>
                         <INPUT type="button" onclick="SendHTMLToBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendHTML" value="SEND HTML FILE">
+                        <INPUT type="button" onclick="DebugHTMLInBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendHTML" value="DEBUG HTML">
+                        <INPUT type="button" onclick="ClearDebugHTMLInBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendHTML" value="CLEAR DEBUG">
                         <BR>
                         <INPUT type="button" onclick="SendJSToBlockchain()" class="bt radius t-holder" style="height: 40px;" id="idBtSendJS" value="SEND JS FILE">
 
@@ -570,7 +572,7 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
 </style>
 
 <div id="idOverlay" onclick="closeModal()" style="display: none;"></div>
-<section id="idConfirm" class="ModalDlg" style="display: none;">
+<section id="idConfirm" class="Modal ModalDlg" style="display: none;">
     <DIV align='center'>
         <h2 id="idConfirmTitle">Confirm</h2>
         <p id="idConfirmText">A you sure?</p>
@@ -579,7 +581,7 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
     </DIV>
 </section>
 
-<section class="ModalDlg" id="idSending" style="display: none; width: 200px;">
+<section class="Modal ModalDlg" id="idSending" style="display: none; width: 200px;">
     <div align='center' style="width: 200px;">
         <h2>Sending Tx</h2>
         <BR>
@@ -590,7 +592,7 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
 </section>
 
 
-<section id="idNewSmart" class="ModalDlg MenuDlg" style="display: none;">
+<section id="idNewSmart" class="Modal ModalDlg MenuDlg" style="display: none;">
     <DIV align='center'>
         <h3>New smart contract</h3>
         <button class="smart-menu" onclick="NewDapp('Blank','','')">Blank</button><BR>

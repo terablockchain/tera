@@ -1352,7 +1352,8 @@ function RunStaticSmartMethod(AccountNum,MethodName,Params,ParamsArr,nPublic)
     if(nPublic==undefined)
         nPublic=1;
 
-    //console.log("RunStaticSmartMethod",MethodName,AccountNum,"Params=",Params,nPublic);
+    // if(AccountNum===128 && Params==11)
+    //     console.log("RunStaticSmartMethod",MethodName,AccountNum,"Params=",Params,nPublic);
 
     START_BLOCK();
     BEGIN_TRANSACTION();

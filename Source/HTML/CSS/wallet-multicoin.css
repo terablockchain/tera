@@ -3,6 +3,7 @@ grid_nft
 {
     display: grid;
     min-width: 360px;
+    max-height: 70vh;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     grid-gap: 5px;
 

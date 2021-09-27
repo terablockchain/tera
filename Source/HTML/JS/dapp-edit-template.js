@@ -113,17 +113,19 @@ function OnGetBalance(Account,ID)//Software tokens support
 
 function CodeTemplateDapp()
 {
-    "public"
-    function Run(Params,ParamsArr)
-    {
-        var PayAmount=FLOAT_FROM_COIN(context.Value);
-        var PayCurrency=context.Currency;
-        var PayID=context.ID;
 
-        Event(context.Smart.Name+" Got: "+PayAmount+" Currency:"+PayCurrency);
 
-        Send(context.FromNum,context.Value,"Refund",PayCurrency,PayID);
-    }
+"public"
+function Run(Params,ParamsArr)
+{
+    var PayAmount=FLOAT_FROM_COIN(context.Value);
+    var PayCurrency=context.Currency;
+    var PayID=context.ID;
+
+    Event(context.Smart.Name+" Got: "+PayAmount+" Currency:"+PayCurrency);
+
+    Send(context.FromNum,context.Value,"Refund",PayCurrency,PayID);
+}
 
 }
 
@@ -412,13 +414,21 @@ function TemplateSmartToken()
 function OnTransfer(Params)
 {
     //Params: From,To,Amount,ID
-
+    if(!FLOAT_FROM_COIN(Params.Amount))
+        return;
 
     if(Params.ID && (Params.Amount.SumCENT || typeof Params.Amount.SumCENT!=="number"))
         throw "Error Amount for NFT. Fractional values are prohibited.";
 
-    var Item1=ReadItem(Params.From);
+    if(Params.To<8)//burn
+    {
+        Burn(Params.From,Params.ID,Params.Amount);
+        Burn(0,Params.ID,Params.Amount);
+        return;
+    }
 
+
+    var Item1=ReadItem(Params.From);
     var Row1=FindRow(Item1.Arr,Params.ID);
 
     if(!SUB(Row1,Params.Amount))
@@ -436,7 +446,6 @@ function OnTransfer(Params)
 
     RegInWallet(Params.To);
 }
-
 
 "public"
 function OnGetBalance(Account,ID)
@@ -553,6 +562,17 @@ function DoBurn(Params)
     Burn(Params.Account,Params.ID,Params.Amount);
     Burn(0,Params.ID,Params.Amount);
 }
+
+"public"
+function MintNFT(Params)
+{
+    CheckOwnerPermission();
+
+    Params.Amount=1;
+    Params.ID=""+(context.BlockNum*1000+context.TrNum);//self
+    DoMint(Params);
+}
+
 
 function CheckOwnerPermission()
 {
@@ -777,10 +797,7 @@ function OnProxy(Method,Params,ParamsArr,PublicMode)
 
 function CallLib(Method,Params,ParamsArr)
 {
-    var Item=ReadValue("PROXY");
-    if(!Item)
-        return;
-
+    var Item=GetProxy();
     var SmartNum=Item[Method];
     if(!SmartNum)
         SmartNum=Item.CommonNum;
@@ -790,8 +807,8 @@ function CallLib(Method,Params,ParamsArr)
     if(F)
         return F(Params,ParamsArr);
 
-
 }
+
 
 
 
@@ -810,9 +827,13 @@ function SetProxy(Params)
 
 
 "public"
-function GetProxy(Params)
+function GetProxy()
 {
-    return ReadValue("PROXY");
+    var Item=ReadValue("PROXY");
+    if(!Item)
+        Item={CommonNum: 0};
+
+    return Item;
 }
 
 
@@ -827,12 +848,6 @@ function TemplateProxyHTML()
         [
             {MethodSet:"SetProxy", MethodGet:"GetProxy", Empty:{CommonNum:0}},
         ]
-
-    function DoGetEmpty(Num)
-    {
-        var Item=OwnerParamArr[Num];
-        idSettings.value=JSON.stringify(Item.Empty,"",4);
-    }
 
     async function DoSetOwner(Num)
     {
@@ -867,7 +882,6 @@ function TemplateProxyHTML()
 <br>
 <TEXTAREA id="idSettings" rows="20" cols="40" style="width:95%"></TEXTAREA>
 <br>
-<button onclick="DoGetEmpty(0)">Empty</button>
 <button onclick="DoGetOwner(0)">Get Proxy</button>
 <button onclick="DoSetOwner(0)">Set Proxy</button>
 

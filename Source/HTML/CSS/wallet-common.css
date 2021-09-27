@@ -1,3 +1,21 @@
+.ModalDlg
+{
+    position: fixed;
+    z-index: 5000;
+    display: none;
+    background: #fff;
+    border-radius: 5px;
+    border: 1px solid #727473;
+    box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+    color: #000;
+    padding: 20px;
+    margin: 0 auto;
+    width: 90%;
+    top: 100px;
+    left: 50%;
+    transform2: translate(-50%, -50%);
+    max-width: 250px;
+}
 
 .t_choos_coin
 {
@@ -9,3 +27,31 @@
     color: #cb763a;
     cursor: pointer;
 }
+
+
+
+.page__container
+{
+    border-radius: 5px;
+    border: 1px solid #727473;
+    box-shadow: 0px 8px 10px rgba(68, 83, 104, 0.15);
+    min-width: 300px;
+    min-height: 200px;
+    padding: 1px;
+    margin: 0 auto;
+}
+
+
+#idShowPage
+{
+    z-index: 10000;
+
+}
+
+#idShowPage iframe
+{
+    height:600px;
+    margin: 0;
+    padding: 0;
+}
+

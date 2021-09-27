@@ -44,7 +44,7 @@ window.addEventListener('keydown', function (e)
 {
     if(e.keyCode === 27)
     {
-        if(IsVisibleBlock("overlay"))
+        if(IsVisibleBlock("idOverlay"))
             closeModal();
         if(IsVisibleBlock("idCloseButton"))
             window.close();
@@ -237,7 +237,6 @@ function OnFindServer()
     CONNECT_STATUS = 2;
     if(IsLocalClient())
     {
-
         Storage.setItem("MainServer", JSON.stringify({ip: Item.ip, port: Item.port}));
     }
 
@@ -537,7 +536,10 @@ function OnChangeAccName()
 function CancelCreateAccount()
 {
 }
-
+function ViewTokenCurrencyInput()
+{
+    SetVisibleBlock("idRowTokenCurrency",!IsVisibleBlock("idRowTokenCurrency"));
+}
 function OnAddAccount()
 {
     var Name = $("idAccountName").value;
@@ -662,7 +664,10 @@ async function SetAccountsCard(Data,AccountsDataStr)
         if(!SmartObj)
             SmartObj = {Name:"", Num:0, HTMLLength:0};
         SmartObj.IconPath = RetIconPath(SmartObj, 0);
-        Str = Str.replace("$smartobj.iconpath", "src='" + SmartObj.IconPath + "'");
+        if(SmartObj.IconBlockNum)
+            Str = Str.replace("$smartobj.iconpath", "src='" + SmartObj.IconPath + "'");
+        else
+            Str = Str.replace("$smartobj.iconclass", "hidden");
         Str = Str.replace("$SmartObj.Name", escapeHtml(SmartObj.Name));
         Str = Str.replace(/\$SmartObj.Num/g, SmartObj.Num);
         Str = Str.replace(/\$SmartObj.HTMLLength/g, SmartObj.HTMLLength);
@@ -737,15 +742,15 @@ async function SetAccountsCard(Data,AccountsDataStr)
     UpdateTokenList();
 }
 
-function ChooseToken(name)
-{
-    //todo - вызов (двойной клик) не работает в mobile
-
-    if(name==="idListNFT")
-    {
-        SendMobileBefore();
-    }
-}
+// function ChooseToken(name)
+// {
+//     //todo - вызов (двойной клик) не работает в mobile
+//
+//     if(name==="idListNFT")
+//     {
+//         SendMobileBefore();
+//     }
+// }
 
 
 
@@ -1027,25 +1032,25 @@ function downloadKey(fieldID)
 }
 
 var glWasModal = 0;
-function openModal(id)
-{
-    glWasModal = 1;
-    var modal = document.querySelector("#" + id);
-    var overlay = document.querySelector("#overlay");
-    modal.style.display = "block";
-    overlay.style.display = "block";
-}
-function closeModal()
-{
-    glConfirmF = undefined;
-    
-    glWasModal = 0;
-    var modals = document.querySelectorAll(".modal,#overlay,#idConfirm,#idOverlay");
-    modals.forEach(function (item)
-    {
-        item.style.display = "none";
-    });
-}
+// function openModal(id)
+// {
+//     glWasModal = 1;
+//     var modal = document.querySelector("#" + id);
+//     var overlay = document.querySelector("#overlay");
+//     modal.style.display = "block";
+//     overlay.style.display = "block";
+// }
+// function closeModal()
+// {
+//     glConfirmF = undefined;
+//
+//     glWasModal = 0;
+//     var modals = document.querySelectorAll(".modal,#overlay,#idConfirm,#idOverlay");
+//     modals.forEach(function (item)
+//     {
+//         item.style.display = "none";
+//     });
+// }
 
 function showMenu(Num)
 {

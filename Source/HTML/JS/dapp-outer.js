@@ -97,7 +97,8 @@ function CreateFrame(Code,Parent)
 
     iframe.srcdoc = Code;
     Parent.appendChild(iframe);
-    
+
+    CorrectFrameSize();
 
 }
 

@@ -154,7 +154,18 @@ function ConnectWebWallet()
 
 
         SetMainServer({ip:Server,port:Port,Name:"User defined"});
-        OnFindServer();
+
+        GetData("/GetCurrentInfo", {}, function (Data)
+        {
+            if(Data && Data.result)
+            {
+                CheckNetworkID(Data);
+                SetBlockChainConstant(Data);
+                OnFindServer();
+
+            }
+        });
+
         return;
     }
 

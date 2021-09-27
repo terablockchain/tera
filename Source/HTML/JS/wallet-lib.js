@@ -184,7 +184,7 @@ function UpdateTokenList()
     var Account=+idAccount.value;
     var Item=MapAccounts[idAccount.value];
     //console.log("Item.BalanceArr=",Item.BalanceArr)
-    FillListNFT(idListNFT,Item?Item.BalanceArr:undefined,Account?Account*10000:0, "", 1);
+    FillListNFT(idListNFT,Item?Item.BalanceArr:undefined,Account?Account*10000:0, "", 1,0,Account);
 }
 
 function GetSelectedToken()
@@ -205,7 +205,7 @@ function GetSelectedToken()
         Currency:+Element.dataset.currency,
         ID:Element.dataset.id,
         Amount:+Element.dataset.amount,
-        element_id:Element.id,
+        element_id:Element.id
     };
 }
 

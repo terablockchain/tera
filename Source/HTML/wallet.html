@@ -6,11 +6,12 @@
     <title>WALLET</title>
     <link rel="shortcut icon" href="/HTML/PIC/wallet.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./CSS/mobile-wallet.css">
+    <link rel="stylesheet" href="./CSS/wallet-common.css">
     <link rel="stylesheet" href="./CSS/wallet-grid.css">
     <link rel="stylesheet" href="./CSS/wallet-new.css">
-    <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
+    <link rel="stylesheet" href="./CSS/wallet-normalize.css">
     <link rel="stylesheet" href="./CSS/wallet-multicoin.css">
-    <link rel="stylesheet" href="./CSS/wallet-common.css">
 
 
 
@@ -603,8 +604,7 @@
     </section>
 
 
-    <div class="ModalDlg modal_account" id="idBlockEditAccount">
-
+    <div class="Modal ModalDlg" id="idBlockEditAccount">
         <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
@@ -617,15 +617,15 @@
 
                 <div class="form__group">
                     <p class="connection__text">ID</p>
-                    <input type="text" class="input input_modal2" disabled value="" id="idAccountNumEdit">
+                    <input type="text" class="input input_modal" disabled value="" id="idAccountNumEdit">
                 </div>
                 <div class="form__group">
                     <p class="connection__text">Public name</p>
-                    <input type="text" class="input input_modal2" value="" id="idAccountNameEdit">
+                    <input type="text" class="input input_modal" value="" id="idAccountNameEdit">
                 </div>
                 <div class="form__group">
                     <p class="connection__text">Public key</p>
-                    <input type="text" class="input input_modal2" value="" id="idPublicKeyEdit">
+                    <input type="text" class="input input_modal" value="" id="idPublicKeyEdit">
                 </div>
 
                 <BR>
@@ -639,7 +639,7 @@
         </div>
     </div>
 
-    <div class="ModalDlg modal_account" id="idBlockAddAccount">
+    <div class="Modal ModalDlg" id="idBlockAddAccount">
         <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
@@ -689,7 +689,7 @@
             </div>
         </div>
     </div>
-    <div class="ModalDlg modal_wallet" id="idBlockEditWallet">
+    <div class="Modal ModalDlg modal_wallet" id="idBlockEditWallet">
         <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
@@ -718,19 +718,14 @@
         </div>
     </div>
 
-    <div class="ModalDlg" id="idBlockConstSet">
+    <div class="Modal ModalDlg" id="idBlockConstSet">
         <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
             </div>
             <div class="form">
-                <h3 class="h3 h3_form">
-                    Edit all constants
-                </h3>
-                <div class="division division_form"></div>
-                <textarea name="form-const" id="idConstant" class="log log_form editconstants">
-                {}
-                </textarea>
+                <h3 class="h3 h3_form">Edit all constants</h3>
+                <textarea name="form-const" id="idConstant" class="log log_form editconstants"></textarea>
                 <div class="form__buttons">
                     <button class="btn btn__transparent cancel btn_margin btn_middle doclose">Cancel</button>
                     <button class="btn btn__transparent btn_margin btn_middle doclose" id="idBtnConstSave" onclick="SaveConstant(0)">Save</button>
@@ -740,8 +735,8 @@
         </div>
     </div>
 
-    <div class="ModalDlg" id="idBlockPasswordSet">
-        <div class="modal__container"  style="display: block">
+    <div class="Modal ModalDlg Modal450" id="idBlockPasswordSet">
+        <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
             </div>
@@ -856,7 +851,7 @@
 
     </section>
 
-    <div class="ModalDlg" id="idBlockEditJson">
+    <div class="Modal ModalDlg" id="idBlockEditJson">
         <div class="modal__container">
             <div class="btn-close doclose">
                 <img src="./img/Close.svg">
@@ -1406,7 +1401,7 @@
 </DIV>
 
 
-<div class="ModalDlg" id="idBlockPasswordGet">
+<div class="Modal ModalDlg Modal450" id="idBlockPasswordGet">
     <div class="modal__container">
         <div class="btn-close doclose">
             <img src="./img/Close.svg">
@@ -1442,8 +1437,8 @@
 </section>
 
 
-<div class="ModalDlg" id="idBlockOnSend">
-    <div class="modal__container" style="width: 500px">
+<div class="Modal ModalDlg Modal450" id="idBlockOnSend">
+    <div class="modal__container">
         <div class="btn-close doclose">
             <img src="./img/Close.svg">
         </div>
@@ -1537,8 +1532,9 @@
 </style>
 
 <div id="idOverlay" onclick="closeModal();" style="display: none;"></div>
-<div class="ModalDlg" id="idConfirm" style="display: none;">
-    <div class="modal__container confirm__container"  style="display: block">
+
+<div class="Modal ModalDlg" id="idConfirm" style="display: none;">
+    <div class="modal__container"  style="display: block">
         <div class="btn-close doclose">
             <img src="./img/Close.svg">
         </div>
@@ -1555,24 +1551,21 @@
     </div>
 </div>
 
-<div class="ModalDlg" id="idShowPage" style="display: none;">
-    <div class="modal__container confirm__container"  style="display: block">
-        <div class="btn-close doclose">
-            <img src="./img/Close.svg">
-        </div>
+<div class="Modal modal" id="idShowPage" style="display: none; padding: 5px">
+    <div class="page__container"  style="display: block;">
+        <div id="idShowContent"></div>
         <DIV align='center'>
-            <div id="idShowContent"></div>
-            <BR>
-            <button id="idCloseShow" class="btn btn_middle btn__transparent cancel doclose">Close</button>
+            <button id="idCloseShow" onclick="closeModal()" class="btn btn--white">Close</button>
         </DIV>
     </div>
 </div>
 
-<section class="modal ModalDlg" id="idSending" style="display: none;">
-    <div class="modal__container confirm__container"  style="display: block">
+
+
+<section class="Modal modal" id="idSending" style="display: none;">
+    <div class="page__container"  style="display: block">
         <div align='center'>
             <h2 style="margin-bottom: 50px">Sending Tx</h2>
-
             <p class="">Wait a few seconds, pls...</p>
             <p class="" id="idSendingContent"></p>
         </div>

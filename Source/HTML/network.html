@@ -5,11 +5,9 @@
     <title>Network</title>
     <link rel="shortcut icon" href="/HTML/PIC/network.png" type="image/png">
 
-    <link rel="stylesheet" href="./CSS/wallet-new.css"> <!-- Подключаем CSS -->
-    <link rel="stylesheet" href="./CSS/wallet-normalize.css"> <!-- Подключаем normalize -->
-
-
-<!--    <link rel="stylesheet" type="text/css" href="../HTML/CSS/buttons.css">-->
+    <link rel="stylesheet" href="./CSS/wallet-common.css">
+    <link rel="stylesheet" href="./CSS/wallet-new.css">
+    <link rel="stylesheet" href="./CSS/wallet-normalize.css">
 
 </head>
 
@@ -656,10 +654,12 @@
 </html>
 
 
+
+
 <div id="idOverlay" onclick="closeModal();" style="display: none;"></div>
 
-<div id="idNetAdd" class="ModalDlg" style="display: none;">
-    <div class="modal__container confirm__container"  style="display: block">
+<div id="idNetAdd" class="Modal ModalDlg" style="display: none;">
+    <div class="modal__container"  style="display: block">
         <div class="btn-close doclose" onclick="closeModal()">
             <img src="./img/Close.svg">
         </div>

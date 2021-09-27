@@ -236,6 +236,24 @@ function SendStateHTML(Name)
     });
 }
 
+function DebugHTMLInBlockchain()
+{
+    DoConfirm("Debug","Type dapp number: <BR><BR> <INPUT type='input' id='idDebugNum'>",function ()
+    {
+        SaveValues(1);
+
+        var Key="DAPP-DEBUG:"+idDebugNum.value;
+        localStorage[Key] = idName.value;
+    });
+}
+function ClearDebugHTMLInBlockchain()
+{
+    for(var key in localStorage)
+    {
+        if(key.substr(0,11)==="DAPP-DEBUG:")
+            delete localStorage[key];
+    }
+}
 
 function SendHTMLToBlockchain()
 {
@@ -707,6 +725,7 @@ window.onbeforeunload = function (e)
     {
         SaveValues(1);
         SaveENV();
+        ClearDebugHTMLInBlockchain();
     }
 }
 
@@ -917,7 +936,9 @@ function UpdatePlayInfo()
     FillSelect("idPlayAccount", Arr);
 }
 
-
+function CorrectFrameSize()
+{
+}
 
 
 setInterval(UpdatePlayInfo, 1000);

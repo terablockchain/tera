@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 53;
+window.CLIENT_VERSION = 55;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1653,7 +1653,7 @@ function AddToInvoiceList(Item)
     Storage.setItem("InvoiceList", JSON.stringify(arr));
 }
 
-function OpenDapps(Num,AccountNum,HTMLLength)
+function OpenDapps(Num,StrOpenParams,HTMLLength)
 {
     if(!Num || !HTMLLength)
         return;
@@ -1664,8 +1664,8 @@ function OpenDapps(Num,AccountNum,HTMLLength)
         StrPath = "./dapp-frame.html?dapp=" + Num;
     }
     
-    if(AccountNum)
-        StrPath += '#' + AccountNum;
+    if(StrOpenParams)
+        StrPath += '#' + StrOpenParams;
     OpenWindow(StrPath);
 }
 function OpenWindow(StrPath,bCheck)
@@ -2062,7 +2062,7 @@ function openModal(id,idOK)
         return SetError("Error id: "+id);
     if(!overlay)
         return SetError("Error idOverlay");
-    modal.style.display = "flex";
+    modal.style.display = "block";//"flex";
     overlay.style.display = "block";
     
     if(idOK)
@@ -2081,14 +2081,8 @@ function closeModal()
         return;
 
     glWasModal = 0;
-    // var modals = document.querySelectorAll(".ModalDlg");
-    // var overlay = document.querySelector("#idOverlay");
-    // modals.forEach(function (item)
-    // {
-    //     item.style.display = "none";
-    // });
-    // overlay.style.display = "none";
-    var modals = document.querySelectorAll(".ModalDlg,.modal,#overlay,#idConfirm,#idOverlay");
+    //var modals = document.querySelectorAll(".Modal,.ModalDlg,.modal,#overlay,#idConfirm,#idOverlay");
+    var modals = document.querySelectorAll(".Modal,#idOverlay");
     modals.forEach(function (item)
     {
         item.style.display = "none";
@@ -2550,6 +2544,9 @@ function SetMainServer(Value)
 
 function GetProtocolServerPath(Item)
 {
+    if(window.PROTOCOL_SERVER_PATH)
+        return window.PROTOCOL_SERVER_PATH;
+
     if(!Item)
         Item=GetMainServer();
     if(!Item)
@@ -2567,8 +2564,11 @@ function GetProtocolServerPath(Item)
 
 function GetURLPath(Path)
 {
-    if(GetMainServer() && Path.substr(0,1)==="/")
+    if(window.PROTOCOL_SERVER_PATH && Path.substr(0,1)==="/")
           Path = GetProtocolServerPath() + Path;
+
+    //console.log("GetURLPath:",Path,"---",window.PROTOCOL_SERVER_PATH,glMainServer,"===hfer:",location.href)
+    //console.log("GetURLPath:",Path);
 
     return Path;
 }
