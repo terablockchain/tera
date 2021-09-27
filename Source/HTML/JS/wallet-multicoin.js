@@ -342,8 +342,10 @@ async function OpenToken(List,element)
     if(!Currency)
         return;
 
+    var SmallMode=0;
     var SmartObj=await AReadSmart(Currency,["Account"]);
-    var SmallMode=await ACall(SmartObj.Account,"InPlaceShow");
+    if(SmartObj)
+        SmallMode=await ACall(SmartObj.Account,"InPlaceShow");
 
 
     var StrParams=JSON.stringify(Params);

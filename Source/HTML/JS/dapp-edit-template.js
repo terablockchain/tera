@@ -210,8 +210,9 @@ function DappTemplate()
 
     var LocalNum={"LOCAL-JINN":536,"TEST-JINN":11688933,"MAIN-JINN":75152874}[NETWORK_NAME];
     var Str="";
+    var Path="/file/"+LocalNum+"/0";
     if(LocalNum)
-        Str+=`<script src="/file/${LocalNum}/0">TAB4</script`+">";
+        Str+=`<script src="${GetURLPath(Path)}">TAB4</script`+">";
 
     Str+=` 
 <style>
