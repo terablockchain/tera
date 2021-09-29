@@ -56,7 +56,7 @@
 
             window.addEventListener("keydown", function (e)
             {
-                if(e.keyCode===27)
+                if(!window.glWasModal && e.keyCode===27)
                 {
                     ClosePage();
                 }

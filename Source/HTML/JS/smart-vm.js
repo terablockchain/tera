@@ -653,7 +653,8 @@ function DoTransfer(FromID,ToID,CoinSum,Description,Currency,TokenID)
 ListF.$Event = function (Description,Mode)
 {
     DO(50);
-    
+
+
     SMARTS.SendSmartEvent({Description:Description, Smart:RunContext.Smart.Num, Account:RunContext.Account.Num, BlockNum:RunContext.BlockNum, TrNum:RunContext.TrNum});
     
     ToLogTx("Block: " + RunContext.BlockNum + " TxNum:" + RunContext.TrNum + " Event: " + JSON.stringify(Description), 4);

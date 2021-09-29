@@ -84,6 +84,7 @@ class AccountKeyValue extends require("./accounts-tr")
     
     ReadValue(ID, Key, Format,bOldVer)
     {
+
         var Value;
         var Data = {ID:ID, Key:Key};
         var Item = this.DBKeyValue.Find(Data);
@@ -96,7 +97,7 @@ class AccountKeyValue extends require("./accounts-tr")
             else
             {
                 var Str = ReadStrFromArr(Item.ValueBuf);
-                Value = JSON.parse(Str)
+                Value = JSON.parse(Str);
             }
         }
         

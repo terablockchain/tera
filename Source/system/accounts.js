@@ -345,22 +345,22 @@ class AccountApp extends require("./accounts-hash")
             {
                 if(Block.BlockNum <= NEW_FORMULA_TARGET1)
                 {
-                    Sum = SysBalance * 43 * 43 / 100 / TOTAL_SUPPLY_TERA
+                    Sum = SysBalance * 43 * 43 / 100 / TOTAL_SUPPLY_TERA;
                     
                     var KMult = (NEW_FORMULA_TARGET2 - Block.BlockNum) / (NEW_FORMULA_TARGET2 - NEW_FORMULA_START);
                     Sum = KMult * Sum
                 }
                 else
                 {
-                    Sum = KTERA * SysBalance / TOTAL_SUPPLY_TERA
+                    Sum = KTERA * SysBalance / TOTAL_SUPPLY_TERA;
                 }
             }
             else
             {
                 var Power = GetPowPower(Block.PowHash);
                 if(Block.BlockNum >= NEW_BLOCK_REWARD1)
-                    Power = 43
-                Sum = Power * Power * SysBalance / TOTAL_SUPPLY_TERA / 100
+                    Power = 43;
+                Sum = Power * Power * SysBalance / TOTAL_SUPPLY_TERA / 100;
             }
             
             var OperationNum = 0;
@@ -377,25 +377,25 @@ class AccountApp extends require("./accounts-hash")
                         var K = (REF_PERIOD_END - Block.BlockNum) / (REF_PERIOD_END - REF_PERIOD_START);
                         var CoinAdv = COIN_FROM_FLOAT(Sum * K);
                         
-                        OperationNum++
+                        OperationNum++;
                         this.SendMoneyTR(Block, 0, Data.Adviser, CoinAdv, Block.BlockNum, 0xFFFF, "", "Adviser coin base [" + AccountID + "]", 1, 0,
-                        OperationNum)
-                        ADD(CoinTotal, CoinAdv)
+                        OperationNum);
+                        ADD(CoinTotal, CoinAdv);
                         
-                        ADD(CoinSum, CoinAdv)
+                        ADD(CoinSum, CoinAdv);
                     }
                 }
                 
-                OperationNum++
+                OperationNum++;
                 this.SendMoneyTR(Block, 0, AccountID, CoinSum, Block.BlockNum, 0xFFFF, "", "Coin base", 1, 0, OperationNum)
-                ADD(CoinTotal, CoinSum)
+                ADD(CoinTotal, CoinSum);
                 
                 var CoinDevelop = CopyObjValue(CoinTotal);
-                DIV(CoinDevelop, 100)
+                DIV(CoinDevelop, 100);
                 
                 if(!ISZERO(CoinDevelop))
                 {
-                    OperationNum++
+                    OperationNum++;
                     this.SendMoneyTR(Block, 0, 9, CoinDevelop, Block.BlockNum, 0xFFFF, "", "Developers support", 1, 0, OperationNum)
                 }
             }
@@ -406,7 +406,7 @@ class AccountApp extends require("./accounts-hash")
     {
         var Data = this.DBState.Read(Num);
         if(Data)
-            Data.WN = ""
+            Data.WN = "";
         return Data;
     }
     FindAccounts(PubKeyArr, Map, HiddenMap, nSet)
@@ -424,7 +424,7 @@ class AccountApp extends require("./accounts-hash")
             for(var i = 0; i < PubKeyArr.length; i++)
                 if(CompareArr(Data.PubKey, PubKeyArr[i]) === 0)
                 {
-                    Map[Data.Num] = i
+                    Map[Data.Num] = i;
                     Count++
                 }
         }
@@ -623,6 +623,9 @@ class AccountApp extends require("./accounts-hash")
         var Item=this.ReadRegWallet(Account,1);
         if(!Item)
         {
+            if(!global.DEV_MODE)
+                return undefined;
+
             var Ret=this.ReadValue(COIN_STORE_NUM, "ACCOUNT:"+Account, MULTI_COIN_FORMAT,1);
             if(Ret)
             {

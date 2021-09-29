@@ -56,9 +56,9 @@ class AccountHash extends require("./accounts-keyvalue")
         }
         
         var CheckResult = this.CheckAccountHash(Body, BlockNum, TR);
-        if(!CheckResult)
+        if(CheckResult===-1)
         {
-            Result = "BAD ACCOUNT HASH"
+            Result = "BAD ACCOUNT HASH";
             if(global.OnBadAccountHash)
             {
                 if(TR && TR.BlockNum)
@@ -80,6 +80,9 @@ class AccountHash extends require("./accounts-keyvalue")
             var Item = this.GetAccountHashItem(TR.BlockNum);
             if(Item && Item.BlockNum === TR.BlockNum)
             {
+                if(!IsZeroArr(Item.SmartHash))
+                    return 2;//error miner
+
                 if(CompareArr(Item.AccHash, TR.AccHash) === 0)
                 {
                     // if(IsZeroArr(TR.SmartHash) || TR.AccountMax === 0 || TR.SmartCount)
@@ -88,7 +91,7 @@ class AccountHash extends require("./accounts-keyvalue")
                     // if(CompareArr(Item.SmartHash, TR.SmartHash) === 0 && Item.AccountMax === TR.AccountMax && Item.SmartCount === TR.SmartCount)
                     //     return 1;
                 }
-                return 0;
+                return -1;
             }
         }
         

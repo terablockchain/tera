@@ -525,7 +525,8 @@ function Mint(Account,ID,Amount)
     ADD(Row,Amount);
     WriteItem(Item);
 
-    RegInWallet(Account);
+    if(Account)
+        RegInWallet(Account);
 }
 
 function Burn(Account,ID,Amount)

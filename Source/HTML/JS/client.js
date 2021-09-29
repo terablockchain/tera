@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 55;
+window.CLIENT_VERSION = 56;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
