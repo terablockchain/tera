@@ -775,6 +775,7 @@ function SetGridDataNew(arr,id_name,bClear)
 
     if(bClear)
     {
+        CUR_ROW=undefined;
         ClearTable(htmlTable);
     }
 
@@ -2369,6 +2370,7 @@ async function ASetGridData(arr,id_name,TotalSum,bClear,TotalCurency)
 
     if(bClear)
     {
+        CUR_ROW=undefined;
         ClearTable(htmlTable);
     }
 
@@ -2402,35 +2404,40 @@ async function ASetGridData(arr,id_name,TotalSum,bClear,TotalCurency)
         var ID = Item.Num;
         htmlTable.MaxNum = Item.Num;
 
+
         var row = map[ID];
         if(!row)
         {
+            //console.log(ID);
             htmlTable.RowCount++;
 
-            var NewRowIndex;
 
-            var CurRowIndex = 1;
-            if(CUR_ROW)
-                CurRowIndex = CUR_ROW.rowIndex;
+            // var CurRowIndex = 1;
+            // if(CUR_ROW)
+            //     CurRowIndex = CUR_ROW.rowIndex;
+            //
+            // if(!PrevItem && htmlTable.Arr && htmlTable.Arr.length > 0)
+            // {
+            //     CurRowIndex = 1;
+            //     PrevItem = htmlTable.Arr[0];
+            // }
+            //
+            // var NewRowIndex;
+            // if(CUR_ROW && PrevItem)
+            // {
+            //     if(PrevItem.ID < Item.ID)
+            //         NewRowIndex = CurRowIndex;
+            //     else
+            //         NewRowIndex = CurRowIndex + 1;
+            // }
+            // else
+            // {
+            //     NewRowIndex = -1;
+            // }
+            // NewRowIndex = -1;
+            // row = htmlTable.insertRow(NewRowIndex);
 
-            if(!PrevItem && htmlTable.Arr && htmlTable.Arr.length > 0)
-            {
-                CurRowIndex = 1;
-                PrevItem = htmlTable.Arr[0];
-            }
-
-            if(CUR_ROW && PrevItem)
-            {
-                if(PrevItem.ID < Item.ID)
-                    NewRowIndex = CurRowIndex;
-                else
-                    NewRowIndex = CurRowIndex + 1;
-            }
-            else
-            {
-                NewRowIndex = -1;
-            }
-            row = htmlTable.insertRow(NewRowIndex);
+            row = htmlTable.insertRow(-1);
 
             map[ID] = row;
             for(var n = 0; n < colcount; n++)
