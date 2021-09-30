@@ -571,6 +571,10 @@ function DoGetData(Name,Params,Func)
             SetData.Body = VM_BLOCKS[Params.BlockNum];
             SetData.result = !!SetData.Body;
             break;
+        case "DappGetBalance":
+            SetData.result = 1;
+            SetData.Value=ACCOUNTS.GetBalance(Params.AccountID,Params.Currency,Params.ID);
+            break;
         case "DappAccountList":
             SetData.result = 1;
             //SetData.arr = VM_ACCOUNTS.slice(Params.StartNum, Params.StartNum + Params.CountNum);

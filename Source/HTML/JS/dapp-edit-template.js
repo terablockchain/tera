@@ -410,8 +410,14 @@ function SiteTemplateHTML()
 function TemplateSmartToken()
 {
 
+"public"
+function InPlaceShow()
+{
+    return 1;
+}
 
-//"public" //---------------- uncomment it for use from Proxy
+
+//"public" <------ uncomment it for use from Proxy
 function OnTransfer(Params)
 {
     //Params: From,To,Amount,ID
@@ -429,6 +435,14 @@ function OnTransfer(Params)
     }
 
 
+
+    TransferGet(Params);
+    return TransferSend(Params);
+    //return TransferSend_WithBurn(Params,0.5); - uncomment it for use burn mode with Fee=0.5%
+
+}
+function TransferGet(Params)
+{
     var Item1=ReadItem(Params.From);
     var Row1=FindRow(Item1.Arr,Params.ID);
 
@@ -437,8 +451,10 @@ function OnTransfer(Params)
     if(ISZERO(Row1))
         DeleteRow(Item1.Arr,Params.ID);
     WriteItem(Item1);
+}
 
-
+function TransferSend(Params)
+{
     var Item2=ReadItem(Params.To);
     var Row2=FindRow(Item2.Arr,Params.ID);
     ADD(Row2,Params.Amount);
@@ -448,7 +464,38 @@ function OnTransfer(Params)
     RegInWallet(Params.To);
 }
 
-"public"
+
+function TransferSend_WithBurn(Params,PercentFee)
+{
+    var Item2=ReadItem(Params.To);
+    var Row2=FindRow(Item2.Arr,Params.ID);
+
+
+    var KK=100/(100+PercentFee);
+
+    var Amount=FLOAT_FROM_COIN(Params.Amount);
+    var Amount2=Amount*KK;
+
+    if(!Amount2 || Amount2<1e-9)
+        throw "Error dest amount = "+Amount2;
+
+    var DestCoin=COIN_FROM_FLOAT(Amount2);
+    ADD(Row2,DestCoin);
+    WriteItem(Item2);
+
+    //decrement total amount
+    var Fee=Amount2-Amount;
+    if(Fee>1e-9)
+        Burn(0,Params.ID,Fee);
+
+
+    RegInWallet(Params.To);
+
+    return DestCoin;
+}
+
+
+"public"//for use from Proxy
 function OnGetBalance(Account,ID)
 {
     var Item=ReadItem(Account);
@@ -464,6 +511,7 @@ function OnGetBalance(Account,ID)
 
     return Arr;
 }
+
 
 
 //Token Lib
@@ -576,6 +624,8 @@ function MintNFT(Params)
 }
 
 
+
+
 function CheckOwnerPermission()
 {
     if(context.FromNum!==context.Smart.Owner)
@@ -596,17 +646,20 @@ function DoGetBalance(Params)
 "public"
 function TotalAmount(Params)
 {
-    return OnGetBalance(0,Params.ID);
+    return GetBalance(0,Params.Currency,Params.ID);
 }
 
 
+
 }
+
 //---------------------------------------------------------------
 
 function TemplateSmartTokenHTML()
 {
 
     ALL_ACCOUNTS=1;
+    var ShowParams;
     window.addEventListener('Event',function(e)
     {
         var Data=e.detail;
@@ -622,13 +675,59 @@ function TemplateSmartTokenHTML()
         }
     });
 
-    window.addEventListener('UpdateInfo',function ()
+    window.addEventListener('Init',Init);
+    window.addEventListener('UpdateFillUser',UpdateFillUser);
+
+    async function Init()
     {
-        UpdateFillUser();
-    });
+
+        if(OPEN_PATH && OPEN_PATH.substr(0,1)==="{")
+        {
+            ShowParams=JSON.parse(OPEN_PATH);
+            ShowParams.AccObj=await AReadAccount(ShowParams.Account);
+            if(ShowParams.AccObj)
+            {
+                ShowToken();
+            }
+
+            SetVisibleBlock("idShow",1);
+        }
+        else
+        {
+            SetVisibleBlock("idPage",1);
+            await UpdateFillUser();
+        }
+    }
+
+    async function ShowToken()
+    {
+        var ID=ShowParams.ID;
+        var AccObj=ShowParams.AccObj;
+        idTokenTitle.innerText=SMART.Name;
+        if(ID)
+        {
+            var Addr="/nft/"+ID;
+            AddWorkNftImg(Addr,100);//idImg100
+            RestartWorkNftImg();
+
+            idTotal.innerText=FLOAT_FROM_COIN(await AGetBalance(0,SMART.Num,ID))+" ID:"+ID;
+
+        }
+        else
+        {
+            if(SMART.IconBlockNum)
+                idImg100.src=GetURLPath("/file/" + SMART.IconBlockNum + "/" + SMART.IconTrNum);
+            idTotal.innerText=FLOAT_FROM_COIN(await AGetBalance(0,SMART.Num,""))+" "+SMART.ShortName;
+        }
+
+
+    }
 
     function UpdateFillUser()
     {
+        if(ShowParams)
+            return;
+
         var Arr=AccToListArr(USER_ACCOUNT);
         FillSelect("idAccount",Arr);
     }
@@ -661,16 +760,15 @@ function TemplateSmartTokenHTML()
 
 
     //------------------------ insert
+    document.write(`<script type="text/javascript" src="/JS/wallet-multicoin.js"></`+`script>`);
+
     document.write(`
+
 <style>
     body
     {
-      background-color:white;  
-    }
-    
-    body
-    {
-      background-color:#F5F5F5;
+      color:white;
+      background-color:#2B4050;
       padding: 0;
       margin: 0;
     }
@@ -678,7 +776,6 @@ function TemplateSmartTokenHTML()
 
    .page
    {
-        background-color:#FFF;
         width: 320px;
         height: 100%;
         min-height: 550px;
@@ -738,10 +835,23 @@ function TemplateSmartTokenHTML()
     {
         margin:5px;
     }
+    
+    #idImg100
+    {
+        max-height:50vh;
+        max-width:50vh;
+    }
 
 </style>
 
-<DIV align='center'>
+<DIV align='center' id="idShow" style="display:none">
+    <h3 id="idTokenTitle"></h3>
+    <img id="idImg100" src="">
+    <h4>Total Supply: <b id="idTotal"></b></h4>
+</DIV>
+    
+ 
+<DIV align='center' id="idPage" style="display:none">
     <DIV class="page">
         <div class="row_acc">
             <p>Account:</p>
@@ -778,7 +888,10 @@ function TemplateSmartTokenHTML()
 
     `);
 
+
 }
+
+
 //---------------------------------------------------------------
 
 function TemplateProxy()

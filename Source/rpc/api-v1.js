@@ -102,6 +102,18 @@ HostingCaller.GetAccount = function (id)
     var arr = ACCOUNTS.GetRowsAccounts(id, 1,0,0,1);
     return {Item:arr[0], result:1};
 }
+HostingCaller.DappGetBalance = function (Params)
+{
+    var Account=parseInt(Params.AccountID);
+    var Currency=parseInt(Params.Currency);
+    var ID=Params.ID;
+
+    var Value = ACCOUNTS.GetBalance(Account,Currency,ID);
+    return {Value:Value, result:1};
+}
+//HostingCaller.DappGetBalance = HostingCaller.GetBalance;
+
+
 
 HostingCaller.GetBlockList = function (Params,response)
 {
@@ -544,6 +556,9 @@ HostingCaller.DappWalletList = function (Params)
     return Ret;
 };
 HTTPCaller.DappWalletList = HostingCaller.DappWalletList;
+
+
+
 
 
 HostingCaller.DappAccountList = function (Params)

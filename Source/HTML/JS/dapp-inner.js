@@ -146,6 +146,17 @@ async function AReadAccount(Num,Fields)
         return undefined;
 }
 
+async function AReadBalance(Account,Currency,ID)
+{
+    var Data={cmd:"DappGetBalance",Params:{AccountID:Account,Currency:Currency,ID:ID}}
+    var Ret=await ASendData(Data,2);
+    if(Ret && Ret.Value)
+    {
+        return Ret.Value;
+    }
+    return {SumCOIN:0,SumCENT:0};
+}
+
 
 
 
@@ -676,7 +687,7 @@ function ASendData(Data,Count)
             {
                 if(RetData)
                 {
-                    SetError(RetData2);
+                    //SetError(RetData2);
                     reject(RetData2);
                 }
                 else
@@ -688,7 +699,7 @@ function ASendData(Data,Count)
             {
                 if(RetData.Err)
                 {
-                    SetError(RetData.Err);
+                    //SetError(RetData.Err);
                     reject(RetData);
                 }
                 else
@@ -733,6 +744,9 @@ function OnMessage(event)
                     break;
                 case "DappInfo":
                     F(Data.Err,Data);
+                    break;
+                case "DappGetBalance":
+                    F(0,Data);
                     break;
                 case "DappWalletList":
                 case "DappAccountList":

@@ -618,6 +618,18 @@ HTTPCaller.GetAccount = function (id)
     var arr = ACCOUNTS.GetRowsAccounts(id, 1,0,1,1);
     return {Item:arr[0], result:1};
 }
+HTTPCaller.DappGetBalance = function (Params)
+{
+    var Account=parseInt(Params.AccountID);
+    var Currency=parseInt(Params.Currency);
+    var ID=Params.ID;
+
+    var Value = ACCOUNTS.GetBalance(Account,Currency,ID);
+    return {Value:Value, result:1};
+}
+
+
+
 
 HTTPCaller.GetAccountList = function (Params)
 {

@@ -235,6 +235,7 @@ function DappListener(event)
         case "DappBlockFile":
         case "DappAccountList":
         case "DappSmartList":
+        case "DappGetBalance":
         case "DappBlockList":
         case "DappTransactionList":
             {
@@ -262,6 +263,7 @@ function DappListener(event)
                     {
                         Data.Err = !SetData.result;
                         Data.arr = SetData.arr;
+                        Data.Value = SetData.Value;
                         Data.Body = SetData.Body;
                         SendMessage(Data);
                         if(StrKeyStorage && SetData.result)

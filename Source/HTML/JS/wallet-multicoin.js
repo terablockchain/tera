@@ -331,21 +331,29 @@ async function OpenToken(List,element)
 
     if(!element || !element.dataset)
         return;
-    var dataset=element.dataset;
+    var dataset = element.dataset;
 
-    var Params=
+    var Params =
         {
-            Account:+dataset.account,
-            ID:dataset.id,
+            Account: +dataset.account,
+            ID: dataset.id,
         };
-    var Currency=+dataset.currency;
+    var Currency = +dataset.currency;
     if(!Currency)
         return;
 
-    var SmallMode=0;
-    var SmartObj=await AReadSmart(Currency,["Account"]);
+    var SmallMode = 0;
+    var SmartObj = await AReadSmart(Currency, ["Account"]);
     if(SmartObj)
-        SmallMode=await ACall(SmartObj.Account,"InPlaceShow");
+    {
+        try
+        {
+            SmallMode = await ACall(SmartObj.Account, "InPlaceShow");
+        }
+        catch(e)
+        {
+        }
+    }
 
 
     var StrParams=JSON.stringify(Params);

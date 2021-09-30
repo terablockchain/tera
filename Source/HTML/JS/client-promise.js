@@ -39,7 +39,7 @@ async function AStaticCall(AccNum,Name,Params,ParamsArr)
         {
             if(Err)
             {
-                SetError(Value);
+                //SetError(Value);
                 reject(Value);
             }
             else
@@ -64,11 +64,28 @@ async function AReadAccount(Account)
         return Item;
     }
 }
+async function AReadBalance(Account,Currency,ID)
+{
+    var Data=await AGetData("GetBalance",{AccountID:Account,Currency:Currency,ID:ID});
+    if(Data && Data.result === 1 && Data.Value)
+    {
+        return Data.Value;
+    }
+    return {SumCOIN:0,SumCENT:0};
+}
+
 
 async function AGetBalance(Account,Currency,ID)
 {
-    var AccObj=await AReadAccount(Account);
-    return FindBalance(AccObj,Currency,ID)
+    if(typeof Currency==="number")
+    {
+        return AReadBalance(Account,Currency,ID);
+    }
+    else
+    {
+        var AccObj=await AReadAccount(Account);
+        return FindBalance(AccObj,Currency,ID);
+    }
 }
 
 async function AReadBlockFile(BlockNum,TrNum)

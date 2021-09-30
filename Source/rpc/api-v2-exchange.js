@@ -276,7 +276,20 @@ WebApi2.GetBalance = function (Params,response)
 {
     if(typeof Params === "object")
     {
-        var arr = ACCOUNTS.GetRowsAccounts(ParseNum(Params.AccountID), 1,0,0,Params.GetArr);
+        var AccountID=parseInt(Params.AccountID);
+        var Currency=parseInt(Params.Currency);
+        var ID=Params.ID;
+
+        if(Currency && !Params.GetArr)
+        {
+            var Value = ACCOUNTS.GetBalance(Account,Currency,ID);
+            Value.result=1;
+            Value.AccountID=AccountID;
+            Value.Meta=Params.Meta;
+            return Value;
+        }
+
+        var arr = ACCOUNTS.GetRowsAccounts(AccountID, 1,0,0,Params.GetArr);
         if(arr.length)
         {
             var Account = arr[0];
@@ -291,6 +304,7 @@ WebApi2.GetBalance = function (Params,response)
             {
                 Result = {
                     result: 1,
+                    AccountID:AccountID,
                     SumCOIN: Value.SumCOIN,
                     SumCENT: Value.SumCENT,
                     Currency: Account.Currency,

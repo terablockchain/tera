@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 
-global.UPDATE_CODE_VERSION_NUM = 2619;
+global.UPDATE_CODE_VERSION_NUM = 2621;
 global.MIN_JINN_VERSION_NUM = 0;
 
 global.DEBUG_TRAFFIC = 0;
