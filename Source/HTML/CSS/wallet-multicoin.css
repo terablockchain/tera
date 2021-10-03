@@ -2,12 +2,13 @@
 grid_nft
 {
     display: grid;
+    width: 100%;
     min-width: 360px;
     max-height: 70vh;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     grid-gap: 5px;
 
-    overflow:auto;
+    overflow2:auto;
 
     resize: both;
     padding: 5px;
@@ -77,3 +78,19 @@ item_nft .tokenname
 
 }
 
+#idTokenNFT
+{
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+
+    height: 170px;
+    max-height: 200px;
+    overflow:auto;
+    margin-top: 5px;
+}
+
+#idListShow
+{
+    overflow:auto;
+}

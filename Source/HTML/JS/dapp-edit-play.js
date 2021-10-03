@@ -292,6 +292,10 @@ function GetBlockNumByTimePlay(CurrentTime)
     return Math.floor(CurTimeNum / VM_VALUE.CONSENSUS_PERIOD_TIME + 0.999999);
 }
 
+function SetFirstTimeBlock()
+{
+    VM_VALUE.FIRST_TIME_BLOCK = Date.now() - VM_BLOCKS.length * VM_VALUE.CONSENSUS_PERIOD_TIME;
+}
 function InitVMArrays()
 {
     
@@ -301,8 +305,8 @@ function InitVMArrays()
         AddHash(Block);
         VM_BLOCKS[Num] = Block;
     }
-    
-    VM_VALUE.FIRST_TIME_BLOCK = Date.now() - VM_BLOCKS.length * VM_VALUE.CONSENSUS_PERIOD_TIME;
+
+    SetFirstTimeBlock();
 
     for(var Num = 8; Num <= VM_VALUE.MaxDappsID; Num++)
     {
@@ -538,12 +542,15 @@ function CreateNewBlock(Data,bStat)
         VM_VALUE.CurrentBlock = Block;
     }
     AddHash(Block);
-    
+
+    if(!bStat)
+        SetFirstTimeBlock();
+
     return Block;
 }
 function AddNewBlock()
 {
-    for(var i = 0; i < 10; i++)
+    for(var i = 0; i < 1; i++)
     {
         var CurBlockTime = GetBlockNumByTimePlay(new Date());
         if(VM_VALUE.CurBlockNum > CurBlockTime)

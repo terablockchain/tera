@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 56;
+window.CLIENT_VERSION = 58;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -2083,7 +2083,7 @@ function closeModal()
 
     glWasModal = 0;
     //var modals = document.querySelectorAll(".Modal,.ModalDlg,.modal,#overlay,#idConfirm,#idOverlay");
-    var modals = document.querySelectorAll(".Modal,#idOverlay");
+    var modals = document.querySelectorAll(".Modal,.ModalDlg,#idOverlay");
     modals.forEach(function (item)
     {
         item.style.display = "none";

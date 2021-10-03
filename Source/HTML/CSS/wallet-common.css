@@ -13,7 +13,6 @@
     width: 90%;
     top: 100px;
     left: 50%;
-    transform2: translate(-50%, -50%);
     max-width: 250px;
 }
 
@@ -45,13 +44,39 @@
 #idShowPage
 {
     z-index: 10000;
-
+    width: 90vh;
+    max-width: 600px;
 }
 
 #idShowPage iframe
 {
-    height:600px;
+    width: 100%;
+    height: 90vh;
+    max-height: 600px;
     margin: 0;
     padding: 0;
+}
+
+
+.bt_set
+{
+    font-size: 12px;
+    width: 40px;
+    height: 20px;
+    border: 0;
+    border-radius: 5px;
+
+    padding: 0;
+    margin: 0 0 5px 15px;
+
+    line-height: 20px;
+    color: var(--colorText);
+    background-color: var(--colorButton);
+}
+
+button:hover
+{
+    cursor: pointer;
+    color: orange;
 }
 

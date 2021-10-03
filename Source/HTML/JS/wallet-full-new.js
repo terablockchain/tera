@@ -285,13 +285,6 @@ function ViewStatus()
     id.innerHTML = Str1 + Str2;
 }
 
-// function ChooseToken(name)
-// {
-//     if(name==="idListNFT")
-//     {
-//         SendMoneyBefore();
-//     }
-// }
 
 
 async function SendMoneyBefore()

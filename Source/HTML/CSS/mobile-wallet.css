@@ -18,6 +18,9 @@
 
 
 :root {
+	--colorText: #FFF;
+	--colorButton:#718CAF;
+
 	--blue-grey: #445368;
 	--light-blue: #718CAF;
     --fill--password:#000;

@@ -742,15 +742,6 @@ async function SetAccountsCard(Data,AccountsDataStr)
     UpdateTokenList();
 }
 
-// function ChooseToken(name)
-// {
-//     //todo - вызов (двойной клик) не работает в mobile
-//
-//     if(name==="idListNFT")
-//     {
-//         SendMobileBefore();
-//     }
-// }
 
 
 

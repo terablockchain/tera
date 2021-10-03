@@ -542,15 +542,19 @@ async function AddToTransfer(Data)
         throw new Error("Zero Value");
 
 
+    //PayContext.ToID
+    //var DataFrom=await AGetData("GetAccount", PayContext.FromID);
+    var DataFrom=await AReadAccount(PayContext.FromID);
+    var DataTo=await AReadAccount(PayContext.ToID);
+    //console.log("DataTo:",DataTo);
+    // //console.log("AddToTransfer",Data);
 
-    var DataFrom=await AGetData("GetAccount", PayContext.FromID);
-    //console.log("DataFrom:",DataFrom);
-    //console.log("AddToTransfer",Data);
-
-    if(!DataFrom || DataFrom.result !== 1 || !DataFrom.Item)
+    if(!DataFrom)
         throw new Error("Error account number: " + PayContext.FromID);
+    if(!DataTo)
+        throw new Error("Error account number: " + PayContext.ToID);
 
-    Data.FromItem=DataFrom.Item;
+    Data.FromItem=DataFrom;
 
     var Currency;
     if(!PayContext.Currency || PayContext.Currency==Data.FromItem.Currency)
@@ -568,11 +572,22 @@ async function AddToTransfer(Data)
     //console.log(PayContext.Currency , PayContext.ID,"Currency:",Currency);
 
     idAmount.innerText=FLOAT_FROM_COIN(PayContext.Value);
-    idFrom.innerText=PayContext.FromID;
-    idTo.innerText=PayContext.ToID;
+    idFrom.innerHTML="<B>"+PayContext.FromID+"</B> ("+DataFrom.Name+")";
+    idTo.innerHTML="<B>"+PayContext.ToID+"</B> ("+DataTo.Name+")";
 
     var ParamsCall=Data.ParamsCall;
-    idMethod.innerText=ParamsCall?ParamsCall.Method:"";
+    var StrMehtod="";
+    if(ParamsCall)
+    {
+        StrMehtod=escapeHtml(ParamsCall.Method);
+        if(Data.Smart!==DataTo.Value.Smart)
+        {
+            StrMehtod+="<span class='red'>(smart:"+DataTo.Value.Smart+")</span>";
+        }
+    }
+
+
+    idMethod.innerHTML=StrMehtod;
     SetVisibleBlock("idRowID",!!ParamsCall);
 
     idID.innerText=PayContext.ID;

@@ -196,7 +196,7 @@
                        oninput="OnChangeAccName()">
 
                 <a class="currency_old_token">
-                    <a href="#" target="" onclick="ViewTokenCurrencyInput()" class="accounts-info__to-send-link link_old_token">Set currency (old token format)</a>
+                    <a href="#" target="" onclick="ViewTokenCurrencyInput()" class="accounts-info__to-send-link link_old_token">Set currency (for old token format)</a>
                 </a>
 
             </div>
@@ -316,50 +316,31 @@
 
             <div class="send-page__field key-field">
                 <p class="key-field__title">From:</p>
-                <button onclick="SetAllSum()" title="Paste total amount" class="key-field__btn btn-no-bg no-mr set_all_sum" style="padding: 0; margin-left: 10px;">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M15 1H3C1.89543 1 1 1.89543 1 3V15C1 16.1046 1.89543 17 3 17H15C16.1046 17 17 16.1046 17 15V3C17 1.89543 16.1046 1 15 1ZM3 0C1.34315 0 0 1.34315 0 3V15C0 16.6569 1.34315 18 3 18H15C16.6569 18 18 16.6569 18 15V3C18 1.34315 16.6569 0 15 0H3ZM6.64645 10.6464C6.84171 10.4512 7.15829 10.4512 7.35355 10.6464L9.5 12.7929V6C9.5 5.17157 8.82843 4.5 8 4.5H6C5.72386 4.5 5.5 4.27614 5.5 4C5.5 3.72386 5.72386 3.5 6 3.5H8C9.38071 3.5 10.5 4.61929 10.5 6V12.7929L12.6464 10.6464C12.8417 10.4512 13.1583 10.4512 13.3536 10.6464C13.5488 10.8417 13.5488 11.1583 13.3536 11.3536L10.3536 14.3536L10 14.7071L9.64645 14.3536L6.64645 11.3536C6.45118 11.1583 6.45118 10.8417 6.64645 10.6464Z"/>
-                    </svg>
-                </button>
-
 
                 <div class="myrow">
                     <select size="1" id="idAccount" class="key-field__select" oninput="OnSelectAccountFrom(); CheckSending();">
                     </select>
-
-<!--                    <select  size="1" id="idERCMode" class="key-field__select"  oninput="OnSelectAccountFrom()" style="width:80px;">-->
-<!--                        <option value="0">Coin</option>-->
-<!--                        <option value="1">NFT</option>-->
-<!--                    </select>-->
                 </div>
 
             </div>
 
-            <div class="send-page__field key-field" id="idTokenNFT" style="display:none">
-                <div>
-                    <div style="padding-left: 10px" class="t_choos_coin">Choose a coin:</div>
-                    <grid_nft id="idListNFT">
-                        <item_nft>Loading...</item_nft>
-                    </grid_nft>
-                </div>
+            <div class="send-page__field" id="idTokenNFT">
+                <div style="padding-left: 10px" class="t_choos_coin">CHOOSE A COIN:</div>
+                <grid_nft id="idListNFT">
+                    <item_nft>Loading...</item_nft>
+                </grid_nft>
             </div>
 
 
             <div class="send-page__field key-field">
                 <label for="idTo" class="key-field__title key-field__title--pay"><span>Pay to:</span></label>
                 <span id="idNameTo2" style="margin: 0 10px 0 15px"></span>
-                <!--<button class="key-field__btn btn-no-bg">Paste</button>-->
-                <!--<a onclick="openModal('addresses-modal')" class="key-field__btn btn-no-bg key-field__btn&#45;&#45;with-icon no-mr">-->
-                    <!--Address book-->
-                    <!--<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">-->
-                        <!--<path fill-rule="evenodd" clip-rule="evenodd" d="M4.5585 1H16C16.5523 1 17 1.44771 17 2V16C17 16.5523 16.5523 17 16 17H4.5585C4.00622 17 3.5585 16.5523 3.5585 16V15.5H5.14688V15.7922C5.14688 16.0683 5.37074 16.2922 5.64688 16.2922C5.92303 16.2922 6.14688 16.0683 6.14688 15.7922V14.2078C6.14688 13.9317 5.92303 13.7078 5.64688 13.7078C5.37074 13.7078 5.14688 13.9317 5.14688 14.2078V14.5H3.5585V11.5H5.14688V11.7978C5.14688 12.074 5.37074 12.2978 5.64688 12.2978C5.92303 12.2978 6.14688 12.074 6.14688 11.7978V10.2134C6.14688 9.93728 5.92303 9.71342 5.64688 9.71342C5.37074 9.71342 5.14688 9.93728 5.14688 10.2134V10.5H3.5585V7.5H5.14688V7.80348C5.14688 8.07962 5.37074 8.30348 5.64688 8.30348C5.92303 8.30348 6.14688 8.07962 6.14688 7.80348V6.21907C6.14688 5.94293 5.92303 5.71907 5.64688 5.71907C5.37074 5.71907 5.14688 5.94293 5.14688 6.21907V6.5H3.5585V3.5H5.14688V3.80911C5.14688 4.08525 5.37074 4.30911 5.64688 4.30911C5.92303 4.30911 6.14688 4.08525 6.14688 3.80911V2.2247C6.14688 1.94856 5.92303 1.7247 5.64688 1.7247C5.37074 1.7247 5.14688 1.94856 5.14688 2.2247V2.5H3.5585V2C3.5585 1.44772 4.00622 1 4.5585 1ZM2.5585 16V15.5H1.5C0.671575 15.5 0 14.8284 0 14V12C0 11.1716 0.671573 10.5 1.5 10.5H2.5585V7.5H1.5C0.671575 7.5 0 6.82843 0 6V4C0 3.17157 0.671573 2.5 1.5 2.5H2.5585V2C2.5585 0.89543 3.45393 0 4.5585 0H16C17.1046 0 18 0.895431 18 2V16C18 17.1046 17.1046 18 16 18H4.5585C3.45393 18 2.5585 17.1046 2.5585 16ZM2.5585 11.5V14.5H1.5C1.22386 14.5 1 14.2761 1 14V12C1 11.7239 1.22386 11.5 1.5 11.5H2.5585ZM2.5585 3.5H1.5C1.22386 3.5 1 3.72386 1 4V6C1 6.27614 1.22386 6.5 1.5 6.5H2.5585V3.5ZM7.70564 3.5H14.9117V2.5H7.70564V3.5ZM7.70564 5.5H14.9117V4.5H7.70564V5.5ZM7.70564 7.5H14.9117V6.5H7.70564V7.5Z"/>-->
-                    <!--</svg>-->
-                <!--</a>-->
-                <input list="idToList" type="string"
+                <input list="idToList" type="search"
                        id="idTo" 
                        value="" 
                        class="key-field__input key-field__input--enter" 
-                       oninput="OnEditIdTo()" 
+                       oninput="OnEditIdTo()"
+                       autocomplete="off"
                        placeholder="Enter ID..." >
                 <datalist id="idToList">
                     <option value="Loading"></option>
@@ -367,8 +348,10 @@
             </div>
 
             <div class="send-page__field key-field">
-                <label for="idSumSend" class="key-field__title"><span>Amount:</span></label>
-                <!--<b>2 000 000 000,00000000</b>-->
+                <label for="idSumSend" class="key-field__title"><span>Amount:</span>
+                <button class="bt_set" onclick="SetAllSum()">max</button>
+                </label>
+
                 <input type="number" id="idSumSend" class="key-field__input" style="color:#1e21cb" value="" step=0 min=0 max=1000000000 oninput="OnEditTransactionFields()" placeholder="Input amount...">
             </div>
 

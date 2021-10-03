@@ -66,6 +66,15 @@ function SetAccountsData(Data,AccountsDataStr)
         if(!MapAccounts[Num])
             MapAccounts[Num] = {};
         CopyObjKeys(MapAccounts[Num], Item);
+
+
+        if(dataList)
+        {
+            var Options = document.createElement('option');
+            Options.value = Num;
+            Options.label = GetAccountText(Item, Num, 1);
+            dataList.appendChild(Options);
+        }
     }
 
 

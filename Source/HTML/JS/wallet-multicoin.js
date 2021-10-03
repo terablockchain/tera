@@ -95,7 +95,9 @@ function SetNftAttrMap(Addr)
         });
     }).catch(function (err)
     {
-        console.error(err);
+        MAP_NFT_ATTR[Addr]={};
+        delete MAP_NFT_WORK[Addr];
+        //console.log(err);
     });
 }
 
@@ -215,8 +217,8 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,TokenID,bVi
 
     RestartWorkNftImg();
 
-    if(window.idListNFT===IDList)
-        SetVisibleBlock("idTokenNFT",bNFT);
+    // if(window.idListNFT===IDList)
+    //     SetVisibleBlock("idTokenNFT",bNFT);
     if(!bNFT)
          IDList.CurSelect="";
 

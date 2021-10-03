@@ -53,16 +53,24 @@
 
 /*----------------*/
 
-.grid td.hash {
+.grid td.hash
+{
     width: 165px;
-    min-width: 120px;
-    max-width: 210px;
+    min-width: 165px;
+    padding: 2px;
     font-size: 10px;
     line-height: 12px;
     letter-spacing: 0.02em;
     word-break: break-all;
     font-family: "courier new", "times new roman", monospace;
 }
+.journal td.hash
+{
+}
+.check_grid td.hash
+{
+}
+
 .grid td.pubkey {
     width: 215px;
     min-width: 215px;
@@ -207,11 +215,3 @@
 }
 
 
-.journal td.hash
-{
-    width: 135px;
-}
-.check_grid td.hash
-{
-    width: 120px;
-}

@@ -785,22 +785,15 @@
             <div class="select row">
                 <select class="select__item input_send" size="1" id="idAccount" oninput="OnSelectAccountFrom()">
                 </select>
-<!--                <select class="select__item" size="1" id="idERCMode" oninput="OnSelectAccountFrom()">-->
-<!--                    <option value="0">Coin</option>-->
-<!--                    <option value="1">ERC</option>-->
-<!--                </select>-->
             </div>
         </div>
 
-        <div class="row" id="idTokenNFT" style="display:none">
-            <div>
-                <div class="input-group__row">
-                    <p class="input-group__text t_choos_coin">Choose a coin:</p>
-                </div>
-                <grid_nft id="idListNFT">
-                    <item_nft>Loading...</item_nft>
-                </grid_nft>
-            </div>
+
+        <div class="row" id="idTokenNFT">
+            <div style="padding-left: 10px" class="t_choos_coin">CHOOSE A COIN:</div>
+            <grid_nft id="idListNFT">
+                <item_nft>Loading...</item_nft>
+            </grid_nft>
         </div>
 
 
@@ -811,20 +804,16 @@
                 </div>
             </div>
 
-            <INPUT list="idToList" class="input select__item input_send" type="string" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" placeholder="Enter ID..." >
+            <INPUT list="idToList" class="input select__item input_send" type="search" maxlength="40" id="idTo" value="" onkeyup="OnEditIdTo()" onchange="OnEditIdTo()" autocomplete="off" placeholder="Enter ID..." >
             <datalist id="idToList">
                 <option value="Loading"></option>
             </datalist>
 
         </div>
         <div class="input-group">
-            <div class="input-group__row">
+            <div class="input-group__row flex_left">
                 <p class="input-group__text">Amount <span id="idCoinName"></span></p>
-                <div class="input-group__right">
-                        <a onclick="SetAllSum()" class="input-group__link set_all_sum">
-                        <img src="./img/load.svg">
-                    </a>
-                </div>
+                <button class="bt_set" onclick="SetAllSum()">max</button>
             </div>
             <input type="number" class="input input_send coral" placeholder="Input amount..." id="idSumSend" value="" step=0 min=0 max=1000000000 onkeyup="OnEditTransactionFields()" onchange="OnEditTransactionFields()">
         </div>
@@ -1173,7 +1162,7 @@
 
                     <div class="navigation df_space">
                         <p class="connection__text">Search:</p>
-                        <INPUT type="search" id="idViewAccountFilter" class="input" value="" onchange="CheckNewSearch(DefAccounts); ViewCurrent(DefAccounts)">
+                        <INPUT type="search" id="idViewAccountFilter" class="input" value="" autocomplete="on" onchange="CheckNewSearch(DefAccounts); ViewCurrent(DefAccounts)">
 
                         <button onclick="ViewBegin(DefAccounts)" class="btn btn_nav"><img src="./img/arrow_first.svg"></button>
                         <button onclick="ViewPrev(DefAccounts)" class="btn btn_nav"><img src="./img/arrow_left.svg"></button>
@@ -1301,7 +1290,7 @@
 
                     <div class="navigation df_space">
                         <p class="connection__text">Block:</p>
-                        <INPUT type="search" id="idViewAccHashBlockNum" class="input" value="" onchange="SetNewAccHashSearch(DefHash);">
+                        <INPUT type="search" id="idViewAccHashBlockNum" class="input" value="" autocomplete="off"  onchange="SetNewAccHashSearch(DefHash);">
 
                         <button onclick="ViewBegin(DefHash)" class="btn btn_nav"><img src="./img/arrow_first.svg"></button>
                         <button onclick="ViewPrev(DefHash)" class="btn btn_nav"><img src="./img/arrow_left.svg"></button>

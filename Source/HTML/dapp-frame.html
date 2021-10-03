@@ -342,10 +342,12 @@
     #idAmount
     {
         color: #cc7e00;
+        font-weight: bold;
     }
     #idToken
     {
         color: #7f4d00;
+        font-weight: bold;
         margin-left: 5px;
     }
 
@@ -363,13 +365,22 @@
     }
     .value
     {
-        font-weight: bold;
         width:220px;
         overflow: auto;
         border2: 1px solid black;
-
+    }
+    #idMethod
+    {
+        display: flex;
+        font-weight: bold;
+        flex-direction: row;
+        justify-content: space-between;
     }
 
+    .red
+    {
+        color: red;
+    }
 
 </style>
 
@@ -392,9 +403,19 @@
                     </div>
                 </DIV>
                 <DIV class="row">
-                    <DIV class="title">Accounts:</DIV>
-                    <div class="value">
-                        <span id="idFrom">100</span> → <span id="idTo">107</span>
+                    <DIV class="title">From:</DIV>
+                    <div class="value accs_rows">
+                        <DIV id="idFrom"></DIV>
+                    </div>
+                </DIV>
+                <DIV class="row">
+                    <DIV class="title"></DIV>
+                    <b>↓</b>
+                </DIV>
+                <DIV class="row">
+                    <DIV class="title">To:</DIV>
+                    <div class="value accs_rows">
+                        <DIV id="idTo">107</DIV>
                     </div>
                 </DIV>
                 <DIV class="row" id="idRowID">
@@ -406,7 +427,9 @@
                 <DIV class="row">
                     <DIV class="title">Amount:</DIV>
                     <div class="value">
+                        <div>
                         <span id="idAmount">100000000.0000000001</span><span id="idToken">TERA</span>
+                        </div>
                     </div>
                 </DIV>
             </DIV>

@@ -107,8 +107,10 @@ async function InitMapCurrency()
 
 function RegCurrency(Num,Name,PathIcon,System,Priority)
 {
-    if(!Name)
+    if(!Name || Name.substr(0,5)==="Token")
         return;
+
+
     if(!Priority)
         Priority=0;
 
@@ -214,8 +216,7 @@ async function ACurrencyName(Num,ShortName)
     {
         if(!ShortName)
         {
-            //var Data=await AGetData("GetDappList", {StartNum:Num, CountNum:1,Fields:["Num","ShortName"]});
-            var Smart=AReadSmart( Num, ["Num", "ShortName"]);
+            var Smart=await AReadSmart( Num, ["Num", "ShortName"]);
             if(Smart)
                 ShortName=Smart.ShortName;
             else
@@ -365,7 +366,7 @@ function AccToListArr(UserArr,MaxStrLength,FilterCurrency)
                 if(NFTSum)
                 {
                     if(NFTSum && TokenSum)
-                        Str+=TokenSum+" "+Token.Token + " NFT: " + NFTSum;
+                        Str+=TokenSum+" "+Token.Token + ", NFT: " + NFTSum;
                     else
                         Str+=" "+Token.Token+" NFT: " + NFTSum;
                 }
@@ -412,6 +413,59 @@ function FindBalance(AccObj,Currency,ID)
     }
     return {SumCOIN:0,SumCENT:0};
 }
+
+//----------------------------- Token/NFT imgs
+function GetTokenImage(ID,classname)
+{
+    if(!classname)
+        classname="";
+    if(!ID)
+        return "";
+    return `<img class="${classname} load_from_nft" data-id="${ID}">`;
+
+    // var StrID="idImg"+ID;
+    // var Element=$(StrID);
+    // if(Element && Element.src)
+    // {
+    //     return `<img class="${classname}" src="${Element.src}">`;
+    // }
+    // return `<img class="${classname} load_from_nft" data-id="${ID}" id="${StrID}">`;
+}
+
+function ConvertTokenImages()
+{
+    var modals = document.querySelectorAll(".load_from_nft");
+    modals.forEach(SetTokenImage);
+}
+
+
+function SetTokenImage(Item)
+{
+    var ID=Item.dataset.id;
+    var Addr="/nft/"+ID;
+    Item.classList.remove('load_from_nft');
+
+    var Addr2=GetURLPath(Addr);
+
+    fetch(Addr2, {method:'get', cache:'default', mode:'cors', credentials2:'include', headers:this.Headers}).then(function (response)
+    {
+        response.text().then(function (text)
+        {
+            if(text.substr(0,1)==="{")
+            {
+                var Attr=JSON.parse(text);
+                //console.log(ID,Attr);
+                if(Attr)
+                    Item.src = GetURLPath(Attr.image);
+            }
+        });
+    }).catch(function (err)
+    {
+        //console.log(err);
+    });
+}
+
+
 
 
 InitMapCurrency();
