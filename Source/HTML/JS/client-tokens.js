@@ -421,17 +421,17 @@ function GetTokenImage(ID,classname)
         classname="";
     if(!ID)
         return "";
-    return `<img class="${classname} load_from_nft" data-id="${ID}">`;
+    //return `<img class="${classname} load_from_nft" data-id="${ID}">`;
 
-    // var StrID="idImg"+ID;
-    // var Element=$(StrID);
-    // if(Element && Element.src)
-    // {
-    //     return `<img class="${classname}" src="${Element.src}">`;
-    // }
-    // return `<img class="${classname} load_from_nft" data-id="${ID}" id="${StrID}">`;
+    var StrID="idImg"+ID;
+    var Element=$(StrID);
+    if(Element && Element.src)
+    {
+        return `<img class="${classname}" src="${Element.src}"  id="${StrID}">`;
+    }
+
+    return `<img class="${classname} load_from_nft" data-id="${ID}" id="${StrID}">`;
 }
-
 function ConvertTokenImages()
 {
     var modals = document.querySelectorAll(".load_from_nft");

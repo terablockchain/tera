@@ -38,7 +38,7 @@ item_nft
     grid_nft
     {
         max-height: 260px;
-        min-width: 0;
+        min-width: 300px;
         resize: none;
     }
 }
