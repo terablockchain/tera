@@ -6,28 +6,22 @@ var idTimerTransfer=0;
 
 var TestLoadMode=0;
 var TestLoadName="";
+var bStatusTab;
 
 function CorrectFrameSize()
 {
-    var bStatusTab=!(location.href.indexOf("nostatus")>=0);
     if(!bStatusTab)
     {
-
         idFrame.style.top=0;
         idFrame.style.height="100vh";
-
-
-        //
-
-
     }
-
 }
+
 
 //DAPP TRANSFER
 window.onload=function()
 {
-    var bStatusTab=!(location.href.indexOf("nostatus")>=0);
+    bStatusTab=!(location.href.indexOf("nostatus")>=0);
     SetVisibleBlock("idStatus",bStatusTab);
     SetVisibleBlock("idMenu",bStatusTab);
 

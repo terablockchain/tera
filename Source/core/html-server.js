@@ -393,7 +393,11 @@ function SendToResponceFile(request,response,Block,TrNum)
 
 function SendToResponce404(response)
 {
-    response.writeHead(404, {'Content-Type':'text/html'});
+    var Headers = {"X-Content-Type-Options":"nosniff"};
+    Headers["Access-Control-Allow-Origin"]="*";
+    Headers["Content-Type"]="text/html";
+
+    response.writeHead(404, Headers);
     response.end();
 }
 

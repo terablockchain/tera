@@ -632,31 +632,38 @@ async function SetAccountsCard(Data,AccountsDataStr)
         var Str1, Str2 = "";
         if(Item.Value.SumCOIN || Item.Value.SumCENT)
         {
-            if(Item.Value.SumCOIN >= 1e12)
-            {
-                Str1 = "UNIT:" + Item.Value.SumCOIN;
-            }
-            else
-            {
-                Str1 = STRING_FROM_COIN(Item.Value);
-            }
+            Str1 = STRING_FROM_COIN(Item.Value);
         }
         else
         {
             Str1 = "";
         }
-        var StrCurrencyName = await ACurrencyNameItem(Item);
+        var StrCurrencyName;
+        if(Str1==="")
+        {
+            Str = Str.replace("$value.icon_currency_class", "hide");
+            StrCurrencyName="";
+        }
+        else
+        {
+            StrCurrencyName = await ACurrencyNameItem(Item);
+        }
+
         Str = Str.replace("$Value.SumCOIN", Str1);
         Str = Str.replace("$Value.SumCENT", Str2);
         Str = Str.replace("$Value.CurrencyName", StrCurrencyName);
-        
+
         var CurrencyObj = Item.CurrencyObj;
         if(!CurrencyObj)
             CurrencyObj = {IconBlockNum:0, Num:0};
-        Str = Str.replace("$value.currencyiconpath", "src='" + RetIconPath(CurrencyObj, 1) + "'");
-        var CurrencyPath = RetIconPath(CurrencyObj);
-        if(CurrencyPath.substr(0, 6) !== "/file/")
-            Str = Str.replace("prod-card__currency--with-dot", "");
+        var CurrencyPath = RetIconPath(CurrencyObj, 1);
+        Str = Str.replace("$value.currencyiconpath", "src='" + CurrencyPath + "'");
+
+
+        // Str = Str.replace("$value.currencyiconpath", "src='" + RetIconPath(CurrencyObj, 1) + "'");
+        // var CurrencyPath = RetIconPath(CurrencyObj);
+        // if(CurrencyPath.substr(0, 6) !== "/file/")
+        //     Str = Str.replace("prod-card__currency--with-dot", "");
         
         Str = Str.replace("$Item.Name", escapeHtml(Item.Name));
         
@@ -685,7 +692,7 @@ async function SetAccountsCard(Data,AccountsDataStr)
         var StrCountTokens="";
         var StrOpenNFTPage="";
         if(RetTotal.CountTokens)
-            StrCountTokens="Token count: "+RetTotal.CountTokens;
+            StrCountTokens="Tokens count: "+RetTotal.CountTokens;
         if(RetTotal.CountNFT)
         {
             StrCountTokens+=" NFT: "+RetTotal.CountNFT;

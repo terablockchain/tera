@@ -11,6 +11,12 @@ function SendPay(Data)
     SendData(Data)
 }
 
+function CloseDapp()
+{
+    SendData({cmd:"Close"});
+}
+
+
 function SetStorage(Key,Value)
 {
     var Data={cmd:"setstorage",Key:Key,Value:Value}

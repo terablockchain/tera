@@ -141,7 +141,7 @@ function DappListener(event)
             }
         case "pay":
             {
-                ToLog("The method is deprecated and no longer supported.");
+                ToLog("The method is deprecated and no longer supported. Use StartTransfer.");
                 break;
             }
         case "setstorage":
@@ -397,8 +397,20 @@ function DappListener(event)
         case "Show":
             SetVisibleBlock("idFrame", 1);
             break;
-
+        case "Close":
+            CloseDapp();
+            break;
     }
+}
+
+function CloseDapp()
+{
+    //console.log("CloseDapp");
+    idFrame.srcdoc="";
+    if(parent.closeIFrame)
+        parent.closeIFrame();
+    else
+        window.close();
 }
 
 function RetSendTx(Err,TR, Body, Text, Context)

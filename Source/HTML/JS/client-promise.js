@@ -79,6 +79,7 @@ async function AGetBalance(Account,Currency,ID)
 {
     if(typeof Currency==="number")
     {
+        //console.log("AGetBalance:",Account,Currency,ID);
         return AReadBalance(Account,Currency,ID);
     }
     else

@@ -384,6 +384,12 @@ async function OpenToken(List,element)
     OpenDapps(Currency, StrParams, 1);
     //console.log(List,StrParams);
 }
+function closeIFrame()
+{
+    //idShowPage
+    $('idFrame').remove();
+    closeModal();
+}
 
 
 //---------------------------------------------------------------------------
@@ -422,9 +428,11 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
     for(var n=0;Item.BalanceArr && n<Item.BalanceArr.length;n++)
     {
         var Token=Item.BalanceArr[n];
-        //if(Token.Old)                continue;
+        
         var TokenName=await ACurrencyName(Token.Currency,Token.Token);
-        //console.log("TokenName=",TokenName,"Arr=",Token.Arr.length);
+        var CurrencyPath = RetIconPath(Token,1,1);
+        //console.log("TokenName=",TokenName,"=",CurrencyPath);
+
         for(var j=0;j<Token.Arr.length;j++)
         {
             var Value2=Token.Arr[j];
@@ -436,7 +444,12 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
                     if(!Value2.ID || Value2.ID == "" || Value2.ID == "0")
                     {
                         CountTokens++;
-                        StrListTokens += '<div class="total-info__item"><dt>' + TokenName + '</dt><dd>' + STRING_FROM_COIN(Value2) + '</dd></div>';
+                        var StrImg="";
+                        if(CurrencyPath)
+                        {
+                            StrImg = `<img src="${CurrencyPath}" class="token_img">`;
+                        }
+                        StrListTokens += `<div class="total-info__item"><dt>${TokenName}</dt><span class="token_value">${STRING_FROM_COIN(Value2)}</span>${StrImg}</div>`;
                     }
                     else
                     {

@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 58;
+window.CLIENT_VERSION = 59;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1117,11 +1117,12 @@ function RetNumDapp(Item)
     return Item.Num;
 }
 
-function RetIconPath(Item,bCurrency)
+function RetIconPath(Item,bCurrency,bNoBlank)
 {
     if(bCurrency)
     {
-        var ItemCurrency = GetItemCurrencyByNum(Item.Num);
+        var Currency=Item.Currency!==undefined?Item.Currency:Item.Num;
+        var ItemCurrency = GetItemCurrencyByNum(Currency);
         if(ItemCurrency)
         {
             if(ItemCurrency.PathIcon)
@@ -1137,8 +1138,9 @@ function RetIconPath(Item,bCurrency)
     
     if(Item.IconBlockNum)
         return GetURLPath('/file/' + Item.IconBlockNum + '/' + Item.IconTrNum);
-    else
+    else if(!bNoBlank)
         return GetURLPath("/PIC/blank.svg");
+    return "";
 }
 
 function RetIconDapp(Item)
