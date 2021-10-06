@@ -428,7 +428,7 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
     for(var n=0;Item.BalanceArr && n<Item.BalanceArr.length;n++)
     {
         var Token=Item.BalanceArr[n];
-        
+
         var TokenName=await ACurrencyName(Token.Currency,Token.Token);
         var CurrencyPath = RetIconPath(Token,1,1);
         //console.log("TokenName=",TokenName,"=",CurrencyPath);
@@ -449,7 +449,7 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
                         {
                             StrImg = `<img src="${CurrencyPath}" class="token_img">`;
                         }
-                        StrListTokens += `<div class="total-info__item"><dt>${TokenName}</dt><span class="token_value">${STRING_FROM_COIN(Value2)}</span>${StrImg}</div>`;
+                        StrListTokens += `<div class="token_row"><div class="token_name">${TokenName}</div><div class="token_value">${STRING_FROM_COIN(Value2)}</div>${StrImg}</div>`;
                     }
                     else
                     {

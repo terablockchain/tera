@@ -191,6 +191,24 @@ function DappBlockFile(BlockNum,TrNum,F)
     SendData(Data,F)
 }
 
+async function AReadBlock(BlockNum,TrNum)
+{
+    var Data={cmd:"DappBlockFile",Params:{BlockNum:BlockNum,TrNum:TrNum}}
+    return ASendData(Data,2);
+}
+async function AReadTx(BlockNum,TrNum)
+{
+    var RetData=await AReadBlock(BlockNum,TrNum);
+    if(RetData.Type===135 || RetData.Type===136)
+    {
+        var Params;
+        if(RetData.Params)
+            try{Params=JSON.parse(RetData.Params);}catch (e){console.error(e)};
+        return Params;
+    }
+}
+
+
 function SetStatus(Str)
 {
     SendData({cmd:"SetStatus",Message:Str});
@@ -349,7 +367,7 @@ function GetDappBlock(Block,Tr,F)
 {
     DappBlockFile(Block,Tr,function (Err,Data)
     {
-        if(!Err && Data.Type===135)
+        if(!Err && (Data.Type===135 || Data.Type===136))
         {
             try{var Params=JSON.parse(Data.Params);}catch (e){}
             if(Params)

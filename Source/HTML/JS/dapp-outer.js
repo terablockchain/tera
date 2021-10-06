@@ -408,9 +408,24 @@ function CloseDapp()
     //console.log("CloseDapp");
     idFrame.srcdoc="";
     if(parent.closeIFrame)
+    {
+        //console.log("closeIFrame");
         parent.closeIFrame();
+    }
     else
-        window.close();
+    {
+        //console.log(window.history.length);
+        if(window.history.length)
+        {
+            //console.log("Back");
+            window.history.back();
+        }
+        else
+        {
+            //console.log("CloseWindow");
+            window.close();
+        }
+    }
 }
 
 function RetSendTx(Err,TR, Body, Text, Context)

@@ -1012,7 +1012,8 @@ textarea {
 	justify-content: flex-start;
 }
 
-.prod-card__dapp-name {
+.prod-card__dapp-name
+{
 	margin-left: 10px;
 	margin-right: auto;
 }
@@ -2309,8 +2310,7 @@ td.pubkey
 }
 .history-page__description {
   margin: 0;
-  margin-bottom: 17px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 14px;
   color: rgba(0, 0, 0, 0.5);
 }
@@ -2407,9 +2407,9 @@ td.pubkey
     text-align: center;
   }
   .history-page__description {
-    margin-bottom: 30px;
-    font-size: 16px;
-    line-height: 19px;
+    margin-bottom2: 30px;
+    font-size: 14px;
+    line-height: 16px;
     text-align: center;
   }
   .history-page__balance {
@@ -2627,11 +2627,12 @@ td.num
 
 .btn-nft-open
 {
-	width: 80px;
+	width: 100px;
 	height: 35px;
 	font-size: 14px;
 	line-height: 21px;
 	padding: 5px;
+	margin: 10px 0px;
 
 }
 

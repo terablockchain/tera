@@ -95,11 +95,20 @@ item_nft .tokenname
     overflow:auto;
 }
 
+.token_row
+{
+    display: flex;
+    width: 295px;
+}
+.token_name
+{
+    width: 120px;
+    text-align: left;
+}
 .token_value
 {
-    text-align2: right;
-
-
+    width: 150px;
+    text-align: right;
     margin: 0 10px;
     line-height: 18px;
     font-weight: bold;

@@ -1489,6 +1489,7 @@ function OpenHistoryPage(Num)
     
     SetVisibleFrame("idHistoryPage", 1);
     SendMessage("HistoryPage", {IsTeraWallet:1,Account:Num, FrameName:"idHistoryPage"});
+    closeModal();
 }
 
 function OpenBlockViewerPage(Num)
@@ -1501,6 +1502,7 @@ function OpenBlockViewerPage(Num)
     
     SetVisibleFrame("idBlockViewerPage", 1);
     SendMessage("BlockViewerPage", {IsTeraWallet:1,BlockNum:Num, FrameName:"idBlockViewerPage"});
+    closeModal();
 }
 
 function AddFrame(name,filename)
@@ -1519,7 +1521,7 @@ function SetVisibleFrame(name,bVisible)
     SetVisibleBlock("idMainHeader", !bVisible);
     SetVisibleBlock("idMain", !bVisible);
     SetVisibleBlock(name, bVisible);
-    if(bVisible)
+    if(bVisible && $(name))
         $(name).focus();
 }
 

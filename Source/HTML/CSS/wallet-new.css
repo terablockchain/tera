@@ -149,7 +149,10 @@ button {
   -webkit-justify-content: space-between;
       -ms-flex-pack: justify;
           justify-content: space-between; }
-
+.df_around
+{
+    justify-content: space-around;
+}
 .df_items-center {
   display: -webkit-box;
   display: -webkit-flex;
@@ -760,7 +763,7 @@ button {
 
         width: 100%;
         overflow:auto;
-        padding: 0;
+        padding: 10px;
         margin: 0;
     }
 

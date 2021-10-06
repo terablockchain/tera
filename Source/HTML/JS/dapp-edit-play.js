@@ -464,7 +464,7 @@ function SendCallMethod(ToNum,MethodName,Params,ParamsArr,FromNum,FromSmartNum,F
     if(!PayContext)
         PayContext = {FromID:ParseNum(FromNum), ToID:Account.Num, Description:"", Value:{SumCOIN:0, SumCENT:0}};
 
-    var Data = {Type:135, Account:Account.Num, MethodName:MethodName, FromNum:FromNum, Params:JSON.stringify(Params)};
+    var Data = {Type:136, Account:Account.Num, MethodName:MethodName, FromNum:FromNum, Params:JSON.stringify(Params)};
     var Block = CreateNewBlock(Data, bStatic);
     var BlockNum = Block.BlockNum;
     var Tx=CopyObjKeys({},Data);
