@@ -56,10 +56,10 @@ class AccountHash extends require("./accounts-keyvalue")
         }
         
         var CheckResult = this.CheckAccountHash(Body, BlockNum, TR);
-        if(CheckResult===-1)
+        if(!CheckResult || CheckResult===-1)
         {
             Result = "BAD ACCOUNT HASH";
-            if(global.OnBadAccountHash)
+            if(global.OnBadAccountHash && CheckResult===-1)
             {
                 if(TR && TR.BlockNum)
                     global.OnBadAccountHash(BlockNum, TR.BlockNum)
@@ -78,10 +78,16 @@ class AccountHash extends require("./accounts-keyvalue")
         if(BlockNum % PERIOD_ACCOUNT_HASH === 0)
         {
             var Item = this.GetAccountHashItem(TR.BlockNum);
+
+            // if(TR.BlockNum===76700800)
+            //     var Stop=1;
+
             if(Item && Item.BlockNum === TR.BlockNum)
             {
-                if(!IsZeroArr(Item.SmartHash))
-                    return 2;//error miner
+                if(!IsZeroArr(TR.SmartHash))
+                    return 0;//error miner
+
+
 
                 if(CompareArr(Item.AccHash, TR.AccHash) === 0)
                 {
@@ -91,6 +97,12 @@ class AccountHash extends require("./accounts-keyvalue")
                     // if(CompareArr(Item.SmartHash, TR.SmartHash) === 0 && Item.AccountMax === TR.AccountMax && Item.SmartCount === TR.SmartCount)
                     //     return 1;
                 }
+                // if(global.DEV_MODE)
+                // {
+                //     ToLog("SmartHash on " + Item.BlockNum + " : ", GetHexFromArr(Item.SmartHash))
+                //     console.log(Item);
+                //     console.log(TR);
+                // }
                 return -1;
             }
         }
