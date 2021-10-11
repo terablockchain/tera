@@ -185,20 +185,20 @@ function CheckGoodAutocompleter(editor)
         return;
 
 
-    function retrievePrecedingIdentifier(text, pos, regex)
-    {
-        var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
-        regex = regex || ID_REGEX;
-        var buf = [];
-        for (var i = pos-1; i >= 0; i--) {
-            if (regex.test(text[i]))
-                buf.push(text[i]);
-            else
-                break;
-        }
-        return buf.reverse().join("");
-    };
-
+    // function retrievePrecedingIdentifier(text, pos, regex)
+    // {
+    //     var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
+    //     regex = regex || ID_REGEX;
+    //     var buf = [];
+    //     for (var i = pos-1; i >= 0; i--) {
+    //         if (regex.test(text[i]))
+    //             buf.push(text[i]);
+    //         else
+    //             break;
+    //     }
+    //     return buf.reverse().join("");
+    // };
+    //
 
     editor.completer.gatherCompletionsOld=editor.completer.gatherCompletions;
     editor.completer.gatherCompletions = function(editor, callback)
@@ -303,7 +303,46 @@ function AddAceOptions(editor)
             SelectTab("TabPlay");
             DoPlay();
         }, readOnly:false});
-    
+
+    editor.commands.addCommand({name:"Run", bindKey:{win:"F12", mac:"F12"}, exec:function (editor)
+        {
+            var session = editor.getSession();
+            var pos = editor.getCursorPosition();
+
+            var StrLine = session.getLine(pos.row);
+
+            var Name = retrievePrecedingIdentifier(StrLine, pos.column,undefined,1);
+            if(!Name)
+                return;
+
+            //var regex = new RegExp("(function|var)\\s+"+Name+"\\W","");
+            var regexVar = new RegExp("var\\s+"+Name+"\\W","");
+
+            for(var row=pos.row-1;row>=0;row--)
+            {
+                var Str=session.getLine(row);
+                if (regexVar.test(Str))
+                {
+                    editor.gotoLine(row + 1);
+                    break;
+                }
+            }
+
+
+            var regexFunc = new RegExp("function\\s+"+Name+"\\W","");
+            var AllCount=session.getLength();
+            for(var row=0;row<AllCount;row++)
+            {
+                var Str=session.getLine(row);
+                if (regexFunc.test(Str))
+                {
+                    editor.gotoLine(row + 1);
+                    break;
+                }
+            }
+
+        }, readOnly:false});
+
     editor.commands.addCommand({name:"togglecomment2", bindKey:{win:"Ctrl-o", mac:"Command-o"}, exec:function (editor)
         {
             editor.toggleCommentLines();
@@ -320,6 +359,7 @@ function AddAceOptions(editor)
         
         var len = range.end.row - firstRow;
         if(len > 0)
+        {
             if(delta.action == "removeText" || delta.action == "removeLines")
             {
                 var WasRow = sesion.$breakpoints[firstRow];
@@ -335,11 +375,12 @@ function AddAceOptions(editor)
                 {
                     firstRow++;
                 }
-                
+
                 var args = new Array(len);
                 args.unshift(firstRow, 0);
                 sesion.$breakpoints.splice.apply(sesion.$breakpoints, args);
             }
+        }
     });
 }
 function GetSmartCode()
@@ -471,3 +512,30 @@ function ToWordsArray(Str)
         Arr.unshift(Word);
     return Arr;
 }
+
+
+function retrievePrecedingIdentifier(text, pos, regex, bToRight)
+{
+    var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
+    regex = regex || ID_REGEX;
+    var buf = [];
+    for (var i = pos-1; i >= 0; i--)
+    {
+        if (regex.test(text[i]))
+            buf.push(text[i]);
+        else
+            break;
+    }
+    var StrRet=buf.reverse().join("");
+    if(bToRight)
+    {
+        for (var i = pos; true; i++)
+        {
+            if (regex.test(text[i]))
+                StrRet+=text[i];
+            else
+                break;
+        }
+    }
+    return StrRet;
+};

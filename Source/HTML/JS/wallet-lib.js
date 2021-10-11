@@ -21,6 +21,13 @@ var MaxBlockNum = 0;
 
 var DelList = {};
 
+function SetMapAccount(Item)
+{
+    var Num = ParseNum(Item.Num);
+    if(!MapAccounts[Num])
+        MapAccounts[Num] = {};
+    CopyObjKeys(MapAccounts[Num], Item);
+}
 
 var WasAccountsDataStr;
 function SetAccountsData(Data,AccountsDataStr)
@@ -63,9 +70,8 @@ function SetAccountsData(Data,AccountsDataStr)
         Item.MyAccount = true;
 
         var Num = ParseNum(Item.Num);
-        if(!MapAccounts[Num])
-            MapAccounts[Num] = {};
-        CopyObjKeys(MapAccounts[Num], Item);
+        SetMapAccount(Item);
+
 
 
         if(dataList)
@@ -111,7 +117,8 @@ function CheckNameAccTo()
             {
                 var Item = Data.arr[0];
                 Item.UpdateData = Date.now();
-                MapAccounts[Item.Num] = Item;
+                SetMapAccount(Item);
+                //MapAccounts[Item.Num] = Item;
                 SetNameAccTo();
             }
         });
@@ -163,8 +170,11 @@ function GetAccountText(Item,Num,bGetSum)
             text = "" + Num + " " + text;
         if(bGetSum)
         {
-            var StrSum = SUM_TO_STRING(Item.Value, Item.Currency, 1);
-            text += " (" + StrSum + ")";
+            var Arr=AccToListArr([Item]);
+            return Arr[0].text;
+            // console.log(Arr[0])
+            // var StrSum = SUM_TO_STRING(Item.Value, Item.Currency, 1);
+            // text += " (" + StrSum + ")";
         }
         
         return text;
@@ -192,7 +202,7 @@ function UpdateTokenList()
 {
     var Account=+idAccount.value;
     var Item=MapAccounts[idAccount.value];
-    //console.log("Item.BalanceArr=",Item.BalanceArr)
+    //console.log("Item=",Item)
     FillListNFT(idListNFT,Item?Item.BalanceArr:undefined,Account?Account*10000:0, "", 1,0,Account);
 }
 

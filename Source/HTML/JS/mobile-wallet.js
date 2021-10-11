@@ -568,6 +568,7 @@ function InitAccountsCard()
     }
 }
 
+
 async function SetAccountsCard(Data,AccountsDataStr)
 {
     
@@ -616,10 +617,8 @@ async function SetAccountsCard(Data,AccountsDataStr)
         Item.MyAccount = true;
         //console.log(Item)
         var Num = ParseNum(Item.Num);
-        if(!MapAccounts[Num])
-            MapAccounts[Num] = {};
-        CopyObjKeys(MapAccounts[Num], Item);
-        
+        SetMapAccount(Item);
+
         var option = Select.options[i];
         var StrText = GetAccountText(Item, Num, 1);
         if(option.text !== StrText)
@@ -745,6 +744,8 @@ async function SetAccountsCard(Data,AccountsDataStr)
         Select.value = CurrentValue;
         delete LoadMapAfter["idAccount"];
     }
+
+
 
     UpdateTokenList();
 }

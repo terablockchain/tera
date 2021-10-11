@@ -107,6 +107,8 @@ async function FillListNFT(IDList,TokensArr,PrefixNum,TokenName,bView,TokenOnly,
 {
     if(!FirstPromise("FillListNFT"))
         return;
+    //console.log("FillListNFT Tokens=",TokensArr);
+
     FillListNFTNext(IDList,TokensArr,PrefixNum,TokenName,"",bView,TokenOnly,Account);
     LeavePromise("FillListNFT");
 }
@@ -127,7 +129,6 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,TokenID,bVi
     var bNFT=0;
     var Str="";
 
-    //console.log("FillListNFTNext Tokens=",Tokens);
 
     if(bView && TokensArr)
     {
@@ -152,7 +153,7 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,TokenID,bVi
                     continue;
 
                 var Sum=FLOAT_FROM_COIN(Value);
-                if(!Sum && !Item.Inner)
+                if(!Sum)// && !Item.Inner)
                     continue;
 
                 Item.TokenName = Item.Token;
@@ -384,11 +385,17 @@ async function OpenToken(List,element)
     OpenDapps(Currency, StrParams, 1);
     //console.log(List,StrParams);
 }
+function closeShowPage()
+{
+    closeIFrame();
+}
 function closeIFrame()
 {
     //idShowPage
-    $('idFrame').remove();
+    //$('idFrame').remove();
     closeModal();
+    if(window.OnSelectTab)
+        OnSelectTab("TabSend");
 }
 
 

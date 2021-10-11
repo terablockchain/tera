@@ -18,7 +18,12 @@ global.PROCESS_NAME = "WEB";
 function GetDefaultPage()
 {
     if(global.HTTP_START_PAGE)
+    {
+        if(global.HTTP_START_PAGE === "WWW")
+            return "/index.html";
+
         return global.HTTP_START_PAGE;
+    }
     else
         return "web-wallet.html";
 }
@@ -531,6 +536,7 @@ function DoCommandNew(request,response,Type,Path,Params)
 
 function DoCommandWWW(request,response,Type,Path,Params,ArrPath)
 {
+    //console.log(Path);
     if(!Path || Path.substring(Path.length - 1) === "/")
         Path += "index.html";
     
