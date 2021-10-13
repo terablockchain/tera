@@ -204,3 +204,46 @@ a
     display: none;
 }
 
+.down_arrow::after
+{
+    content: "";
+    display: block;
+    background: url("./../PIC/down-arrow.svg") no-repeat;
+    background-size: 20px 15px;
+    width: 20px;
+    height: 15px;
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*right: 13px;*/
+    transform: translateY(-50%);
+}
+
+.tokens_header
+{
+    display: flex;
+    height: 24px;
+    line-height: 24px;
+}
+.tokens_header b
+{
+    margin-left: 5px;
+}
+
+.tokens_imgs
+{
+    margin: 0 10px 0 15px;
+}
+.tokens_imgs img
+{
+    margin-left: -8px;
+    height: 24px;
+    width: 24px;
+    border: 1px solid rgba(68, 83, 104, 0.2);
+    background: white;
+    border-radius: 12px;
+}
+.tokens_imgs .token_nft
+{
+    border-radius: 5px;
+}
+

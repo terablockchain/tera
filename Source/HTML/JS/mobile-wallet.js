@@ -610,6 +610,7 @@ async function SetAccountsCard(Data,AccountsDataStr)
     if(dataList)
         dataList.innerHTML = "";
 
+    var TotalCountNFT=0;
     var ListTotal = {};
     for(var i = 0; arr && i < arr.length; i++)
     {
@@ -691,10 +692,10 @@ async function SetAccountsCard(Data,AccountsDataStr)
         var StrCountTokens="";
         var StrOpenNFTPage="";
         if(RetTotal.CountTokens)
-            StrCountTokens="Tokens count: "+RetTotal.CountTokens;
+            StrCountTokens="Tokens count: <b>"+RetTotal.CountTokens+"</b> <div class='tokens_imgs'>"+RetTotal.ImgTokens+"</div>";
         if(RetTotal.CountNFT)
         {
-            StrCountTokens+=" NFT: "+RetTotal.CountNFT;
+            StrCountTokens+=" NFT: <b>"+RetTotal.CountNFT+"</b> <div class='tokens_imgs'>"+RetTotal.ImgNFTs+"</div>";
             StrOpenNFTPage="<button class='btn btn--white btn-nft-open' onclick='OpenTokensPage(" + Item.Num + ")'>Show NFT</button>";
         }
 
@@ -703,6 +704,7 @@ async function SetAccountsCard(Data,AccountsDataStr)
         Str = Str.replace("$Item.OPEN_NFT_PAGE", StrOpenNFTPage);
 
 
+        TotalCountNFT+=RetTotal.CountNFT;
 
 
         StrList += Str;
@@ -748,6 +750,7 @@ async function SetAccountsCard(Data,AccountsDataStr)
 
 
     UpdateTokenList();
+    ConvertTokenImages();
 }
 
 

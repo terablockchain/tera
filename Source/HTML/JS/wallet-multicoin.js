@@ -431,6 +431,9 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
 {
     var StrListTokens = "";
     var CountTokens = 0;
+    var ImgTokens="";
+    var ImgNFTs="";
+    var CountImgTokens = 0;
     var CountNFT = 0;
     for(var n=0;Item.BalanceArr && n<Item.BalanceArr.length;n++)
     {
@@ -455,11 +458,19 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
                         if(CurrencyPath)
                         {
                             StrImg = `<img src="${CurrencyPath}" class="token_img">`;
+                            if(CountImgTokens<3)
+                                ImgTokens+=StrImg;
+                            CountImgTokens++;
                         }
                         StrListTokens += `<div class="token_row"><div class="token_name">${TokenName}</div><div class="token_value">${STRING_FROM_COIN(Value2)}</div>${StrImg}</div>`;
                     }
                     else
                     {
+
+
+                        if(CountNFT<3)
+                            ImgNFTs+=GetTokenImage(Value2.ID,"token_nft");
+
                         CountNFT++;
                     }
                 }
@@ -483,6 +494,8 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
                 ListTokens:StrListTokens,
                 CountTokens:CountTokens,
                 CountNFT:CountNFT,
+                ImgTokens:ImgTokens,
+                ImgNFTs:ImgNFTs,
             }
 }
 

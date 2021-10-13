@@ -1302,5 +1302,7 @@ async function StartTransfer(ParamsPay,ParamsCall,TxTicks)
 
 }
 
+window.AStartTransfer=StartTransfer;
+
 //----------------------------------------------------------------------------------------------------------------------
 
