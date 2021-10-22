@@ -791,9 +791,7 @@ HTTPCaller.GetHistoryAct = function (Params)
 if(!global.CHECK_POINT)
     global.CHECK_POINT = {};
 
-var LastTimeGetHashRate = 0;
-var LastHashRate = 0;
-var HashRateOneSec = 0;
+
 HTTPCaller.GetWalletInfo = function (Params)
 {
 
@@ -806,14 +804,7 @@ HTTPCaller.GetWalletInfo = function (Params)
 
     var MaxHistory = 0;
 
-    var Delta = Date.now() - LastTimeGetHashRate;
-    if(Delta >= CONSENSUS_PERIOD_TIME)
-    {
-        if(Delta < CONSENSUS_PERIOD_TIME + 100)
-            HashRateOneSec = global.HASH_RATE - LastHashRate;
-        LastHashRate = global.HASH_RATE;
-        LastTimeGetHashRate = Date.now();
-    }
+
 
     var TXBlockNum = COMMON_ACTS.GetLastBlockNumActWithReopen();
     var SysInfo=SYSCORE.GetInfo(SERVER.BlockNumDB);
@@ -862,7 +853,7 @@ HTTPCaller.GetWalletInfo = function (Params)
         CountMiningCPU:GetCountMiningCPU(),
         CountRunCPU:global.ArrMiningWrk.length,
         MiningPaused:global.MiningPaused,
-        HashRate:HashRateOneSec,
+        HashRate:global.GetLastHashRate(),
         BLOCKCHAIN_VERSION:SysInfo.Active,
         PRICE_DAO:SysInfo,//PRICE_DAO(SERVER.BlockNumDB),
         //SYS_CORE:SysInfo,

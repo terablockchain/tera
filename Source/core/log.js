@@ -248,13 +248,54 @@ function GetCurrentStatIndex()
     
     return CurStatIndex % DefMaxStatPeriod;
 }
-global.HASH_RATE = 0;
+var HASH_RATE = 0;
+var HASH_RATE_TIME = 0;
+var THashArr=[];
 global.ADD_HASH_RATE = function (Count)
 {
     Count = Count / 1000000;
-    global.HASH_RATE += Count;
+
+    var CurTime=Date.now();
+    var Delta=CurTime-HASH_RATE_TIME;
+    if(!HASH_RATE_TIME)
+    {
+        HASH_RATE = Count;
+        THashArr=[];
+    }
+    else
+    {
+        HASH_RATE += Count * Delta;
+    }
+    HASH_RATE_TIME=CurTime;
+
+
+    var LastTime=0;
+    if(THashArr.length)
+        LastTime=THashArr[THashArr.length-1].Time;
+    if(CurTime-LastTime>=1000)
+    {
+        THashArr.unshift({Hash:HASH_RATE,Time:HASH_RATE_TIME});
+        if(THashArr.length>30)
+            THashArr.length=30;
+    }
+
     ADD_TO_STAT("HASHRATE", Count);
-}
+};
+global.GetLastHashRate=function()
+{
+    if(THashArr.length<2)
+        return 0;
+
+    var Item1=THashArr[0];
+    var Item2=THashArr[THashArr.length-1];
+
+    var Delta=Item1.Time-Item2.Time;
+    if(!Delta)
+        return 0;
+
+    return (Item1.Hash-Item2.Hash)/Delta;
+};
+
 
 global.GET_STAT = function (Key)
 {
@@ -262,7 +303,7 @@ global.GET_STAT = function (Key)
     if(!Val)
         Val = 0;
     return Val;
-}
+};
 
 global.ADD_TO_STAT_TIME = function (Name,startTime,bDetail)
 {
@@ -393,9 +434,9 @@ global.ClearCommonStat = function ()
     CONTEXT_STATS = {Total:{}, Interval:[]};
     CONTEXT_ERRORS = {Total:{}, Interval:[]};
     
-    global.HASH_RATE = 0;
+    global.HASH_RATE_TIME = 0;
     SERVER.ClearStat();
-}
+};
 
 function ResizeArrMax(arr)
 {

@@ -628,6 +628,9 @@ function MintNFT(Params)
 
 function CheckOwnerPermission()
 {
+    if(context.Smart.Num<7)//test mode
+        return;
+
     if(context.FromNum!==context.Smart.Owner)
         throw "Access is only allowed from Owner account";
 }
@@ -676,7 +679,7 @@ function TemplateSmartTokenHTML()
     });
 
     window.addEventListener('Init',Init);
-    window.addEventListener('UpdateFillUser',UpdateFillUser);
+    window.addEventListener('UpdateInfo',UpdateFillUser);
 
     async function Init()
     {
@@ -706,21 +709,29 @@ function TemplateSmartTokenHTML()
         idTokenTitle.innerText=SMART.Name;
         if(ID)
         {
-            var Addr="/nft/"+ID;
-            AddWorkNftImg(Addr,100);//idImg100
-            RestartWorkNftImg();
-
             idTotal.innerText=FLOAT_FROM_COIN(await AGetBalance(0,SMART.Num,ID))+" ID:"+ID;
 
         }
         else
         {
-            if(SMART.IconBlockNum)
-                idImg100.src=GetURLPath("/file/" + SMART.IconBlockNum + "/" + SMART.IconTrNum);
             idTotal.innerText=FLOAT_FROM_COIN(await AGetBalance(0,SMART.Num,""))+" "+SMART.ShortName;
         }
 
-
+        idImgHolder.innerHTML=GetImgStr(ID,"IconImg");
+        ConvertTokenImages();
+    }
+    function GetImgStr(ID,classname)
+    {
+        if(!classname)
+            classname="";
+        if(!ID)
+        {
+            var SrcPath=GetURLPath("/file/" + SMART.IconBlockNum + "/" + SMART.IconTrNum);
+            if(!SMART.IconBlockNum)
+                return "";
+            return `<img class="${classname}" src="${SrcPath}">`;
+        }
+        return GetTokenImage(ID,classname);
     }
 
     function UpdateFillUser()
@@ -760,7 +771,6 @@ function TemplateSmartTokenHTML()
 
 
     //------------------------ insert
-    document.write(`<script type="text/javascript" src="/JS/wallet-multicoin.js"></`+`script>`);
 
     document.write(`
 
@@ -791,28 +801,28 @@ function TemplateSmartTokenHTML()
         line-height: 24px;
     }
     
+
     .row_acc
     {
         display: flex;
+        align-items: center;
+        justify-content: center;
         width:310px;
         height: 32px;
+        line-height: 32px;
         margin: 10px 0px 10px 0px;
         padding:0;
     }
-     .row_acc p
-    {
-        margin-top: 4px;
-    }
     .row_acc select
     {
-        max-width:170px;
         height: 26px;
+        max-width:230px;
     }
-    
     .btn_acc
     {
         cursor:pointer;
         width:26px;
+        min-width:26px;
         height:26px; 
         margin:0px 5px; 
         padding:0px;
@@ -820,6 +830,7 @@ function TemplateSmartTokenHTML()
         border-radius:5px;
         fill:#000;
     }
+
     .btn_acc:hover
     {
         cursor: pointer;
@@ -836,7 +847,7 @@ function TemplateSmartTokenHTML()
         margin:5px;
     }
     
-    #idImg100
+    .IconImg
     {
         max-height:50vh;
         max-width:50vh;
@@ -846,10 +857,10 @@ function TemplateSmartTokenHTML()
 
 <DIV align='center' id="idShow" style="display:none">
     <h3 id="idTokenTitle"></h3>
-    <img id="idImg100" src="">
+    <div id="idImgHolder"></div>
     <h4>Total Supply: <b id="idTotal"></b></h4>
 </DIV>
-    
+
  
 <DIV align='center' id="idPage" style="display:none">
     <DIV class="page">
@@ -890,8 +901,6 @@ function TemplateSmartTokenHTML()
 
 
 }
-
-
 //---------------------------------------------------------------
 
 function TemplateProxy()

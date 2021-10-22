@@ -155,21 +155,21 @@ function RunStopPOWProcess(Mode)
                 ToLog(msg.message);
             }
             else
-                if(msg.cmd === "online")
-                {
-                    Worker.bOnline = true;
-                    ToLog("RUNNING PROCESS:" + Worker.Num + ":" + msg.message);
-                }
-                else
-                    if(msg.cmd === "POW")
-                    {
-                        SERVER.MiningProcess(msg);
-                    }
-                    else
-                        if(msg.cmd === "HASHRATE")
-                        {
-                            ADD_HASH_RATE(msg.CountNonce);
-                        }
+            if(msg.cmd === "online")
+            {
+                Worker.bOnline = true;
+                ToLog("RUNNING PROCESS:" + Worker.Num + ":" + msg.message);
+            }
+            else
+            if(msg.cmd === "POW")
+            {
+                SERVER.MiningProcess(msg);
+            }
+            else
+            if(msg.cmd === "HASHRATE")
+            {
+                ADD_HASH_RATE(msg.CountNonce);
+            }
         });
         
         Worker.on('error', function (err)

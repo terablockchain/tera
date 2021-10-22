@@ -531,9 +531,10 @@ async function AddToTransfer(Data)
     if(!PayContext.Value)
         PayContext.Value=0;
     if(typeof PayContext.Value==="number")
-        PayContext.Value=COIN_FROM_FLOAT(PayContext.Value);
+        PayContext.Value=COIN_FROM_FLOAT3(PayContext.Value);
     if(ISZERO(PayContext.Value))
-        throw new Error("Zero Value");
+        //throw new Error("Zero Value");
+        return SendErrorTransfer("Zero Value")
 
 
     //PayContext.ToID
@@ -544,9 +545,12 @@ async function AddToTransfer(Data)
     // //console.log("AddToTransfer",Data);
 
     if(!DataFrom)
-        throw new Error("Error account number: " + PayContext.FromID);
+        //throw new Error("Error account number: " + PayContext.FromID);
+        return SendErrorTransfer("Error account number: " + PayContext.FromID)
+
     if(!DataTo)
-        throw new Error("Error account number: " + PayContext.ToID);
+        //throw new Error("Error account number: " + PayContext.ToID);
+        return SendErrorTransfer("Error account number: " + PayContext.ToID)
 
     Data.FromItem=DataFrom;
 
@@ -668,8 +672,14 @@ function OnHideTr()
 }
 function OnCancelTr()
 {
+    SendErrorTransfer("Rejected by the user");
+}
+
+
+function SendErrorTransfer(StrError)
+{
     if(glDlgTransfer)
-        RetSendTx(1,{}, [], "Rejected by the user", glDlgTransfer);
+        RetSendTx(1,{}, [], StrError, glDlgTransfer);
     CloseTransferDlg();
 }
 

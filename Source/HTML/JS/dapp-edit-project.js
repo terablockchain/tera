@@ -705,3 +705,24 @@ function IsOkShortName(Name,bCent)
     var MustName = NormalizeCurrencyName(Name,bCent);
     return Name===MustName;
 }
+
+function MoveProject(DeltaNum)
+{
+    var Arr=ProjectArray;
+    var CurNum=+idProjectList.value;
+    if(!DeltaNum)//to top
+        DeltaNum=-CurNum2;
+
+    var CurNum2=CurNum+DeltaNum;
+    if(CurNum2<0 || CurNum2==CurNum)
+        return;
+    if(CurNum2>=Arr.length)
+        return;
+
+    var Item=Arr[CurNum];
+    Arr.splice(CurNum,1);
+    Arr.splice(CurNum2,0,Item);
+
+    CurProjectValue=CurNum2;
+    FillProject()
+}

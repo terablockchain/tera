@@ -645,8 +645,20 @@ function SetConfigData(Data)
     else
         SetVisibleBlock("idMiningParams", 0);
     $("idUseMiningShards").checked = CONFIG_DATA.CONSTANTS.USE_MINING_SHARDS;
-    
-    SetStatusMining(" Mining on:<B>" + MiningAccount + "</B>  HashRate:<B>" + (Math.floor(Data.HashRate * 10) / 10) + "</B>Mh/s CPU RUN:<B>" + Data.CountRunCPU + "</B>/" + Data.CountMiningCPU + " " + (Data.MiningPaused ? "<B style='color:darkred;'>=PAUSED=</B>" : ""));
+
+    var HName="Mh/s";
+    if(Data.HashRate>1000)
+    {
+        HName="Gh/s";
+        Data.HashRate = Data.HashRate / 1000;
+    }
+    else
+    if(Data.HashRate<1)
+    {
+        HName="Kh/s";
+        Data.HashRate = Data.HashRate * 1000;
+    }
+    SetStatusMining(`Mining on acc: <B>${MiningAccount}</B> HashRate:<B> ${(Math.floor(Data.HashRate * 10) / 10)}</B>${HName} CPU RUN:<B>` + Data.CountRunCPU + "</B>/" + Data.CountMiningCPU + " " + (Data.MiningPaused ? "<B style='color:darkred;'>=PAUSED=</B>" : ""));
     if(CONFIG_DATA.CONSTANTS.USE_MINING && ( + Data.CountRunCPU) !== ( + Data.CountMiningCPU))
     {
         $("idUseMining").className = "checkbox checkbox_red";

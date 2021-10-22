@@ -27,7 +27,8 @@ https://terawallet.org
 
 
 ## Mobile wallet apk-file for Android:
-* https://gitlab.com/terafoundation/terarun/raw/master/Bin/Mobile/app-release.apk
+* [Google Play](https://play.google.com/store/apps/details?id=com.terafoundation.wallet)
+* [APK-file](https://gitlab.com/terafoundation/terarun/raw/master/Bin/Mobile/app-release.apk)
 
 
 

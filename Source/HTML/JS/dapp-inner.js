@@ -712,6 +712,7 @@ function ASendData(Data,Count)
                 if(RetData)
                 {
                     //SetError(RetData2);
+                    console.log("Find error!!")
                     reject(RetData2);
                 }
                 else

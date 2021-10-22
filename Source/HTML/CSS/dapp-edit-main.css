@@ -315,7 +315,10 @@ body.univers .bt:hover[disabled]
     -webkit-box-align: end;
     -webkit-align-items: flex-end;
     -ms-flex-align: end;
-    align-items: flex-end;
+
+    align-items: flex-start;
+    justify-content: flex-start;
+
 
 }
 
@@ -424,4 +427,38 @@ textarea:hover, select:hover
     font-family: sans-serif;
     font-size: 14px;
     line-height: 22px;
+}
+
+.move_control
+{
+    position: relative;
+}
+.move_holder
+{
+    position: absolute;
+    top:140px;
+    right:20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.move_bt
+{
+    width: 32px;
+    height: 32px;
+    color: transparent;
+    border: transparent;
+    background: transparent;
+    font-size: 12px;
+}
+.move_control:hover .move_bt
+{
+    color: black;
+    background: rgba(179, 179, 179, 0.14);
+    border: 1px solid rgba(100, 100, 100, 0.14);
+}
+.move_control:hover .move_bt:hover
+{
+    color: orange;
 }

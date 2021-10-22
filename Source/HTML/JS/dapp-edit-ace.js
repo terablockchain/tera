@@ -314,7 +314,7 @@ function AddAceOptions(editor)
             var Name = retrievePrecedingIdentifier(StrLine, pos.column,undefined,1);
             if(!Name)
                 return;
-
+            //console.log(Name);
             //var regex = new RegExp("(function|var)\\s+"+Name+"\\W","");
             var regexVar = new RegExp("var\\s+"+Name+"\\W","");
 
@@ -529,7 +529,7 @@ function retrievePrecedingIdentifier(text, pos, regex, bToRight)
     var StrRet=buf.reverse().join("");
     if(bToRight)
     {
-        for (var i = pos; true; i++)
+        for (var i = pos; i<text.length; i++)
         {
             if (regex.test(text[i]))
                 StrRet+=text[i];

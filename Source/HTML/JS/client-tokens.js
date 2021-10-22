@@ -420,8 +420,14 @@ function GetTokenImage(ID,classname)
     if(!classname)
         classname="";
     if(!ID)
-        return "";
-    //return `<img class="${classname} load_from_nft" data-id="${ID}">`;
+    {
+        if(!window.SMART)
+            return "";
+        if(!SMART.IconBlockNum)
+            return "";
+        var SrcPath=GetURLPath("/file/" + SMART.IconBlockNum + "/" + SMART.IconTrNum)
+        return `<img class="${classname}" src="${SrcPath}">`;
+    }
 
     var StrID="idImg"+ID;
     var Element=$(StrID);

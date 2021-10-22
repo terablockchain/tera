@@ -136,13 +136,13 @@ function RunFrame(Code,Parent,bRecreate)
         }
         
         GetNewAccount(100, "TEST", 100000, glSmart, Currency, 1);
-        GetNewAccount(101, "Some USD", 1500, glSmart, 1, 1);
-        GetNewAccount(102, "Some BTC", 10, glSmart, 2, 1);
+        GetNewAccount(101, "Some USD", 1500, glSmart, 0, 1,1);
+        GetNewAccount(102, "Some BTC", 10, glSmart, 0, 1,2);
         GetNewAccount(103, "Some SOFT", 3000, glSmart, 0, 1,3);
         
-        GetNewAccount(104, "Test USD", 0, glSmart, 1, 1);
-        GetNewAccount(105, "Test SOFT", 0, glSmart, 3, 1);
-        
+        GetNewAccount(104, "Account #1", 0, glSmart, 0, 1);
+        GetNewAccount(105, "Account #2", 0, glSmart, 0, 1);
+
         GetNewAccount(106, "OWNER", 4000, glSmart, Currency, 1);
         VM_VALUE.BaseAccount = GetNewAccount(107, "Smart base", SumBase, glSmart, Currency, SMART.OwnerPubKey);
 
@@ -312,9 +312,10 @@ function InitVMArrays()
     {
         VM_SMARTS[Num] = {Num:Num, Name:"SMART#" + Num, ShortName:"TST",Version:0};
     }
-    VM_SMARTS[1] = {Num:1, Name:"USD TOKEN", ShortName:"USD", TokenGenerate:1,Version:0};
-    VM_SMARTS[2] = {Num:2, Name:"BTC TOKEN", ShortName:"BTC", TokenGenerate:1,Version:0};
+    VM_SMARTS[1] = {Num:1, Name:"USD TOKEN", ShortName:"USD", Code:GetTextFromF(TemplateSmartToken),Version:2};
+    VM_SMARTS[2] = {Num:2, Name:"BTC TOKEN", ShortName:"BTC", Code:GetTextFromF(TemplateSmartToken),Version:2};
     VM_SMARTS[3] = {Num:3, Name:"SOFT TOKEN", ShortName:"SOFT", Code:GetTextFromF(TemplateSmartToken),Version:2};
+    //VM_SMARTS[2] = {Num:2, Name:"BTC TOKEN", ShortName:"BTC", TokenGenerate:1,Version:0};
 
 
     for(var Num = 0; Num <= MaxAccCreate; Num++)
@@ -651,9 +652,20 @@ async function AddToTransfer(Data)
         throw new Error("Zero Value");
 
     PayContext.SmartMode=0;
-    MoveCoin(PayContext.FromID,PayContext.ToID,PayContext.Value,PayContext.Description,PayContext.Currency,PayContext.ID,PayContext.SmartMode);
+    try
+    {
+        MoveCoin(PayContext.FromID,PayContext.ToID,PayContext.Value,PayContext.Description,PayContext.Currency,PayContext.ID,PayContext.SmartMode);
+    }
+    catch(e)
+    {
+        var StrError=String(e);
+        RetSendTx(1,{}, [], StrError, Data);
+        return;
+    }
     if(ParamsCall)
-        SendCallMethod(PayContext.ToID, ParamsCall.Method, ParamsCall.Params, ParamsCall.ParamsArr, PayContext.FromID, Data.Smart,RetSendTx,Data,1,Data.TxTicks,0,PayContext);
+    {
+        SendCallMethod(PayContext.ToID, ParamsCall.Method, ParamsCall.Params, ParamsCall.ParamsArr, PayContext.FromID, Data.Smart, RetSendTx, Data, 1, Data.TxTicks, 0, PayContext);
+    }
 
 }
 
@@ -961,8 +973,8 @@ function CallMethodStatic(Smart,Method,Params,ParamsArr,nPublic)
 {
     global.SetTickCounter(100000);
     var PayContext = {FromID:Smart.Account, ToID:Smart.Account, Description:"", Value:{SumCOIN:0, SumCENT:0}, SmartMode:1};
-
-    return RunSmartMethod({BlockNum:0}, undefined, Smart, undefined, 0, 0, PayContext, Method,Params,ParamsArr,nPublic);
+    var AccountObj=VM_ACCOUNTS[Smart.Account];
+    return RunSmartMethod({BlockNum:0}, undefined, Smart, AccountObj, 0, 0, PayContext, Method,Params,ParamsArr,nPublic);
 }
 
 const $RegInWallet=function(Account)

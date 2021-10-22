@@ -199,18 +199,26 @@ Uncomment script in real project <!--<script type="text/javascript" src="https:/
                     <INPUT type="button" onclick="SaveValues(1)" class="bt btool" value="Save">
 
 
-<!--                    <INPUT type="button" onclick="LoadSmart()" class="bt btool" value="Load">-->
+
                     <div style="padding-left: 2px; ">PROJECTS:</div>
+                    <DIV class="move_control">
+                    <DIV class="move_holder">
+                        <button onclick="MoveProject(0)" class="move_bt">Top</button>
+                        <button onclick="MoveProject(-1)" class="move_bt">↑</button>
+                        <button onclick="MoveProject(1)" class="move_bt">↓</button>
+                    </DIV>
                     <select size="2" id="idProjectList" style="width:100%;height:calc(50vh - 67px - 10px)"  onchange="SetCurrentProject(1)" onclick="SetCurrentProject(2)">
                     </select>
+                    </DIV>
+
                     <div style="padding-left: 2px; ">BLOCKCHAIN:</div>
                     <table>
                         <tr>
                             <td style="width: 90%">
                                 <INPUT type="number" id="idSmartStart" style="width:100%;margin-top: -1px;" onchange="FillSmart()" value="8">
                             </td>
-                            <td style="width: 10%">
-                                <button onclick="FillSmart()" id="idRefresh"></button>
+                            <td style="width: 10%;">
+                                <button onclick="FillSmart()" style="margin-left: 5px" id="idRefresh"></button>
                             </td>
                         </tr>
                     </table>
