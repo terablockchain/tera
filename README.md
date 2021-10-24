@@ -237,9 +237,9 @@ pm2 start run-jinn.js
 * [DApp Paper](https://docs.google.com/document/d/1PXVBbMKdpsAKPkO9UNB5B-LMwIDjylWoHvAAzzrXjvU/edit?usp=sharing)
 * [New futures1](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Eng/release2468.md)
 * [New futures2](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Eng/release2600.md)
-* [API](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/API.md)
-* [API-2 for Exchanges](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/API2.md)
-* [CONSTANTS](https://gitlab.com/terafoundation/tera/blob/master/Doc/Eng/CONSTANTS.MD)
+* [API](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/API.md)
+* [API-2 for Exchanges](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/API2.md)
+* [CONSTANTS](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/CONSTANTS.MD)
 * [DEX-guide](https://docs.google.com/document/d/1qvVRfLq3qcYYF6dcsAAAqoGyBFF4njXUYZXZfTPWd2w/edit?usp=sharing)
 * [BTC for DEX](https://docs.google.com/document/d/19vRY6tkbTP8tubZxM01llwnMyz4P6IzY0zvnargrU6k/edit?usp=sharing)
 * [DApps repo](https://gitlab.com/terafoundation/dapps)
@@ -260,8 +260,8 @@ pm2 start run-jinn.js
 
 
 ## Chinese
-* [Mining guide (chinese PDF)](https://gitlab.com/terafoundation/tera/raw/master/Doc/Chinese/Mining.pdf?inline=false)
-* [Tera White Paper (chinese PDF)](https://gitlab.com/terafoundation/tera/raw/master/Doc/Chinese/WP_chinese.pdf?inline=false)
+* [Mining guide (chinese PDF)](https://gitlab.com/terafoundation/tera2/raw/master/Doc/Chinese/Mining.pdf?inline=false)
+* [Tera White Paper (chinese PDF)](https://gitlab.com/terafoundation/tera2/raw/master/Doc/Chinese/WP_chinese.pdf?inline=false)
 * [Decentralized applications on TERA platform - Chinese](https://medium.com/@Blockchainize1/tera%E5%B9%B3%E5%8F%B0%E4%B8%8A%E7%9A%84%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96%E5%BA%94%E7%94%A8-590f7663ecaf)
 
 
