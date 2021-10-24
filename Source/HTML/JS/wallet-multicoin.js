@@ -276,7 +276,12 @@ var clickTimer = null;
 var clickElement=null;
 function NFTClick(List,element)
 {
-    SelectNFTItem(List,element)
+    SelectNFTItem(List,element);
+    //console.log(List)
+    if(List==="idListShow")
+    {
+        return OpenToken(List,element)
+    }
 
     if(clickTimer && clickElement && clickElement.id!==element.id)
     {
