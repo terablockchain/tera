@@ -282,7 +282,7 @@ WebApi2.GetBalance = function (Params,response)
 
         if(Currency && !Params.GetArr)
         {
-            var Value = ACCOUNTS.GetBalance(Account,Currency,ID);
+            var Value = ACCOUNTS.GetBalance(AccountID,Currency,ID);
             Value.result=1;
             Value.AccountID=AccountID;
             Value.Meta=Params.Meta;
