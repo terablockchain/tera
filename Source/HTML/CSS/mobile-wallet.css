@@ -1946,9 +1946,9 @@ td.pubkey
 		padding-top: 0;
 		padding-bottom: 70px;
 	}
-	.accounts-info__counter-wrapper .btn {
-		width: 210px;
-	}
+	/*.accounts-info__counter-wrapper .btn {*/
+	/*	width: 210px;*/
+	/*}*/
 	.accounts-info__counter-wrapper {
 		padding-bottom: 20px;
 	}
@@ -2519,6 +2519,8 @@ iframe
     display: flex;
     position: relative;
     margin-left: 15px;
+	flex-direction: row;
+	align-items: center;
 }
 .findtxid input
 {

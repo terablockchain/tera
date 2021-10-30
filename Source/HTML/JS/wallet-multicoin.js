@@ -211,7 +211,7 @@ async function FillListNFTNext(IDList, TokensArr,PrefixNum,TokenName,TokenID,bVi
     {
         IDList.strJSON = Str;
         IDList.innerHTML=Str;
-        IDList.CurSelect="";
+        //IDList.CurSelect="";
     }
 
     SelectNFTItem(IDList.id);

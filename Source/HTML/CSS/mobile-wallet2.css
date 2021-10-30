@@ -247,3 +247,46 @@ a
     border-radius: 5px;
 }
 
+.place_links
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bt_open_link
+{
+    height: 32px;
+    min-width: 80px;
+    max-width: 100px;
+    margin: 10px 2px;
+    padding: 3px;
+    line-height: 26px;
+
+    border-radius: 6px;
+    border: 1px solid gray;
+}
+button.bt_open_link
+{
+    color: white;
+    background-color: #0ACA13;
+    border: 1px solid #0a870e;
+}
+.accounts-info__counter-wrapper
+{
+    justify-content: space-evenly;
+}
+.place_accounts
+{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    min-width: 300px;
+}
+
+.btn_new
+{
+    padding: 5px;
+    font-size: 14px;
+    width: 110px;
+}

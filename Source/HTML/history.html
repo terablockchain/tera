@@ -149,7 +149,8 @@
                     ArrPos[CurPage]={First:arr[0].Pos,NextPos:Item.NextPos};
                 }
                 //console.log("Data.History:",Data.History);
-                ASetGridData(Data.History,"grid_history","idTotalSumH",1,Data.Currency);
+                await ASetGridData(Data.History,"grid_history","idTotalSumH",1,Data.Currency);
+                ConvertTokenImages();
             });
 
         }
@@ -278,8 +279,26 @@
             }
         }
 
+        function GetNFTImg(Item)
+        {
+            if(!Item.ID)
+                return "";
+            return GetTokenImage(Item.ID,"nft_img");
+        }
     </script>
 </head>
+
+<style>
+    .history-page__table-wrap
+    {
+        min-height: 50vh;
+    }
+    .nft_img
+    {
+        height: 32px;
+        width: 32px;
+    }
+</style>
 <body>
     <header class="header">
         <div class="header__wrapper">
@@ -328,12 +347,12 @@
                 <div class="history-page__table-wrap">
                     <table id="grid_history" class="grid">
                         <tr>
-<!--                            <th id="Item.Num" class="">Num</th>-->
                             <th id="(RetDirect(Item))" class="direct">...</th>
                             <th id="(GetCorrID(Item,'+'))" class="num">From</th>
                             <th id="(GetCorrID(Item,'-'))" class="num">To</th>
                             <th id="(escapeHtml(DateFromBlock(Item.BlockNum,1)))" class="date">Date</th>
                             <th id="SUM_TO_STRING(Item)" class="smallbold sum">Amount</th>
+                            <th id="(GetNFTImg(Item))" class="">NFT</th>
                             <th id="ARetHistoryCurrency(Item)" class="cur">Cur</th>
                             <th id="GetStr(Item.Description)" class="desc">Description</th>
                             <th id="ConfirmationFromBlock(Item.BlockNum)" class="num">Confirm</th>

@@ -240,8 +240,6 @@ pm2 start run-jinn.js
 * [API](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/API.md)
 * [API-2 for Exchanges](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/API2.md)
 * [CONSTANTS](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/CONSTANTS.MD)
-* [DEX-guide](https://docs.google.com/document/d/1qvVRfLq3qcYYF6dcsAAAqoGyBFF4njXUYZXZfTPWd2w/edit?usp=sharing)
-* [BTC for DEX](https://docs.google.com/document/d/19vRY6tkbTP8tubZxM01llwnMyz4P6IzY0zvnargrU6k/edit?usp=sharing)
 * [DApps repo](https://gitlab.com/terafoundation/dapps)
 
 

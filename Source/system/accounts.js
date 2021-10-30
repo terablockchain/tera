@@ -695,17 +695,19 @@ class AccountApp extends require("./accounts-hash")
         else
         {
             var Smart = SMARTS.ReadSmart(Currency);
-
-            var Ret=RunStaticSmartMethod(Smart.Account, "OnGetBalance", Account,ID,0);
-            var RetValue=Ret.RetValue;
-            if(Ret.result==1 && RetValue)
+            if(Smart)
             {
-                if(RetValue.length)
-                    RetValue={Arr:RetValue};
-                RetValue.ID=ID;
-                RetValue.Currency=Currency;
+                var Ret=RunStaticSmartMethod(Smart.Account, "OnGetBalance", Account,ID,0);
+                var RetValue=Ret.RetValue;
+                if(Ret.result==1 && RetValue)
+                {
+                    if(RetValue.length)
+                        RetValue={Arr:RetValue};
+                    RetValue.ID=ID;
+                    RetValue.Currency=Currency;
 
-                return RetValue;
+                    return RetValue;
+                }
             }
         }
 

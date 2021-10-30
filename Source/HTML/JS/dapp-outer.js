@@ -419,6 +419,7 @@ function CloseDapp()
         {
             //console.log("Back");
             window.history.back();
+            window.close();
         }
         else
         {
