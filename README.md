@@ -231,8 +231,8 @@ pm2 start run-jinn.js
 ## Refs:
 * Web: https://terafoundation.org
 * Btt: https://bitcointalk.org/index.php?topic=4573801.0
-* Telegram: https://t.me/terafoundation
-* Discord: https://discord.gg/CvwrbeG
+* [Telegram](https://t.me/terafoundation)
+* [Discord](https://discord.gg/CvwrbeG)
 * [White Paper](https://docs.google.com/document/d/1EaqFg1ncIxsrNE2M9xJOSzQu8z3ANwMuNyTX0z_A1ow/edit?usp=sharing)
 * [DApp Paper](https://docs.google.com/document/d/1PXVBbMKdpsAKPkO9UNB5B-LMwIDjylWoHvAAzzrXjvU/edit?usp=sharing)
 * [New futures1](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Eng/release2468.md)
@@ -241,6 +241,8 @@ pm2 start run-jinn.js
 * [API-2 for Exchanges](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/API2.md)
 * [CONSTANTS](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/CONSTANTS.MD)
 * [DApps repo](https://gitlab.com/terafoundation/dapps)
+* [Nodes map](https://teraexplorer.org/map.html)
+
 
 
 
