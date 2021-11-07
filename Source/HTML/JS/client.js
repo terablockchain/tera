@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 66;
+window.CLIENT_VERSION = 67;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -2095,6 +2095,8 @@ function closeModal()
     setTimeout(function ()
     {
         glConfirmF = undefined;
+        if($("idShowContent"))
+            idShowContent.innerHTML = "";
     }, 100);
 }
 

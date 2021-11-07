@@ -402,6 +402,8 @@ function closeIFrame()
     closeModal();
     if(window.OnSelectTab)
         OnSelectTab("TabSend");
+
+    idShowContent.innerHTML = "";
 }
 
 
