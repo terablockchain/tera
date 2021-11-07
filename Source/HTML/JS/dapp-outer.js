@@ -300,7 +300,7 @@ function DappListener(event)
                 var Path = Data.Message.substr(0, 200);
                 if(IsLocalClient() && Path.substr(0, 6) === "/dapp/")
                     Path = "?dapp=" + Path.substr(6);
-                OpenWindow(Path, 1);
+                OpenWindow(Path, 1,Data.Location);
                 break;
             }
         case "ComputeSecret":

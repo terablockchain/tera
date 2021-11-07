@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 64;
+window.CLIENT_VERSION = 65;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1671,7 +1671,7 @@ function OpenDapps(Num,StrOpenParams,HTMLLength)
         StrPath += '#' + StrOpenParams;
     OpenWindow(StrPath);
 }
-function OpenWindow(StrPath,bCheck)
+function OpenWindow(StrPath,bCheck,bLocation)
 {
     if(bCheck)
     {
@@ -1683,8 +1683,9 @@ function OpenWindow(StrPath,bCheck)
             return;
         }
     }
-    
-    if(isOS())
+
+
+    if(bLocation || isOS())
         window.location = StrPath;
     else
         window.Open(StrPath);

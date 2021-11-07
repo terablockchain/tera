@@ -232,9 +232,9 @@ function ACreateNewAccount(Currency,Name,PubKey)
     return ASendData({cmd:"CreateNewAccount",Currency:Currency,Name:Name,PubKey:PubKey});
 }
 
-function OpenLink(Str)
+function OpenLink(Str,bLocation)
 {
-     SendData({cmd:"OpenLink",Message:Str});
+     SendData({cmd:"OpenLink",Message:Str,Location:bLocation});
 }
 
 function SetMobileMode()

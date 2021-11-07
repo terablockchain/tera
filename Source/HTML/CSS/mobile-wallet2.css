@@ -231,6 +231,7 @@ a
 
 .tokens_imgs
 {
+    cursor: pointer;
     margin: 0 10px 0 15px;
 }
 .tokens_imgs img
