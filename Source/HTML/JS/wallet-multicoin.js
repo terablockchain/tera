@@ -382,6 +382,7 @@ async function OpenToken(List,element)
         iframe.name = 'dapp';
         iframe.sandbox = "allow-scripts allow-same-origin allow-popups";
         iframe.src = StrPath;
+        iframe.setAttribute('allowFullScreen', '')
         idShowContent.appendChild(iframe);
         return;
     }
