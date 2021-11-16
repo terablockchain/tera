@@ -242,6 +242,7 @@ pm2 start run-jinn.js
 * [CONSTANTS](https://gitlab.com/terafoundation/tera2/blob/master/Doc/Eng/CONSTANTS.MD)
 * [DApps repo](https://gitlab.com/terafoundation/dapps)
 * [Nodes map](https://teraexplorer.org/map.html)
+* [Sharding-spec-RUS](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Rus/sharding-spec.md)
 
 
 

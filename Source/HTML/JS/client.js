@@ -1686,9 +1686,16 @@ function OpenWindow(StrPath,bCheck,bLocation)
 
 
     if(bLocation || isOS())
-        window.location = StrPath;
+    {
+        if(parent.OpenLinkInSandbox)
+            parent.OpenLinkInSandbox(StrPath);
+        else
+            window.location = StrPath;
+    }
     else
+    {
         window.Open(StrPath);
+    }
 }
 
 function ParseFileName(Str)

@@ -444,34 +444,66 @@ function ConvertTokenImages()
     modals.forEach(SetTokenImage);
 }
 
-
-function SetTokenImage(Item)
+async function SetTokenImage(Item)
 {
     var ID=Item.dataset.id;
-    var Addr="/nft/"+ID;
     Item.classList.remove('load_from_nft');
 
-    var Addr2=GetURLPath(Addr);
-
-    fetch(Addr2, {method:'get', cache:'default', mode:'cors', credentials2:'include', headers:this.Headers}).then(function (response)
-    {
-        response.text().then(function (text)
-        {
-            if(text.substr(0,1)==="{")
-            {
-                var Attr=JSON.parse(text);
-                //console.log(ID,Attr);
-                if(Attr)
-                    Item.src = GetURLPath(Attr.image);
-            }
-        });
-    }).catch(function (err)
-    {
-        //console.log(err);
-    });
+    var Attr=await GetNFTData(ID);
+    if(Attr)
+        Item.src = GetURLPath(Attr.image);
 }
 
+//function SetTokenImage(Item)
+// {
+//     var ID=Item.dataset.id;
+//     var Addr="/nft/"+ID;
+//     Item.classList.remove('load_from_nft');
+//
+//     var Addr2=GetURLPath(Addr);
+//
+//     fetch(Addr2, {method:'get', cache:'default', mode:'cors', credentials2:'include', headers:this.Headers}).then(function (response)
+//     {
+//         response.text().then(function (text)
+//         {
+//             if(text.substr(0,1)==="{")
+//             {
+//                 var Attr=JSON.parse(text);
+//                 //console.log(ID,Attr);
+//                 if(Attr)
+//                     Item.src = GetURLPath(Attr.image);
+//             }
+//         });
+//     }).catch(function (err)
+//     {
+//         //console.log(err);
+//     });
+// }
 
+
+async function GetNFTData(ID)
+{
+    var Addr="/nft/"+ID;
+    var Addr2=GetURLPath(Addr);
+
+    return new Promise(function(resolve, reject)
+    {
+        fetch(Addr2, {method:'get', cache:'default', mode:'cors', credentials2:'include', headers:this.Headers}).then(function (response)
+        {
+            response.text().then(function (text)
+            {
+                if(text.substr(0,1)==="{")
+                {
+                    var Attr=JSON.parse(text);
+                    resolve(Attr);
+                }
+            });
+        }).catch(function (err)
+        {
+            reject(err);
+        });
+    });
+}
 
 
 InitMapCurrency();

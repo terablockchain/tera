@@ -593,7 +593,7 @@ async function AddToTransfer(Data)
     idToken.innerText=await ACurrencyName(Currency);
 
     SetVisibleBlock("idTransfer",1);
-    Document.activeElement=idTransfer;
+    document.activeElement=idTransfer;
 }
 
 

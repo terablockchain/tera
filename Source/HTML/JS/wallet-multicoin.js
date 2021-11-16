@@ -378,12 +378,16 @@ async function OpenToken(List,element)
 
         idShowContent.innerHTML = "";
         var iframe = document.createElement('iframe');
-        iframe.id = "idFrame";
+        iframe.id = "idShowFrame";
         iframe.name = 'dapp';
         iframe.sandbox = "allow-scripts allow-same-origin allow-popups";
         iframe.src = StrPath;
-        iframe.setAttribute('allowFullScreen', '')
+        iframe.setAttribute('allowfullscreen', '')
+        iframe.setAttribute('oallowfullscreen', '')
+        iframe.setAttribute('mozallowfullscreen', '')
+        iframe.setAttribute('webkitallowfullscreen', '')
         idShowContent.appendChild(iframe);
+        //idShowContent.innerHTML = `<iframe id="idShowFrame" src="${StrPath}" type="text/html" sandbox="allow-scripts allow-same-origin allow-popups"   allowfullscreen/>`;
         return;
     }
 
@@ -391,14 +395,18 @@ async function OpenToken(List,element)
     OpenDapps(Currency, StrParams, 1);
     //console.log(List,StrParams);
 }
+function OpenLinkInSandbox(Path)
+{
+    idShowFrame.src=Path;
+    //idShowContent.innerHTML = `<iframe id="idShowFrame" src="${Path}" type="text/html" sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"   allowfullscreen frameborder="0"/>`;
+}
+
 function closeShowPage()
 {
     closeIFrame();
 }
 function closeIFrame()
 {
-    //idShowPage
-    //$('idFrame').remove();
     closeModal();
     if(window.OnSelectTab)
         OnSelectTab("TabSend");

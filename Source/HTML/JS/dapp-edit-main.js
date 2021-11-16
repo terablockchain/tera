@@ -245,6 +245,12 @@ function DebugHTMLInBlockchain()
         var Key="DAPP-DEBUG:"+idDebugNum.value;
         localStorage[Key] = idName.value;
     });
+    setTimeout(function ()
+    {
+        window.idDebugNum.focus();
+        // console.log(window.idDebugNum);
+        // document.activeElement=window.idDebugNum;
+    },10)
 }
 function ClearDebugHTMLInBlockchain()
 {
