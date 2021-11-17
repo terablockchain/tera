@@ -267,5 +267,6 @@ pm2 start run-jinn.js
 
 
 ## RUS
- [Эта же страница на русском](https://gitlab.com/terafoundation/tera2/-/tree/master/Doc/Rus)
+* [Эта же страница на русском](https://gitlab.com/terafoundation/tera2/-/tree/master/Doc/Rus)
+* [Первое интервью с командой - 2021](https://www.youtube.com/watch?v=aA_p9cTvnn8)
 
