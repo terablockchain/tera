@@ -243,7 +243,7 @@ pm2 start run-jinn.js
 * [DApps repo](https://gitlab.com/terafoundation/dapps)
 * [Nodes map](https://teraexplorer.org/map.html)
 * [Sharding-spec-RUS](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Rus/sharding-spec.md)
-
+* [Network model](https://terafoundation.org/JINN/model/model.html)
 
 
 
