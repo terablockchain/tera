@@ -9,7 +9,7 @@
 */
 
 var SaveIdArr = ["idUser", "idSmartStart", "idText", "idType", "idSelStyle", "idAutoPlay", "idDebugLog", "idScreenStyle", "idSendFrom",
-"idSendTo", "idSendSum", "idSendDesc", "idNoSendHTML", "idTrimCode", "idLoadDapp", "idChildIP", "idChildPort", "idChildScore","idCurrency","idTokenID"];
+"idSendTo", "idSendSum", "idSendDesc", "idNoSendHTML", "idTrimCode", "idLoadDapp", "idChildIP", "idChildPort", "idChildScore","idCurrency","idTokenID","idFontSize"];
 
 var WasOKLoaded = 0;
 var bWasPlay = 0;
@@ -587,6 +587,16 @@ function SelectStyle(value)
         SetTheme(editCode);
         SetTheme(editHTML);
     }
+}
+function SelectEditorsParams()
+{
+    if(!window.ace)
+        return;
+
+    SetAceOptions(editCode);
+    SetAceOptions(editHTML);
+
+
 }
 
 window.onload = function ()

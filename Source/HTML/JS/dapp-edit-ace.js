@@ -222,6 +222,16 @@ function CheckGoodAutocompleter(editor)
 
 
 }
+function SetAceOptions(editor)
+{
+    var FontSize = +idFontSize.value;
+    if(!FontSize)
+        FontSize=10;
+    editor.setOptions({
+        //fontFamily: "tahoma",
+        fontSize: FontSize+"pt"
+    });
+}
 
 function AddAceOptions(editor)
 {
@@ -229,6 +239,8 @@ function AddAceOptions(editor)
     editor.setPrintMarginColumn(120);
     
     editor.setReadOnly(1);
+
+    SetAceOptions(editor);
     
     editor.setOptions({enableBasicAutocompletion:true, enableSnippets:false, enableLiveAutocompletion:true});
     
