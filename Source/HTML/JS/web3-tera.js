@@ -13,7 +13,7 @@
     function $(id)
     {
         return document.getElementById(id);
-    };
+    }
     if(!window.web3)
         window.web3 = {};
     web3.tera = {Login:function (SmartNum,UrlPath,Forse)

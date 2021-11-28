@@ -233,6 +233,7 @@ pm2 start run-jinn.js
 * Btt: https://bitcointalk.org/index.php?topic=4573801.0
 * [Telegram](https://t.me/terafoundation)
 * [Discord](https://discord.gg/CvwrbeG)
+* [Youtube](https://www.youtube.com/channel/UCMrK6jEqhudlV9XzS2l3rVQ)
 * [White Paper](https://docs.google.com/document/d/1EaqFg1ncIxsrNE2M9xJOSzQu8z3ANwMuNyTX0z_A1ow/edit?usp=sharing)
 * [DApp Paper](https://docs.google.com/document/d/1PXVBbMKdpsAKPkO9UNB5B-LMwIDjylWoHvAAzzrXjvU/edit?usp=sharing)
 * [New futures1](https://gitlab.com/terafoundation/tera2/-/blob/master/Doc/Eng/release2468.md)
