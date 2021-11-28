@@ -10,7 +10,7 @@
 
 
 
-window.CLIENT_VERSION = 68;
+window.CLIENT_VERSION = 69;
 window.SERVER_VERSION = 0;
 window.SHARD_NAME = "TERA";
 
@@ -1687,9 +1687,9 @@ function OpenWindow(StrPath,bCheck,bLocation)
 
     if(bLocation || isOS())
     {
-        if(parent.OpenLinkInSandbox)
-            parent.OpenLinkInSandbox(StrPath);
-        else
+        // if(parent.OpenLinkInSandbox)
+        //     parent.OpenLinkInSandbox(StrPath);
+        // else
             window.location = StrPath;
     }
     else
