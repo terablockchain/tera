@@ -218,7 +218,7 @@ function LoopHandShake()
 }
 function IsCorrectDomenName(ip)
 {
-    var Arr = ip.match(/[\w\.]/g);
+    var Arr = ip.match(/[\w\.-]/g);
     if(!Arr || !ip || Arr.length !== ip.length)
     {
         return 0;
