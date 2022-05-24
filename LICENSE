@@ -1,15 +1,19 @@
-MIT License
+EMPERA NETWORK License
 
-Copyright (c) 2017-2020 The Tera Core developers (progr76@gmail.com)
-
-Not for evil.
+Copyright (c) 2017-2022 Yuriy Ivanov (progr76@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
+in the Software, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+copies of the Software
+
+Projects launching their own blockchain have the right to use the code or part of it only if all of the following points are met:
+1.Place a mention of the EMPERA NETWORK in White Paper, technical documents, articles, press releases and other marketing materials 
+2.Place on the main page of the site the text "The blockchain is based on the EMPERA NETWORK technology" with a link: https://empera.network
+3.In the Partners section, place the EMPERA NETWORK logo first 
+4.All the information described above should be clearly visible and easy to read.
+
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
