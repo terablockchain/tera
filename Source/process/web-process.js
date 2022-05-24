@@ -218,7 +218,7 @@ function MainHTTPFunction(request,response)
         let postData = "";
         request.addListener("data", function (postDataChunk)
         {
-            if(postData.length <= 65000 && postDataChunk.length <= 65000)
+            if(postData.length <= 125000 && postDataChunk.length <= 125000)
                 postData += postDataChunk;
             else
             {

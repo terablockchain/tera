@@ -367,6 +367,9 @@ async function OpenToken(List,element)
     var StrParams=JSON.stringify(Params);
     if(SmallMode)
     {
+        console.log("SmallMode",SmallMode)
+        var strClose=SmallMode&2?"noclose":"";
+
         var StrPath = '/dapp/' + Currency+"?nostatus#" + StrParams;
         if(IsLocalClient())
         {
@@ -375,6 +378,9 @@ async function OpenToken(List,element)
 
 
         openModal('idShowPage', 'idCloseShow');
+
+
+        SetVisibleBlock("idCloseShow",!(SmallMode&2));
 
         idShowContent.innerHTML = "";
         var iframe = document.createElement('iframe');
@@ -485,7 +491,8 @@ async function CalcTotalAmountERC(Item,ListTotal,bInner)
 
 
                         if(CountNFT<3)
-                            ImgNFTs+=GetTokenImage(Value2.ID,"token_nft");
+                            ImgNFTs+=GetTokenImage(Value2,"token_nft");
+
 
                         CountNFT++;
                     }

@@ -287,17 +287,16 @@ function ValidateCurrency(Element)
         Element.value = Item.Name;
 }
 
-function FindCurrencyNum(Name)
+function FindCurrencyNum(Name0)
 {
-    Name = NormalizeCurrencyName(String(Name).toUpperCase());
+    var Name = NormalizeCurrencyName(String(Name0).toUpperCase());
     var Item = glMapCurrencyName[Name];
     if(Item)
     {
         return Item.Num;
     }
 
-    //TODO
-    return parseInt(Name);
+    return parseInt(Name0);
 }
 
 
@@ -415,8 +414,23 @@ function FindBalance(AccObj,Currency,ID)
 }
 
 //----------------------------- Token/NFT imgs
-function GetTokenImage(ID,classname)
+function GetTokenImage(Item,classname)
 {
+    var ID;
+    if(typeof Item==="object")
+    {
+        if(Item.IMG)
+            return `<img class="${classname}" src="${Item.IMG}">`;
+        ID=Item.ID;
+    }
+    else
+    {
+        ID=Item;
+    }
+
+    if(!ParseNum(ID))//только числовые ID
+        ID="";
+
     if(!classname)
         classname="";
     if(!ID)

@@ -27,6 +27,7 @@ window.onload=function()
 
 
 
+
     InitMobileInterface();
     DoNewSession();
     InitTranslate();

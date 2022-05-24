@@ -987,7 +987,7 @@ var WasStartInit=0,WasStartInit2=0;
 var eventInfo = new Event("UpdateInfo");
 
 
-function UpdateDappInfo()//run every 3 sec
+function UpdateDappInfo(bInit)//run every 3 sec
 {
     GetInfo(async function (Err,Data)
     {
@@ -1000,6 +1000,9 @@ function UpdateDappInfo()//run every 3 sec
         BASE_ACCOUNT=Data.Account;
         OPEN_PATH=Data.OPEN_PATH;
         ACCOUNT_OPEN_NUM=ParseNum(OPEN_PATH);
+
+        if(bInit && SMART.Version>=2)
+            ALL_ACCOUNTS=1;
 
         //ToLog(JSON.stringify(BASE_ACCOUNT));
 
@@ -1071,7 +1074,7 @@ window.addEventListener('load',function ()
     // if(!window.sha3)
     //     LoadLib("./JS/sha3.js");
 
-    UpdateDappInfo();
+    UpdateDappInfo(1);
     setInterval(UpdateDappInfo,3*1000);
     InitTranslater();
     SendData({cmd:"Show"});
@@ -1288,6 +1291,100 @@ else
     }
     window.ethereum={isMetaMaskInstalled:RetZero,on:RetZero};
 }
+
+
+
+
+
+//----------------------------------------------------------------------------------------------------------------------
+//web3 solana
+//----------------------------------------------------------------------------------------------------------------------
+if(!isMobile())
+{
+    window.solana =
+        {
+            isSolanaInstalled: async function ()
+            {
+                return new Promise(function (resolve, reject)
+                {
+                    var Data = {cmd: "solana-installed"}
+                    SendData(Data, function (Res)
+                    {
+                        resolve(Res);
+                    })
+                });
+            },
+            connect: async function ()
+            {
+                return await window.solana.request({ method: "connect" });
+            },
+            disconnect: async function ()
+            {
+                return new Promise(function (resolve, reject)
+                {
+                    var Data = {cmd: "solana-disconnect"}
+                    SendData(Data, function (Res)
+                    {
+                        resolve(Res);
+                    })
+                });
+            },
+
+
+            //todo
+            request: async function (Params)
+            {
+                return new Promise(function (resolve, reject)
+                {
+                    var Data = {cmd: "solana-request", Params: Params}
+                    SendData(Data, function (Res, IsErr)
+                    {
+                        if(IsErr)
+                            reject(Res);
+                        else
+                            resolve(Res);
+                    })
+                });
+            },
+            on: function (Name, F)
+            {
+                SendData({cmd: "solana-on", Name: Name}, F);
+            },
+            removeListener: function (Name, F)
+            {
+                SendData({cmd: "solana-off", Name: Name}, F);
+            },
+            GetSelectedAddress: async function ()
+            {
+                return new Promise(function (resolve, reject)
+                {
+                    var Data = {cmd: "solana-selected"}
+                    SendData(Data, function (Res)
+                    {
+                        resolve(Res);
+                    })
+                });
+            },
+        }
+
+    Object.defineProperty(solana, "selectedAddress", {
+        get: async function ()
+        {
+            var result = solana.GetSelectedAddress();
+            return result;
+        }
+    });
+}
+else
+{
+    function RetZero()
+    {
+        return 0;
+    }
+    window.solana={isSolanaInstalled:RetZero,on:RetZero};
+}
+
+
 
 //----------------------------------------------------------------------------------------------------------------------
 //Start transfer

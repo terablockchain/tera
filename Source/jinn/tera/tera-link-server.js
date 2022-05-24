@@ -1,7 +1,7 @@
 /*
  * @project: JINN
  * @version: 1.1
- * @license: MIT (not for evil)
+ * @license: Only for the TERA project
  * @copyright: Yuriy Ivanov (Vtools) 2019-2021 [progr76@gmail.com]
  * Telegram:  https://t.me/progr76
 */
@@ -405,7 +405,7 @@ function Init(Engine)
                 {
                     Power = GetPowPower(Block.PowHash);
                     var Miner = ReadUintFromArr(Block.AddrHash, 0);
-                    var Nonce = ReadUintFromArr(Block.AddrHash, 6);
+                    
                     if(Param.Miner < 0)
                     {
                         PowerMy = Power;

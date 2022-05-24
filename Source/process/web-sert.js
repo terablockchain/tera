@@ -19,8 +19,8 @@ class CSertificate
         if(!greenlock)
             throw "CSertificate constructor: greenlock=" + greenlock;
         
-        this.greenlock = greenlock
-        this.file_sert = GetDataPath("sertif.lst")
+        this.greenlock = greenlock;
+        this.file_sert = GetDataPath("sertif.lst");
     }
     
     GetDateSertificate()

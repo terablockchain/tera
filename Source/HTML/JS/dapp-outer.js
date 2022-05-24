@@ -328,6 +328,8 @@ function DappListener(event)
                 ReloadDapp();
                 break;
             }
+
+        //------------------------------------------------------------------------------------------------ ethereum
         case "ethereum-installed":
             {
                 Data.cmd = "Result";
@@ -394,6 +396,102 @@ function DappListener(event)
                 SendMessage(Data);
                 break;
             }
+        //------------------------------------------------------------------------------------------------ solana
+        case "solana-installed":
+        {
+            Data.cmd = "Result";
+            Data.Result = Boolean(window.solana && window.solana.isPhantom);
+            SendMessage(Data);
+            break;
+        }
+
+        case "solana-request":
+        case "solana-connect":
+        {
+            if(!window.solana)
+            {
+                Data.cmd = "Result";
+                Data.Result = "Solana not installed";
+                Data.Err = 1;
+                SendMessage(Data);
+                return;
+            }
+
+            var fSolana;
+            if(Data.Params.method==="connect")
+                fSolana=window.solana.connect;
+            else
+                fSolana=window.solana.request;
+
+            fSolana(Data.Params).then(function (Result)
+            {
+                if(Data.Params.method==="connect")
+                {
+                    window.solana.selectedAddress=Result.publicKey.toString();
+                    Result.publicKey = window.solana.selectedAddress
+                }
+
+                //console.log("Result",Result);
+                Data.cmd = "Result";
+                Data.Result = Result;
+                SendMessage(Data);
+            }).catch(function (Result)
+            {
+                Data.cmd = "Result";
+                Data.Result = Result;
+                Data.Err = 1;
+                //console.error(Result);
+                SendMessage(Data);
+            });
+
+
+        break;
+        }
+
+        case "solana-on":
+        {
+            if(window.solana)
+                window.solana.on(Data.Name, function (Result)
+                {
+                    Data.cmd = "ResultOn";
+                    Data.Result = Result;
+                    SendMessage(Data);
+                });
+            break;
+        }
+        case "solana-off":
+        {
+            if(window.solana)
+                window.solana.removeListener(Data.Name, function (Result)
+                {
+                    Data.cmd = "Result";
+                    Data.Result = Result;
+                    SendMessage(Data);
+                });
+            break;
+        }
+
+        case "solana-selected":
+        {
+            Data.cmd = "Result";
+            Data.Result = window.solana.selectedAddress;
+            SendMessage(Data);
+            break;
+        }
+
+        case "solana-disconnect":
+        {
+            if(window.solana)
+            window.solana.disconnect(Data.Params).then(function (Result)
+            {
+                Data.cmd = "Result";
+                Data.Result = Result;
+                SendMessage(Data);
+            }).catch(function (Result){});
+            break;
+        }
+
+        //------------------------------------------------------------------------------------------------
         case "Show":
             SetVisibleBlock("idFrame", 1);
             break;
