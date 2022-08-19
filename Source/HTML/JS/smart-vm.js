@@ -52,10 +52,14 @@ Map404["__parent__"] = 100;
 
 function CHK404(Name)
 {
+    if(typeof Name==="number")
+        return Name;
+
     if(Map404[Name])
     {
         throw new Error("Not allow Identifier '" + Name + "'");
     }
+
     return Name;
 }
 
